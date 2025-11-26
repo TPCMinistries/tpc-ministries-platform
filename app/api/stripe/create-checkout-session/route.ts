@@ -66,7 +66,11 @@ export async function POST(request: NextRequest) {
     // Initialize Stripe client
     let stripe
     try {
+      console.log('Initializing Stripe client...')
+      const hasKey = !!process.env.STRIPE_SECRET_KEY
+      console.log('STRIPE_SECRET_KEY exists:', hasKey, hasKey ? `(${process.env.STRIPE_SECRET_KEY.substring(0, 20)}...)` : '')
       stripe = getStripe()
+      console.log('Stripe client initialized successfully')
     } catch (stripeInitError: any) {
       console.error('Failed to initialize Stripe:', stripeInitError)
       return NextResponse.json(
@@ -82,6 +86,7 @@ export async function POST(request: NextRequest) {
       // Create a recurring subscription with dynamic price
       let session
       try {
+        console.log('Creating Stripe checkout session (subscription)...')
         session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -121,6 +126,7 @@ export async function POST(request: NextRequest) {
       // Create a one-time payment with dynamic price
       let session
       try {
+        console.log('Creating Stripe checkout session (one-time)...')
         session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
