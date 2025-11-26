@@ -436,36 +436,50 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
       const calculatedResult = calculateAssessmentResult(params.slug, responses)
 
       // 3. Save results to database
+      const resultInsertData: any = {
+        response_id: finalResponseId,
+        assessment_type: params.slug,
+        primary_result: calculatedResult.primary_result,
+        secondary_result: calculatedResult.secondary_result,
+        tertiary_result: calculatedResult.tertiary_result,
+        scores: calculatedResult.scores,
+        title: calculatedResult.title,
+        description: calculatedResult.description,
+        strengths: calculatedResult.strengths,
+        growth_areas: calculatedResult.growth_areas,
+        ministry_recommendations: calculatedResult.ministry_recommendations,
+        scripture_references: calculatedResult.scripture_references,
+        next_steps: calculatedResult.next_steps,
+      }
+
+      // Only include member_id if user is logged in
+      if (memberId) {
+        resultInsertData.member_id = memberId
+      }
+
       const { data: resultData, error: resultError } = await supabase
         .from('assessment_results')
-        .insert({
-          response_id: finalResponseId,
-          member_id: memberId,
-          assessment_type: params.slug,
-          primary_result: calculatedResult.primary_result,
-          secondary_result: calculatedResult.secondary_result,
-          tertiary_result: calculatedResult.tertiary_result,
-          scores: calculatedResult.scores,
-          title: calculatedResult.title,
-          description: calculatedResult.description,
-          strengths: calculatedResult.strengths,
-          growth_areas: calculatedResult.growth_areas,
-          ministry_recommendations: calculatedResult.ministry_recommendations,
-          scripture_references: calculatedResult.scripture_references,
-          next_steps: calculatedResult.next_steps,
-        })
+        .insert(resultInsertData)
         .select()
         .single()
 
-      if (resultError) throw resultError
+      if (resultError) {
+        console.error('Error saving results:', resultError)
+        throw new Error(`Failed to save results: ${resultError.message}`)
+      }
+
+      if (!resultData || !resultData.id) {
+        throw new Error('Results were saved but no ID was returned')
+      }
 
       // 4. Redirect to results page with result ID
       router.push(`/assessments/${params.slug}/results?id=${resultData.id}`)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting assessment:', error)
+      const errorMessage = error?.message || error?.details || 'Failed to submit assessment. Please try again.'
       toast({
         title: 'Error',
-        description: 'Failed to submit assessment. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       })
       setIsSubmitting(false)
