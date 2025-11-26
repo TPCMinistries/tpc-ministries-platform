@@ -7,7 +7,39 @@ export async function middleware(request: NextRequest) {
   // Update session first
   const response = await updateSession(request)
 
-  // Check if the request is for a protected member route
+  // Redirect old /member/* routes to their correct paths (route groups don't appear in URL)
+  if (request.nextUrl.pathname.startsWith('/member/dashboard')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+  if (request.nextUrl.pathname.startsWith('/member/')) {
+    // Map other /member/* routes to their actual paths
+    const memberRouteMap: Record<string, string> = {
+      '/member/messages': '/messages',
+      '/member/prayer-wall': '/prayer',
+      '/member/my-prayers': '/my-prayers',
+      '/member/library': '/library',
+      '/member/seasons': '/seasons',
+      '/member/my-assessments': '/my-assessments',
+      '/member/profile': '/profile',
+      '/member/events': '/events',
+      '/member/my-giving': '/my-giving',
+      '/member/giving': '/my-giving',
+      '/member/resources': '/resources',
+      '/member/member-settings': '/member-settings',
+      '/member/settings': '/member-settings',
+    }
+    
+    const mappedPath = memberRouteMap[request.nextUrl.pathname]
+    if (mappedPath) {
+      const url = request.nextUrl.clone()
+      url.pathname = mappedPath
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Check if the request is for a protected member route (old /member paths)
   if (request.nextUrl.pathname.startsWith('/member')) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
