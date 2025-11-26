@@ -10,6 +10,8 @@ export function getStripe(): Stripe {
     }
     stripeInstance = new Stripe(secretKey, {
       typescript: true,
+      timeout: 30000, // 30 second timeout
+      maxNetworkRetries: 2,
     })
   }
   return stripeInstance

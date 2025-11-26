@@ -80,7 +80,9 @@ export async function POST(request: NextRequest) {
 
     if (frequency === 'monthly') {
       // Create a recurring subscription with dynamic price
-      const session = await stripe.checkout.sessions.create({
+      let session
+      try {
+        session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [
@@ -113,7 +115,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ sessionId: session.id, url: session.url })
     } else {
       // Create a one-time payment with dynamic price
-      const session = await stripe.checkout.sessions.create({
+      let session
+      try {
+        session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [
@@ -152,6 +156,19 @@ export async function POST(request: NextRequest) {
     console.error('Error raw:', error?.raw)
     console.error('Stack:', error?.stack)
     console.error('===========================')
+
+    // Check if it's a Stripe connection error
+    if (error?.type === 'StripeConnectionError' || error?.message?.includes('connection')) {
+      return NextResponse.json(
+        {
+          error: 'Unable to connect to Stripe. Please check your internet connection and try again.',
+          details: `Connection error: ${error.message}`,
+          stripeError: true,
+          errorType: error?.type,
+        },
+        { status: 503 } // Service Unavailable
+      )
+    }
 
     // Check if it's a Stripe error
     if (error?.type && error?.code) {
