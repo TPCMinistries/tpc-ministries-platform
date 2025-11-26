@@ -110,7 +110,11 @@ export async function POST(request: NextRequest) {
         },
         success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/giving`,
-      })
+        })
+      } catch (stripeError: any) {
+        console.error('Stripe API call failed:', stripeError)
+        throw stripeError
+      }
 
       return NextResponse.json({ sessionId: session.id, url: session.url })
     } else {
@@ -142,7 +146,11 @@ export async function POST(request: NextRequest) {
         },
         success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/giving`,
-      })
+        })
+      } catch (stripeError: any) {
+        console.error('Stripe API call failed:', stripeError)
+        throw stripeError
+      }
 
       return NextResponse.json({ sessionId: session.id, url: session.url })
     }
