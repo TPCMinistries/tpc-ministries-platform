@@ -107,15 +107,37 @@ export async function middleware(request: NextRequest) {
       if (member) {
         // Member exists - redirect to appropriate dashboard (admins go to admin dashboard)
         url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
+        return NextResponse.redirect(url)
       } else {
-        // No member record - redirect to onboarding
-        url.pathname = '/onboarding'
+        // No member record - allow access to onboarding
+        // Don't redirect here, let them go to onboarding to create member record
       }
-      
-      return NextResponse.redirect(url)
     } catch (error) {
       // If there's an error checking member, still allow access to auth pages
       console.error('[Middleware] Error checking member record:', error)
+    }
+  }
+
+  // If user is logged in and on onboarding, check if they already have a member record
+  // If they do, redirect to dashboard (they don't need onboarding)
+  if (pathname === '/onboarding' && user) {
+    try {
+      const { data: member } = await supabase
+        .from('members')
+        .select('is_admin')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (member) {
+        // Member already exists - redirect to appropriate dashboard
+        const url = request.nextUrl.clone()
+        url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
+        return NextResponse.redirect(url)
+      }
+      // If no member, allow access to onboarding to create one
+    } catch (error) {
+      console.error('[Middleware] Error checking member for onboarding:', error)
+      // Allow access to onboarding even on error
     }
   }
 
