@@ -27,6 +27,10 @@ export async function middleware(request: NextRequest) {
       '/member/resources': '/resources',
       '/member/member-settings': '/member-settings',
       '/member/settings': '/member-settings',
+      '/member/account': '/account',
+      '/member/assessments': '/my-assessments',
+      '/member/content': '/content',
+      '/member/give': '/give',
     }
     
     const mappedPath = memberRouteMap[request.nextUrl.pathname]

@@ -29,25 +29,26 @@ export default function OnboardingPage() {
         }
 
         // If member already existed, redirect immediately without showing success state
-        if (data.message === 'Member record already exists') {
+        if (data.message === 'Member record already exists' || data.is_admin !== undefined) {
+          // Use window.location for a hard redirect to avoid any client-side navigation issues
           if (data.is_admin) {
-            router.push('/admin-dashboard')
+            window.location.href = '/admin-dashboard'
           } else {
-            router.push('/dashboard')
+            window.location.href = '/dashboard'
           }
-          router.refresh()
           return
         }
 
         setStatus('success')
 
-        // Redirect to appropriate dashboard immediately
-        if (data.is_admin) {
-          router.push('/admin-dashboard')
-        } else {
-          router.push('/dashboard')
-        }
-        router.refresh()
+        // Redirect to appropriate dashboard immediately using window.location for hard redirect
+        setTimeout(() => {
+          if (data.is_admin) {
+            window.location.href = '/admin-dashboard'
+          } else {
+            window.location.href = '/dashboard'
+          }
+        }, 500) // Small delay to show success message
       } catch (err: any) {
         setStatus('error')
         setError(err.message)

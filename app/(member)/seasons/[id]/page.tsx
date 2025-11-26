@@ -91,7 +91,7 @@ export default function SeasonDetailPage() {
         .single()
 
       if (!seasonData) {
-        router.push('/member/seasons')
+        router.push('/seasons')
         return
       }
 
@@ -213,7 +213,7 @@ export default function SeasonDetailPage() {
       <div className="p-8">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-navy mb-4">Season Not Found</h2>
-          <Link href="/member/seasons">
+          <Link href="/seasons">
             <Button>Back to Seasons</Button>
           </Link>
         </div>

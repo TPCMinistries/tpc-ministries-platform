@@ -384,7 +384,7 @@ export default function MemberContentPage() {
                 <Sparkles className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-navy mb-2">No Content from Your Seasons</h3>
                 <p className="text-gray-600 mb-4">Join a season to see content here</p>
-                <Link href="/member/seasons">
+                <Link href="/seasons">
                   <Button>Browse Seasons</Button>
                 </Link>
               </CardContent>

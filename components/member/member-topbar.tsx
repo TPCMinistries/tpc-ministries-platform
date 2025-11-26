@@ -132,13 +132,13 @@ export default function MemberTopBar({ member }: MemberTopBarProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/member/profile')}>
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
                 My Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/member/settings')}>
+              <DropdownMenuItem onClick={() => router.push('/member-settings')}>
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/member/account')}>
+              <DropdownMenuItem onClick={() => router.push('/account')}>
                 Billing & Subscription
               </DropdownMenuItem>
               <DropdownMenuSeparator />

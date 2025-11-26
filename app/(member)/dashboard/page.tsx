@@ -370,7 +370,7 @@ export default function MemberDashboardPage() {
                 <p className="text-xs text-gray-600 mt-1">{season.progress_percentage}% complete</p>
               </div>
             ))}
-            <Link href="/member/seasons">
+            <Link href="/seasons">
               <Button variant="outline" className="w-full">
                 View All Seasons
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -498,7 +498,7 @@ export default function MemberDashboardPage() {
             <CardTitle className="text-navy">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
-            <Link href="/member/seasons">
+            <Link href="/seasons">
               <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
                 <Sparkles className="h-6 w-6 text-gold" />
                 <span className="text-sm">Browse Seasons</span>

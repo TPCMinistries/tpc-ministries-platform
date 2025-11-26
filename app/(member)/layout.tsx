@@ -24,13 +24,14 @@ export default async function MemberLayout({
   }
 
   // Get member data
-  const { data: member } = await supabase
+  const { data: member, error: memberError } = await supabase
     .from('members')
     .select('id, first_name, last_name, phone_number, is_admin')
     .eq('user_id', user.id)
     .single()
 
   if (!member) {
+    // Only redirect to onboarding if we're not already there (prevent redirect loops)
     redirect('/onboarding')
   }
 

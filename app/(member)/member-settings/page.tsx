@@ -203,7 +203,7 @@ export default function MemberSettingsPage() {
               </div>
               <Button onClick={() => window.location.href = '/partner'}>Upgrade</Button>
             </div>
-            <Button variant="outline" className="w-full" onClick={() => window.location.href = '/member/account'}>
+            <Button variant="outline" className="w-full" onClick={() => window.location.href = '/account'}>
               View Billing History
             </Button>
           </CardContent>

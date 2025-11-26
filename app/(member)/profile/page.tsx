@@ -229,7 +229,7 @@ export default function MemberProfilePage() {
               <p className="text-lg font-semibold text-navy">3 of 6</p>
             </div>
           </div>
-          <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/member/assessments'}>
+          <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/my-assessments'}>
             View Full Assessment Results
           </Button>
         </CardContent>

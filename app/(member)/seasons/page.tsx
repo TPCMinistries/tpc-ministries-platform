@@ -217,7 +217,7 @@ export default function MemberSeasonsPage() {
                     <p className="text-xs text-gray-600 mt-1">{season.progress_percentage}% complete</p>
                   </div>
 
-                  <Link href={`/member/seasons/${season.id}`}>
+                  <Link href={`/seasons/${season.id}`}>
                     <Button className="w-full" style={{ backgroundColor: season.color }}>
                       View Season
                       <ArrowRight className="ml-2 h-4 w-4" />
