@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
   // FIRST: Redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
   // This must happen before ANY other logic, including session updates
   if (pathname.startsWith('/member/')) {
+    console.log('[Middleware] Redirecting /member/* path:', pathname)
     const memberRouteMap: Record<string, string> = {
       '/member/dashboard': '/dashboard',
       '/member/messages': '/messages',
@@ -31,13 +32,21 @@ export async function middleware(request: NextRequest) {
     
     const mappedPath = memberRouteMap[pathname]
     if (mappedPath) {
+      console.log('[Middleware] Redirecting', pathname, 'to', mappedPath)
       const url = new URL(mappedPath, request.url)
-      return NextResponse.redirect(url, 308) // 308 = permanent redirect
+      const redirect = NextResponse.redirect(url, 308) // 308 = permanent redirect
+      redirect.headers.set('X-Redirect-From', pathname)
+      redirect.headers.set('X-Redirect-To', mappedPath)
+      return redirect
     }
     
     // If it's a /member/* path but not in our map, redirect to dashboard
+    console.log('[Middleware] Redirecting unknown /member/* path to /dashboard')
     const url = new URL('/dashboard', request.url)
-    return NextResponse.redirect(url, 308)
+    const redirect = NextResponse.redirect(url, 308)
+    redirect.headers.set('X-Redirect-From', pathname)
+    redirect.headers.set('X-Redirect-To', '/dashboard')
+    return redirect
   }
 
   // Update session
