@@ -27,8 +27,8 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/onboarding')
-      router.refresh()
+      // Use window.location for hard redirect - middleware will handle routing to correct dashboard
+      window.location.href = '/onboarding'
     }
   }
 

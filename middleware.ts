@@ -1,19 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
 
 export async function middleware(request: NextRequest) {
-  // FIRST: Redirect old /member/* routes to their correct paths (route groups don't appear in URL)
-  // This must happen before auth checks
-  if (request.nextUrl.pathname.startsWith('/member/dashboard')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-  if (request.nextUrl.pathname.startsWith('/member/')) {
-    // Map other /member/* routes to their actual paths
+  const pathname = request.nextUrl.pathname
+
+  // FIRST: Redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
+  // This must happen before ANY other logic
+  if (pathname.startsWith('/member/')) {
     const memberRouteMap: Record<string, string> = {
+      '/member/dashboard': '/dashboard',
       '/member/messages': '/messages',
       '/member/prayer-wall': '/prayer',
       '/member/my-prayers': '/my-prayers',
@@ -33,46 +29,24 @@ export async function middleware(request: NextRequest) {
       '/member/give': '/give',
     }
     
-    const mappedPath = memberRouteMap[request.nextUrl.pathname]
+    const mappedPath = memberRouteMap[pathname]
     if (mappedPath) {
       const url = request.nextUrl.clone()
       url.pathname = mappedPath
-      return NextResponse.redirect(url)
+      return NextResponse.redirect(url, 308) // 308 = permanent redirect
     }
+    
+    // If it's a /member/* path but not in our map, redirect to dashboard
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url, 308)
   }
 
   // Update session
   const response = await updateSession(request)
 
-  // Check if the request is for a protected member route (old /member paths - should be rare now)
-  if (request.nextUrl.pathname.startsWith('/member')) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
-          },
-          set() {},
-          remove() {},
-        },
-      }
-    )
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // If no user is logged in, redirect to login
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/auth/login'
-      url.searchParams.set('redirectTo', request.nextUrl.pathname)
-      return NextResponse.redirect(url)
-    }
-  }
-
   // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
-  if (request.nextUrl.pathname.startsWith('/auth')) {
+  if (pathname.startsWith('/auth')) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -95,12 +69,12 @@ export async function middleware(request: NextRequest) {
         .from('members')
         .select('is_admin')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       const url = request.nextUrl.clone()
       
       if (member) {
-        // Member exists - redirect to appropriate dashboard
+        // Member exists - redirect to appropriate dashboard (admins go to admin dashboard)
         url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
       } else {
         // No member record - redirect to onboarding

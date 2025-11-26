@@ -19,6 +19,7 @@ export default function OnboardingPage() {
         // Call API to create member record
         const response = await fetch('/api/onboarding/setup-member', {
           method: 'POST',
+          credentials: 'include',
         })
 
         const data = await response.json()
@@ -28,30 +29,17 @@ export default function OnboardingPage() {
           throw new Error(errorMsg)
         }
 
-        // If member already existed, redirect immediately without showing success state
-        if (data.message === 'Member record already exists' || data.is_admin !== undefined) {
-          // Use window.location for a hard redirect to avoid any client-side navigation issues
-          if (data.is_admin) {
-            window.location.href = '/admin-dashboard'
-          } else {
-            window.location.href = '/dashboard'
-          }
-          return
-        }
-
-        setStatus('success')
-
-        // Redirect to appropriate dashboard immediately using window.location for hard redirect
-        setTimeout(() => {
-          if (data.is_admin) {
-            window.location.href = '/admin-dashboard'
-          } else {
-            window.location.href = '/dashboard'
-          }
-        }, 500) // Small delay to show success message
+        // Determine redirect path based on admin status
+        const redirectPath = data.is_admin ? '/admin-dashboard' : '/dashboard'
+        
+        // Always use window.location for hard redirect to ensure it works
+        // This bypasses any client-side routing issues
+        window.location.href = redirectPath
+        
       } catch (err: any) {
+        console.error('Onboarding error:', err)
         setStatus('error')
-        setError(err.message)
+        setError(err.message || 'Failed to set up your account. Please try again.')
       }
     }
 
@@ -103,9 +91,14 @@ export default function OnboardingPage() {
               </div>
               <p className="text-red-600 font-medium">Setup Error</p>
               <p className="text-gray-600 text-sm text-center">{error}</p>
-              <Button onClick={() => router.push('/auth/login')} variant="outline">
-                Back to Login
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => window.location.href = '/auth/login'} variant="outline">
+                  Back to Login
+                </Button>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Try Again
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
