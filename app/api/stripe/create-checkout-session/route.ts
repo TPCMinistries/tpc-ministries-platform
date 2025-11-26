@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Creating Stripe session:', { amountInCents, frequency, type })
+
+    const stripe = getStripe()
 
     if (frequency === 'monthly') {
       // Create a recurring subscription with dynamic price
@@ -144,17 +146,22 @@ export async function POST(request: NextRequest) {
         {
           error: `Stripe error: ${error.message || 'Unknown error'}`,
           details: `${error.type} - ${error.code}: ${error.message}`,
-          stripeError: true
+          stripeError: true,
+          fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
         },
         { status: 500 }
       )
     }
 
     // Check if it's a validation or other error
+    const errorMessage = error?.message || 'Failed to create checkout session'
+    const errorDetails = error?.stack || error?.toString() || 'Unknown error occurred'
+    
     return NextResponse.json(
       {
-        error: error?.message || 'Failed to create checkout session',
-        details: error?.stack || 'Unknown error occurred'
+        error: errorMessage,
+        details: errorDetails,
+        fullError: error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'No error object'
       },
       { status: 500 }
     )
