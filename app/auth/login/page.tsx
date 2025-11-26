@@ -21,14 +21,17 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    const { error } = await signIn(email, password)
+    const { data, error } = await signIn(email, password)
 
     if (error) {
       setError(error.message)
       setLoading(false)
     } else {
-      // Use window.location for hard redirect - middleware will handle routing to correct dashboard
-      window.location.href = '/onboarding'
+      // Wait a moment for session cookies to be set, then redirect
+      // The middleware will handle routing to the correct dashboard
+      setTimeout(() => {
+        window.location.href = '/onboarding'
+      }, 100)
     }
   }
 
