@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -49,29 +49,53 @@ export async function middleware(request: NextRequest) {
     return redirect
   }
 
-  // Update session
-  const response = await updateSession(request)
+  // Update session first - this ensures cookies are properly set and session is refreshed
+  let response = await updateSession(request)
+
+  // Create supabase client for auth checks (using the response from updateSession)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
+
+  // Get user session
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
   // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
-  if (pathname.startsWith('/auth')) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
-          },
-          set() {},
-          remove() {},
-        },
-      }
-    )
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (user) {
-      // Check if member record exists
+  if (pathname.startsWith('/auth') && user) {
+    try {
+      // Check if member record exists using the same client with proper session
       const { data: member } = await supabase
         .from('members')
         .select('is_admin')
@@ -89,6 +113,35 @@ export async function middleware(request: NextRequest) {
       }
       
       return NextResponse.redirect(url)
+    } catch (error) {
+      // If there's an error checking member, still allow access to auth pages
+      console.error('[Middleware] Error checking member record:', error)
+    }
+  }
+
+  // Protect dashboard routes - redirect to login if not authenticated
+  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/admin-dashboard')) && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Protect admin routes - redirect non-admins
+  if (pathname.startsWith('/admin-dashboard') && user) {
+    try {
+      const { data: member } = await supabase
+        .from('members')
+        .select('is_admin')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!member || !member.is_admin) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      console.error('[Middleware] Error checking admin status:', error)
     }
   }
 

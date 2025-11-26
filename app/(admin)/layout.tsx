@@ -27,9 +27,20 @@ export default async function AdminLayout({
     .from('members')
     .select('is_admin')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
+  // If no member record exists, redirect to onboarding
+  if (!member && !error) {
+    redirect('/onboarding')
+  }
+
+  // If there's an error or member is not admin, redirect to home or dashboard
   if (error || !member || !member.is_admin) {
+    // If member exists but not admin, redirect to dashboard
+    if (member && !member.is_admin) {
+      redirect('/dashboard')
+    }
+    // Otherwise redirect to home
     redirect('/')
   }
 

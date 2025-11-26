@@ -17,9 +17,10 @@ export default async function MemberLayout({
   // Check if user is authenticated
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (authError || !user) {
     redirect('/auth/login')
   }
 
@@ -28,10 +29,22 @@ export default async function MemberLayout({
     .from('members')
     .select('id, first_name, last_name, phone_number, is_admin')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
+  // If no member record exists (and no error), redirect to onboarding
+  // This should only happen if the onboarding API failed
+  if (!member && !memberError) {
+    redirect('/onboarding')
+  }
+
+  // If there's an error querying, redirect to onboarding to retry
+  if (memberError) {
+    console.error('[MemberLayout] Error fetching member:', memberError)
+    redirect('/onboarding')
+  }
+
+  // If member is null at this point, something went wrong - redirect to onboarding
   if (!member) {
-    // Only redirect to onboarding if we're not already there (prevent redirect loops)
     redirect('/onboarding')
   }
 
@@ -40,7 +53,7 @@ export default async function MemberLayout({
     ...member,
     email: user.email || '',
     tier: 'free', // Default tier
-    avatar_url: null
+    avatar_url: member.avatar_url || undefined
   }
 
   return (

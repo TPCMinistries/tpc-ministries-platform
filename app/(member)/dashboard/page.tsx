@@ -185,7 +185,7 @@ export default function MemberDashboardPage() {
             *,
             teaching:teachings(*)
           `)
-          .eq('user_id', user.id)
+          .eq('member_id', member.id)
           .eq('completed', false)
           .order('last_watched_at', { ascending: false })
           .limit(2)
@@ -385,7 +385,7 @@ export default function MemberDashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-navy">Continue Watching</h2>
-            <Link href="/member/content?tab=in-progress">
+            <Link href="/content?tab=in-progress">
               <Button variant="ghost" size="sm">
                 View All
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -396,7 +396,7 @@ export default function MemberDashboardPage() {
             {continueWatching.map((content) => {
               const Icon = getContentIcon(content.content_type)
               return (
-                <Link key={content.id} href={`/member/content/${content.id}`}>
+                <Link key={content.id} href={`/content/${content.id}`}>
                   <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                     <div className="relative">
                       {content.thumbnail_url && (
@@ -439,7 +439,7 @@ export default function MemberDashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-navy">Recommended For You</h2>
-          <Link href="/member/content">
+          <Link href="/content">
             <Button variant="ghost" size="sm">
               Browse All
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -450,7 +450,7 @@ export default function MemberDashboardPage() {
           {recommendedContent.map((content) => {
             const Icon = getContentIcon(content.content_type)
             return (
-              <Link key={content.id} href={`/member/content/${content.id}`}>
+              <Link key={content.id} href={`/content/${content.id}`}>
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                   {content.thumbnail_url && (
                     <div className="aspect-video bg-gray-200 rounded-t-lg"></div>
@@ -510,13 +510,13 @@ export default function MemberDashboardPage() {
                 <span className="text-sm">Take Assessment</span>
               </Button>
             </Link>
-            <Link href="/member/prayer-request">
+            <Link href="/prayer">
               <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
                 <Heart className="h-6 w-6 text-red-600" />
                 <span className="text-sm">Prayer Request</span>
               </Button>
             </Link>
-            <Link href="/member/give">
+            <Link href="/give">
               <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
                 <DollarSign className="h-6 w-6 text-blue-600" />
                 <span className="text-sm">Give</span>
