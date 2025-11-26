@@ -28,6 +28,17 @@ export default function OnboardingPage() {
           throw new Error(errorMsg)
         }
 
+        // If member already existed, redirect immediately without showing success state
+        if (data.message === 'Member record already exists') {
+          if (data.is_admin) {
+            router.push('/admin-dashboard')
+          } else {
+            router.push('/dashboard')
+          }
+          router.refresh()
+          return
+        }
+
         setStatus('success')
 
         // Redirect to appropriate dashboard immediately

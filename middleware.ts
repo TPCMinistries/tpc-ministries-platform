@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // If user is logged in and trying to access auth pages, redirect to onboarding
+  // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
   if (request.nextUrl.pathname.startsWith('/auth')) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,8 +86,23 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
+      // Check if member record exists
+      const { data: member } = await supabase
+        .from('members')
+        .select('is_admin')
+        .eq('user_id', user.id)
+        .single()
+
       const url = request.nextUrl.clone()
-      url.pathname = '/onboarding'
+      
+      if (member) {
+        // Member exists - redirect to appropriate dashboard
+        url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
+      } else {
+        // No member record - redirect to onboarding
+        url.pathname = '/onboarding'
+      }
+      
       return NextResponse.redirect(url)
     }
   }
