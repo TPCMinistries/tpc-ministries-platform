@@ -63,7 +63,20 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating Stripe session:', { amountInCents, frequency, type })
 
-    const stripe = getStripe()
+    // Initialize Stripe client
+    let stripe
+    try {
+      stripe = getStripe()
+    } catch (stripeInitError: any) {
+      console.error('Failed to initialize Stripe:', stripeInitError)
+      return NextResponse.json(
+        {
+          error: 'Stripe configuration error',
+          details: stripeInitError?.message || 'Failed to initialize Stripe client',
+        },
+        { status: 500 }
+      )
+    }
 
     if (frequency === 'monthly') {
       // Create a recurring subscription with dynamic price
