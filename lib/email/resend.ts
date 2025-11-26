@@ -1,6 +1,12 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not set')
+  }
+  return new Resend(apiKey)
+}
 
 export async function sendEmail({
   to,
@@ -14,6 +20,7 @@ export async function sendEmail({
   from?: string
 }) {
   try {
+    const resend = getResend()
     const data = await resend.emails.send({
       from,
       to,
@@ -39,6 +46,7 @@ export async function sendBulkEmail({
   from?: string
 }) {
   try {
+    const resend = getResend()
     const results = []
 
     // Send in batches of 50 to avoid rate limits
