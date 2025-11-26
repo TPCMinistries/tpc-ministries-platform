@@ -4,10 +4,8 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 
 export async function middleware(request: NextRequest) {
-  // Update session first
-  const response = await updateSession(request)
-
-  // Redirect old /member/* routes to their correct paths (route groups don't appear in URL)
+  // FIRST: Redirect old /member/* routes to their correct paths (route groups don't appear in URL)
+  // This must happen before auth checks
   if (request.nextUrl.pathname.startsWith('/member/dashboard')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -39,7 +37,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Check if the request is for a protected member route (old /member paths)
+  // Update session
+  const response = await updateSession(request)
+
+  // Check if the request is for a protected member route (old /member paths - should be rare now)
   if (request.nextUrl.pathname.startsWith('/member')) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
