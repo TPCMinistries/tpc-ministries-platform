@@ -5,6 +5,5 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // Using SDK's default API version for compatibility
   typescript: true,
 })

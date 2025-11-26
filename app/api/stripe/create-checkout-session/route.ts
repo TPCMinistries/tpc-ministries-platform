@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { amount, type, frequency, donorEmail, donorName } = body
 
+    console.log('Received donation request:', { amount, type, frequency })
+
     // Validate inputs
-    if (!amount || amount < 1) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+    if (!amount || isNaN(amount)) {
+      return NextResponse.json({ error: 'Invalid amount: amount is required and must be a number' }, { status: 400 })
+    }
+
+    // Stripe minimum is $0.50 USD, but we'll enforce $1 minimum for donations
+    if (amount < 1) {
+      return NextResponse.json({ error: 'Minimum donation amount is $1.00' }, { status: 400 })
     }
 
     if (!type || !['general', 'missions', 'leadership'].includes(type)) {
@@ -21,11 +30,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the current user if logged in
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    let user = null
+    try {
+      const supabase = await createClient()
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      user = authUser
+    } catch (supabaseError) {
+      console.warn('Supabase auth error (non-fatal):', supabaseError)
+      // Continue without user - anonymous donations are allowed
+    }
 
     // Determine the correct URL for redirects
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || request.headers.get('origin') || 'http://localhost:3001'
+    
+    if (!baseUrl || baseUrl === 'http://localhost:3001') {
+      console.warn('WARNING: NEXT_PUBLIC_SITE_URL not set, using fallback URL')
+    }
 
     const typeLabels = {
       general: 'General Ministry',
@@ -33,8 +53,18 @@ export async function POST(request: NextRequest) {
       leadership: 'Leadership Support',
     }
 
+    // Convert amount to cents
+    const amountInCents = Math.round(amount * 100)
+    
+    // Validate minimum amount in cents (Stripe minimum is $0.50, but we use $1.00)
+    if (amountInCents < 100) {
+      return NextResponse.json({ error: 'Amount too low. Minimum is $1.00' }, { status: 400 })
+    }
+
+    console.log('Creating Stripe session:', { amountInCents, frequency, type })
+
     if (frequency === 'monthly') {
-      // Create a recurring subscription
+      // Create a recurring subscription with dynamic price
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -43,19 +73,18 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: `Monthly Donation - ${typeLabels[type as keyof typeof typeLabels]}`,
-                description: `Monthly recurring donation to ${typeLabels[type as keyof typeof typeLabels]}`,
+                name: 'Monthly Donation',
               },
               recurring: {
                 interval: 'month',
               },
-              unit_amount: Math.round(amount * 100), // Convert to cents
+              unit_amount: amountInCents,
             },
             quantity: 1,
           },
         ],
-        customer_email: donorEmail || user?.email,
-        client_reference_id: user?.id,
+        ...(donorEmail || user?.email ? { customer_email: donorEmail || user?.email } : {}),
+        ...(user?.id ? { client_reference_id: user.id } : {}),
         metadata: {
           type,
           frequency,
@@ -68,7 +97,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ sessionId: session.id, url: session.url })
     } else {
-      // Create a one-time payment
+      // Create a one-time payment with dynamic price
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
@@ -77,16 +106,15 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: `Donation - ${typeLabels[type as keyof typeof typeLabels]}`,
-                description: `One-time donation to ${typeLabels[type as keyof typeof typeLabels]}`,
+                name: 'Donation',
               },
-              unit_amount: Math.round(amount * 100), // Convert to cents
+              unit_amount: amountInCents,
             },
             quantity: 1,
           },
         ],
-        customer_email: donorEmail || user?.email,
-        client_reference_id: user?.id,
+        ...(donorEmail || user?.email ? { customer_email: donorEmail || user?.email } : {}),
+        ...(user?.id ? { client_reference_id: user.id } : {}),
         metadata: {
           type,
           frequency,
@@ -100,18 +128,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ sessionId: session.id, url: session.url })
     }
   } catch (error: any) {
-    console.error('Stripe checkout error:', error)
-    console.error('Error details:', {
-      message: error.message,
-      type: error.type,
-      code: error.code,
-      statusCode: error.statusCode,
-      raw: error.raw
-    })
+    console.error('=== STRIPE CHECKOUT ERROR ===')
+    console.error('Error object:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error type:', error?.type)
+    console.error('Error code:', error?.code)
+    console.error('Error statusCode:', error?.statusCode)
+    console.error('Error raw:', error?.raw)
+    console.error('Stack:', error?.stack)
+    console.error('===========================')
+
+    // Check if it's a Stripe error
+    if (error?.type && error?.code) {
+      return NextResponse.json(
+        {
+          error: `Stripe error: ${error.message || 'Unknown error'}`,
+          details: `${error.type} - ${error.code}: ${error.message}`,
+          stripeError: true
+        },
+        { status: 500 }
+      )
+    }
+
+    // Check if it's a validation or other error
     return NextResponse.json(
       {
-        error: error.message || 'Failed to create checkout session',
-        details: `${error.type || ''} ${error.code || ''} - ${error.message}`.trim()
+        error: error?.message || 'Failed to create checkout session',
+        details: error?.stack || 'Unknown error occurred'
       },
       { status: 500 }
     )

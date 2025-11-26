@@ -58,15 +58,19 @@ export default function GivingPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
+        console.error('Checkout session error:', data)
+        throw new Error(data.error || data.details || 'Failed to create checkout session')
       }
 
       // Redirect to Stripe Checkout
       if (data.url) {
         window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL received from server')
       }
     } catch (err: any) {
-      setError(err.message)
+      console.error('Donation submission error:', err)
+      setError(err.message || 'An error occurred. Please try again.')
       setLoading(false)
     }
   }
