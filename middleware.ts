@@ -5,8 +5,51 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // FIRST: Redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
-  // This must happen before ANY other logic, including session updates
+  // Update session first - this ensures cookies are properly set and session is refreshed
+  // This MUST happen before redirecting /member/* routes so auth state is available
+  let response = await updateSession(request)
+
+  // Get user session BEFORE redirecting /member/* routes
+  const supabaseForAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
+
+  const { data: { user: userForRedirect } } = await supabaseForAuth.auth.getUser()
+
+  // NOW redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
+  // But if user is not authenticated, redirect to onboarding instead of dashboard
   if (pathname.startsWith('/member/')) {
     console.log('[Middleware] Redirecting /member/* path:', pathname)
     const memberRouteMap: Record<string, string> = {
@@ -32,6 +75,17 @@ export async function middleware(request: NextRequest) {
     
     const mappedPath = memberRouteMap[pathname]
     if (mappedPath) {
+      // If user is not authenticated and trying to access a protected route, redirect to onboarding
+      // Onboarding will create member record and then redirect to dashboard
+      if (!userForRedirect && (mappedPath.startsWith('/dashboard') || mappedPath.startsWith('/admin'))) {
+        console.log('[Middleware] User not authenticated, redirecting to onboarding')
+        const url = new URL('/onboarding', request.url)
+        const redirect = NextResponse.redirect(url, 307)
+        redirect.headers.set('X-Redirect-From', pathname)
+        redirect.headers.set('X-Redirect-To', '/onboarding')
+        return redirect
+      }
+      
       console.log('[Middleware] Redirecting', pathname, 'to', mappedPath)
       const url = new URL(mappedPath, request.url)
       const redirect = NextResponse.redirect(url, 308) // 308 = permanent redirect
@@ -40,7 +94,16 @@ export async function middleware(request: NextRequest) {
       return redirect
     }
     
-    // If it's a /member/* path but not in our map, redirect to dashboard
+    // If it's a /member/* path but not in our map, redirect appropriately
+    if (!userForRedirect) {
+      console.log('[Middleware] Unknown /member/* path, user not authenticated, redirecting to onboarding')
+      const url = new URL('/onboarding', request.url)
+      const redirect = NextResponse.redirect(url, 307)
+      redirect.headers.set('X-Redirect-From', pathname)
+      redirect.headers.set('X-Redirect-To', '/onboarding')
+      return redirect
+    }
+    
     console.log('[Middleware] Redirecting unknown /member/* path to /dashboard')
     const url = new URL('/dashboard', request.url)
     const redirect = NextResponse.redirect(url, 308)
@@ -49,11 +112,8 @@ export async function middleware(request: NextRequest) {
     return redirect
   }
 
-  // Update session first - this ensures cookies are properly set and session is refreshed
-  let response = await updateSession(request)
-
-  // Create supabase client for auth checks (using the response from updateSession)
-  const supabase = createServerClient(
+  // Create supabase client for auth checks (reuse the one we created above)
+  const supabase = supabaseForAuth || createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
