@@ -41,18 +41,18 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const navigation = [
-    { name: 'Dashboard', href: '/member/dashboard', icon: Home },
-    { name: 'Messages', href: '/member/messages', icon: MessageSquare, badge: unreadCount },
-    { name: 'Prayer Wall', href: '/member/prayer-wall', icon: HeartIcon },
-    { name: 'My Prayers', href: '/member/my-prayers', icon: HeartIcon },
-    { name: 'My Library', href: '/member/library', icon: BookOpen },
-    { name: 'Seasons', href: '/member/seasons', icon: Calendar },
-    { name: 'My Assessments', href: '/member/my-assessments', icon: ClipboardList },
-    { name: 'Profile', href: '/member/profile', icon: User },
-    { name: 'Events', href: '/member/events', icon: Sparkles },
-    { name: 'Giving', href: '/member/my-giving', icon: DollarSign },
-    { name: 'Resources', href: '/member/resources', icon: BookOpen },
-    { name: 'Settings', href: '/member/member-settings', icon: Settings },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
+    { name: 'Prayer Wall', href: '/prayer', icon: HeartIcon },
+    { name: 'My Prayers', href: '/my-prayers', icon: HeartIcon },
+    { name: 'My Library', href: '/library', icon: BookOpen },
+    { name: 'Seasons', href: '/seasons', icon: Calendar },
+    { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
+    { name: 'Profile', href: '/profile', icon: User },
+    { name: 'Events', href: '/events', icon: Sparkles },
+    { name: 'Giving', href: '/my-giving', icon: DollarSign },
+    { name: 'Resources', href: '/resources', icon: BookOpen },
+    { name: 'Settings', href: '/member-settings', icon: Settings },
   ]
 
   useEffect(() => {

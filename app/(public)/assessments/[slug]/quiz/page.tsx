@@ -343,7 +343,7 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
         description: 'Your responses have been saved. You can continue later.',
       })
 
-      router.push('/member/dashboard')
+      router.push('/dashboard')
     } catch (error) {
       console.error('Error saving progress:', error)
       toast({

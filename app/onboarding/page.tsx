@@ -34,7 +34,7 @@ export default function OnboardingPage() {
         if (data.is_admin) {
           router.push('/admin-dashboard')
         } else {
-          router.push('/member/dashboard')
+          router.push('/dashboard')
         }
         router.refresh()
       } catch (err: any) {

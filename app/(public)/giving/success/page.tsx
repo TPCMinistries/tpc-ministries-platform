@@ -50,7 +50,7 @@ function GivingSuccessContent() {
           </p>
 
           <div className="flex flex-col gap-3">
-            <Link href="/member/dashboard" className="w-full">
+            <Link href="/dashboard" className="w-full">
               <Button className="w-full bg-navy hover:bg-navy/90">
                 Go to Dashboard
               </Button>

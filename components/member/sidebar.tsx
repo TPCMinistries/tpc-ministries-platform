@@ -8,14 +8,14 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const navigation = [
-  { name: 'Dashboard', href: '/member/dashboard', icon: Home },
-  { name: 'My Prayers', href: '/member/my-prayers', icon: Heart },
-  { name: 'My Library', href: '/member/library', icon: Library },
-  { name: 'Profile', href: '/member/profile', icon: User },
-  { name: 'Events', href: '/member/events', icon: Calendar },
-  { name: 'Giving', href: '/member/giving', icon: DollarSign },
-  { name: 'Resources', href: '/member/resources', icon: BookOpen },
-  { name: 'Settings', href: '/member/settings', icon: Settings },
+  { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'My Prayers', href: '/my-prayers', icon: Heart },
+  { name: 'My Library', href: '/library', icon: Library },
+  { name: 'Profile', href: '/profile', icon: User },
+  { name: 'Events', href: '/events', icon: Calendar },
+  { name: 'Giving', href: '/my-giving', icon: DollarSign },
+  { name: 'Resources', href: '/resources', icon: BookOpen },
+  { name: 'Settings', href: '/member-settings', icon: Settings },
 ]
 
 export function Sidebar() {
