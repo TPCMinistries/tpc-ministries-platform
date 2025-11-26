@@ -42,7 +42,7 @@ export default async function HomePage() {
                   <Heart className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/signup">
+              <Link href="/auth/signup">
                 <Button
                   size="lg"
                   variant="outline"
@@ -144,7 +144,7 @@ export default async function HomePage() {
             </Link>
 
             {/* Online Engagement */}
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <Card className="group h-full cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                 <CardHeader>
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-tpc-navy">
@@ -168,7 +168,7 @@ export default async function HomePage() {
             </Link>
 
             {/* Digital Empowerment */}
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <Card className="group h-full cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                 <CardHeader>
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-tpc-navy">
