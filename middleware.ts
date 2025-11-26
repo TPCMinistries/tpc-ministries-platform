@@ -112,42 +112,8 @@ export async function middleware(request: NextRequest) {
     return redirect
   }
 
-  // Create supabase client for auth checks (reuse the one we created above)
-  const supabase = supabaseForAuth || createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    }
-  )
+  // Reuse the supabase client we created above for all auth checks
+  const supabase = supabaseForAuth
 
   // Get user session
   const { data: { user }, error: authError } = await supabase.auth.getUser()
