@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // FIRST: Redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
-  // This must happen before ANY other logic
+  // This must happen before ANY other logic, including session updates
   if (pathname.startsWith('/member/')) {
     const memberRouteMap: Record<string, string> = {
       '/member/dashboard': '/dashboard',
@@ -31,14 +31,12 @@ export async function middleware(request: NextRequest) {
     
     const mappedPath = memberRouteMap[pathname]
     if (mappedPath) {
-      const url = request.nextUrl.clone()
-      url.pathname = mappedPath
+      const url = new URL(mappedPath, request.url)
       return NextResponse.redirect(url, 308) // 308 = permanent redirect
     }
     
     // If it's a /member/* path but not in our map, redirect to dashboard
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    const url = new URL('/dashboard', request.url)
     return NextResponse.redirect(url, 308)
   }
 

@@ -1,21 +1,8 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
+// Server-side redirect - this should never be reached if middleware works,
+// but serves as a fallback
 export default function MemberDashboardRedirect() {
-  const router = useRouter()
-
-  useEffect(() => {
-    // Immediately redirect to the correct dashboard path
-    // This catches any direct navigation to /member/dashboard
-    window.location.replace('/dashboard')
-  }, [router])
-
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-gray-600">Redirecting...</p>
-    </div>
-  )
+  redirect('/dashboard')
 }
 
