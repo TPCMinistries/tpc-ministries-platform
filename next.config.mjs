@@ -14,6 +14,15 @@ const nextConfig = {
   staticPageGenerationTimeout: 180,
   // Skip trailing slash redirect during build
   skipTrailingSlashRedirect: true,
+  async redirects() {
+    return [
+      {
+        source: '/member/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;
