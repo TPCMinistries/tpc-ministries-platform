@@ -48,68 +48,13 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user: userForRedirect } } = await supabaseForAuth.auth.getUser()
 
-  // NOW redirect ALL old /member/* routes to their correct paths (route groups don't appear in URL)
-  // But if user is not authenticated, redirect to onboarding instead of dashboard
+  // Let the catch-all route handler at app/member/[[...slug]]/route.ts handle /member/* requests
+  // This ensures proper redirects and prevents 404s
+  // We'll let it pass through to the route handler
   if (pathname.startsWith('/member/')) {
-    console.log('[Middleware] Redirecting /member/* path:', pathname)
-    const memberRouteMap: Record<string, string> = {
-      '/member/dashboard': '/dashboard',
-      '/member/messages': '/messages',
-      '/member/prayer-wall': '/prayer',
-      '/member/my-prayers': '/my-prayers',
-      '/member/library': '/library',
-      '/member/seasons': '/seasons',
-      '/member/my-assessments': '/my-assessments',
-      '/member/profile': '/profile',
-      '/member/events': '/events',
-      '/member/my-giving': '/my-giving',
-      '/member/giving': '/my-giving',
-      '/member/resources': '/resources',
-      '/member/member-settings': '/member-settings',
-      '/member/settings': '/member-settings',
-      '/member/account': '/account',
-      '/member/assessments': '/my-assessments',
-      '/member/content': '/content',
-      '/member/give': '/give',
-    }
-    
-    const mappedPath = memberRouteMap[pathname]
-    if (mappedPath) {
-      // If user is not authenticated and trying to access a protected route, redirect to onboarding
-      // Onboarding will create member record and then redirect to dashboard
-      if (!userForRedirect && (mappedPath.startsWith('/dashboard') || mappedPath.startsWith('/admin'))) {
-        console.log('[Middleware] User not authenticated, redirecting to onboarding')
-        const url = new URL('/onboarding', request.url)
-        const redirect = NextResponse.redirect(url, 307)
-        redirect.headers.set('X-Redirect-From', pathname)
-        redirect.headers.set('X-Redirect-To', '/onboarding')
-        return redirect
-      }
-      
-      console.log('[Middleware] Redirecting', pathname, 'to', mappedPath)
-      const url = new URL(mappedPath, request.url)
-      const redirect = NextResponse.redirect(url, 308) // 308 = permanent redirect
-      redirect.headers.set('X-Redirect-From', pathname)
-      redirect.headers.set('X-Redirect-To', mappedPath)
-      return redirect
-    }
-    
-    // If it's a /member/* path but not in our map, redirect appropriately
-    if (!userForRedirect) {
-      console.log('[Middleware] Unknown /member/* path, user not authenticated, redirecting to onboarding')
-      const url = new URL('/onboarding', request.url)
-      const redirect = NextResponse.redirect(url, 307)
-      redirect.headers.set('X-Redirect-From', pathname)
-      redirect.headers.set('X-Redirect-To', '/onboarding')
-      return redirect
-    }
-    
-    console.log('[Middleware] Redirecting unknown /member/* path to /dashboard')
-    const url = new URL('/dashboard', request.url)
-    const redirect = NextResponse.redirect(url, 308)
-    redirect.headers.set('X-Redirect-From', pathname)
-    redirect.headers.set('X-Redirect-To', '/dashboard')
-    return redirect
+    // Don't redirect here - let the route handler do it
+    // This prevents middleware from interfering with the route handler's logic
+    return response
   }
 
   // Reuse the supabase client we created above for all auth checks
