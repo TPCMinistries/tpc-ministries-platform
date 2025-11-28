@@ -5,14 +5,15 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // Let the page files at app/member/* handle /member/* routes
-  // Don't redirect in middleware - let Next.js find the page files
-  // This prevents conflicts and ensures the page files work correctly
-
-  // Update session for all other routes
+  // Update session first - this is critical for auth to work
   let response = await updateSession(request)
 
-  // Get user session for auth checks
+  // For /member/* routes, let the page files handle it - don't interfere
+  if (pathname.startsWith('/member/')) {
+    return response
+  }
+
+  // Create supabase client for auth checks (reuse response from updateSession)
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -49,80 +50,73 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  // Get user session - wrap in try/catch to prevent crashes
+  let user = null
+  try {
+    const { data: { user: userData } } = await supabase.auth.getUser()
+    user = userData
+  } catch (error) {
+    console.error('[Middleware] Error getting user:', error)
+    // Continue without user - don't crash
+  }
 
-  // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
-  if (pathname.startsWith('/auth') && user) {
+  // Only do auth checks if we have a user - wrap everything in try/catch
+  if (user) {
     try {
-      // Check if member record exists using the same client with proper session
-      const { data: member } = await supabase
-        .from('members')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
+      if (pathname.startsWith('/auth')) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .maybeSingle()
 
+        if (member) {
+          const url = request.nextUrl.clone()
+          url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
+          return NextResponse.redirect(url)
+        }
+      }
+
+      // If user is logged in and on onboarding, check if they already have a member record
+      if (pathname === '/onboarding') {
+        const { data: member } = await supabase
+          .from('members')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (member) {
+          const url = request.nextUrl.clone()
+          url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
+          return NextResponse.redirect(url)
+        }
+      }
+
+      // Protect admin routes - redirect non-admins
+      if (pathname.startsWith('/admin-dashboard')) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (!member || !member.is_admin) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/dashboard'
+          return NextResponse.redirect(url)
+        }
+      }
+    } catch (error) {
+      // If any error occurs, log it but don't crash - just continue
+      console.error('[Middleware] Error in auth checks:', error)
+    }
+  } else {
+    // No user - protect dashboard routes
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin-dashboard')) {
       const url = request.nextUrl.clone()
-      
-      if (member) {
-        // Member exists - redirect to appropriate dashboard (admins go to admin dashboard)
-        url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
-        return NextResponse.redirect(url)
-      } else {
-        // No member record - allow access to onboarding
-        // Don't redirect here, let them go to onboarding to create member record
-      }
-    } catch (error) {
-      // If there's an error checking member, still allow access to auth pages
-      console.error('[Middleware] Error checking member record:', error)
-    }
-  }
-
-  // If user is logged in and on onboarding, check if they already have a member record
-  // If they do, redirect to dashboard (they don't need onboarding)
-  if (pathname === '/onboarding' && user) {
-    try {
-      const { data: member } = await supabase
-        .from('members')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (member) {
-        // Member already exists - redirect to appropriate dashboard
-        const url = request.nextUrl.clone()
-        url.pathname = member.is_admin ? '/admin-dashboard' : '/dashboard'
-        return NextResponse.redirect(url)
-      }
-      // If no member, allow access to onboarding to create one
-    } catch (error) {
-      console.error('[Middleware] Error checking member for onboarding:', error)
-      // Allow access to onboarding even on error
-    }
-  }
-
-  // Protect dashboard routes - redirect to login if not authenticated
-  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/admin-dashboard')) && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
-  }
-
-  // Protect admin routes - redirect non-admins
-  if (pathname.startsWith('/admin-dashboard') && user) {
-    try {
-      const { data: member } = await supabase
-        .from('members')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (!member || !member.is_admin) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-      }
-    } catch (error) {
-      console.error('[Middleware] Error checking admin status:', error)
+      url.pathname = '/auth/login'
+      return NextResponse.redirect(url)
     }
   }
 
