@@ -5,42 +5,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // Handle /member/* redirects FIRST - before any session updates
-  // This prevents 404s by redirecting before Next.js tries to find a route
-  if (pathname.startsWith('/member/')) {
-    const memberRouteMap: Record<string, string> = {
-      '/member/dashboard': '/dashboard',
-      '/member/messages': '/messages',
-      '/member/prayer-wall': '/prayer',
-      '/member/my-prayers': '/my-prayers',
-      '/member/library': '/library',
-      '/member/seasons': '/seasons',
-      '/member/my-assessments': '/my-assessments',
-      '/member/profile': '/profile',
-      '/member/events': '/events',
-      '/member/my-giving': '/my-giving',
-      '/member/giving': '/my-giving',
-      '/member/resources': '/resources',
-      '/member/member-settings': '/member-settings',
-      '/member/settings': '/member-settings',
-      '/member/account': '/account',
-      '/member/assessments': '/my-assessments',
-      '/member/content': '/content',
-      '/member/give': '/give',
-    }
-    
-    const mappedPath = memberRouteMap[pathname]
-    
-    if (mappedPath) {
-      // Redirect to mapped path - let the target route handle auth
-      const url = new URL(mappedPath, request.url)
-      return NextResponse.redirect(url, 308)
-    }
-    
-    // Unknown /member/* path - redirect to dashboard
-    const url = new URL('/dashboard', request.url)
-    return NextResponse.redirect(url, 308)
-  }
+  // Let the page files at app/member/* handle /member/* routes
+  // Don't redirect in middleware - let Next.js find the page files
+  // This prevents conflicts and ensures the page files work correctly
 
   // Update session for all other routes
   let response = await updateSession(request)
