@@ -84,12 +84,6 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  // Reuse the supabase client we created above for all auth checks
-  const supabase = supabaseForAuth
-
-  // Get user session
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
   // If user is logged in and trying to access auth pages, redirect to appropriate dashboard
   if (pathname.startsWith('/auth') && user) {
     try {
