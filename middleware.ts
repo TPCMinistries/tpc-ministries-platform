@@ -48,13 +48,53 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user: userForRedirect } } = await supabaseForAuth.auth.getUser()
 
-  // Let the catch-all route handler at app/member/[[...slug]]/route.ts handle /member/* requests
-  // This ensures proper redirects and prevents 404s
-  // We'll let it pass through to the route handler
+  // Handle ALL /member/* redirects in middleware - this runs BEFORE Next.js route matching
+  // This prevents 404s by redirecting before Next.js tries to find a route
   if (pathname.startsWith('/member/')) {
-    // Don't redirect here - let the route handler do it
-    // This prevents middleware from interfering with the route handler's logic
-    return response
+    const memberRouteMap: Record<string, string> = {
+      '/member/dashboard': '/dashboard',
+      '/member/messages': '/messages',
+      '/member/prayer-wall': '/prayer',
+      '/member/my-prayers': '/my-prayers',
+      '/member/library': '/library',
+      '/member/seasons': '/seasons',
+      '/member/my-assessments': '/my-assessments',
+      '/member/profile': '/profile',
+      '/member/events': '/events',
+      '/member/my-giving': '/my-giving',
+      '/member/giving': '/my-giving',
+      '/member/resources': '/resources',
+      '/member/member-settings': '/member-settings',
+      '/member/settings': '/member-settings',
+      '/member/account': '/account',
+      '/member/assessments': '/my-assessments',
+      '/member/content': '/content',
+      '/member/give': '/give',
+    }
+    
+    const mappedPath = memberRouteMap[pathname]
+    
+    if (mappedPath) {
+      // If redirecting to a protected route and user is not authenticated, send to onboarding
+      if (!userForRedirect && (mappedPath.startsWith('/dashboard') || mappedPath.startsWith('/admin'))) {
+        const url = new URL('/onboarding', request.url)
+        return NextResponse.redirect(url, 307)
+      }
+      
+      // Redirect to mapped path
+      const url = new URL(mappedPath, request.url)
+      return NextResponse.redirect(url, 308)
+    }
+    
+    // Unknown /member/* path - redirect based on auth
+    if (!userForRedirect) {
+      const url = new URL('/onboarding', request.url)
+      return NextResponse.redirect(url, 307)
+    }
+    
+    // Authenticated but unknown path - redirect to dashboard
+    const url = new URL('/dashboard', request.url)
+    return NextResponse.redirect(url, 308)
   }
 
   // Reuse the supabase client we created above for all auth checks
