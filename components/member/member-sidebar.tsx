@@ -60,53 +60,63 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
-  const navigation = [
-    // Main
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
-    { name: 'Notifications', href: '/notifications', icon: Bell },
-    { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
-
-    // Daily Spiritual Rhythm
-    { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise },
-    { name: 'Daily Devotional', href: '/devotional', icon: Sun },
-    { name: 'Reading Plans', href: '/reading-plans', icon: BookOpen },
-    { name: 'My Journal', href: '/journal', icon: PenLine },
-    { name: 'My Prophecies', href: '/my-prophecy', icon: ScrollText },
-
-    // Prayer & Fasting
-    { name: 'Prayer Wall', href: '/prayer', icon: HeartIcon },
-    { name: 'My Prayers', href: '/my-prayers', icon: HandHeart },
-    { name: 'Prayer Partners', href: '/prayer-partners', icon: Users, highlight: true },
-    { name: 'Fasting', href: '/fasting', icon: Utensils },
-
-    // Learning & Growth
-    { name: 'PLANT Learning', href: '/plant', icon: Leaf },
-    { name: 'Sermons', href: '/sermons', icon: Video },
-    { name: 'My Journey', href: '/my-journey', icon: Sparkles, highlight: true },
-    { name: 'Achievements', href: '/achievements', icon: Trophy },
-    { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
-    { name: 'My Library', href: '/library', icon: Library },
-    { name: 'Resources', href: '/resources', icon: BookOpen },
-
-    // Community & Connection
-    { name: 'Community Groups', href: '/groups', icon: Users },
-    { name: 'Member Directory', href: '/directory', icon: Cake },
-    { name: 'Accountability', href: '/accountability', icon: UserCheck },
-    { name: 'Testimonies', href: '/testimonies', icon: Star },
-    { name: 'Live Stream', href: '/live', icon: Radio },
-
-    // Events & Service
-    { name: 'Events', href: '/events', icon: CalendarDays },
-    { name: 'Seasons', href: '/seasons', icon: Calendar },
-    { name: 'Serve', href: '/serve', icon: HandHeart },
-    { name: 'Pastoral Care', href: '/pastoral-care', icon: HeartIcon },
-
-    // Account
-    { name: 'My Family', href: '/family', icon: HomeIcon },
-    { name: 'Giving', href: '/my-giving', icon: Gift },
-    { name: 'Profile', href: '/profile', icon: User },
-    { name: 'Settings', href: '/member-settings', icon: Settings },
+  const navigationSections = [
+    {
+      title: null, // No header for primary actions
+      items: [
+        { name: 'Dashboard', href: '/dashboard', icon: Home },
+        { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
+        { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
+      ]
+    },
+    {
+      title: 'Daily Walk',
+      items: [
+        { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise },
+        { name: 'Devotional', href: '/devotional', icon: Sun },
+        { name: 'My Journal', href: '/journal', icon: PenLine },
+        { name: 'My Prophecies', href: '/my-prophecy', icon: ScrollText },
+      ]
+    },
+    {
+      title: 'Prayer',
+      items: [
+        { name: 'Prayer Wall', href: '/prayer', icon: HeartIcon },
+        { name: 'My Prayers', href: '/my-prayers', icon: HandHeart },
+        { name: 'Prayer Partners', href: '/prayer-partners', icon: Users },
+        { name: 'Fasting', href: '/fasting', icon: Utensils },
+      ]
+    },
+    {
+      title: 'Learn & Grow',
+      items: [
+        { name: 'PLANT Learning', href: '/plant', icon: Leaf },
+        { name: 'Sermons', href: '/sermons', icon: Video },
+        { name: 'Seasons', href: '/seasons', icon: Calendar },
+        { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
+        { name: 'Resources', href: '/resources', icon: Library },
+      ]
+    },
+    {
+      title: 'Community',
+      items: [
+        { name: 'Groups', href: '/groups', icon: Users },
+        { name: 'Directory', href: '/directory', icon: Cake },
+        { name: 'Testimonies', href: '/testimonies', icon: Star },
+        { name: 'Live Stream', href: '/live', icon: Radio },
+        { name: 'Events', href: '/events', icon: CalendarDays },
+      ]
+    },
+    {
+      title: 'My Account',
+      items: [
+        { name: 'My Journey', href: '/my-journey', icon: Sparkles },
+        { name: 'Achievements', href: '/achievements', icon: Trophy },
+        { name: 'Giving', href: '/my-giving', icon: Gift },
+        { name: 'Profile', href: '/profile', icon: User },
+        { name: 'Settings', href: '/member-settings', icon: Settings },
+      ]
+    },
   ]
 
   useEffect(() => {
@@ -221,43 +231,54 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto">
-            <ul className="space-y-1">
-              {navigation.map((item: any) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            <div className="space-y-6">
+              {navigationSections.map((section, sectionIndex) => (
+                <div key={sectionIndex}>
+                  {section.title && (
+                    <h3 className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      {section.title}
+                    </h3>
+                  )}
+                  <ul className="space-y-1">
+                    {section.items.map((item: any) => {
+                      const Icon = item.icon
+                      const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
 
-                return (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMobileOpen(false)}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-navy text-white'
-                          : item.highlight
-                          ? 'bg-gradient-to-r from-gold/20 to-amber-100 text-amber-800 border border-gold/30 hover:from-gold/30 hover:to-amber-200'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-navy'
-                      )}
-                    >
-                      <Icon className={cn(
-                        "h-5 w-5 flex-shrink-0",
-                        item.highlight && !isActive && "text-gold"
-                      )} />
-                      <span className="flex-1">{item.name}</span>
-                      {item.badge !== undefined && item.badge > 0 && (
-                        <Badge className="bg-red-600 text-white text-xs px-2 py-0.5">
-                          {item.badge}
-                        </Badge>
-                      )}
-                      {item.highlight && !isActive && (
-                        <Badge className="bg-gold text-white text-xs px-1.5 py-0">AI</Badge>
-                      )}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setIsMobileOpen(false)}
+                            className={cn(
+                              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                              isActive
+                                ? 'bg-navy text-white'
+                                : item.highlight
+                                ? 'bg-gradient-to-r from-gold/20 to-amber-100 text-amber-800 border border-gold/30 hover:from-gold/30 hover:to-amber-200'
+                                : 'text-gray-700 hover:bg-gray-100 hover:text-navy'
+                            )}
+                          >
+                            <Icon className={cn(
+                              "h-5 w-5 flex-shrink-0",
+                              item.highlight && !isActive && "text-gold"
+                            )} />
+                            <span className="flex-1">{item.name}</span>
+                            {item.badge !== undefined && item.badge > 0 && (
+                              <Badge className="bg-red-600 text-white text-xs px-2 py-0.5">
+                                {item.badge}
+                              </Badge>
+                            )}
+                            {item.highlight && !isActive && (
+                              <Badge className="bg-gold text-white text-xs px-1.5 py-0">AI</Badge>
+                            )}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </nav>
 
           {/* Admin Portal Link */}
