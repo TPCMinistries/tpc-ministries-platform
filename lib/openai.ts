@@ -1,9 +1,22 @@
 import OpenAI from 'openai'
 
-// Initialize OpenAI client
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization to avoid build-time errors
+let _openai: OpenAI | null = null
+
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return _openai
+}
+
+// Export for backwards compatibility
+export const openai = {
+  get chat() { return getOpenAI().chat },
+  get audio() { return getOpenAI().audio },
+}
 
 // System prompts for different AI features
 export const SYSTEM_PROMPTS = {
