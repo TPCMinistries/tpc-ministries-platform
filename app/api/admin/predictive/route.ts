@@ -6,9 +6,8 @@ function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+function getOpenAI() { return new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY }); }
 
 interface MemberActivity {
   member_id: any
@@ -77,7 +76,7 @@ async function generateRetentionRecommendations(
   engagementHistory: string
 ): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
@@ -457,7 +456,7 @@ export async function GET(request: NextRequest) {
           revenueTrend: predictions.revenue?.trend || 'stable'
         }
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
           model: 'gpt-4o',
           messages: [
             {

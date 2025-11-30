@@ -6,9 +6,8 @@ function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+function getOpenAI() { return new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY }); }
 
 // AI-Optimized Volunteer Scheduling
 export async function GET(request: NextRequest) {

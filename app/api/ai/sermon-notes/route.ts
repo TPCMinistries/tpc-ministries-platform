@@ -6,9 +6,8 @@ function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+function getOpenAI() { return new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY }); }
 
 // Generate AI sermon notes from transcript or audio
 export async function POST(request: NextRequest) {
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate structured sermon notes using AI
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {

@@ -6,9 +6,8 @@ function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+function getOpenAI() { return new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY }); }
 
 // Personalized AI Dashboard for Members
 export async function GET(request: NextRequest) {
@@ -118,7 +117,7 @@ export async function GET(request: NextRequest) {
     let aiInsight = ''
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {
