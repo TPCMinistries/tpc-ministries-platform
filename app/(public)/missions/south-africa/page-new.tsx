@@ -250,7 +250,7 @@ export default function KenyaMissionPage() {
                   <Heart className="h-8 w-8 text-gold" />
                 </div>
                 <CardTitle className="text-xl text-navy mb-4">Give to Kenya Missions</CardTitle>
-                <Link href="/member/giving?mission=kenya">
+                <Link href="/my-giving?mission=kenya">
                   <Button className="w-full bg-navy hover:bg-navy/90 text-white">
                     Give Now
                   </Button>
@@ -315,7 +315,7 @@ export default function KenyaMissionPage() {
             and spreading the Gospel throughout Kenya. Partner with us today.
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Link href="/member/giving?mission=kenya">
+            <Link href="/my-giving?mission=kenya">
               <Button size="lg" className="w-full bg-white text-green-700 hover:bg-gray-100 text-lg sm:w-auto">
                 Give to Kenya Mission
                 <Heart className="ml-2 h-5 w-5" />

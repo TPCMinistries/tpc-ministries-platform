@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Member record already exists',
         is_admin: existingMember.is_admin,
+        is_new_member: false,
       })
     }
 
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Member record created successfully',
       is_admin: isAdmin,
+      is_new_member: true,
       member: newMember,
     })
   } catch (error: any) {

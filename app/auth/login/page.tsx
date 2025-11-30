@@ -27,13 +27,9 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      // Refresh the router to ensure session is loaded, then redirect
-      // The middleware will handle routing to the correct dashboard
-      router.refresh()
-      // Use a small delay to ensure cookies are set before redirect
-      setTimeout(() => {
-        window.location.href = '/onboarding'
-      }, 200)
+      // Redirect to onboarding - middleware will handle routing to correct dashboard
+      // if member record already exists
+      window.location.href = '/onboarding'
     }
   }
 

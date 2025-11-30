@@ -224,7 +224,7 @@ export default function SeasonDetailPage() {
   return (
     <div className="p-4 lg:p-8 space-y-8">
       {/* Back Button */}
-      <Link href="/member/seasons">
+      <Link href="/seasons">
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Seasons

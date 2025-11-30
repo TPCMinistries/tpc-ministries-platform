@@ -29,9 +29,14 @@ export default function OnboardingPage() {
           throw new Error(errorMsg)
         }
 
-        // Determine redirect path based on admin status
-        const redirectPath = data.is_admin ? '/admin-dashboard' : '/dashboard'
-        
+        // Determine redirect path based on admin status and new member status
+        let redirectPath = '/dashboard'
+        if (data.is_admin) {
+          redirectPath = '/admin-dashboard'
+        } else if (data.is_new_member) {
+          redirectPath = '/welcome'
+        }
+
         // Always use window.location for hard redirect to ensure it works
         // This bypasses any client-side routing issues
         window.location.href = redirectPath

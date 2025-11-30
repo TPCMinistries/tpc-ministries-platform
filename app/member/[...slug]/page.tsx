@@ -11,9 +11,9 @@ export default async function MemberRouteRedirect({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
-    redirect('/onboarding')
+    redirect('/auth/login')
   }
   
   // Map routes

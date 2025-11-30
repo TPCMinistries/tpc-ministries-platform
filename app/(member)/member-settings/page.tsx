@@ -82,9 +82,30 @@ export default function MemberSettingsPage() {
     }
   }
 
+  const [deleting, setDeleting] = useState(false)
+
   const handleDeleteAccount = async () => {
-    // TODO: Implement account deletion
-    console.log('Delete account requested')
+    setDeleting(true)
+    try {
+      const response = await fetch('/api/member/delete-account', {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Sign out and redirect to home
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        window.location.href = '/'
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to delete account')
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      alert('An error occurred while deleting your account')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -245,8 +266,9 @@ export default function MemberSettingsPage() {
                   <AlertDialogAction
                     onClick={handleDeleteAccount}
                     className="bg-red-600 hover:bg-red-700"
+                    disabled={deleting}
                   >
-                    Yes, Delete My Account
+                    {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

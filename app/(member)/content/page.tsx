@@ -33,6 +33,7 @@ interface ContentItem {
   season_color?: string
   progress_percentage?: number
   is_bookmarked?: boolean
+  view_count?: number
 }
 
 export default function MemberContentPage() {
@@ -135,7 +136,8 @@ export default function MemberContentPage() {
           season_name: t.seasons?.name,
           season_color: t.seasons?.color,
           progress_percentage: progress?.completed ? 100 : progress?.progress_percentage,
-          is_bookmarked: bookmarkSet.has(t.id)
+          is_bookmarked: bookmarkSet.has(t.id),
+          view_count: t.view_count || 0
         }
       }) || []
 
@@ -173,7 +175,7 @@ export default function MemberContentPage() {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'popular':
-          return Math.random() - 0.5 // TODO: Sort by actual popularity
+          return (b.view_count || 0) - (a.view_count || 0)
         case 'duration-short':
           return (a.duration_minutes || 0) - (b.duration_minutes || 0)
         case 'duration-long':

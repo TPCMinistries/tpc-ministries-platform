@@ -22,6 +22,8 @@ import {
   Headphones
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import DailyHub from '@/components/member/daily-hub'
+import PlantWidget from '@/components/member/plant-widget'
 
 interface DashboardStats {
   total_content_consumed: number
@@ -266,7 +268,7 @@ export default function MemberDashboardPage() {
       <div className="bg-gradient-to-br from-navy to-navy-800 rounded-xl p-8 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {memberName}! 👋</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome back, {memberName}!</h1>
             <p className="text-gray-300 text-lg">
               Continue your spiritual journey today
             </p>
@@ -293,6 +295,12 @@ export default function MemberDashboardPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Daily Spiritual Hub - Scripture, Check-in, Streaks */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DailyHub />
+        <PlantWidget />
       </div>
 
       {/* Stats Overview */}

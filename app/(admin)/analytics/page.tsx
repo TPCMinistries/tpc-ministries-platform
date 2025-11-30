@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Users,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Activity,
   ArrowUpRight,
@@ -15,110 +18,134 @@ import {
   Eye,
   Clock,
   Target,
+  RefreshCw,
+  Loader2,
+  BookOpen,
+  Heart,
+  MessageSquare,
+  Bot,
+  PenLine
 } from 'lucide-react'
 
+interface Analytics {
+  members: {
+    total: number
+    newThisWeek: number
+    newThisMonth: number
+    activeMembers: number
+    engagementRate: number
+    byTier: { free: number; partner: number; covenant: number }
+    mostActive: Array<{ id: string; name: string; actions: number; score: number }>
+    atRisk: Array<{ id: string; name: string; daysInactive: number; lastAction: string }>
+  }
+  content: {
+    teachings: {
+      total: number
+      mostViewed: Array<{ id: string; title: string; views: number; completionRate: number }>
+      avgCompletionRate: number
+    }
+    prophecies: {
+      mostListened: Array<{ id: string; title: string; listens: number; avgListenTime: string }>
+    }
+    searchTrends: Array<{ keyword: string; searches: number }>
+    devotionalsRead: number
+  }
+  revenue: {
+    thisMonth: number
+    lastMonth: number
+    change: number
+    trend: 'up' | 'down'
+    mrr: number
+    byTier: {
+      partner: { mrr: number; count: number }
+      covenant: { mrr: number; count: number }
+    }
+    byMission: Array<{ location: string; amount: number; donations: number }>
+    avgLifetimeValue: number
+  }
+  engagement: {
+    dau: number
+    wau: number
+    mau: number
+    avgSessionDuration: string
+    topFeatures: Array<{ feature: string; usage: number; percentage: number }>
+    aiChats: number
+    prayerRequests: number
+    journalEntries: number
+  }
+  growth: {
+    weekly: Array<{ week: string; newMembers: number }>
+  }
+}
+
 export default function AnalyticsPage() {
+  const [analytics, setAnalytics] = useState<Analytics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [memberPeriod, setMemberPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
 
-  // Mock data - will be replaced with API calls
-  const memberMetrics = {
-    growth: {
-      daily: 2.3,
-      weekly: 12,
-      monthly: 47,
-    },
-    churnRate: 3.2,
-    engagementRate: 68.5,
-    mostActive: [
-      { id: '1', name: 'Sarah Johnson', score: 98, actions: 127 },
-      { id: '2', name: 'Michael Chen', score: 95, actions: 114 },
-      { id: '3', name: 'David Williams', score: 92, actions: 108 },
-    ],
-    atRisk: [
-      { id: '4', name: 'Jessica Martinez', daysInactive: 45, lastAction: 'Viewed teaching' },
-      { id: '5', name: 'Robert Taylor', daysInactive: 38, lastAction: 'Completed assessment' },
-    ],
+  useEffect(() => {
+    fetchAnalytics()
+  }, [])
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch('/api/admin/analytics')
+      if (response.ok) {
+        const data = await response.json()
+        setAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
   }
 
-  const contentMetrics = {
-    teachings: {
-      mostViewed: [
-        { id: '1', title: 'The Power of Purpose-Driven Faith', views: 1247, completionRate: 78 },
-        { id: '2', title: 'Leadership Principles from Nehemiah', views: 1089, completionRate: 82 },
-        { id: '3', title: 'Faith and Business Excellence', views: 956, completionRate: 71 },
-      ],
-      avgCompletionRate: 76,
-    },
-    prophecies: {
-      mostListened: [
-        { id: '1', title: 'A Season of Divine Acceleration', listens: 892, avgListenTime: '15:42' },
-        { id: '2', title: 'Walking in Your Kingdom Assignment', listens: 734, avgListenTime: '18:20' },
-        { id: '3', title: 'Breaking Generational Barriers', listens: 678, avgListenTime: '12:15' },
-      ],
-    },
-    searchTrends: [
-      { keyword: 'purpose', searches: 234 },
-      { keyword: 'breakthrough', searches: 189 },
-      { keyword: 'business', searches: 167 },
-      { keyword: 'leadership', searches: 145 },
-      { keyword: 'healing', searches: 132 },
-    ],
-    contentGaps: [
-      { topic: 'AI in Ministry', searches: 87, available: 2 },
-      { topic: 'Financial Freedom', searches: 76, available: 3 },
-      { topic: 'Marriage', searches: 64, available: 1 },
-    ],
+  const handleRefresh = () => {
+    setRefreshing(true)
+    fetchAnalytics()
   }
 
-  const revenueMetrics = {
-    mrr: 32500,
-    mrrTrend: 12.3,
-    newRevenue: 8750,
-    churnedRevenue: 1250,
-    byTier: {
-      partner: { mrr: 25000, count: 500 },
-      covenant: { mrr: 7500, count: 50 },
-    },
-    avgLifetimeValue: 1847,
-    donationTrends: {
-      thisMonth: 18500,
-      lastMonth: 15200,
-      change: 21.7,
-    },
-    byMission: [
-      { location: 'Kenya', amount: 8500, donations: 127 },
-      { location: 'South Africa', amount: 6200, donations: 89 },
-      { location: 'Grenada', amount: 4800, donations: 76 },
-      { location: 'General', amount: 11000, donations: 234 },
-    ],
+  const getMemberGrowth = () => {
+    if (!analytics) return 0
+    switch (memberPeriod) {
+      case 'daily': return Math.round(analytics.members.newThisWeek / 7)
+      case 'weekly': return analytics.members.newThisWeek
+      case 'monthly': return analytics.members.newThisMonth
+    }
   }
 
-  const engagementMetrics = {
-    dau: 487,
-    wau: 1234,
-    mau: 2847,
-    avgSessionDuration: '18:42',
-    topFeatures: [
-      { feature: 'Teachings Library', usage: 2341, percentage: 82 },
-      { feature: 'Season Journey', usage: 1876, percentage: 66 },
-      { feature: 'Prayer Requests', usage: 1543, percentage: 54 },
-      { feature: 'Prophetic Words', usage: 1289, percentage: 45 },
-      { feature: 'Community', usage: 987, percentage: 35 },
-    ],
-    dropOffPoints: [
-      { point: 'Season Week 3', dropOff: 23, retention: 77 },
-      { point: 'Assessment Start', dropOff: 18, retention: 82 },
-      { point: 'Teaching 30min Mark', dropOff: 15, retention: 85 },
-    ],
+  if (loading) {
+    return (
+      <div className="flex-1 p-8 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-navy mx-auto mb-4" />
+          <p className="text-gray-600">Loading analytics...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="flex-1 p-8">
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-navy mb-2">Analytics</h1>
-          <p className="text-gray-600">Comprehensive platform insights and metrics</p>
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-navy mb-2">Analytics</h1>
+            <p className="text-gray-600">Comprehensive platform insights and metrics</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
         <Tabs defaultValue="members" className="space-y-6">
@@ -135,14 +162,20 @@ export default function AnalyticsPage() {
             <div className="grid gap-6 md:grid-cols-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600">Churn Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Members</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{memberMetrics.churnRate}%</div>
-                  <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                    <ArrowDownRight className="h-3 w-3" />
-                    Down from last month
-                  </p>
+                  <div className="text-3xl font-bold text-navy">
+                    {analytics?.members.total.toLocaleString() || 0}
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {analytics?.members.byTier.partner || 0} partners
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {analytics?.members.byTier.covenant || 0} covenant
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -151,11 +184,8 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Engagement Rate</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{memberMetrics.engagementRate}%</div>
-                  <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3" />
-                    Up 4.2% this month
-                  </p>
+                  <div className="text-3xl font-bold text-navy">{analytics?.members.engagementRate || 0}%</div>
+                  <p className="text-sm text-gray-600 mt-1">Active in last 30 days</p>
                 </CardContent>
               </Card>
 
@@ -182,25 +212,12 @@ export default function AnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-navy">
-                    +{memberMetrics.growth[memberPeriod]}
+                    +{getMemberGrowth()}
                   </div>
                   <p className="text-xs text-gray-600 mt-1">New members this {memberPeriod.replace('ly', '')}</p>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Growth Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl text-navy">Member Growth Trend</CardTitle>
-                <CardDescription>Last 90 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">Growth chart will be rendered here</p>
-                </div>
-              </CardContent>
-            </Card>
 
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Most Active Members */}
@@ -210,25 +227,29 @@ export default function AnalyticsPage() {
                   <CardDescription>Top engagement scores this month</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {memberMetrics.mostActive.map((member, index) => (
-                      <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gold text-white font-bold text-sm">
-                            {index + 1}
+                  {analytics?.members.mostActive.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No activity data yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics?.members.mostActive.map((member, index) => (
+                        <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gold text-white font-bold text-sm">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="font-medium text-navy">{member.name}</p>
+                              <p className="text-xs text-gray-600">{member.actions} actions</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-navy">{member.name}</p>
-                            <p className="text-xs text-gray-600">{member.actions} actions</p>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-gold">{member.score}</p>
+                            <p className="text-xs text-gray-600">score</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-gold">{member.score}</p>
-                          <p className="text-xs text-gray-600">score</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -239,19 +260,26 @@ export default function AnalyticsPage() {
                   <CardDescription>Inactive 30+ days - need re-engagement</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {memberMetrics.atRisk.map((member) => (
-                      <div key={member.id} className="p-3 bg-red-50 rounded-lg border border-red-100">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium text-navy">{member.name}</p>
-                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
-                            {member.daysInactive} days
-                          </span>
+                  {analytics?.members.atRisk.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                      <p>Great! No at-risk members</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics?.members.atRisk.map((member) => (
+                        <div key={member.id} className="p-3 bg-red-50 rounded-lg border border-red-100">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-medium text-navy">{member.name}</p>
+                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                              {member.daysInactive} days
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600">Last: {member.lastAction}</p>
                         </div>
-                        <p className="text-sm text-gray-600">Last: {member.lastAction}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -259,6 +287,46 @@ export default function AnalyticsPage() {
 
           {/* Content Tab */}
           <TabsContent value="content" className="space-y-6">
+            {/* Quick Stats */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-navy" />
+                    <span className="text-sm text-gray-600">Total Teachings</span>
+                  </div>
+                  <div className="text-3xl font-bold mt-2">{analytics?.content.teachings.total || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm text-gray-600">Devotionals Read (30d)</span>
+                  </div>
+                  <div className="text-3xl font-bold text-blue-600 mt-2">{analytics?.content.devotionalsRead || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    <span className="text-sm text-gray-600">Avg Completion</span>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600 mt-2">{analytics?.content.teachings.avgCompletionRate || 0}%</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-purple-600" />
+                    <span className="text-sm text-gray-600">AI Chats (30d)</span>
+                  </div>
+                  <div className="text-3xl font-bold text-purple-600 mt-2">{analytics?.engagement?.aiChats || 0}</div>
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Most Viewed Teachings */}
               <Card>
@@ -267,75 +335,39 @@ export default function AnalyticsPage() {
                   <CardDescription>Top performing content</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {contentMetrics.teachings.mostViewed.map((teaching) => (
-                      <div key={teaching.id} className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-navy truncate">{teaching.title}</p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="text-xs text-gray-600 flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                {teaching.views}
-                              </span>
-                              <span className="text-xs text-gray-600">
-                                {teaching.completionRate}% completion
-                              </span>
+                  {analytics?.content.teachings.mostViewed.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No teachings yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics?.content.teachings.mostViewed.map((teaching) => (
+                        <div key={teaching.id} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-navy truncate">{teaching.title}</p>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="text-xs text-gray-600 flex items-center gap-1">
+                                  <Eye className="h-3 w-3" />
+                                  {teaching.views}
+                                </span>
+                                <span className="text-xs text-gray-600">
+                                  {teaching.completionRate}% completion
+                                </span>
+                              </div>
                             </div>
                           </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="bg-green-600 h-1.5 rounded-full"
+                              style={{ width: `${teaching.completionRate}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-green-600 h-1.5 rounded-full"
-                            style={{ width: `${teaching.completionRate}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-gray-600">
-                      Average Completion Rate:{' '}
-                      <span className="font-semibold text-navy">{contentMetrics.teachings.avgCompletionRate}%</span>
-                    </p>
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* Most Listened Prophetic Words */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl text-navy">Most Listened Prophetic Words</CardTitle>
-                  <CardDescription>Popular prophetic content</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {contentMetrics.prophecies.mostListened.map((prophecy) => (
-                      <div key={prophecy.id} className="flex items-start justify-between p-3 bg-gold/5 rounded-lg">
-                        <div className="flex items-start gap-2 flex-1 min-w-0">
-                          <Sparkles className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-navy truncate">{prophecy.title}</p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="text-xs text-gray-600 flex items-center gap-1">
-                                <Play className="h-3 w-3" />
-                                {prophecy.listens}
-                              </span>
-                              <span className="text-xs text-gray-600 flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {prophecy.avgListenTime}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
               {/* Search Trends */}
               <Card>
                 <CardHeader>
@@ -343,43 +375,21 @@ export default function AnalyticsPage() {
                   <CardDescription>What members are searching for</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    {contentMetrics.searchTrends.map((trend, index) => (
-                      <div key={trend.keyword} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-500 w-6">{index + 1}.</span>
-                          <span className="font-medium text-navy capitalize">{trend.keyword}</span>
+                  {analytics?.content.searchTrends.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No search data yet</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {analytics?.content.searchTrends.map((trend, index) => (
+                        <div key={trend.keyword} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-gray-500 w-6">{index + 1}.</span>
+                            <span className="font-medium text-navy capitalize">{trend.keyword}</span>
+                          </div>
+                          <span className="text-sm text-gray-600">{trend.searches} searches</span>
                         </div>
-                        <span className="text-sm text-gray-600">{trend.searches} searches</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Content Gaps */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl text-navy flex items-center gap-2">
-                    <Target className="h-5 w-5 text-red-600" />
-                    Content Gaps
-                  </CardTitle>
-                  <CardDescription>High demand, low supply topics</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {contentMetrics.contentGaps.map((gap) => (
-                      <div key={gap.topic} className="p-3 bg-red-50 rounded-lg border border-red-100">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium text-navy">{gap.topic}</p>
-                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
-                            {gap.searches} searches
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600">Only {gap.available} teaching(s) available</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -394,31 +404,45 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Monthly Recurring Revenue</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">${(revenueMetrics.mrr / 1000).toFixed(1)}k</div>
-                  <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3" />
-                    +{revenueMetrics.mrrTrend}%
+                  <div className="text-3xl font-bold text-navy">
+                    ${(analytics?.revenue?.mrr || 0) >= 1000
+                      ? ((analytics?.revenue?.mrr || 0) / 1000).toFixed(1) + 'k'
+                      : analytics?.revenue?.mrr || 0}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">From memberships</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600">This Month</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-600">
+                    ${(analytics?.revenue?.thisMonth || 0) >= 1000
+                      ? ((analytics?.revenue?.thisMonth || 0) / 1000).toFixed(1) + 'k'
+                      : analytics?.revenue?.thisMonth || 0}
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">Total revenue</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600">vs Last Month</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-3xl font-bold ${analytics?.revenue.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                    {analytics?.revenue.trend === 'up' ? '+' : ''}{analytics?.revenue.change || 0}%
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                    {analytics?.revenue.trend === 'up' ? (
+                      <ArrowUpRight className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3 text-red-500" />
+                    )}
+                    Revenue change
                   </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600">New Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-600">${(revenueMetrics.newRevenue / 1000).toFixed(1)}k</div>
-                  <p className="text-xs text-gray-600 mt-1">This month</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600">Churned Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-red-600">${(revenueMetrics.churnedRevenue / 1000).toFixed(1)}k</div>
-                  <p className="text-xs text-gray-600 mt-1">This month</p>
                 </CardContent>
               </Card>
 
@@ -427,24 +451,13 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Avg Lifetime Value</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">${revenueMetrics.avgLifetimeValue.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-navy">
+                    ${analytics?.revenue.avgLifetimeValue?.toLocaleString() || 0}
+                  </div>
                   <p className="text-xs text-gray-600 mt-1">Per member</p>
                 </CardContent>
               </Card>
             </div>
-
-            {/* MRR Trend Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl text-navy">MRR Trend</CardTitle>
-                <CardDescription>Monthly recurring revenue over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">MRR trend chart will be rendered here</p>
-                </div>
-              </CardContent>
-            </Card>
 
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Revenue by Tier */}
@@ -458,51 +471,49 @@ export default function AnalyticsPage() {
                     <div className="p-4 bg-gold/5 rounded-lg border border-gold/20">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-navy">Partners</span>
-                        <span className="text-lg font-bold text-gold">${(revenueMetrics.byTier.partner.mrr / 1000).toFixed(1)}k</span>
+                        <span className="text-lg font-bold text-gold">
+                          ${((analytics?.revenue?.byTier?.partner?.mrr || 0) / 1000).toFixed(1)}k
+                        </span>
                       </div>
-                      <p className="text-sm text-gray-600">{revenueMetrics.byTier.partner.count} members</p>
+                      <p className="text-sm text-gray-600">{analytics?.revenue?.byTier?.partner?.count || 0} members</p>
                     </div>
                     <div className="p-4 bg-navy/5 rounded-lg border border-navy/20">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-navy">Covenant Partners</span>
-                        <span className="text-lg font-bold text-navy">${(revenueMetrics.byTier.covenant.mrr / 1000).toFixed(1)}k</span>
+                        <span className="text-lg font-bold text-navy">
+                          ${((analytics?.revenue?.byTier?.covenant?.mrr || 0) / 1000).toFixed(1)}k
+                        </span>
                       </div>
-                      <p className="text-sm text-gray-600">{revenueMetrics.byTier.covenant.count} members</p>
+                      <p className="text-sm text-gray-600">{analytics?.revenue?.byTier?.covenant?.count || 0} members</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Donation Trends & Mission Revenue */}
+              {/* Donations by Mission */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl text-navy">Mission Revenue</CardTitle>
-                  <CardDescription>Donations by location</CardDescription>
+                  <CardTitle className="text-xl text-navy">Donations by Fund</CardTitle>
+                  <CardDescription>This month's giving</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 mb-4">
-                    {revenueMetrics.byMission.map((mission) => (
-                      <div key={mission.location} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                        <div>
-                          <p className="font-medium text-navy">{mission.location}</p>
-                          <p className="text-xs text-gray-600">{mission.donations} donations</p>
+                  {analytics?.revenue.byMission.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No donations this month</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics?.revenue.byMission.map((mission) => (
+                        <div key={mission.location} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                          <div>
+                            <p className="font-medium text-navy">{mission.location}</p>
+                            <p className="text-xs text-gray-600">{mission.donations} donations</p>
+                          </div>
+                          <span className="font-semibold text-navy">
+                            ${mission.amount >= 1000 ? (mission.amount / 1000).toFixed(1) + 'k' : mission.amount}
+                          </span>
                         </div>
-                        <span className="font-semibold text-navy">${(mission.amount / 1000).toFixed(1)}k</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="pt-3 border-t">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Total Donations This Month</span>
-                      <span className="text-lg font-bold text-green-600">
-                        ${(revenueMetrics.donationTrends.thisMonth / 1000).toFixed(1)}k
-                      </span>
+                      ))}
                     </div>
-                    <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                      <ArrowUpRight className="h-3 w-3" />
-                      +{revenueMetrics.donationTrends.change}% vs last month
-                    </p>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -517,7 +528,7 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Daily Active Users</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{engagementMetrics.dau}</div>
+                  <div className="text-3xl font-bold text-navy">{analytics?.engagement.dau || 0}</div>
                 </CardContent>
               </Card>
 
@@ -526,7 +537,7 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Weekly Active Users</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{engagementMetrics.wau.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-navy">{analytics?.engagement.wau?.toLocaleString() || 0}</div>
                 </CardContent>
               </Card>
 
@@ -535,7 +546,7 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Monthly Active Users</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{engagementMetrics.mau.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-navy">{analytics?.engagement.mau?.toLocaleString() || 0}</div>
                 </CardContent>
               </Card>
 
@@ -544,7 +555,7 @@ export default function AnalyticsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600">Avg Session Duration</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-navy">{engagementMetrics.avgSessionDuration}</div>
+                  <div className="text-3xl font-bold text-navy">{analytics?.engagement.avgSessionDuration || '0:00'}</div>
                 </CardContent>
               </Card>
             </div>
@@ -557,55 +568,59 @@ export default function AnalyticsPage() {
                   <CardDescription>Feature adoption by members</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {engagementMetrics.topFeatures.map((feature) => (
-                      <div key={feature.feature}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-navy">{feature.feature}</span>
-                          <span className="text-sm text-gray-600">{feature.percentage}%</span>
+                  {analytics?.engagement.topFeatures.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No feature usage data yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics?.engagement.topFeatures.map((feature) => (
+                        <div key={feature.feature}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-navy">{feature.feature}</span>
+                            <span className="text-sm text-gray-600">{feature.percentage}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-navy h-2 rounded-full"
+                              style={{ width: `${feature.percentage}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{feature.usage} uses</p>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-navy h-2 rounded-full"
-                            style={{ width: `${feature.percentage}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{feature.usage} users</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* Drop-off Points */}
+              {/* Activity Highlights */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl text-navy">Drop-off Points</CardTitle>
-                  <CardDescription>Where members stop engaging</CardDescription>
+                  <CardTitle className="text-xl text-navy">Activity Highlights</CardTitle>
+                  <CardDescription>Key engagement metrics (30 days)</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {engagementMetrics.dropOffPoints.map((point) => (
-                      <div key={point.point} className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium text-navy">{point.point}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
-                              {point.dropOff}% drop
-                            </span>
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
-                              {point.retention}% retain
-                            </span>
-                          </div>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-green-600 h-2 rounded-full"
-                            style={{ width: `${point.retention}%` }}
-                          ></div>
-                        </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bot className="h-6 w-6 text-purple-600" />
+                        <span className="font-medium">AI Conversations</span>
                       </div>
-                    ))}
+                      <span className="text-2xl font-bold text-purple-600">{analytics?.engagement.aiChats || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Heart className="h-6 w-6 text-red-500" />
+                        <span className="font-medium">Prayer Requests</span>
+                      </div>
+                      <span className="text-2xl font-bold text-red-500">{analytics?.engagement.prayerRequests || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <PenLine className="h-6 w-6 text-blue-600" />
+                        <span className="font-medium">Journal Entries</span>
+                      </div>
+                      <span className="text-2xl font-bold text-blue-600">{analytics?.engagement.journalEntries || 0}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

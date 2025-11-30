@@ -53,7 +53,6 @@ export default async function MemberLayout({
     ...member,
     email: user.email || '',
     tier: 'free', // Default tier
-    avatar_url: member.avatar_url || undefined
   }
 
   return (

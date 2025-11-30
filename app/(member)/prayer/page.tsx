@@ -142,9 +142,36 @@ export default function PrayerPage() {
     }
   }
 
+  const [prayedFor, setPrayedFor] = useState<Set<string>>(new Set())
+  const [prayingFor, setPrayingFor] = useState<string | null>(null)
+
   const handlePray = async (requestId: string) => {
-    // TODO: Track that user prayed for this request
-    console.log('Prayed for request:', requestId)
+    if (prayedFor.has(requestId) || prayingFor === requestId) return
+
+    setPrayingFor(requestId)
+    try {
+      const response = await fetch('/api/prayer/pray', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prayer_request_id: requestId })
+      })
+
+      if (response.ok) {
+        setPrayedFor(prev => new Set([...Array.from(prev), requestId]))
+        // Update the prayer count in the UI
+        setCommunityRequests(prev =>
+          prev.map(req =>
+            req.id === requestId
+              ? { ...req, prayer_count: (req.prayer_count || 0) + 1 }
+              : req
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Error recording prayer:', error)
+    } finally {
+      setPrayingFor(null)
+    }
   }
 
   const handleMarkAnswered = async (requestId: string) => {
@@ -408,12 +435,13 @@ export default function PrayerPage() {
                         <span>{request.prayer_count || 0} prayers</span>
                       </div>
                       <Button
-                        variant="default"
+                        variant={prayedFor.has(request.id) ? "outline" : "default"}
                         size="sm"
                         onClick={() => handlePray(request.id)}
+                        disabled={prayedFor.has(request.id) || prayingFor === request.id}
                       >
-                        <Heart className="mr-2 h-4 w-4" />
-                        I Prayed
+                        <Heart className={`mr-2 h-4 w-4 ${prayedFor.has(request.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                        {prayingFor === request.id ? 'Praying...' : prayedFor.has(request.id) ? 'Prayed' : 'I Prayed'}
                       </Button>
                     </div>
                   </CardContent>

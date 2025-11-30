@@ -6,12 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Camera, Save, Loader2, Calendar, Mail, Phone, Award } from 'lucide-react'
+import { Camera, Save, Loader2, Calendar, Mail, Phone, Award, CheckCircle2, XCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+
+interface Notification {
+  type: 'success' | 'error'
+  message: string
+}
 
 export default function MemberProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [notification, setNotification] = useState<Notification | null>(null)
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -75,15 +81,23 @@ export default function MemberProfilePage() {
         .eq('user_id', user.id)
 
       if (!error) {
-        alert('Profile updated successfully!')
+        setNotification({ type: 'success', message: 'Profile updated successfully!' })
       }
     } catch (error) {
       console.error('Error updating profile:', error)
-      alert('Failed to update profile')
+      setNotification({ type: 'error', message: 'Failed to update profile. Please try again.' })
     } finally {
       setSaving(false)
     }
   }
+
+  // Auto-dismiss notification after 4 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [notification])
 
   if (loading) {
     return (
@@ -98,6 +112,30 @@ export default function MemberProfilePage() {
 
   return (
     <div className="p-4 lg:p-8 space-y-8">
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 animate-in slide-in-from-top-2 ${
+            notification.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          {notification.type === 'success' ? (
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+          ) : (
+            <XCircle className="h-5 w-5 text-red-600" />
+          )}
+          <span className="font-medium">{notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className="ml-2 text-gray-400 hover:text-gray-600"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       <div>
         <h1 className="text-3xl font-bold text-navy mb-2">My Profile</h1>
         <p className="text-gray-600">Manage your personal information</p>

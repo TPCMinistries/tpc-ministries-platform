@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import AdminNav from '@/components/admin/admin-nav'
+import { ArrowLeftRight } from 'lucide-react'
 
 // Force dynamic rendering for all admin pages
 export const dynamic = 'force-dynamic'
@@ -59,6 +61,17 @@ export default async function AdminLayout({
                 <h1 className="text-lg font-bold text-white">TPC Ministries</h1>
                 <p className="text-xs text-gray-400">Admin Portal</p>
               </div>
+            </div>
+
+            {/* Portal Switcher */}
+            <div className="px-3 py-3 border-b border-gray-700">
+              <Link
+                href="/dashboard"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-gold to-amber-500 hover:from-gold/90 hover:to-amber-400 text-navy font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                Switch to Member Portal
+              </Link>
             </div>
 
             {/* Navigation */}

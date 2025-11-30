@@ -274,7 +274,7 @@ export default function ProphecyHubPage() {
               Request prayer for specific areas of your life. Our prayer team is here to stand with you in faith.
             </p>
           </div>
-          <Link href="/member/prayer-request">
+          <Link href="/prayer">
             <Button size="lg" className="bg-gold hover:bg-gold-dark text-white">
               <Heart className="mr-2 h-5 w-5" />
               Submit Prayer Request

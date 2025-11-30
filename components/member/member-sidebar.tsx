@@ -6,9 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   Home,
-  Compass,
   BookOpen,
-  CheckSquare,
   Heart as HeartIcon,
   DollarSign,
   User,
@@ -18,7 +16,28 @@ import {
   Sparkles,
   MessageSquare,
   ClipboardList,
-  Calendar
+  Calendar,
+  Leaf,
+  PenLine,
+  Sun,
+  ScrollText,
+  HandHeart,
+  Library,
+  CalendarDays,
+  Gift,
+  Bot,
+  Users,
+  Trophy,
+  Bell,
+  Radio,
+  Star,
+  Utensils,
+  Video,
+  UserCheck,
+  Sunrise,
+  Cake,
+  Home as HomeIcon,
+  Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +51,7 @@ interface MemberSidebarProps {
     email: string
     avatar_url?: string
     tier?: string
+    is_admin?: boolean
   }
 }
 
@@ -41,17 +61,51 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const navigation = [
+    // Main
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
+    { name: 'Notifications', href: '/notifications', icon: Bell },
+    { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
+
+    // Daily Spiritual Rhythm
+    { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise },
+    { name: 'Daily Devotional', href: '/devotional', icon: Sun },
+    { name: 'Reading Plans', href: '/reading-plans', icon: BookOpen },
+    { name: 'My Journal', href: '/journal', icon: PenLine },
+    { name: 'My Prophecies', href: '/my-prophecy', icon: ScrollText },
+
+    // Prayer & Fasting
     { name: 'Prayer Wall', href: '/prayer', icon: HeartIcon },
-    { name: 'My Prayers', href: '/my-prayers', icon: HeartIcon },
-    { name: 'My Library', href: '/library', icon: BookOpen },
-    { name: 'Seasons', href: '/seasons', icon: Calendar },
+    { name: 'My Prayers', href: '/my-prayers', icon: HandHeart },
+    { name: 'Prayer Partners', href: '/prayer-partners', icon: Users, highlight: true },
+    { name: 'Fasting', href: '/fasting', icon: Utensils },
+
+    // Learning & Growth
+    { name: 'PLANT Learning', href: '/plant', icon: Leaf },
+    { name: 'Sermons', href: '/sermons', icon: Video },
+    { name: 'My Journey', href: '/my-journey', icon: Sparkles, highlight: true },
+    { name: 'Achievements', href: '/achievements', icon: Trophy },
     { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
-    { name: 'Profile', href: '/profile', icon: User },
-    { name: 'Events', href: '/events', icon: Sparkles },
-    { name: 'Giving', href: '/my-giving', icon: DollarSign },
+    { name: 'My Library', href: '/library', icon: Library },
     { name: 'Resources', href: '/resources', icon: BookOpen },
+
+    // Community & Connection
+    { name: 'Community Groups', href: '/groups', icon: Users },
+    { name: 'Member Directory', href: '/directory', icon: Cake },
+    { name: 'Accountability', href: '/accountability', icon: UserCheck },
+    { name: 'Testimonies', href: '/testimonies', icon: Star },
+    { name: 'Live Stream', href: '/live', icon: Radio },
+
+    // Events & Service
+    { name: 'Events', href: '/events', icon: CalendarDays },
+    { name: 'Seasons', href: '/seasons', icon: Calendar },
+    { name: 'Serve', href: '/serve', icon: HandHeart },
+    { name: 'Pastoral Care', href: '/pastoral-care', icon: HeartIcon },
+
+    // Account
+    { name: 'My Family', href: '/family', icon: HomeIcon },
+    { name: 'Giving', href: '/my-giving', icon: Gift },
+    { name: 'Profile', href: '/profile', icon: User },
     { name: 'Settings', href: '/member-settings', icon: Settings },
   ]
 
@@ -168,7 +222,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto">
             <ul className="space-y-1">
-              {navigation.map((item) => {
+              {navigation.map((item: any) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
 
@@ -181,15 +235,23 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                         isActive
                           ? 'bg-navy text-white'
+                          : item.highlight
+                          ? 'bg-gradient-to-r from-gold/20 to-amber-100 text-amber-800 border border-gold/30 hover:from-gold/30 hover:to-amber-200'
                           : 'text-gray-700 hover:bg-gray-100 hover:text-navy'
                       )}
                     >
-                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      <Icon className={cn(
+                        "h-5 w-5 flex-shrink-0",
+                        item.highlight && !isActive && "text-gold"
+                      )} />
                       <span className="flex-1">{item.name}</span>
                       {item.badge !== undefined && item.badge > 0 && (
                         <Badge className="bg-red-600 text-white text-xs px-2 py-0.5">
                           {item.badge}
                         </Badge>
+                      )}
+                      {item.highlight && !isActive && (
+                        <Badge className="bg-gold text-white text-xs px-1.5 py-0">AI</Badge>
                       )}
                     </Link>
                   </li>
@@ -197,6 +259,18 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
               })}
             </ul>
           </nav>
+
+          {/* Admin Portal Link */}
+          {member.is_admin && (
+            <div className="px-3 py-4 border-t border-gray-200">
+              <Link href="/admin-dashboard">
+                <Button className="w-full bg-navy hover:bg-navy/90 text-white">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin Portal
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {/* Upgrade CTA (for free members) */}
           {member.tier === 'free' && (

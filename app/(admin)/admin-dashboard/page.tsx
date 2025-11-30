@@ -173,25 +173,25 @@ export default async function AdminDashboardPage() {
               <CardDescription>Common admin tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/admin/content">
+              <Link href="/admin-content">
                 <Button className="w-full justify-start bg-navy hover:bg-navy/90">
                   <BookOpen className="mr-2 h-4 w-4" />
                   Manage Teachings
                 </Button>
               </Link>
-              <Link href="/admin/prophecy">
+              <Link href="/admin-prophecy">
                 <Button className="w-full justify-start" variant="outline">
                   <Sparkles className="mr-2 h-4 w-4" />
                   Manage Prophecies
                 </Button>
               </Link>
-              <Link href="/admin/members">
+              <Link href="/members">
                 <Button className="w-full justify-start" variant="outline">
                   <Users className="mr-2 h-4 w-4" />
                   View Members
                 </Button>
               </Link>
-              <Link href="/admin/donations">
+              <Link href="/donations">
                 <Button className="w-full justify-start" variant="outline">
                   <DollarSign className="mr-2 h-4 w-4" />
                   View Donations
@@ -213,7 +213,7 @@ export default async function AdminDashboardPage() {
                   <span className="text-sm text-gray-600">Total Teachings</span>
                   <span className="text-xl font-bold text-navy">{stats.totalTeachings}</span>
                 </div>
-                <Link href="/admin/content">
+                <Link href="/admin-content">
                   <Button size="sm" variant="outline" className="w-full">
                     Manage Content
                   </Button>
@@ -232,7 +232,7 @@ export default async function AdminDashboardPage() {
                   <span className="text-sm text-gray-600">Active Requests</span>
                   <span className="text-xl font-bold text-red-600">{stats.pendingPrayerRequests}</span>
                 </div>
-                <Link href="/admin/prayers">
+                <Link href="/prayers">
                   <Button size="sm" variant="outline" className="w-full">
                     Review Prayers
                   </Button>
@@ -255,7 +255,7 @@ export default async function AdminDashboardPage() {
                       : 0}%
                   </span>
                 </div>
-                <Link href="/admin/analytics">
+                <Link href="/analytics">
                   <Button size="sm" variant="outline" className="w-full">
                     View Analytics
                   </Button>

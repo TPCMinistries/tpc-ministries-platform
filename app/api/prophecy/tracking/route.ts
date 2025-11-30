@@ -32,6 +32,20 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Get member ID for the current user
+    const { data: member } = await supabase
+      .from('members')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!member) {
+      return NextResponse.json(
+        { error: 'Member not found' },
+        { status: 404 }
+      )
+    }
+
     // Check if user owns this prophecy
     const { data: prophecy, error: fetchError } = await supabase
       .from('personal_prophecies')
@@ -46,7 +60,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (prophecy.member_id !== user.id) {
+    if (prophecy.member_id !== member.id) {
       return NextResponse.json(
         { error: 'You can only update your own prophecies' },
         { status: 403 }

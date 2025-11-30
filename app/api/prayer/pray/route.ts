@@ -18,13 +18,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already prayed for this request (if logged in)
+    // Get member ID if user is logged in
+    let memberId: string | null = null
     if (user) {
+      const { data: member } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      memberId = member?.id || null
+    }
+
+    // Check if user already prayed for this request (if logged in)
+    if (memberId) {
       const { data: existingPrayer } = await supabase
         .from('prayer_interactions')
         .select('id')
         .eq('prayer_request_id', prayer_request_id)
-        .eq('member_id', user.id)
+        .eq('member_id', memberId)
         .single()
 
       if (existingPrayer) {
@@ -36,13 +48,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Record the prayer interaction (only if user is logged in)
-    if (user) {
+    if (memberId) {
       const { error: interactionError } = await supabase
         .from('prayer_interactions')
         .insert([
           {
             prayer_request_id,
-            member_id: user.id,
+            member_id: memberId,
           },
         ])
 

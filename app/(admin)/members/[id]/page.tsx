@@ -124,7 +124,7 @@ export default function MemberDetailPage({ params }: { params: { id: string } })
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link
-            href="/admin/members"
+            href="/members"
             className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
