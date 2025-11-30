@@ -23,6 +23,13 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   CreditCard,
+  Plus,
+  X,
+  User,
+  Banknote,
+  Building2,
+  Smartphone,
+  Receipt,
 } from 'lucide-react'
 
 interface GivingStats {
@@ -72,6 +79,29 @@ interface Pledge {
   status: string
 }
 
+interface Member {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+}
+
+interface MemberGivingHistory {
+  member: Member
+  donations: Donation[]
+  totalGiven: number
+  donationCount: number
+}
+
+const paymentMethods = [
+  { value: 'zelle', label: 'Zelle', icon: Smartphone },
+  { value: 'cash', label: 'Cash', icon: Banknote },
+  { value: 'check', label: 'Check', icon: Receipt },
+  { value: 'bank_transfer', label: 'Bank Transfer', icon: Building2 },
+  { value: 'card', label: 'Card', icon: CreditCard },
+  { value: 'other', label: 'Other', icon: DollarSign },
+]
+
 export default function AdminGivingPage() {
   const [donations, setDonations] = useState<Donation[]>([])
   const [recurringDonations, setRecurringDonations] = useState<RecurringDonation[]>([])
@@ -92,6 +122,26 @@ export default function AdminGivingPage() {
     totalDonors: 0,
   })
 
+  // Add Donation Modal State
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [members, setMembers] = useState<Member[]>([])
+  const [addingDonation, setAddingDonation] = useState(false)
+  const [newDonation, setNewDonation] = useState({
+    member_id: '',
+    amount: '',
+    category: 'tithe',
+    payment_method: 'zelle',
+    notes: '',
+    donor_name: '',
+    donor_email: '',
+    is_anonymous: false,
+  })
+
+  // Member Giving History Modal State
+  const [showMemberHistory, setShowMemberHistory] = useState(false)
+  const [memberHistory, setMemberHistory] = useState<MemberGivingHistory | null>(null)
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
   const categories = ['tithe', 'offering', 'missions', 'building', 'benevolence', 'special', 'other']
 
   useEffect(() => {
@@ -104,8 +154,21 @@ export default function AdminGivingPage() {
       fetchDonations(),
       fetchRecurringDonations(),
       fetchPledges(),
+      fetchMembers(),
     ])
     setLoading(false)
+  }
+
+  const fetchMembers = async () => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('members')
+      .select('id, first_name, last_name, email')
+      .order('first_name')
+
+    if (data) {
+      setMembers(data)
+    }
   }
 
   const fetchStats = async () => {
@@ -244,6 +307,108 @@ export default function AdminGivingPage() {
 
   const isPositiveChange = () => stats.totalThisMonth >= stats.totalLastMonth
 
+  // Add manual donation
+  const handleAddDonation = async () => {
+    if (!newDonation.amount || parseFloat(newDonation.amount) <= 0) {
+      alert('Please enter a valid amount')
+      return
+    }
+
+    if (!newDonation.member_id && !newDonation.donor_name) {
+      alert('Please select a member or enter a donor name')
+      return
+    }
+
+    setAddingDonation(true)
+    const supabase = createClient()
+
+    try {
+      const donationData: any = {
+        amount: parseFloat(newDonation.amount),
+        category: newDonation.category,
+        payment_method: newDonation.payment_method,
+        status: 'completed',
+        notes: newDonation.notes || null,
+        is_anonymous: newDonation.is_anonymous,
+      }
+
+      if (newDonation.member_id) {
+        donationData.member_id = newDonation.member_id
+        const member = members.find(m => m.id === newDonation.member_id)
+        if (member) {
+          donationData.donor_name = `${member.first_name} ${member.last_name}`
+          donationData.donor_email = member.email
+        }
+      } else {
+        donationData.donor_name = newDonation.donor_name
+        donationData.donor_email = newDonation.donor_email || null
+      }
+
+      const { error } = await supabase
+        .from('donations')
+        .insert(donationData)
+
+      if (error) throw error
+
+      // Reset form and close modal
+      setNewDonation({
+        member_id: '',
+        amount: '',
+        category: 'tithe',
+        payment_method: 'zelle',
+        notes: '',
+        donor_name: '',
+        donor_email: '',
+        is_anonymous: false,
+      })
+      setShowAddModal(false)
+      fetchData() // Refresh data
+    } catch (error) {
+      console.error('Error adding donation:', error)
+      alert('Failed to add donation. Please try again.')
+    } finally {
+      setAddingDonation(false)
+    }
+  }
+
+  // View member giving history
+  const viewMemberHistory = async (memberId: string, memberName: string) => {
+    setLoadingHistory(true)
+    setShowMemberHistory(true)
+
+    const supabase = createClient()
+
+    try {
+      // Get member details
+      const { data: memberData } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, email')
+        .eq('id', memberId)
+        .single()
+
+      // Get all donations for this member
+      const { data: donationsData } = await supabase
+        .from('donations')
+        .select('*')
+        .eq('member_id', memberId)
+        .order('created_at', { ascending: false })
+
+      if (memberData && donationsData) {
+        const totalGiven = donationsData.reduce((sum, d) => sum + (d.amount || 0), 0)
+        setMemberHistory({
+          member: memberData,
+          donations: donationsData,
+          totalGiven,
+          donationCount: donationsData.length,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching member history:', error)
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
   const filteredDonations = donations.filter(d => {
     const matchesSearch = d.member_name?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = filterCategory === 'all' || d.category === filterCategory
@@ -264,9 +429,13 @@ export default function AdminGivingPage() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
-            <Button className="bg-navy hover:bg-navy/90">
+            <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              Export Report
+              Export
+            </Button>
+            <Button className="bg-navy hover:bg-navy/90" onClick={() => setShowAddModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Donation
             </Button>
           </div>
         </div>
@@ -459,12 +628,24 @@ export default function AdminGivingPage() {
                         <td className="p-4 text-sm">
                           {new Date(donation.created_at).toLocaleDateString()}
                         </td>
-                        <td className="p-4 text-sm font-medium">{donation.member_name}</td>
+                        <td className="p-4 text-sm font-medium">
+                          {donation.member_id ? (
+                            <button
+                              onClick={() => viewMemberHistory(donation.member_id, donation.member_name || 'Unknown')}
+                              className="text-navy hover:text-gold hover:underline flex items-center gap-1"
+                            >
+                              <User className="h-3 w-3" />
+                              {donation.member_name}
+                            </button>
+                          ) : (
+                            <span className="text-gray-500">{donation.member_name || 'Anonymous'}</span>
+                          )}
+                        </td>
                         <td className="p-4 text-sm font-bold text-navy">
                           ${donation.amount.toLocaleString()}
                         </td>
                         <td className="p-4 text-sm capitalize">{donation.category}</td>
-                        <td className="p-4 text-sm capitalize">{donation.payment_method}</td>
+                        <td className="p-4 text-sm capitalize">{donation.payment_method || 'card'}</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded text-xs ${
                             donation.status === 'completed'
@@ -587,6 +768,283 @@ export default function AdminGivingPage() {
           </div>
         )}
       </div>
+
+      {/* Add Donation Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-bold text-navy">Add Manual Donation</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Member Selection */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Donor</Label>
+                <select
+                  value={newDonation.member_id}
+                  onChange={(e) => setNewDonation({ ...newDonation, member_id: e.target.value, donor_name: '', donor_email: '' })}
+                  className="w-full border rounded-lg px-4 py-2"
+                >
+                  <option value="">-- Select a member or enter manually --</option>
+                  {members.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.first_name} {member.last_name} ({member.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Manual donor name if no member selected */}
+              {!newDonation.member_id && (
+                <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">Donor Name</Label>
+                    <Input
+                      placeholder="Enter donor name"
+                      value={newDonation.donor_name}
+                      onChange={(e) => setNewDonation({ ...newDonation, donor_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">Donor Email (optional)</Label>
+                    <Input
+                      type="email"
+                      placeholder="Enter donor email"
+                      value={newDonation.donor_email}
+                      onChange={(e) => setNewDonation({ ...newDonation, donor_email: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Amount */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Amount</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={newDonation.amount}
+                    onChange={(e) => setNewDonation({ ...newDonation, amount: e.target.value })}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Category</Label>
+                <select
+                  value={newDonation.category}
+                  onChange={(e) => setNewDonation({ ...newDonation, category: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Payment Method</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {paymentMethods.map((method) => {
+                    const Icon = method.icon
+                    return (
+                      <button
+                        key={method.value}
+                        type="button"
+                        onClick={() => setNewDonation({ ...newDonation, payment_method: method.value })}
+                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                          newDonation.payment_method === method.value
+                            ? 'border-navy bg-navy/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 ${newDonation.payment_method === method.value ? 'text-navy' : 'text-gray-500'}`} />
+                        <span className={`text-xs font-medium ${newDonation.payment_method === method.value ? 'text-navy' : 'text-gray-600'}`}>
+                          {method.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Notes (optional)</Label>
+                <textarea
+                  placeholder="Add any notes about this donation..."
+                  value={newDonation.notes}
+                  onChange={(e) => setNewDonation({ ...newDonation, notes: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2 min-h-[80px] resize-none"
+                />
+              </div>
+
+              {/* Anonymous checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newDonation.is_anonymous}
+                  onChange={(e) => setNewDonation({ ...newDonation, is_anonymous: e.target.checked })}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm text-gray-600">Mark as anonymous donation</span>
+              </label>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t bg-gray-50">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowAddModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-navy hover:bg-navy/90"
+                onClick={handleAddDonation}
+                disabled={addingDonation}
+              >
+                {addingDonation ? 'Adding...' : 'Add Donation'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member Giving History Modal */}
+      {showMemberHistory && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <div>
+                <h2 className="text-xl font-bold text-navy">Member Giving History</h2>
+                {memberHistory && (
+                  <p className="text-gray-600">
+                    {memberHistory.member.first_name} {memberHistory.member.last_name}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setShowMemberHistory(false)
+                  setMemberHistory(null)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {loadingHistory ? (
+              <div className="flex-1 flex items-center justify-center p-12">
+                <RefreshCw className="h-8 w-8 animate-spin text-navy" />
+              </div>
+            ) : memberHistory ? (
+              <>
+                {/* Summary Stats */}
+                <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50 border-b">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-navy">${memberHistory.totalGiven.toLocaleString()}</p>
+                    <p className="text-xs text-gray-600">Total Given</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-gold">{memberHistory.donationCount}</p>
+                    <p className="text-xs text-gray-600">Donations</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">
+                      ${memberHistory.donationCount > 0
+                        ? Math.round(memberHistory.totalGiven / memberHistory.donationCount).toLocaleString()
+                        : 0}
+                    </p>
+                    <p className="text-xs text-gray-600">Average Gift</p>
+                  </div>
+                </div>
+
+                {/* Donations List */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  {memberHistory.donations.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No donations found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {memberHistory.donations.map((donation) => (
+                        <div
+                          key={donation.id}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-navy/10 rounded-full flex items-center justify-center">
+                              <DollarSign className="h-5 w-5 text-navy" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-navy capitalize">{donation.category}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(donation.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
+                                {donation.payment_method && ` • ${donation.payment_method}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-navy">${donation.amount.toLocaleString()}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              donation.status === 'completed'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {donation.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-4 border-t bg-gray-50">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setShowMemberHistory(false)
+                      setMemberHistory(null)
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-12 text-gray-500">
+                Failed to load member history
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
