@@ -6,10 +6,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const supabase = createClient(
+function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 // Build dynamic system prompt from database config
 async function buildSystemPrompt(supabase: any): Promise<string> {
@@ -192,7 +191,7 @@ ${recentActivity.length > 0
     const aiResponse = completion.choices[0]?.message?.content || 'I sense the Spirit wants me to simply encourage you today. Know that God loves you deeply, beloved.'
 
     // Save user message
-    await supabase.from('ai_messages').insert({
+    await getSupabase().from('ai_messages').insert({
       conversation_id: currentConversationId,
       member_id: memberId,
       role: 'user',
@@ -202,7 +201,7 @@ ${recentActivity.length > 0
     })
 
     // Save AI response
-    await supabase.from('ai_messages').insert({
+    await getSupabase().from('ai_messages').insert({
       conversation_id: currentConversationId,
       member_id: memberId,
       role: 'assistant',
@@ -212,7 +211,7 @@ ${recentActivity.length > 0
     })
 
     // Track activity
-    await supabase.from('member_activity').insert({
+    await getSupabase().from('member_activity').insert({
       member_id: memberId,
       activity_type: 'ai_chat',
       resource_type: 'prophet_lorenzo',

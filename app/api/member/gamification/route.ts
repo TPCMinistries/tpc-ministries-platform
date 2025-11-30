@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
+function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 // Badge definitions
 const BADGES = {
@@ -281,7 +280,7 @@ export async function POST(request: NextRequest) {
         earned_at: new Date().toISOString()
       }))
 
-      await supabase.from('member_badges').insert(badgeInserts)
+      await getSupabase().from('member_badges').insert(badgeInserts)
 
       // Add badge points to total
       const badgePoints = newBadges.reduce((sum, id) =>

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
+function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 interface WorkflowConfig {
   id: string
@@ -183,7 +182,7 @@ async function sendEmail(to: string, subject: string, body: string) {
 // Send notification
 async function sendNotification(memberId: string, message: string) {
   try {
-    await supabase.from('notifications').insert({
+    await getSupabase().from('notifications').insert({
       user_id: memberId,
       type: 'workflow',
       title: 'TPC Ministries',
@@ -256,7 +255,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Log execution
-      await supabase.from('workflow_executions').insert({
+      await getSupabase().from('workflow_executions').insert({
         workflow_id: workflowId,
         workflow_name: workflow.name,
         member_id: member.id,
@@ -337,7 +336,7 @@ export async function GET(request: NextRequest) {
 
           if (success) {
             sent++
-            await supabase.from('workflow_executions').insert({
+            await getSupabase().from('workflow_executions').insert({
               workflow_id: workflow.id,
               workflow_name: workflow.name,
               member_id: member.id,

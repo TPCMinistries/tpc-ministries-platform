@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
-const supabase = createClient(
+function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -234,7 +233,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the partnership (both directions)
-    await supabase.from('prayer_partnerships').insert([
+    await getSupabase().from('prayer_partnerships').insert([
       { member_id: memberId, partner_id: partnerId, status: 'active' },
       { member_id: partnerId, partner_id: memberId, status: 'active' }
     ])
@@ -247,7 +246,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     // Send notification to partner
-    await supabase.from('notifications').insert({
+    await getSupabase().from('notifications').insert({
       user_id: partnerId,
       type: 'prayer_partner',
       title: 'New Prayer Partner!',

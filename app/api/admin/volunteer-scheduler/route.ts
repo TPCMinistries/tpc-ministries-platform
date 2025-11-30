@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
-const supabase = createClient(
+function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -169,7 +168,7 @@ export async function POST(request: NextRequest) {
       if (error) throw error
 
       // Send notification
-      await supabase.from('notifications').insert({
+      await getSupabase().from('notifications').insert({
         user_id: memberId,
         type: 'volunteer',
         title: 'Volunteer Schedule Request',
@@ -226,7 +225,7 @@ export async function POST(request: NextRequest) {
           status: 'pending'
         }))
 
-        await supabase.from('volunteer_schedules').insert(scheduleInserts)
+        await getSupabase().from('volunteer_schedules').insert(scheduleInserts)
 
         // Send notifications
         const notificationInserts = toSchedule.map(memberId => ({
@@ -237,7 +236,7 @@ export async function POST(request: NextRequest) {
           is_read: false
         }))
 
-        await supabase.from('notifications').insert(notificationInserts)
+        await getSupabase().from('notifications').insert(notificationInserts)
       }
 
       return NextResponse.json({

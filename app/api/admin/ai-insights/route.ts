@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy initialization to avoid build-time errors
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAI() {
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 interface PastoralAlert {
   id: string
@@ -65,7 +70,7 @@ Generate a 2-3 sentence briefing that:
 Keep it warm, spiritual, and actionable. Use "your ministry" or "your congregation" language.`
 
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
@@ -530,7 +535,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'dismiss_alert':
         // Log that alert was dismissed
-        await supabase.from('admin_alert_actions').insert({
+        await getSupabase().from('admin_alert_actions').insert({
           alert_id: alertId,
           action_type: 'dismissed',
           admin_notes: data?.notes
@@ -539,7 +544,7 @@ export async function POST(request: NextRequest) {
 
       case 'send_message':
         // Queue a message to be sent
-        await supabase.from('message_queue').insert({
+        await getSupabase().from('message_queue').insert({
           recipient_id: memberId,
           message_type: data?.type || 'personal',
           content: data?.content,
@@ -549,7 +554,7 @@ export async function POST(request: NextRequest) {
 
       case 'mark_contacted':
         // Mark member as contacted
-        await supabase.from('member_contact_log').insert({
+        await getSupabase().from('member_contact_log').insert({
           member_id: memberId,
           contact_type: data?.type || 'other',
           notes: data?.notes,
