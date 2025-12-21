@@ -15,6 +15,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get member ID from members table
+    const { data: member } = await supabase
+      .from('members')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!member) {
+      return NextResponse.json(
+        { error: 'Member profile not found. Please complete your profile setup.' },
+        { status: 404 }
+      )
+    }
+
     const body = await request.json()
     const { request_text, category, is_public, is_anonymous } = body
 
@@ -45,7 +59,7 @@ export async function POST(request: NextRequest) {
       .from('prayer_requests')
       .insert([
         {
-          member_id: user.id,
+          member_id: member.id,
           request_text: request_text.trim(),
           category,
           is_public: is_public ?? true,
