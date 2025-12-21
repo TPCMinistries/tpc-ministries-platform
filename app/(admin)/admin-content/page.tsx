@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Play, BookOpen, FileText, Headphones, Plus, Edit2, Trash2, Search, Loader2 } from 'lucide-react'
+import { Play, BookOpen, FileText, Headphones, Plus, Edit2, Trash2, Search, Loader2, Lock, Globe, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import ImageUpload from '@/components/ui/image-upload'
@@ -30,17 +30,16 @@ interface Teaching {
   id: string
   title: string
   description?: string
-  speaker: string
-  series?: string
-  scripture_reference?: string
-  video_url?: string
-  audio_url?: string
+  author: string
+  content_type?: string
+  content_url?: string
   thumbnail_url?: string
   duration_minutes?: number
-  tier_required: 'free' | 'partner' | 'covenant'
-  category?: 'sermon' | 'teaching' | 'prophecy' | 'testimony' | 'other'
+  is_premium?: boolean
+  is_published?: boolean
+  is_featured?: boolean
   view_count: number
-  published_at: string
+  published_at?: string
   created_at: string
   updated_at: string
 }
@@ -58,16 +57,15 @@ export default function ContentManagementPage() {
 
   const [formData, setFormData] = useState({
     title: '',
-    speaker: '',
+    author: '',
     description: '',
-    series: '',
-    scripture_reference: '',
-    category: 'teaching' as 'sermon' | 'teaching' | 'prophecy' | 'testimony' | 'other',
-    tier_required: 'free' as 'free' | 'partner' | 'covenant',
-    video_url: '',
-    audio_url: '',
+    content_type: 'video' as string,
+    content_url: '',
     thumbnail_url: '',
     duration_minutes: '',
+    is_premium: false,
+    is_published: true,
+    is_featured: false,
   })
 
   useEffect(() => {
@@ -104,16 +102,15 @@ export default function ContentManagementPage() {
   const resetForm = () => {
     setFormData({
       title: '',
-      speaker: '',
+      author: '',
       description: '',
-      series: '',
-      scripture_reference: '',
-      category: 'teaching',
-      tier_required: 'free',
-      video_url: '',
-      audio_url: '',
+      content_type: 'video',
+      content_url: '',
       thumbnail_url: '',
       duration_minutes: '',
+      is_premium: false,
+      is_published: true,
+      is_featured: false,
     })
   }
 
@@ -127,16 +124,15 @@ export default function ContentManagementPage() {
         .from('teachings')
         .insert({
           title: formData.title,
-          speaker: formData.speaker,
+          author: formData.author,
           description: formData.description || null,
-          series: formData.series || null,
-          scripture_reference: formData.scripture_reference || null,
-          category: formData.category,
-          tier_required: formData.tier_required,
-          video_url: formData.video_url || null,
-          audio_url: formData.audio_url || null,
+          content_type: formData.content_type,
+          content_url: formData.content_url || null,
           thumbnail_url: formData.thumbnail_url || null,
           duration_minutes: formData.duration_minutes ? parseInt(formData.duration_minutes) : null,
+          is_premium: formData.is_premium,
+          is_published: formData.is_published,
+          is_featured: formData.is_featured,
           view_count: 0,
           published_at: new Date().toISOString(),
         })
@@ -183,16 +179,15 @@ export default function ContentManagementPage() {
         .from('teachings')
         .update({
           title: formData.title,
-          speaker: formData.speaker,
+          author: formData.author,
           description: formData.description || null,
-          series: formData.series || null,
-          scripture_reference: formData.scripture_reference || null,
-          category: formData.category,
-          tier_required: formData.tier_required,
-          video_url: formData.video_url || null,
-          audio_url: formData.audio_url || null,
+          content_type: formData.content_type,
+          content_url: formData.content_url || null,
           thumbnail_url: formData.thumbnail_url || null,
           duration_minutes: formData.duration_minutes ? parseInt(formData.duration_minutes) : null,
+          is_premium: formData.is_premium,
+          is_published: formData.is_published,
+          is_featured: formData.is_featured,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editingTeaching.id)
@@ -269,51 +264,50 @@ export default function ContentManagementPage() {
     setEditingTeaching(teaching)
     setFormData({
       title: teaching.title,
-      speaker: teaching.speaker,
+      author: teaching.author || '',
       description: teaching.description || '',
-      series: teaching.series || '',
-      scripture_reference: teaching.scripture_reference || '',
-      category: teaching.category || 'teaching',
-      tier_required: teaching.tier_required,
-      video_url: teaching.video_url || '',
-      audio_url: teaching.audio_url || '',
+      content_type: teaching.content_type || 'video',
+      content_url: teaching.content_url || '',
       thumbnail_url: teaching.thumbnail_url || '',
       duration_minutes: teaching.duration_minutes?.toString() || '',
+      is_premium: teaching.is_premium || false,
+      is_published: teaching.is_published || true,
+      is_featured: teaching.is_featured || false,
     })
     setIsEditDialogOpen(true)
   }
 
   const getTypeIcon = (teaching: Teaching) => {
-    if (teaching.video_url) return <Play className="h-4 w-4" />
-    if (teaching.audio_url) return <Headphones className="h-4 w-4" />
+    if (teaching.content_type === 'video') return <Play className="h-4 w-4" />
+    if (teaching.content_type === 'audio') return <Headphones className="h-4 w-4" />
     return <FileText className="h-4 w-4" />
   }
 
   const getTypeBadgeColor = (teaching: Teaching) => {
-    if (teaching.video_url) return 'bg-red-100 text-red-700'
-    if (teaching.audio_url) return 'bg-green-100 text-green-700'
+    if (teaching.content_type === 'video') return 'bg-red-100 text-red-700'
+    if (teaching.content_type === 'audio') return 'bg-green-100 text-green-700'
     return 'bg-blue-100 text-blue-700'
   }
 
   const getTypeLabel = (teaching: Teaching) => {
-    if (teaching.video_url) return 'Video'
-    if (teaching.audio_url) return 'Audio'
-    return 'Article'
+    if (teaching.content_type === 'video') return 'Video'
+    if (teaching.content_type === 'audio') return 'Audio'
+    return teaching.content_type || 'Article'
   }
 
   const filteredTeachings = teachings.filter((teaching) => {
     const matchesSearch =
       teaching.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      teaching.speaker.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || teaching.category === selectedCategory
+      (teaching.author || '').toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || teaching.content_type === selectedCategory
     return matchesSearch && matchesCategory
   })
 
   const stats = {
     total: teachings.length,
-    videos: teachings.filter(t => t.video_url).length,
-    audio: teachings.filter(t => t.audio_url && !t.video_url).length,
-    totalViews: teachings.reduce((sum, t) => sum + t.view_count, 0),
+    videos: teachings.filter(t => t.content_type === 'video').length,
+    audio: teachings.filter(t => t.content_type === 'audio').length,
+    totalViews: teachings.reduce((sum, t) => sum + (t.view_count || 0), 0),
   }
 
   if (loading) {
@@ -364,11 +358,11 @@ export default function ContentManagementPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="speaker">Speaker *</Label>
+                      <Label htmlFor="author">Author/Speaker *</Label>
                       <Input
-                        id="speaker"
-                        value={formData.speaker}
-                        onChange={(e) => setFormData({ ...formData, speaker: e.target.value })}
+                        id="author"
+                        value={formData.author}
+                        onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                         required
                       />
                     </div>
@@ -386,82 +380,42 @@ export default function ContentManagementPage() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="series">Series</Label>
-                      <Input
-                        id="series"
-                        value={formData.series}
-                        onChange={(e) => setFormData({ ...formData, series: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="scripture">Scripture Reference</Label>
-                      <Input
-                        id="scripture"
-                        placeholder="e.g. John 3:16"
-                        value={formData.scripture_reference}
-                        onChange={(e) => setFormData({ ...formData, scripture_reference: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category *</Label>
+                      <Label htmlFor="content_type">Content Type *</Label>
                       <Select
-                        value={formData.category}
-                        onValueChange={(value: any) => setFormData({ ...formData, category: value })}
+                        value={formData.content_type}
+                        onValueChange={(value: any) => setFormData({ ...formData, content_type: value })}
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="sermon">Sermon</SelectItem>
-                          <SelectItem value="teaching">Teaching</SelectItem>
-                          <SelectItem value="prophecy">Prophecy</SelectItem>
-                          <SelectItem value="testimony">Testimony</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="video">Video</SelectItem>
+                          <SelectItem value="audio">Audio</SelectItem>
+                          <SelectItem value="article">Article</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="tier">Access Tier *</Label>
-                      <Select
-                        value={formData.tier_required}
-                        onValueChange={(value: any) => setFormData({ ...formData, tier_required: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="free">Free</SelectItem>
-                          <SelectItem value="partner">Partner</SelectItem>
-                          <SelectItem value="covenant">Covenant</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="duration">Duration (minutes)</Label>
+                      <Input
+                        id="duration"
+                        type="number"
+                        min="0"
+                        value={formData.duration_minutes}
+                        onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="video_url">Video URL (YouTube embed)</Label>
+                    <Label htmlFor="content_url">Content URL (YouTube, etc.)</Label>
                     <Input
-                      id="video_url"
+                      id="content_url"
                       type="url"
-                      placeholder="https://www.youtube.com/embed/..."
-                      value={formData.video_url}
-                      onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="audio_url">Audio URL</Label>
-                    <Input
-                      id="audio_url"
-                      type="url"
-                      placeholder="https://..."
-                      value={formData.audio_url}
-                      onChange={(e) => setFormData({ ...formData, audio_url: e.target.value })}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      value={formData.content_url}
+                      onChange={(e) => setFormData({ ...formData, content_url: e.target.value })}
                     />
                   </div>
 
@@ -479,15 +433,34 @@ export default function ContentManagementPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Duration (minutes)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      min="0"
-                      value={formData.duration_minutes}
-                      onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                    />
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_published}
+                        onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Published</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_featured}
+                        onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Featured</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_premium}
+                        onChange={(e) => setFormData({ ...formData, is_premium: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Premium Only</span>
+                    </label>
                   </div>
                 </div>
 
@@ -543,11 +516,11 @@ export default function ContentManagementPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edit-speaker">Speaker *</Label>
+                    <Label htmlFor="edit-author">Author/Speaker *</Label>
                     <Input
-                      id="edit-speaker"
-                      value={formData.speaker}
-                      onChange={(e) => setFormData({ ...formData, speaker: e.target.value })}
+                      id="edit-author"
+                      value={formData.author}
+                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                       required
                     />
                   </div>
@@ -565,79 +538,41 @@ export default function ContentManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-series">Series</Label>
-                    <Input
-                      id="edit-series"
-                      value={formData.series}
-                      onChange={(e) => setFormData({ ...formData, series: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-scripture">Scripture Reference</Label>
-                    <Input
-                      id="edit-scripture"
-                      value={formData.scripture_reference}
-                      onChange={(e) => setFormData({ ...formData, scripture_reference: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-category">Category *</Label>
+                    <Label htmlFor="edit-content_type">Content Type *</Label>
                     <Select
-                      value={formData.category}
-                      onValueChange={(value: any) => setFormData({ ...formData, category: value })}
+                      value={formData.content_type}
+                      onValueChange={(value: any) => setFormData({ ...formData, content_type: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sermon">Sermon</SelectItem>
-                        <SelectItem value="teaching">Teaching</SelectItem>
-                        <SelectItem value="prophecy">Prophecy</SelectItem>
-                        <SelectItem value="testimony">Testimony</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="audio">Audio</SelectItem>
+                        <SelectItem value="article">Article</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edit-tier">Access Tier *</Label>
-                    <Select
-                      value={formData.tier_required}
-                      onValueChange={(value: any) => setFormData({ ...formData, tier_required: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="free">Free</SelectItem>
-                        <SelectItem value="partner">Partner</SelectItem>
-                        <SelectItem value="covenant">Covenant</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="edit-duration">Duration (minutes)</Label>
+                    <Input
+                      id="edit-duration"
+                      type="number"
+                      min="0"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-video_url">Video URL</Label>
+                  <Label htmlFor="edit-content_url">Content URL (YouTube, etc.)</Label>
                   <Input
-                    id="edit-video_url"
+                    id="edit-content_url"
                     type="url"
-                    value={formData.video_url}
-                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-audio_url">Audio URL</Label>
-                  <Input
-                    id="edit-audio_url"
-                    type="url"
-                    value={formData.audio_url}
-                    onChange={(e) => setFormData({ ...formData, audio_url: e.target.value })}
+                    value={formData.content_url}
+                    onChange={(e) => setFormData({ ...formData, content_url: e.target.value })}
                   />
                 </div>
 
@@ -655,15 +590,34 @@ export default function ContentManagementPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="edit-duration">Duration (minutes)</Label>
-                  <Input
-                    id="edit-duration"
-                    type="number"
-                    min="0"
-                    value={formData.duration_minutes}
-                    onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                  />
+                <div className="grid gap-4 md:grid-cols-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_published}
+                      onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Published</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_featured}
+                      onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Featured</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_premium}
+                      onChange={(e) => setFormData({ ...formData, is_premium: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Premium Only</span>
+                  </label>
                 </div>
               </div>
 
@@ -758,12 +712,10 @@ export default function ContentManagementPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="sermon">Sermons</SelectItem>
-                    <SelectItem value="teaching">Teachings</SelectItem>
-                    <SelectItem value="prophecy">Prophecies</SelectItem>
-                    <SelectItem value="testimony">Testimonies</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="video">Videos</SelectItem>
+                    <SelectItem value="audio">Audio</SelectItem>
+                    <SelectItem value="article">Articles</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -790,8 +742,8 @@ export default function ContentManagementPage() {
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Title</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Type</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Speaker</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Category</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Author</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Views</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
                     </tr>
@@ -811,13 +763,23 @@ export default function ContentManagementPage() {
                             {getTypeLabel(teaching)}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{teaching.speaker}</td>
+                        <td className="py-3 px-4 text-sm text-gray-600">{teaching.author}</td>
                         <td className="py-3 px-4">
-                          <span className="text-xs text-gray-600 capitalize">
-                            {teaching.category || 'other'}
-                          </span>
+                          <div className="flex gap-1">
+                            {teaching.is_published ? (
+                              <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">Published</span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">Draft</span>
+                            )}
+                            {teaching.is_featured && (
+                              <span className="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700">Featured</span>
+                            )}
+                            {teaching.is_premium && (
+                              <span className="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700">Premium</span>
+                            )}
+                          </div>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{teaching.view_count}</td>
+                        <td className="py-3 px-4 text-sm text-gray-600">{teaching.view_count || 0}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center justify-end gap-2">
                             <Button
