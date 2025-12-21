@@ -37,7 +37,10 @@ import {
   Sunrise,
   Cake,
   Home as HomeIcon,
-  Shield
+  Shield,
+  PlayCircle,
+  BookMarked,
+  FileText
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -51,6 +54,7 @@ interface MemberSidebarProps {
     email: string
     avatar_url?: string
     tier?: string
+    role?: string
     is_admin?: boolean
   }
 }
@@ -90,11 +94,13 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     {
       title: 'Learn & Grow',
       items: [
+        { name: 'Content Library', href: '/content', icon: PlayCircle },
+        { name: 'My Library', href: '/library', icon: BookMarked },
+        { name: 'Ebooks & Resources', href: '/ebooks', icon: FileText },
         { name: 'PLANT Learning', href: '/plant', icon: Leaf },
         { name: 'Sermons', href: '/sermons', icon: Video },
         { name: 'Seasons', href: '/seasons', icon: Calendar },
         { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
-        { name: 'Resources', href: '/resources', icon: Library },
       ]
     },
     {
@@ -149,26 +155,45 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     }
   }
 
-  const getTierColor = (tier?: string) => {
-    switch (tier) {
-      case 'covenant':
+  // Get role display info - uses role field primarily, falls back to tier
+  const getRoleColor = (role?: string, tier?: string) => {
+    const effectiveRole = role || tier || 'free'
+    switch (effectiveRole) {
+      case 'admin':
+        return 'bg-gold/20 text-gold border-gold/30'
+      case 'staff':
         return 'bg-purple-100 text-purple-700 border-purple-200'
       case 'partner':
-        return 'bg-gold/20 text-gold border-gold/30'
-      default:
+      case 'covenant':
         return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'member':
+        return 'bg-green-100 text-green-700 border-green-200'
+      default:
+        return 'bg-gray-100 text-gray-600 border-gray-200'
     }
   }
 
-  const getTierLabel = (tier?: string) => {
-    switch (tier) {
-      case 'covenant':
-        return 'Covenant'
+  const getRoleLabel = (role?: string, tier?: string) => {
+    const effectiveRole = role || tier || 'free'
+    switch (effectiveRole) {
+      case 'admin':
+        return 'Admin'
+      case 'staff':
+        return 'Staff'
       case 'partner':
+      case 'covenant':
         return 'Partner'
+      case 'member':
+        return 'Member'
       default:
         return 'Free'
     }
+  }
+
+  // Check if user can access admin portal (staff or above)
+  const canAccessAdmin = () => {
+    const role = member.role || (member.is_admin ? 'admin' : 'free')
+    return ['admin', 'staff'].includes(role)
   }
 
   return (
@@ -222,8 +247,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                 <p className="text-sm font-semibold text-gray-900 truncate">
                   {member.first_name} {member.last_name}
                 </p>
-                <Badge variant="outline" className={cn('text-xs mt-1', getTierColor(member.tier))}>
-                  {getTierLabel(member.tier)}
+                <Badge variant="outline" className={cn('text-xs mt-1', getRoleColor(member.role, member.tier))}>
+                  {getRoleLabel(member.role, member.tier)}
                 </Badge>
               </div>
             </div>
@@ -281,8 +306,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
             </div>
           </nav>
 
-          {/* Admin Portal Link */}
-          {member.is_admin && (
+          {/* Admin Portal Link - visible to staff and admins */}
+          {canAccessAdmin() && (
             <div className="px-3 py-4 border-t border-gray-200">
               <Link href="/admin-dashboard">
                 <Button className="w-full bg-navy hover:bg-navy/90 text-white">
@@ -293,8 +318,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
             </div>
           )}
 
-          {/* Upgrade CTA (for free members) */}
-          {member.tier === 'free' && (
+          {/* Upgrade CTA (for free and member roles - not partners/staff/admin) */}
+          {['free', 'member'].includes(member.role || member.tier || 'free') && (
             <div className="px-3 py-4 border-t border-gray-200">
               <div className="bg-gradient-to-br from-gold/10 to-navy/10 rounded-lg p-4 border border-gold/20">
                 <p className="text-sm font-semibold text-navy mb-2">Upgrade Your Journey</p>
