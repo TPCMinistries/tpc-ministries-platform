@@ -93,28 +93,13 @@ export default function AdminNav() {
 
   const navSections: NavSection[] = [
     {
-      title: 'AI & Intelligence',
-      icon: <Brain className="h-4 w-4" />,
-      defaultOpen: true,
-      items: [
-        { name: 'Command Center', href: '/admin-command-center', highlight: true, icon: 'brain' },
-        { name: 'Predictive Analytics', href: '/admin-predictive', highlight: true, icon: 'trending' },
-        { name: 'Giving Forecast', href: '/admin-giving-forecast', highlight: true, icon: 'trending' },
-        { name: 'AI Sermon Notes', href: '/admin-sermon-notes', highlight: true, icon: 'brain' },
-        { name: 'Volunteer Scheduler', href: '/admin-volunteer-scheduler', highlight: true, icon: 'brain' },
-        { name: 'Workflows', href: '/admin-workflows' },
-      ]
-    },
-    {
       title: 'Overview',
       icon: <LayoutDashboard className="h-4 w-4" />,
       defaultOpen: true,
       items: [
         { name: 'Dashboard', href: '/admin-dashboard' },
-        { name: 'Messages', href: '/admin-messages', badge: unreadCount },
-        { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },
+        { name: 'Inbox', href: '/inbox', badge: unreadCount },
         { name: 'Analytics', href: '/analytics' },
-        { name: 'Ministry Reports', href: '/admin-reports' },
       ]
     },
     {
@@ -122,23 +107,42 @@ export default function AdminNav() {
       icon: <Users className="h-4 w-4" />,
       defaultOpen: true,
       items: [
-        { name: 'Members', href: '/members' },
-        { name: 'Leads', href: '/leads', badge: newLeadsCount },
-        { name: 'Invites', href: '/admin-invites' },
-        { name: 'Member Insights', href: '/admin-insights' },
-        { name: 'Celebrations', href: '/admin-celebrations' },
-        { name: 'Pastoral Care', href: '/admin-pastoral' },
+        { name: 'Members', href: '/members', badge: newLeadsCount },
+        { name: 'Member Care', href: '/member-care' },
       ]
     },
     {
-      title: 'Spiritual Growth',
+      title: 'Content',
       icon: <BookOpen className="h-4 w-4" />,
       items: [
-        { name: 'Daily Scripture', href: '/admin-scripture' },
-        { name: 'Devotionals', href: '/admin-devotionals' },
-        { name: 'Reading Plans', href: '/admin-reading-plans' },
+        { name: 'Content Library', href: '/admin-content' },
+        { name: 'Daily Content', href: '/daily-content' },
         { name: 'Sermons', href: '/admin-sermons' },
-        { name: 'Fasting Events', href: '/admin-fasting' },
+      ]
+    },
+    {
+      title: 'Learning',
+      icon: <Leaf className="h-4 w-4" />,
+      items: [
+        { name: 'PLANT Courses', href: '/admin-plant' },
+        { name: 'Assessments', href: '/assessments-management' },
+      ]
+    },
+    {
+      title: 'Community',
+      icon: <Heart className="h-4 w-4" />,
+      items: [
+        { name: 'Groups', href: '/admin-groups' },
+        { name: 'Prayer Requests', href: '/prayers' },
+        { name: 'Testimonies', href: '/admin-testimonies' },
+        { name: 'Events', href: '/admin-events' },
+      ]
+    },
+    {
+      title: 'Finance',
+      icon: <DollarSign className="h-4 w-4" />,
+      items: [
+        { name: 'Giving', href: '/admin-giving' },
       ]
     },
     {
@@ -146,52 +150,14 @@ export default function AdminNav() {
       icon: <Sparkles className="h-4 w-4" />,
       items: [
         { name: 'Prophecy Queue', href: '/admin-prophecy' },
-        { name: 'AI Training', href: '/admin-ai-training' },
       ]
     },
     {
-      title: 'Learning (PLANT)',
-      icon: <Leaf className="h-4 w-4" />,
+      title: 'AI & Automation',
+      icon: <Brain className="h-4 w-4" />,
       items: [
-        { name: 'Course Manager', href: '/admin-plant' },
-        { name: 'Content Library', href: '/admin-content' },
-      ]
-    },
-    {
-      title: 'Community',
-      icon: <Heart className="h-4 w-4" />,
-      items: [
-        { name: 'Community Groups', href: '/admin-groups' },
-        { name: 'Testimonies', href: '/admin-testimonies' },
-        { name: 'Volunteer Teams', href: '/admin-volunteer' },
-        { name: 'Assessments', href: '/assessments-management' },
-      ]
-    },
-    {
-      title: 'Events & Media',
-      icon: <Video className="h-4 w-4" />,
-      items: [
-        { name: 'Events', href: '/admin-events' },
-        { name: 'Live Streams', href: '/admin-live' },
-        { name: 'Media Library', href: '/media' },
-      ]
-    },
-    {
-      title: 'Finance',
-      icon: <DollarSign className="h-4 w-4" />,
-      items: [
-        { name: 'Giving Overview', href: '/admin-giving' },
-        { name: 'Donations', href: '/donations' },
-        { name: 'Prayer Requests', href: '/prayers' },
-      ]
-    },
-    {
-      title: 'Communications',
-      icon: <Mail className="h-4 w-4" />,
-      items: [
-        { name: 'Email Inbox', href: '/admin-inbox' },
-        { name: 'SMS Inbox', href: '/sms-inbox' },
-        { name: 'Campaigns', href: '/communications' },
+        { name: 'AI Hub', href: '/admin-command-center', highlight: true, icon: 'brain' },
+        { name: 'Workflows', href: '/admin-workflows' },
       ]
     },
     {
