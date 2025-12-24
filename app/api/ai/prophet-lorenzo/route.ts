@@ -85,6 +85,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const supabase = getSupabase()
+
     // Get member info and spiritual profile
     const [memberResult, profileResult, recentActivityResult] = await Promise.all([
       supabase
@@ -245,6 +247,8 @@ export async function GET(request: NextRequest) {
     if (!memberId) {
       return NextResponse.json({ error: 'memberId required' }, { status: 400 })
     }
+
+    const supabase = getSupabase()
 
     if (conversationId) {
       // Get specific conversation with messages
