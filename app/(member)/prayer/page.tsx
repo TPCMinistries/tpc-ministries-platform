@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -32,8 +31,15 @@ import {
   Users,
   Lock,
   Globe,
-  MessageCircle,
-  Trash2
+  Trash2,
+  Search,
+  Filter,
+  Sparkles,
+  Loader2,
+  HandHeart,
+  Send,
+  CheckCircle,
+  Star
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -49,20 +55,41 @@ interface PrayerRequest {
   prayer_count: number
 }
 
-export default function PrayerPage() {
+const CATEGORIES = [
+  { value: 'all', label: 'All Categories', gradient: 'from-gray-400 to-slate-500' },
+  { value: 'healing', label: 'Healing', gradient: 'from-red-400 to-rose-500', emoji: '🩹' },
+  { value: 'guidance', label: 'Guidance', gradient: 'from-blue-400 to-indigo-500', emoji: '🧭' },
+  { value: 'provision', label: 'Provision', gradient: 'from-green-400 to-emerald-500', emoji: '🌱' },
+  { value: 'relationship', label: 'Relationships', gradient: 'from-pink-400 to-rose-500', emoji: '💕' },
+  { value: 'salvation', label: 'Salvation', gradient: 'from-purple-400 to-violet-500', emoji: '✝️' },
+  { value: 'thanksgiving', label: 'Thanksgiving', gradient: 'from-amber-400 to-orange-500', emoji: '🙏' },
+  { value: 'general', label: 'General', gradient: 'from-slate-400 to-gray-500', emoji: '💬' },
+]
+
+export default function PrayerWallPage() {
   const [loading, setLoading] = useState(true)
   const [requests, setRequests] = useState<PrayerRequest[]>([])
   const [communityRequests, setCommunityRequests] = useState<PrayerRequest[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'my-requests' | 'community'>('community')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [prayersGiven, setPrayersGiven] = useState(0)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'general',
-    privacy: 'private'
+    privacy: 'members'
   })
+  const [submitting, setSubmitting] = useState(false)
+
+  const [prayedFor, setPrayedFor] = useState<Set<string>>(new Set())
+  const [prayingFor, setPrayingFor] = useState<string | null>(null)
+  const [justPrayed, setJustPrayed] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPrayerRequests()
+    fetchPrayersGiven()
   }, [])
 
   const fetchPrayerRequests = async () => {
@@ -94,10 +121,20 @@ export default function PrayerPage() {
         .neq('member_id', member.id)
         .in('privacy', ['members', 'public'])
         .order('created_at', { ascending: false })
-        .limit(20)
+        .limit(50)
+
+      // Fetch which ones user has prayed for
+      const { data: interactions } = await supabase
+        .from('prayer_interactions')
+        .select('prayer_request_id')
+        .eq('member_id', member.id)
 
       setRequests(myRequests || [])
       setCommunityRequests(community || [])
+
+      if (interactions) {
+        setPrayedFor(new Set(interactions.map(i => i.prayer_request_id)))
+      }
     } catch (error) {
       console.error('Error fetching prayer requests:', error)
     } finally {
@@ -105,8 +142,34 @@ export default function PrayerPage() {
     }
   }
 
+  const fetchPrayersGiven = async () => {
+    const supabase = createClient()
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: member } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!member) return
+
+      const { count } = await supabase
+        .from('prayer_interactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('member_id', member.id)
+
+      setPrayersGiven(count || 0)
+    } catch (error) {
+      console.error('Error fetching prayers given:', error)
+    }
+  }
+
   const handleSubmit = async () => {
     const supabase = createClient()
+    setSubmitting(true)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -126,24 +189,24 @@ export default function PrayerPage() {
         description: formData.description,
         category: formData.category,
         privacy: formData.privacy,
-        is_answered: false
+        is_answered: false,
+        prayer_count: 0
       })
 
       setFormData({
         title: '',
         description: '',
         category: 'general',
-        privacy: 'private'
+        privacy: 'members'
       })
       setIsDialogOpen(false)
       fetchPrayerRequests()
     } catch (error) {
       console.error('Error submitting prayer request:', error)
+    } finally {
+      setSubmitting(false)
     }
   }
-
-  const [prayedFor, setPrayedFor] = useState<Set<string>>(new Set())
-  const [prayingFor, setPrayingFor] = useState<string | null>(null)
 
   const handlePray = async (requestId: string) => {
     if (prayedFor.has(requestId) || prayingFor === requestId) return
@@ -158,7 +221,10 @@ export default function PrayerPage() {
 
       if (response.ok) {
         setPrayedFor(prev => new Set([...Array.from(prev), requestId]))
-        // Update the prayer count in the UI
+        setPrayersGiven(prev => prev + 1)
+        setJustPrayed(requestId)
+        setTimeout(() => setJustPrayed(null), 2000)
+
         setCommunityRequests(prev =>
           prev.map(req =>
             req.id === requestId
@@ -192,293 +258,553 @@ export default function PrayerPage() {
     }
   }
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      healing: 'bg-red-100 text-red-700 border-red-200',
-      guidance: 'bg-blue-100 text-blue-700 border-blue-200',
-      provision: 'bg-green-100 text-green-700 border-green-200',
-      relationship: 'bg-pink-100 text-pink-700 border-pink-200',
-      salvation: 'bg-purple-100 text-purple-700 border-purple-200',
-      thanksgiving: 'bg-amber-100 text-amber-700 border-amber-200',
-      general: 'bg-gray-100 text-gray-700 border-gray-200'
+  const handleDelete = async (requestId: string) => {
+    if (!confirm('Are you sure you want to delete this prayer request?')) return
+
+    const supabase = createClient()
+    try {
+      await supabase
+        .from('prayer_requests')
+        .delete()
+        .eq('id', requestId)
+
+      fetchPrayerRequests()
+    } catch (error) {
+      console.error('Error deleting prayer request:', error)
     }
-    return colors[category] || colors.general
+  }
+
+  const getCategoryInfo = (category: string) => {
+    return CATEGORIES.find(c => c.value === category) || CATEGORIES[CATEGORIES.length - 1]
   }
 
   const getPrivacyIcon = (privacy: string) => {
     switch (privacy) {
-      case 'public':
-        return <Globe className="h-3 w-3" />
-      case 'members':
-        return <Users className="h-3 w-3" />
-      default:
-        return <Lock className="h-3 w-3" />
+      case 'public': return <Globe className="h-3 w-3" />
+      case 'members': return <Users className="h-3 w-3" />
+      default: return <Lock className="h-3 w-3" />
     }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  const filteredCommunityRequests = communityRequests.filter(req => {
+    const matchesCategory = categoryFilter === 'all' || req.category === categoryFilter
+    const matchesSearch = !searchQuery ||
+      req.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+
+  const stats = {
+    total: requests.length,
+    answered: requests.filter(r => r.is_answered).length,
+    prayersReceived: requests.reduce((sum, r) => sum + (r.prayer_count || 0), 0),
+    prayersGiven
   }
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-12 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-blue-950/30 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading prayer wall...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-4 lg:p-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-navy mb-2">Prayer</h1>
-          <p className="text-gray-600">Share your prayer requests and pray for others</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Request
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Submit Prayer Request</DialogTitle>
-              <DialogDescription>
-                Share your prayer need with the community
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="title">Prayer Request Title</Label>
-                <Input
-                  id="title"
-                  placeholder="Brief title for your prayer request"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Share details about your prayer request..."
-                  rows={4}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="healing">Healing</SelectItem>
-                    <SelectItem value="guidance">Guidance</SelectItem>
-                    <SelectItem value="provision">Provision</SelectItem>
-                    <SelectItem value="relationship">Relationships</SelectItem>
-                    <SelectItem value="salvation">Salvation</SelectItem>
-                    <SelectItem value="thanksgiving">Thanksgiving</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="privacy">Privacy</Label>
-                <Select
-                  value={formData.privacy}
-                  onValueChange={(value) => setFormData({ ...formData, privacy: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">Private (Only Me)</SelectItem>
-                    <SelectItem value="members">Members Only</SelectItem>
-                    <SelectItem value="public">Public</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} disabled={!formData.title || !formData.description}>
-                Submit Request
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-blue-950/30 dark:to-slate-900 p-4 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Beautiful Header */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 p-8 text-white shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
 
-      <Tabs defaultValue="my-requests" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="my-requests">My Requests ({requests.length})</TabsTrigger>
-          <TabsTrigger value="community">Community ({communityRequests.length})</TabsTrigger>
-        </TabsList>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <HandHeart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-blue-200">United in Prayer</p>
+                    <h1 className="text-3xl font-bold">Prayer Wall</h1>
+                  </div>
+                </div>
+                <p className="text-blue-200 mt-2 max-w-md">
+                  Lift up your needs and join others in prayer. Together, we believe for breakthrough.
+                </p>
+              </div>
 
-        <TabsContent value="my-requests" className="space-y-6">
-          {requests.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Heart className="h-12 w-12 text-gray-300 mb-4" />
-                <p className="text-gray-600 mb-4">You haven't submitted any prayer requests yet</p>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Submit Your First Request
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6">
-              {requests.map((request) => (
-                <Card key={request.id} className={request.is_answered ? 'border-green-200 bg-green-50/30' : ''}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={getCategoryColor(request.category)} variant="outline">
-                            {request.category}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {getPrivacyIcon(request.privacy)}
-                            <span className="ml-1">{request.privacy}</span>
-                          </Badge>
-                          {request.is_answered && (
-                            <Badge className="bg-green-600 text-white">
-                              <Check className="h-3 w-3 mr-1" />
-                              Answered
-                            </Badge>
-                          )}
-                        </div>
-                        <CardTitle className="text-lg">{request.title}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {new Date(request.created_at).toLocaleDateString()}
-                        </CardDescription>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg gap-2">
+                    <Plus className="h-5 w-5" />
+                    Share Prayer Request
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl">Share Your Prayer Need</DialogTitle>
+                    <DialogDescription>
+                      Let the community stand with you in prayer
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div>
+                      <Label htmlFor="title">Prayer Request</Label>
+                      <Input
+                        id="title"
+                        placeholder="What would you like prayer for?"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Details (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Share more details if you'd like..."
+                        rows={4}
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Category</Label>
+                        <Select
+                          value={formData.category}
+                          onValueChange={(value) => setFormData({ ...formData, category: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.filter(c => c.value !== 'all').map(cat => (
+                              <SelectItem key={cat.value} value={cat.value}>
+                                {cat.emoji} {cat.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Who can see this?</Label>
+                        <Select
+                          value={formData.privacy}
+                          onValueChange={(value) => setFormData({ ...formData, privacy: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="private">🔒 Just Me</SelectItem>
+                            <SelectItem value="members">👥 Members Only</SelectItem>
+                            <SelectItem value="public">🌍 Everyone</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-700">{request.description}</p>
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Heart className="h-4 w-4" />
-                        <span>{request.prayer_count || 0} prayers</span>
-                      </div>
-                      <div className="flex gap-2">
-                        {!request.is_answered && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleMarkAnswered(request.id)}
-                          >
-                            <Check className="mr-2 h-4 w-4" />
-                            Mark Answered
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="community" className="space-y-6">
-          {communityRequests.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-gray-300 mb-4" />
-                <p className="text-gray-600">No community prayer requests available</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6">
-              {communityRequests.map((request) => (
-                <Card key={request.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={getCategoryColor(request.category)} variant="outline">
-                        {request.category}
-                      </Badge>
-                      {request.is_answered && (
-                        <Badge className="bg-green-600 text-white">
-                          <Check className="h-3 w-3 mr-1" />
-                          Answered
-                        </Badge>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={!formData.title || submitting}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 gap-2"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Submit Prayer
+                        </>
                       )}
-                    </div>
-                    <CardTitle className="text-lg">{request.title}</CardTitle>
-                    <CardDescription>
-                      {new Date(request.created_at).toLocaleDateString()}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-700">{request.description}</p>
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Heart className="h-4 w-4" />
-                        <span>{request.prayer_count || 0} prayers</span>
-                      </div>
-                      <Button
-                        variant={prayedFor.has(request.id) ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => handlePray(request.id)}
-                        disabled={prayedFor.has(request.id) || prayingFor === request.id}
-                      >
-                        <Heart className={`mr-2 h-4 w-4 ${prayedFor.has(request.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                        {prayingFor === request.id ? 'Praying...' : prayedFor.has(request.id) ? 'Prayed' : 'I Prayed'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Prayer Stats */}
-      <Card className="bg-gradient-to-br from-navy to-blue-900 text-white">
-        <CardHeader>
-          <CardTitle>Your Prayer Impact</CardTitle>
-          <CardDescription className="text-blue-100">
-            See how you're supporting the community through prayer
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-white/10 rounded-lg p-4">
-              <div className="text-2xl font-bold mb-1">{requests.filter(r => r.is_answered).length}</div>
-              <div className="text-sm text-blue-100">Answered Prayers</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <div className="text-2xl font-bold mb-1">
-                {requests.reduce((sum, r) => sum + (r.prayer_count || 0), 0)}
-              </div>
-              <div className="text-sm text-blue-100">Prayers Received</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <div className="text-2xl font-bold mb-1">0</div>
-              <div className="text-sm text-blue-100">Prayers Given</div>
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center">
+                  <HandHeart className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">My Requests</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Answered</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.answered}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-400 to-pink-500 flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Prayers Received</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.prayersReceived}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Prayers Given</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.prayersGiven}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-1 rounded-xl shadow-sm">
+          <button
+            onClick={() => setActiveTab('community')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              activeTab === 'community'
+                ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Community Wall ({communityRequests.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('my-requests')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              activeTab === 'my-requests'
+                ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <HandHeart className="h-4 w-4" />
+            My Requests ({requests.length})
+          </button>
+        </div>
+
+        {/* Community Tab */}
+        {activeTab === 'community' && (
+          <div className="space-y-6">
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search prayers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm"
+                />
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[180px] bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                  <Filter className="h-4 w-4 mr-2 text-gray-400" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.emoji || '📋'} {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Prayer Requests Grid */}
+            {filteredCommunityRequests.length === 0 ? (
+              <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                <CardContent className="py-16 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 mx-auto mb-6 flex items-center justify-center">
+                    <Users className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                    {searchQuery || categoryFilter !== 'all' ? 'No Matching Prayers' : 'No Prayer Requests Yet'}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    {searchQuery || categoryFilter !== 'all'
+                      ? 'Try adjusting your filters.'
+                      : 'Be the first to share a prayer request with the community.'}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredCommunityRequests.map((request) => {
+                  const catInfo = getCategoryInfo(request.category)
+                  const hasPrayed = prayedFor.has(request.id)
+                  const isPraying = prayingFor === request.id
+                  const wasJustPrayed = justPrayed === request.id
+
+                  return (
+                    <Card
+                      key={request.id}
+                      className={`bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm hover:shadow-lg transition-all ${
+                        wasJustPrayed ? 'ring-2 ring-green-400 ring-offset-2' : ''
+                      } ${request.is_answered ? 'bg-green-50/50 dark:bg-green-950/20' : ''}`}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${catInfo.gradient} flex items-center justify-center flex-shrink-0`}>
+                            <span className="text-lg">{catInfo.emoji || '🙏'}</span>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <Badge className={`bg-gradient-to-r ${catInfo.gradient} text-white border-0 text-xs`}>
+                                {catInfo.label}
+                              </Badge>
+                              {request.is_answered && (
+                                <Badge className="bg-gradient-to-r from-emerald-400 to-green-500 text-white border-0 text-xs gap-1">
+                                  <Check className="h-3 w-3" />
+                                  Answered
+                                </Badge>
+                              )}
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {formatDate(request.created_at)}
+                              </span>
+                            </div>
+
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                              {request.title}
+                            </h3>
+
+                            {request.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
+                                {request.description}
+                              </p>
+                            )}
+
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <Heart className={`h-4 w-4 ${hasPrayed ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                <span>{request.prayer_count || 0} prayers</span>
+                              </div>
+
+                              <Button
+                                size="sm"
+                                onClick={() => handlePray(request.id)}
+                                disabled={hasPrayed || isPraying}
+                                className={`gap-2 transition-all ${
+                                  hasPrayed
+                                    ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white hover:from-emerald-500 hover:to-green-600'
+                                    : 'bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white'
+                                } ${wasJustPrayed ? 'scale-105' : ''}`}
+                              >
+                                {isPraying ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Praying...
+                                  </>
+                                ) : hasPrayed ? (
+                                  <>
+                                    <Check className="h-4 w-4" />
+                                    Prayed
+                                  </>
+                                ) : (
+                                  <>
+                                    <Heart className="h-4 w-4" />
+                                    I Prayed
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* My Requests Tab */}
+        {activeTab === 'my-requests' && (
+          <div className="space-y-4">
+            {requests.length === 0 ? (
+              <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                <CardContent className="py-16 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 mx-auto mb-6 flex items-center justify-center">
+                    <HandHeart className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No Prayer Requests Yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                    Share your prayer needs and let the community stand with you in faith.
+                  </p>
+                  <Button
+                    onClick={() => setIsDialogOpen(true)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Share Your First Prayer
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              requests.map((request) => {
+                const catInfo = getCategoryInfo(request.category)
+
+                return (
+                  <Card
+                    key={request.id}
+                    className={`bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm hover:shadow-lg transition-all ${
+                      request.is_answered ? 'bg-green-50/50 dark:bg-green-950/20' : ''
+                    }`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${catInfo.gradient} flex items-center justify-center flex-shrink-0`}>
+                          <span className="text-xl">{catInfo.emoji || '🙏'}</span>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4 mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <Badge className={`bg-gradient-to-r ${catInfo.gradient} text-white border-0`}>
+                                  {catInfo.label}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs gap-1">
+                                  {getPrivacyIcon(request.privacy)}
+                                  {request.privacy}
+                                </Badge>
+                                {request.is_answered && (
+                                  <Badge className="bg-gradient-to-r from-emerald-400 to-green-500 text-white border-0 gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Answered
+                                  </Badge>
+                                )}
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {request.title}
+                              </h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {formatDate(request.created_at)}
+                              </p>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(request.id)}
+                              className="text-gray-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {request.description && (
+                            <p className="text-gray-600 dark:text-gray-300 mb-4">
+                              {request.description}
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <Heart className="h-4 w-4 text-rose-500" />
+                                <span>{request.prayer_count || 0} people praying</span>
+                              </div>
+                            </div>
+
+                            {!request.is_answered && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleMarkAnswered(request.id)}
+                                className="gap-2 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/50"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                                Mark Answered
+                              </Button>
+                            )}
+
+                            {request.is_answered && request.answered_at && (
+                              <p className="text-sm text-green-600 dark:text-green-400">
+                                Answered on {new Date(request.answered_at).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {/* Encouragement Card */}
+        <Card className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 text-white border-0 shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="h-7 w-7" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold mb-1">The Power of Agreement</h3>
+                <p className="text-blue-100 text-sm">
+                  "Again, truly I tell you that if two of you on earth agree about anything they ask for, it will be done for them by my Father in heaven." — Matthew 18:19
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
