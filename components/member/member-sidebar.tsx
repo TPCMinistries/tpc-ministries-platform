@@ -81,9 +81,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     {
       title: 'Prayer',
       items: [
-        { name: 'Prayer Wall', href: '/prayer', icon: HeartIcon },
-        { name: 'My Prayers', href: '/my-prayers', icon: HandHeart },
-        { name: 'Prayer Partners', href: '/prayer-partners', icon: Users },
+        { name: 'Prayer', href: '/prayer', icon: HeartIcon },
         { name: 'Fasting', href: '/fasting', icon: Utensils },
       ]
     },

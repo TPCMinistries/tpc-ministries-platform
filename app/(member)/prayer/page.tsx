@@ -86,6 +86,7 @@ export default function PrayerWallPage() {
   const [prayedFor, setPrayedFor] = useState<Set<string>>(new Set())
   const [prayingFor, setPrayingFor] = useState<string | null>(null)
   const [justPrayed, setJustPrayed] = useState<string | null>(null)
+  const [myRequestsFilter, setMyRequestsFilter] = useState<'all' | 'active' | 'answered'>('all')
 
   useEffect(() => {
     fetchPrayerRequests()
@@ -304,6 +305,13 @@ export default function PrayerWallPage() {
       req.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       req.description.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
+  })
+
+  const filteredMyRequests = requests.filter(req => {
+    if (myRequestsFilter === 'all') return true
+    if (myRequestsFilter === 'active') return !req.is_answered
+    if (myRequestsFilter === 'answered') return req.is_answered
+    return true
   })
 
   const stats = {
@@ -674,6 +682,44 @@ export default function PrayerWallPage() {
         {/* My Requests Tab */}
         {activeTab === 'my-requests' && (
           <div className="space-y-4">
+            {/* Filter Buttons */}
+            {requests.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setMyRequestsFilter('all')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    myRequestsFilter === 'all'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-md'
+                      : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  All ({requests.length})
+                </button>
+                <button
+                  onClick={() => setMyRequestsFilter('active')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                    myRequestsFilter === 'active'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-md'
+                      : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <Clock className="h-4 w-4" />
+                  Active ({requests.filter(r => !r.is_answered).length})
+                </button>
+                <button
+                  onClick={() => setMyRequestsFilter('answered')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                    myRequestsFilter === 'answered'
+                      ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-md'
+                      : 'bg-white/80 dark:bg-slate-800/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Answered ({requests.filter(r => r.is_answered).length})
+                </button>
+              </div>
+            )}
+
             {requests.length === 0 ? (
               <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
                 <CardContent className="py-16 text-center">
@@ -693,8 +739,28 @@ export default function PrayerWallPage() {
                   </Button>
                 </CardContent>
               </Card>
+            ) : filteredMyRequests.length === 0 ? (
+              <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
+                    {myRequestsFilter === 'answered' ? (
+                      <CheckCircle className="h-8 w-8 text-gray-400" />
+                    ) : (
+                      <Clock className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                    No {myRequestsFilter === 'answered' ? 'Answered' : 'Active'} Prayers
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {myRequestsFilter === 'answered'
+                      ? "When God answers your prayers, mark them as answered to celebrate!"
+                      : "All your prayers have been answered! Praise God!"}
+                  </p>
+                </CardContent>
+              </Card>
             ) : (
-              requests.map((request) => {
+              filteredMyRequests.map((request) => {
                 const catInfo = getCategoryInfo(request.category)
 
                 return (
