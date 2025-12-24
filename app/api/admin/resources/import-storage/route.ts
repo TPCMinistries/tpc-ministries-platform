@@ -21,30 +21,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
-    // List files in multiple possible folders
-    const foldersToCheck = ['ebooks', 'resources', 'books', 'pdfs', '']
-    let allFiles: any[] = []
-    let folderFound = ''
+    // List files from Ebooks bucket (separate bucket, not folder)
+    const { data: files, error: storageError } = await supabase.storage
+      .from('Ebooks')
+      .list('', { limit: 100 })
 
-    for (const folder of foldersToCheck) {
-      const { data: files, error: storageError } = await supabase.storage
-        .from('tpc-media')
-        .list(folder || undefined, { limit: 100 })
-
-      if (!storageError && files && files.length > 0) {
-        const validFiles = files.filter(f =>
-          f.name !== '.emptyFolderPlaceholder' &&
-          (f.name.endsWith('.pdf') || f.name.endsWith('.epub') || f.name.endsWith('.docx'))
-        )
-        if (validFiles.length > 0) {
-          allFiles = validFiles.map(f => ({ ...f, folder }))
-          folderFound = folder
-          break
-        }
-      }
+    if (storageError) {
+      console.error('Error listing Ebooks bucket:', storageError)
+      return NextResponse.json({ error: 'Failed to list storage files', details: storageError.message }, { status: 500 })
     }
 
-    const files = allFiles
+    // Filter valid files
+    const validFiles = (files || []).filter(f =>
+      f.name !== '.emptyFolderPlaceholder' &&
+      (f.name.endsWith('.pdf') || f.name.endsWith('.epub') || f.name.endsWith('.docx') || f.name.endsWith('.PDF'))
+    )
 
     // Get existing resources to avoid duplicates
     const { data: existingResources } = await supabase
@@ -56,9 +47,9 @@ export async function POST(request: NextRequest) {
     const imported: string[] = []
     const skipped: string[] = []
 
-    for (const file of files) {
-      const folderPath = file.folder ? `${file.folder}/` : ''
-      const fileUrl = `https://naulwwnzrznslvhhxfed.supabase.co/storage/v1/object/public/tpc-media/${folderPath}${file.name}`
+    for (const file of validFiles) {
+      // URL for Ebooks bucket
+      const fileUrl = `https://naulwwnzrznslvhhxfed.supabase.co/storage/v1/object/public/Ebooks/${file.name}`
 
       if (existingUrls.has(fileUrl)) {
         skipped.push(file.name)
@@ -100,8 +91,8 @@ export async function POST(request: NextRequest) {
       success: true,
       imported: imported.length,
       skipped: skipped.length,
-      folder_searched: folderFound || 'root',
-      total_files_found: files.length,
+      bucket: 'Ebooks',
+      total_files_found: validFiles.length,
       files: {
         imported,
         skipped,

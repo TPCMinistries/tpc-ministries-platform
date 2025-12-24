@@ -21,8 +21,10 @@ import {
 
 export default function GivePage() {
   const [amount, setAmount] = useState('')
+  const [selectedFund, setSelectedFund] = useState<'general' | 'missions' | 'leadership'>('general')
   const [selectedFrequency, setSelectedFrequency] = useState<'once' | 'monthly' | 'yearly'>('once')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const quickAmounts = [25, 50, 100, 250, 500, 1000]
 
@@ -71,10 +73,49 @@ export default function GivePage() {
   ]
 
   const handleGive = async () => {
+    const donationAmount = parseFloat(amount)
+
+    if (!donationAmount || donationAmount < 1) {
+      setError('Please enter a valid amount (minimum $1)')
+      return
+    }
+
     setLoading(true)
-    // TODO: Implement payment processing
-    console.log('Processing donation:', { amount, frequency: selectedFrequency })
-    setTimeout(() => setLoading(false), 2000)
+    setError(null)
+
+    try {
+      // Map yearly to monthly for Stripe (yearly isn't supported in current API)
+      const frequency = selectedFrequency === 'yearly' ? 'once' : selectedFrequency
+
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: donationAmount,
+          type: selectedFund,
+          frequency,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('No checkout URL received')
+      }
+    } catch (err: any) {
+      console.error('Donation error:', err)
+      setError(err.message || 'An error occurred. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -164,14 +205,15 @@ export default function GivePage() {
                   {funds.map((fund) => (
                     <div
                       key={fund.id}
-                      className="flex items-start gap-3 p-4 border rounded-lg hover:border-navy cursor-pointer transition-colors"
+                      onClick={() => setSelectedFund(fund.id as 'general' | 'missions' | 'leadership')}
+                      className={`flex items-start gap-3 p-4 border rounded-lg hover:border-navy cursor-pointer transition-colors ${selectedFund === fund.id ? 'border-navy bg-navy/5' : ''}`}
                     >
                       <fund.icon className={`h-5 w-5 ${fund.color} mt-0.5`} />
                       <div className="flex-1">
                         <p className="font-semibold text-navy">{fund.name}</p>
                         <p className="text-sm text-gray-600">{fund.description}</p>
                       </div>
-                      <input type="radio" name="fund" defaultChecked={fund.id === 'general'} />
+                      <input type="radio" name="fund" checked={selectedFund === fund.id} readOnly />
                     </div>
                   ))}
                 </div>
@@ -186,10 +228,16 @@ export default function GivePage() {
                 </Button>
               </div>
 
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
               <Button
                 onClick={handleGive}
                 disabled={!amount || loading}
-                className="w-full"
+                className="w-full bg-navy hover:bg-navy/90"
                 size="lg"
               >
                 {loading ? 'Processing...' : `Give $${amount || '0'} ${selectedFrequency === 'once' ? '' : selectedFrequency}`}

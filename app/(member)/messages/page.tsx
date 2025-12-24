@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Send, Loader2, ArrowLeft, Plus } from 'lucide-react'
+import { MessageSquare, Send, Loader2, ArrowLeft, Plus, Mic, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import VoiceRecorder from '@/components/voice/VoiceRecorder'
+import VoicePlayer from '@/components/voice/VoicePlayer'
 
 interface Message {
   id: string
@@ -19,6 +21,9 @@ interface Message {
   recipient_type: 'member' | 'admin'
   subject?: string
   message: string
+  voice_url?: string
+  voice_duration_seconds?: number
+  voice_transcription?: string
   is_read: boolean
   read_at?: string
   created_at: string
@@ -52,6 +57,12 @@ export default function MemberMessagesPage() {
   const [userId, setUserId] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false)
+  const [showReplyVoiceRecorder, setShowReplyVoiceRecorder] = useState(false)
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null)
+  const [voiceDuration, setVoiceDuration] = useState<number>(0)
+  const [replyVoiceBlob, setReplyVoiceBlob] = useState<Blob | null>(null)
+  const [replyVoiceDuration, setReplyVoiceDuration] = useState<number>(0)
 
   useEffect(() => {
     fetchConversations()
@@ -166,13 +177,63 @@ export default function MemberMessagesPage() {
     }
   }
 
+  const uploadVoice = async (blob: Blob): Promise<{ url: string; transcription: string } | null> => {
+    try {
+      const formData = new FormData()
+      formData.append('audio', blob, 'message.webm')
+      formData.append('type', 'message')
+
+      const uploadRes = await fetch('/api/voice/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!uploadRes.ok) throw new Error('Failed to upload audio')
+      const { url } = await uploadRes.json()
+
+      // Try to transcribe
+      let transcription = ''
+      try {
+        const transcribeFormData = new FormData()
+        transcribeFormData.append('audio', blob, 'message.webm')
+        const transcribeRes = await fetch('/api/voice/transcribe', {
+          method: 'POST',
+          body: transcribeFormData
+        })
+        if (transcribeRes.ok) {
+          const data = await transcribeRes.json()
+          transcription = data.transcription || ''
+        }
+      } catch (e) {
+        console.log('Transcription not available')
+      }
+
+      return { url, transcription }
+    } catch (error) {
+      console.error('Error uploading voice:', error)
+      return null
+    }
+  }
+
+  const handleVoiceRecordingComplete = (blob: Blob, duration: number) => {
+    setVoiceBlob(blob)
+    setVoiceDuration(duration)
+    setShowVoiceRecorder(false)
+  }
+
+  const handleReplyVoiceRecordingComplete = (blob: Blob, duration: number) => {
+    setReplyVoiceBlob(blob)
+    setReplyVoiceDuration(duration)
+    setShowReplyVoiceRecorder(false)
+  }
+
   const handleSendNewMessage = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!newMessageForm.subject.trim() || !newMessageForm.message.trim()) {
+    if (!newMessageForm.subject.trim() || (!newMessageForm.message.trim() && !voiceBlob)) {
       toast({
         title: 'Error',
-        description: 'Subject and message are required',
+        description: 'Subject and message (text or voice) are required',
         variant: 'destructive',
       })
       return
@@ -182,6 +243,20 @@ export default function MemberMessagesPage() {
     setSending(true)
 
     try {
+      let voiceData: { url: string; transcription: string } | null = null
+      if (voiceBlob) {
+        voiceData = await uploadVoice(voiceBlob)
+        if (!voiceData) {
+          toast({
+            title: 'Error',
+            description: 'Failed to upload voice message',
+            variant: 'destructive',
+          })
+          setSending(false)
+          return
+        }
+      }
+
       const conversationId = crypto.randomUUID()
 
       const { error } = await supabase.from('messages').insert({
@@ -190,7 +265,10 @@ export default function MemberMessagesPage() {
         sender_type: 'member',
         recipient_type: 'admin',
         subject: newMessageForm.subject,
-        message: newMessageForm.message,
+        message: newMessageForm.message || (voiceData?.transcription ? `[Voice Message] ${voiceData.transcription}` : '[Voice Message]'),
+        voice_url: voiceData?.url || null,
+        voice_duration_seconds: voiceBlob ? voiceDuration : null,
+        voice_transcription: voiceData?.transcription || null,
       })
 
       if (error) {
@@ -206,6 +284,8 @@ export default function MemberMessagesPage() {
           description: 'Message sent to leadership',
         })
         setNewMessageForm({ subject: '', message: '' })
+        setVoiceBlob(null)
+        setVoiceDuration(0)
         setShowNewMessage(false)
         fetchConversations()
       }
@@ -219,18 +299,35 @@ export default function MemberMessagesPage() {
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!replyMessage.trim() || !selectedConversation) return
+    if ((!replyMessage.trim() && !replyVoiceBlob) || !selectedConversation) return
 
     const supabase = createClient()
     setSending(true)
 
     try {
+      let voiceData: { url: string; transcription: string } | null = null
+      if (replyVoiceBlob) {
+        voiceData = await uploadVoice(replyVoiceBlob)
+        if (!voiceData) {
+          toast({
+            title: 'Error',
+            description: 'Failed to upload voice message',
+            variant: 'destructive',
+          })
+          setSending(false)
+          return
+        }
+      }
+
       const { error } = await supabase.from('messages').insert({
         conversation_id: selectedConversation.conversation_id,
         sender_id: userId,
         sender_type: 'member',
         recipient_type: 'admin',
-        message: replyMessage,
+        message: replyMessage || (voiceData?.transcription ? `[Voice Message] ${voiceData.transcription}` : '[Voice Message]'),
+        voice_url: voiceData?.url || null,
+        voice_duration_seconds: replyVoiceBlob ? replyVoiceDuration : null,
+        voice_transcription: voiceData?.transcription || null,
       })
 
       if (error) {
@@ -242,6 +339,8 @@ export default function MemberMessagesPage() {
         })
       } else {
         setReplyMessage('')
+        setReplyVoiceBlob(null)
+        setReplyVoiceDuration(0)
         fetchConversations()
         // Refresh selected conversation
         const updatedConv = conversations.find(
@@ -337,7 +436,23 @@ export default function MemberMessagesPage() {
                         TPC Leadership
                       </div>
                     )}
-                    <p className="whitespace-pre-wrap">{message.message}</p>
+                    {message.voice_url && (
+                      <div className="mb-2">
+                        <VoicePlayer
+                          audioUrl={message.voice_url}
+                          duration={message.voice_duration_seconds}
+                          compact
+                        />
+                      </div>
+                    )}
+                    {message.message && !message.message.startsWith('[Voice Message]') && (
+                      <p className="whitespace-pre-wrap">{message.message}</p>
+                    )}
+                    {message.voice_transcription && (
+                      <p className={`text-xs mt-1 italic ${isFromMe ? 'text-gray-300' : 'text-gray-500'}`}>
+                        Transcript: {message.voice_transcription}
+                      </p>
+                    )}
                     <div
                       className={`text-xs mt-2 ${
                         isFromMe ? 'text-gray-300' : 'text-gray-500'
@@ -356,26 +471,78 @@ export default function MemberMessagesPage() {
         {/* Reply Input */}
         <div className="border-t bg-white p-4">
           <div className="max-w-5xl mx-auto">
-            <form onSubmit={handleSendReply} className="flex gap-3">
-              <Textarea
-                placeholder="Type your reply..."
-                value={replyMessage}
-                onChange={(e) => setReplyMessage(e.target.value)}
-                className="min-h-[80px]"
-                disabled={sending}
-              />
-              <Button
-                type="submit"
-                disabled={sending || !replyMessage.trim()}
-                className="bg-navy hover:bg-navy/90"
-              >
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
+            {showReplyVoiceRecorder ? (
+              <div className="bg-muted/30 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Record a voice message (max 2 minutes)
+                </p>
+                <VoiceRecorder
+                  onRecordingComplete={handleReplyVoiceRecordingComplete}
+                  maxDurationSeconds={120}
+                  disabled={sending}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowReplyVoiceRecorder(false)}
+                  className="mt-2"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSendReply} className="space-y-3">
+                {replyVoiceBlob && (
+                  <div className="flex items-center gap-3 p-3 bg-gold/10 rounded-lg border border-gold/20">
+                    <Mic className="h-5 w-5 text-gold" />
+                    <span className="text-sm flex-1">
+                      Voice message recorded ({Math.round(replyVoiceDuration)}s)
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setReplyVoiceBlob(null)
+                        setReplyVoiceDuration(0)
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
-              </Button>
-            </form>
+                <div className="flex gap-3">
+                  <Textarea
+                    placeholder="Type your reply..."
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={sending}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowReplyVoiceRecorder(true)}
+                      disabled={sending}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={sending || (!replyMessage.trim() && !replyVoiceBlob)}
+                      className="bg-navy hover:bg-navy/90"
+                    >
+                      {sending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -422,7 +589,7 @@ export default function MemberMessagesPage() {
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Message *
+                    Message {voiceBlob ? '' : '*'}
                   </label>
                   <Textarea
                     placeholder="Type your message here..."
@@ -430,15 +597,72 @@ export default function MemberMessagesPage() {
                     onChange={(e) =>
                       setNewMessageForm({ ...newMessageForm, message: e.target.value })
                     }
-                    rows={8}
+                    rows={6}
                     disabled={sending}
                   />
                 </div>
 
-                <div className="flex gap-3">
+                {/* Voice Recording Section */}
+                <div className="border-t pt-4">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Or send a voice message
+                  </label>
+                  {showVoiceRecorder ? (
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Record your message (max 2 minutes)
+                      </p>
+                      <VoiceRecorder
+                        onRecordingComplete={handleVoiceRecordingComplete}
+                        maxDurationSeconds={120}
+                        disabled={sending}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowVoiceRecorder(false)}
+                        className="mt-2"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : voiceBlob ? (
+                    <div className="flex items-center gap-3 p-3 bg-gold/10 rounded-lg border border-gold/20">
+                      <Mic className="h-5 w-5 text-gold" />
+                      <span className="text-sm flex-1">
+                        Voice message recorded ({Math.round(voiceDuration)}s)
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setVoiceBlob(null)
+                          setVoiceDuration(0)
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowVoiceRecorder(true)}
+                      disabled={sending}
+                      className="gap-2"
+                    >
+                      <Mic className="h-4 w-4" />
+                      Record Voice Message
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-2">
                   <Button
                     type="submit"
-                    disabled={sending}
+                    disabled={sending || (!newMessageForm.message.trim() && !voiceBlob)}
                     className="bg-navy hover:bg-navy/90"
                   >
                     {sending ? (
@@ -456,7 +680,11 @@ export default function MemberMessagesPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setShowNewMessage(false)}
+                    onClick={() => {
+                      setShowNewMessage(false)
+                      setVoiceBlob(null)
+                      setVoiceDuration(0)
+                    }}
                     disabled={sending}
                   >
                     Cancel

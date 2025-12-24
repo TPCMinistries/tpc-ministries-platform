@@ -24,10 +24,10 @@ export default async function MemberLayout({
     redirect('/auth/login')
   }
 
-  // Get member data
+  // Get member data including role
   const { data: member, error: memberError } = await supabase
     .from('members')
-    .select('id, first_name, last_name, phone_number, is_admin')
+    .select('id, first_name, last_name, phone_number, is_admin, role, tier')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -48,11 +48,13 @@ export default async function MemberLayout({
     redirect('/onboarding')
   }
 
-  // Add email and tier from auth user (since members table doesn't have these)
+  // Add email and ensure role is set (fallback for backward compatibility)
   const memberWithAuth = {
     ...member,
     email: user.email || '',
-    tier: 'free', // Default tier
+    // Use role field, fallback to is_admin check, then tier, then 'free'
+    role: member.role || (member.is_admin ? 'admin' : member.tier || 'free'),
+    tier: member.tier || 'free',
   }
 
   return (

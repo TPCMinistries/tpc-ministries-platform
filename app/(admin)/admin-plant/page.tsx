@@ -50,7 +50,9 @@ import {
   Video,
   FileText,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  Sparkles,
+  HelpCircle
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -119,6 +121,9 @@ export default function AdminPlantPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [seeding, setSeeding] = useState(false)
+  const [populating, setPopulating] = useState(false)
+  const [creatingQuizzes, setCreatingQuizzes] = useState(false)
 
   // Dialog states
   const [isCourseDialogOpen, setIsCourseDialogOpen] = useState(false)
@@ -588,6 +593,72 @@ export default function AdminPlantPage() {
     }
   }
 
+  const handleSeedCourses = async () => {
+    if (!confirm('This will add 12 starter courses (3 fully built FREE courses + 9 placeholder courses). Continue?')) return
+
+    setSeeding(true)
+    try {
+      const res = await fetch('/api/admin/seed-courses', { method: 'POST' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to seed courses')
+      }
+
+      alert(`Successfully created ${data.courses?.length || 0} courses!`)
+      fetchData()
+    } catch (error) {
+      console.error('Error seeding courses:', error)
+      alert('Failed to seed courses: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setSeeding(false)
+    }
+  }
+
+  const handlePopulateCourses = async () => {
+    if (!confirm('This will add full lesson content to "Introduction to the Bible" and "Prayer Foundations" courses. Any existing modules/lessons in these courses will be replaced. Continue?')) return
+
+    setPopulating(true)
+    try {
+      const res = await fetch('/api/admin/populate-courses', { method: 'POST' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to populate courses')
+      }
+
+      alert('Successfully added lesson content to courses!')
+      fetchData()
+    } catch (error) {
+      console.error('Error populating courses:', error)
+      alert('Failed to populate courses: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setPopulating(false)
+    }
+  }
+
+  const handleCreateQuizzes = async () => {
+    if (!confirm('This will create quizzes for the Bible and Prayer courses. Any existing quizzes for these modules will be replaced. Continue?')) return
+
+    setCreatingQuizzes(true)
+    try {
+      const res = await fetch('/api/admin/populate-quizzes', { method: 'POST' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create quizzes')
+      }
+
+      alert('Successfully created quizzes for courses!')
+      fetchData()
+    } catch (error) {
+      console.error('Error creating quizzes:', error)
+      alert('Failed to create quizzes: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setCreatingQuizzes(false)
+    }
+  }
+
   const filteredCourses = courses.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -962,6 +1033,29 @@ export default function AdminPlantPage() {
             PLANT Learning Management
           </h1>
           <p className="text-muted-foreground mt-1">Manage courses, modules, lessons, and learning paths</p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={handlePopulateCourses} disabled={populating} variant="outline" className="gap-2">
+            {populating ? (
+              <><Loader2 className="h-4 w-4 animate-spin" />Adding Content...</>
+            ) : (
+              <><BookOpen className="h-4 w-4" />Populate Lessons</>
+            )}
+          </Button>
+          <Button onClick={handleCreateQuizzes} disabled={creatingQuizzes} variant="outline" className="gap-2">
+            {creatingQuizzes ? (
+              <><Loader2 className="h-4 w-4 animate-spin" />Creating Quizzes...</>
+            ) : (
+              <><HelpCircle className="h-4 w-4" />Add Quizzes</>
+            )}
+          </Button>
+          <Button onClick={handleSeedCourses} disabled={seeding} variant={courses.length === 0 ? "default" : "outline"} className="gap-2">
+            {seeding ? (
+              <><Loader2 className="h-4 w-4 animate-spin" />Adding Courses...</>
+            ) : (
+              <><Sparkles className="h-4 w-4" />{courses.length === 0 ? 'Seed Starter Courses' : 'Add Sample Courses'}</>
+            )}
+          </Button>
         </div>
       </div>
 

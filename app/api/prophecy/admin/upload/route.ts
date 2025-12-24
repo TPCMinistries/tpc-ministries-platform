@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       publish_date,
       scriptures,
       excerpt,
+      tier_required = 'free',
     } = body
 
     // Validate required fields
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
         date: publishDate.toISOString(),
         scriptures,
         excerpt: excerpt || transcript.substring(0, 200) + '...',
+        tier_required,
       })
       .select()
       .single()

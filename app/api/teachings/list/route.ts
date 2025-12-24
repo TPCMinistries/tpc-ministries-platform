@@ -1,10 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { addAccessInfo } from '@/lib/auth/content-access'
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
+
+    // Get user's role for content access
+    let userRole = 'free'
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+      userRole = member?.role || 'free'
+    }
 
     // Get query parameters
     const type = searchParams.get('type') || 'all'
@@ -15,7 +28,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build query
+    // Build query - include tier_required for access control
     let query = supabase
       .from('teachings')
       .select(`
@@ -30,6 +43,7 @@ export async function GET(request: NextRequest) {
         topic,
         status,
         thumbnail,
+        tier_required,
         created_at,
         published_at
       `, { count: 'exact' })
@@ -81,12 +95,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Add access info to each teaching (canAccess, requiredRole)
+    const teachingsWithAccess = addAccessInfo(data || [], userRole, 'tier_required')
+
     return NextResponse.json(
       {
-        teachings: data || [],
+        teachings: teachingsWithAccess,
         total: count || 0,
         limit,
         offset,
+        userRole, // Include user's role for client-side use
       },
       { status: 200 }
     )

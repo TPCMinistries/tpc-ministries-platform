@@ -1,17 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { addAccessInfo } from '@/lib/auth/content-access'
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
+    // Get user's role for content access
+    let userRole = 'free'
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+      userRole = member?.role || 'free'
+    }
+
     const theme = searchParams.get('theme') || 'all'
     const search = searchParams.get('search') || ''
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build query for published public prophecies
+    // Build query for published public prophecies - include tier_required
     let query = supabase
       .from('public_prophecies')
       .select(`
@@ -25,6 +38,7 @@ export async function GET(request: NextRequest) {
         thumbnail,
         excerpt,
         is_featured,
+        tier_required,
         created_at
       `, { count: 'exact' })
       .eq('status', 'published')
@@ -55,12 +69,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Add access info to each prophecy (canAccess, requiredRole)
+    const propheciesWithAccess = addAccessInfo(data || [], userRole, 'tier_required')
+
     return NextResponse.json(
       {
-        prophecies: data || [],
+        prophecies: propheciesWithAccess,
         total: count || 0,
         limit,
         offset,
+        userRole,
       },
       { status: 200 }
     )

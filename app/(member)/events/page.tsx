@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, Clock, MapPin, Users, Video, Check, Bell } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Check, Bell, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 interface Event {
   id: string
@@ -21,6 +22,31 @@ interface Event {
   attendees_count: number
   is_registered: boolean
   category: string
+  tier_required?: string
+  canAccess: boolean
+  requiredRole: string
+}
+
+// Role hierarchy for access control
+const ROLE_HIERARCHY = ['free', 'member', 'partner', 'staff', 'admin']
+
+function hasMinimumRole(userRole: string | null, requiredRole: string): boolean {
+  const userLevel = ROLE_HIERARCHY.indexOf(userRole || 'free')
+  const requiredLevel = ROLE_HIERARCHY.indexOf(requiredRole || 'free')
+  return userLevel >= requiredLevel
+}
+
+function tierToRole(tier: string | null | undefined): string {
+  switch (tier) {
+    case 'covenant':
+    case 'partner':
+      return 'partner'
+    case 'member':
+      return 'member'
+    case 'free':
+    default:
+      return 'free'
+  }
 }
 
 export default function EventsPage() {
@@ -28,6 +54,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('upcoming')
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string>('free')
 
   useEffect(() => {
     fetchEvents()
@@ -44,6 +71,16 @@ export default function EventsPage() {
       }
 
       setUserId(user.id)
+
+      // Fetch user's role from members table
+      const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+
+      const memberRole = member?.role || 'free'
+      setUserRole(memberRole)
 
       // Fetch all upcoming events
       const { data: eventsData, error: eventsError } = await supabase
@@ -67,20 +104,26 @@ export default function EventsPage() {
         console.error('Error fetching events:', eventsError)
       } else if (eventsData) {
         setEvents(
-          eventsData.map((event: any) => ({
-            id: event.id,
-            title: event.title,
-            description: event.description || '',
-            type: event.event_type,
-            date: new Date(event.start_time).toLocaleDateString(),
-            time: new Date(event.start_time).toLocaleTimeString(),
-            location: event.location,
-            meeting_link: event.virtual_link,
-            image_url: event.image_url,
-            attendees_count: 0, // TODO: Calculate from registrations
-            is_registered: registeredEventIds.has(event.id),
-            category: 'Event',
-          }))
+          eventsData.map((event: any) => {
+            const requiredRole = tierToRole(event.tier_required)
+            return {
+              id: event.id,
+              title: event.title,
+              description: event.description || '',
+              type: event.event_type,
+              date: new Date(event.start_time).toLocaleDateString(),
+              time: new Date(event.start_time).toLocaleTimeString(),
+              location: event.location,
+              meeting_link: event.virtual_link,
+              image_url: event.image_url,
+              attendees_count: 0, // TODO: Calculate from registrations
+              is_registered: registeredEventIds.has(event.id),
+              category: 'Event',
+              tier_required: event.tier_required,
+              canAccess: hasMinimumRole(memberRole, requiredRole),
+              requiredRole: requiredRole,
+            }
+          })
         )
       }
     } catch (error) {
@@ -223,13 +266,19 @@ export default function EventsPage() {
             </Card>
           ) : (
             upcomingEvents.map((event) => (
-              <Card key={event.id} className="hover:shadow-md transition-shadow">
+              <Card key={event.id} className={`hover:shadow-md transition-shadow ${!event.canAccess ? 'opacity-80' : ''}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <CardTitle className="text-xl">{event.title}</CardTitle>
-                        {event.is_registered && (
+                        {!event.canAccess && (
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                            <Lock className="h-3 w-3 mr-1" />
+                            {event.requiredRole === 'partner' ? 'Partner Event' : `${event.requiredRole.charAt(0).toUpperCase() + event.requiredRole.slice(1)} Only`}
+                          </Badge>
+                        )}
+                        {event.is_registered && event.canAccess && (
                           <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                             <Check className="h-3 w-3 mr-1" />
                             Registered
@@ -274,18 +323,29 @@ export default function EventsPage() {
                     <Badge variant="outline">{event.category}</Badge>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      onClick={() => toggleRegistration(event.id)}
-                      className={
-                        event.is_registered
-                          ? 'bg-gray-600 hover:bg-gray-700'
-                          : 'bg-navy hover:bg-navy/90'
-                      }
-                    >
-                      {event.is_registered ? 'Unregister' : 'Register Now'}
-                    </Button>
-                    {event.meeting_link && event.is_registered && (
-                      <Button variant="outline">Join Online</Button>
+                    {event.canAccess ? (
+                      <>
+                        <Button
+                          onClick={() => toggleRegistration(event.id)}
+                          className={
+                            event.is_registered
+                              ? 'bg-gray-600 hover:bg-gray-700'
+                              : 'bg-navy hover:bg-navy/90'
+                          }
+                        >
+                          {event.is_registered ? 'Unregister' : 'Register Now'}
+                        </Button>
+                        {event.meeting_link && event.is_registered && (
+                          <Button variant="outline">Join Online</Button>
+                        )}
+                      </>
+                    ) : (
+                      <Link href="/give">
+                        <Button className="bg-amber-600 hover:bg-amber-700">
+                          <Lock className="h-4 w-4 mr-2" />
+                          {event.requiredRole === 'partner' ? 'Become a Partner' : 'Upgrade to Access'}
+                        </Button>
+                      </Link>
                     )}
                   </div>
                 </CardContent>

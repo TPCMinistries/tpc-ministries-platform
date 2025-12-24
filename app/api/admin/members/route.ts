@@ -1,15 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Helper function to check admin status
+// Helper function to check admin/staff status
 async function checkAdminStatus(supabase: any, userId: string) {
   const { data: adminMember } = await supabase
     .from('members')
-    .select('is_admin')
+    .select('is_admin, role')
     .eq('user_id', userId)
     .single()
 
-  return adminMember?.is_admin === true
+  // Staff and above can access admin features (admin or staff role)
+  const hasAdminRole = ['admin', 'staff'].includes(adminMember?.role)
+  return adminMember?.is_admin === true || hasAdminRole
 }
 
 // GET - List all members with tags
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
       last_name,
       email,
       phone,
+      role = 'free',
       tier = 'free',
       is_admin = false,
       tags = [],
@@ -165,6 +168,7 @@ export async function POST(request: NextRequest) {
         last_name,
         email,
         phone,
+        role,
         tier,
         is_admin,
         notes,

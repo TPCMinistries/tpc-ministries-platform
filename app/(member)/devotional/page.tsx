@@ -20,10 +20,14 @@ import {
   Loader2,
   Clock,
   User,
-  FileText
+  FileText,
+  Mic,
+  CheckCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import AIWritingAssistant from '@/components/member/ai-writing-assistant'
+import VoiceRecorder from '@/components/voice/VoiceRecorder'
+import VoicePlayer from '@/components/voice/VoicePlayer'
 
 interface Devotional {
   id: string
@@ -49,6 +53,14 @@ interface PastDevotional {
   author: string
 }
 
+interface VoiceReflection {
+  id: string
+  audio_url: string
+  audio_duration_seconds: number
+  transcription?: string
+  created_at: string
+}
+
 export default function DevotionalPage() {
   const [devotional, setDevotional] = useState<Devotional | null>(null)
   const [pastDevotionals, setPastDevotionals] = useState<PastDevotional[]>([])
@@ -56,11 +68,37 @@ export default function DevotionalPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isPlaying, setIsPlaying] = useState(false)
   const [showPast, setShowPast] = useState(false)
+  const [voiceReflection, setVoiceReflection] = useState<VoiceReflection | null>(null)
+  const [uploadingVoice, setUploadingVoice] = useState(false)
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false)
 
   useEffect(() => {
     fetchDevotional(selectedDate)
     fetchPastDevotionals()
+    setVoiceReflection(null) // Reset when changing date
+    setShowVoiceRecorder(false)
   }, [selectedDate])
+
+  // Fetch voice reflection after devotional is loaded
+  useEffect(() => {
+    if (devotional?.id) {
+      fetchVoiceReflection(devotional.id)
+    }
+  }, [devotional?.id])
+
+  const fetchVoiceReflection = async (devotionalId: string) => {
+    try {
+      const res = await fetch(`/api/devotional/voice-reflection?devotionalId=${devotionalId}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.reflection) {
+          setVoiceReflection(data.reflection)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching voice reflection:', error)
+    }
+  }
 
   const fetchDevotional = async (date: string) => {
     setLoading(true)
@@ -90,6 +128,66 @@ export default function DevotionalPage() {
       }
     } catch (error) {
       console.error('Error fetching past devotionals:', error)
+    }
+  }
+
+  const handleVoiceRecordingComplete = async (audioBlob: Blob, duration: number) => {
+    if (!devotional) return
+
+    setUploadingVoice(true)
+    try {
+      // Upload the audio file
+      const formData = new FormData()
+      formData.append('audio', audioBlob, 'reflection.webm')
+      formData.append('devotionalId', devotional.id)
+      formData.append('type', 'devotional_reflection')
+
+      const uploadRes = await fetch('/api/voice/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!uploadRes.ok) throw new Error('Failed to upload audio')
+      const { url } = await uploadRes.json()
+
+      // Optionally transcribe
+      let transcription = ''
+      try {
+        const transcribeFormData = new FormData()
+        transcribeFormData.append('audio', audioBlob, 'reflection.webm')
+        const transcribeRes = await fetch('/api/voice/transcribe', {
+          method: 'POST',
+          body: transcribeFormData
+        })
+        if (transcribeRes.ok) {
+          const data = await transcribeRes.json()
+          transcription = data.transcription || ''
+        }
+      } catch (e) {
+        console.log('Transcription not available')
+      }
+
+      // Save the voice note
+      const saveRes = await fetch('/api/devotional/voice-reflection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          devotionalId: devotional.id,
+          audioUrl: url,
+          audioDuration: duration,
+          transcription
+        })
+      })
+
+      if (saveRes.ok) {
+        const data = await saveRes.json()
+        setVoiceReflection(data.reflection)
+        setShowVoiceRecorder(false)
+      }
+    } catch (error) {
+      console.error('Error saving voice reflection:', error)
+    } finally {
+      setUploadingVoice(false)
     }
   }
 
@@ -245,6 +343,71 @@ export default function DevotionalPage() {
                   </ul>
                 </div>
               )}
+
+              <Separator />
+
+              {/* Voice Reflection */}
+              <div className="space-y-4">
+                <h3 className="flex items-center gap-2 font-semibold text-lg">
+                  <Mic className="h-5 w-5 text-gold" />
+                  Voice Reflection
+                </h3>
+
+                {voiceReflection ? (
+                  <div className="bg-gold/5 rounded-lg p-4 border border-gold/20">
+                    <div className="flex items-center gap-2 mb-3 text-sm text-gold">
+                      <CheckCircle className="h-4 w-4" />
+                      Your voice reflection has been saved
+                    </div>
+                    <VoicePlayer
+                      audioUrl={voiceReflection.audio_url}
+                      duration={voiceReflection.audio_duration_seconds}
+                      title="My Reflection"
+                    />
+                    {voiceReflection.transcription && (
+                      <div className="mt-3 pt-3 border-t border-gold/20">
+                        <p className="text-xs text-muted-foreground mb-1">Transcript:</p>
+                        <p className="text-sm italic text-gray-600">{voiceReflection.transcription}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : showVoiceRecorder ? (
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Record your thoughts on today's devotional (max 2 minutes)
+                    </p>
+                    <VoiceRecorder
+                      onRecordingComplete={handleVoiceRecordingComplete}
+                      maxDurationSeconds={120}
+                      disabled={uploadingVoice}
+                    />
+                    {uploadingVoice && (
+                      <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving your reflection...
+                      </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowVoiceRecorder(false)}
+                      className="mt-2"
+                      disabled={uploadingVoice}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowVoiceRecorder(true)}
+                    className="gap-2"
+                  >
+                    <Mic className="h-4 w-4" />
+                    Record Voice Reflection
+                  </Button>
+                )}
+              </div>
 
               <Separator />
 

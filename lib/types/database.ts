@@ -8,10 +8,16 @@ export interface Member {
   phone?: string
   avatar_url?: string
   tier: 'free' | 'partner' | 'covenant'
+  role: 'free' | 'member' | 'partner' | 'staff' | 'admin'
+  is_admin?: boolean // Legacy field, use role instead
   bio?: string
   location?: string
   joined_at: string
   last_active_at: string
+  last_login_at?: string
+  login_count?: number
+  role_updated_at?: string
+  role_upgrade_reason?: string
   created_at: string
   updated_at: string
 }

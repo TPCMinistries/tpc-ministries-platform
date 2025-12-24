@@ -24,10 +24,10 @@ export default async function AdminLayout({
     redirect('/auth/login')
   }
 
-  // Check if user has admin role
+  // Check if user has admin or staff role
   const { data: member, error } = await supabase
     .from('members')
-    .select('is_admin')
+    .select('is_admin, role')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -36,10 +36,13 @@ export default async function AdminLayout({
     redirect('/onboarding')
   }
 
-  // If there's an error or member is not admin, redirect to home or dashboard
-  if (error || !member || !member.is_admin) {
-    // If member exists but not admin, redirect to dashboard
-    if (member && !member.is_admin) {
+  // Check if user has staff or admin access (role-based or legacy is_admin)
+  const hasAdminAccess = member?.role === 'admin' || member?.role === 'staff' || member?.is_admin === true
+
+  // If there's an error or member doesn't have admin access, redirect
+  if (error || !member || !hasAdminAccess) {
+    // If member exists but no admin access, redirect to dashboard
+    if (member && !hasAdminAccess) {
       redirect('/dashboard')
     }
     // Otherwise redirect to home

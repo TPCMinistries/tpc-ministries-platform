@@ -28,12 +28,37 @@ interface ContentItem {
   duration_minutes?: number
   thumbnail_url?: string
   is_premium: boolean
+  tier_required?: string
+  canAccess: boolean
+  requiredRole: string
   season_id?: string
   season_name?: string
   season_color?: string
   progress_percentage?: number
   is_bookmarked?: boolean
   view_count?: number
+}
+
+// Role hierarchy for access control
+const ROLE_HIERARCHY = ['free', 'member', 'partner', 'staff', 'admin']
+
+function hasMinimumRole(userRole: string | null, requiredRole: string): boolean {
+  const userLevel = ROLE_HIERARCHY.indexOf(userRole || 'free')
+  const requiredLevel = ROLE_HIERARCHY.indexOf(requiredRole || 'free')
+  return userLevel >= requiredLevel
+}
+
+function tierToRole(tier: string | null | undefined): string {
+  switch (tier) {
+    case 'covenant':
+    case 'partner':
+      return 'partner'
+    case 'member':
+      return 'member'
+    case 'free':
+    default:
+      return 'free'
+  }
 }
 
 export default function MemberContentPage() {
@@ -47,6 +72,7 @@ export default function MemberContentPage() {
   const [sortBy, setSortBy] = useState('newest')
   const [seasons, setSeasons] = useState<Array<{ id: string; name: string }>>([])
   const [memberSeasonIds, setMemberSeasonIds] = useState<Set<string>>(new Set())
+  const [userRole, setUserRole] = useState<string>('free')
 
   useEffect(() => {
     fetchContent()
@@ -65,11 +91,14 @@ export default function MemberContentPage() {
 
       const { data: member } = await supabase
         .from('members')
-        .select('id')
+        .select('id, role')
         .eq('user_id', user.id)
         .single()
 
       if (!member) return
+
+      const memberRole = member.role || 'free'
+      setUserRole(memberRole)
 
       // Fetch all seasons for filter
       const { data: seasonsData } = await supabase
@@ -123,6 +152,7 @@ export default function MemberContentPage() {
 
       const formattedContent: ContentItem[] = teachings?.map(t => {
         const progress = progressMap.get(t.id)
+        const requiredRole = tierToRole(t.tier_required)
         return {
           id: t.id,
           title: t.title,
@@ -132,6 +162,9 @@ export default function MemberContentPage() {
           duration_minutes: t.duration_minutes,
           thumbnail_url: t.thumbnail_url,
           is_premium: t.is_premium || false,
+          tier_required: t.tier_required,
+          canAccess: hasMinimumRole(memberRole, requiredRole),
+          requiredRole: requiredRole,
           season_id: t.season_id,
           season_name: t.seasons?.name,
           season_color: t.seasons?.color,
@@ -201,17 +234,37 @@ export default function MemberContentPage() {
     }
   }
 
+  const getRoleBadgeText = (role: string) => {
+    switch (role) {
+      case 'partner':
+        return 'Partner Content'
+      case 'member':
+        return 'Member Content'
+      case 'staff':
+        return 'Staff Only'
+      case 'admin':
+        return 'Admin Only'
+      default:
+        return 'Premium'
+    }
+  }
+
   const ContentCard = ({ item }: { item: ContentItem }) => {
     const Icon = getContentIcon(item.content_type)
+    const isLocked = !item.canAccess && item.requiredRole !== 'free'
 
     return (
-      <Link href={`/member/content/${item.id}`}>
-        <Card className="hover:shadow-lg transition-all cursor-pointer h-full group">
+      <Link href={item.canAccess ? `/member/content/${item.id}` : '/give'}>
+        <Card className={`hover:shadow-lg transition-all cursor-pointer h-full group ${isLocked ? 'opacity-80' : ''}`}>
           <div className="relative">
             {item.thumbnail_url ? (
               <div className="aspect-video bg-gray-200 rounded-t-lg relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/20 transition-colors">
-                  <Play className="h-12 w-12 text-white opacity-0 group-hover:opacity-80 transition-opacity" />
+                  {isLocked ? (
+                    <Lock className="h-12 w-12 text-white opacity-80" />
+                  ) : (
+                    <Play className="h-12 w-12 text-white opacity-0 group-hover:opacity-80 transition-opacity" />
+                  )}
                 </div>
               </div>
             ) : (
@@ -223,21 +276,25 @@ export default function MemberContentPage() {
                     : 'linear-gradient(to bottom right, #1e3a8a20, #1e3a8a40)'
                 }}
               >
-                <Icon className="h-12 w-12 text-navy opacity-40" />
+                {isLocked ? (
+                  <Lock className="h-12 w-12 text-navy opacity-40" />
+                ) : (
+                  <Icon className="h-12 w-12 text-navy opacity-40" />
+                )}
               </div>
             )}
-            {item.is_bookmarked && (
+            {item.is_bookmarked && !isLocked && (
               <div className="absolute top-2 right-2">
                 <Bookmark className="h-5 w-5 text-gold fill-gold" />
               </div>
             )}
-            {item.is_premium && (
-              <Badge className="absolute top-2 left-2 bg-gold text-white">
+            {isLocked && (
+              <Badge className="absolute top-2 left-2 bg-amber-500 text-white">
                 <Lock className="h-3 w-3 mr-1" />
-                Premium
+                {getRoleBadgeText(item.requiredRole)}
               </Badge>
             )}
-            {item.progress_percentage !== undefined && (
+            {item.progress_percentage !== undefined && item.canAccess && (
               <div className="absolute bottom-0 left-0 right-0">
                 <Progress value={item.progress_percentage} className="h-1 rounded-none" />
               </div>

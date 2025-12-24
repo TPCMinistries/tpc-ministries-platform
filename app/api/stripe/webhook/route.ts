@@ -87,6 +87,9 @@ async function recordDonation(session: Stripe.Checkout.Session) {
   }
 
   console.log('Donation recorded:', donationData)
+
+  // Auto-upgrade giver to partner role
+  await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
 }
 
 async function recordRecurringDonation(invoice: Stripe.Invoice) {
@@ -114,6 +117,72 @@ async function recordRecurringDonation(invoice: Stripe.Invoice) {
   }
 
   console.log('Recurring donation recorded:', donationData)
+
+  // Auto-upgrade giver to partner role
+  await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
+}
+
+// Auto-upgrade givers to partner role
+async function upgradeGiverToPartner(
+  supabase: any,
+  userId: string | null | undefined,
+  email: string | null | undefined,
+  amount: number
+) {
+  try {
+    // Find member by user_id or email
+    let member = null
+
+    if (userId) {
+      const { data } = await supabase
+        .from('members')
+        .select('id, role, tier')
+        .eq('user_id', userId)
+        .single()
+      member = data
+    }
+
+    if (!member && email) {
+      const { data } = await supabase
+        .from('members')
+        .select('id, role, tier')
+        .eq('email', email)
+        .single()
+      member = data
+    }
+
+    if (!member) {
+      console.log('No member found for giver - cannot auto-upgrade')
+      return
+    }
+
+    // Only upgrade if current role is 'free' or 'member'
+    const currentRole = member.role || member.tier || 'free'
+    if (!['free', 'member'].includes(currentRole)) {
+      console.log(`Member already has ${currentRole} role - no upgrade needed`)
+      return
+    }
+
+    // Upgrade to partner
+    const { error } = await supabase
+      .from('members')
+      .update({
+        role: 'partner',
+        tier: 'partner', // Also update legacy tier field
+        role_updated_at: new Date().toISOString(),
+        role_upgrade_reason: `Auto-upgraded from giving $${amount}`,
+      })
+      .eq('id', member.id)
+
+    if (error) {
+      console.error('Error upgrading member to partner:', error)
+      return
+    }
+
+    console.log(`Member ${member.id} auto-upgraded to partner role after giving $${amount}`)
+  } catch (error) {
+    console.error('Error in upgradeGiverToPartner:', error)
+  }
 }
 
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {

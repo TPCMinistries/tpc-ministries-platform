@@ -72,6 +72,7 @@ interface Member {
   email: string
   phone?: string
   tier: 'free' | 'partner' | 'covenant'
+  role: 'free' | 'member' | 'partner' | 'staff' | 'admin'
   is_admin: boolean
   avatar_url?: string
   bio?: string
@@ -79,6 +80,8 @@ interface Member {
   notes?: string
   joined_at: string
   last_active_at?: string
+  last_login_at?: string
+  login_count?: number
   created_at: string
   tags: MemberTag[]
 }
@@ -128,8 +131,9 @@ export default function AdminMembersPage() {
     last_name: '',
     email: '',
     phone: '',
-    tier: 'free' as 'free' | 'partner' | 'covenant',
-    is_admin: false,
+    role: 'free' as 'free' | 'member' | 'partner' | 'staff' | 'admin',
+    tier: 'free' as 'free' | 'partner' | 'covenant', // Keep for backward compatibility
+    is_admin: false, // Keep for backward compatibility
     notes: '',
     tags: [] as string[]
   })
@@ -462,19 +466,25 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
     }
   }
 
-  const handleBulkChangeTier = async (tier: string) => {
+  const handleBulkChangeRole = async (role: string) => {
     if (selectedMembers.size === 0) return
 
     setBulkProcessing(true)
     try {
       let successCount = 0
+      // Also set legacy fields for backward compatibility
+      const isAdmin = role === 'admin'
+      const tier = ['partner', 'staff', 'admin'].includes(role) ? 'partner' : 'free'
+
       for (const memberId of Array.from(selectedMembers)) {
         const res = await fetch('/api/admin/members', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: memberId,
-            tier: tier
+            role: role,
+            tier: tier,
+            is_admin: isAdmin
           })
         })
         if ((await res.json()).success) successCount++
@@ -482,7 +492,7 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
 
       toast({
         title: 'Success',
-        description: `Updated tier for ${successCount} members`
+        description: `Updated role for ${successCount} members`
       })
       setShowBulkTierModal(false)
       setSelectedMembers(new Set())
@@ -605,11 +615,14 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
 
   const openEditModal = (member: Member) => {
     setSelectedMember(member)
+    // Use role field, fallback to is_admin/tier for backward compatibility
+    const effectiveRole = member.role || (member.is_admin ? 'admin' : member.tier || 'free')
     setFormData({
       first_name: member.first_name,
       last_name: member.last_name,
       email: member.email,
       phone: member.phone || '',
+      role: effectiveRole as any,
       tier: member.tier,
       is_admin: member.is_admin,
       notes: member.notes || '',
@@ -624,6 +637,7 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
       last_name: '',
       email: '',
       phone: '',
+      role: 'free' as 'free' | 'member' | 'partner' | 'staff' | 'admin',
       tier: 'free' as 'free' | 'partner' | 'covenant',
       is_admin: false,
       notes: '',
@@ -663,51 +677,77 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
     return `${Math.floor(diffInDays / 365)} years ago`
   }
 
-  const getTierIcon = (tier: string) => {
-    switch (tier) {
-      case 'covenant':
+  // Role display helpers - uses role field primarily, falls back to tier/is_admin
+  const getEffectiveRole = (member: Member) => {
+    return member.role || (member.is_admin ? 'admin' : member.tier || 'free')
+  }
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin':
         return <Crown className="h-4 w-4 text-gold" />
+      case 'staff':
+        return <Shield className="h-4 w-4 text-purple-600" />
       case 'partner':
+      case 'covenant':
         return <Sparkles className="h-4 w-4 text-blue-600" />
+      case 'member':
+        return <User className="h-4 w-4 text-green-600" />
       default:
         return <User className="h-4 w-4 text-gray-400" />
     }
   }
 
-  const getTierBadgeColor = (tier: string) => {
-    switch (tier) {
-      case 'covenant':
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin':
         return 'bg-gold/20 text-gold border-gold/30'
+      case 'staff':
+        return 'bg-purple-100 text-purple-700 border-purple-200'
       case 'partner':
+      case 'covenant':
         return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'member':
+        return 'bg-green-100 text-green-700 border-green-200'
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200'
     }
   }
 
-  // Filter members
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin': return 'Admin'
+      case 'staff': return 'Staff'
+      case 'partner': return 'Partner'
+      case 'covenant': return 'Partner' // Map covenant to partner
+      case 'member': return 'Member'
+      default: return 'Free'
+    }
+  }
+
+  // Filter members using role
   const filteredMembers = members.filter((member) => {
     const matchesSearch =
       member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.toLowerCase())
 
-    const matchesTier = tierFilter === 'all' || member.tier === tierFilter
-    const matchesRole = roleFilter === 'all' ||
-      (roleFilter === 'admin' && member.is_admin) ||
-      (roleFilter === 'member' && !member.is_admin)
+    const effectiveRole = getEffectiveRole(member)
+    const matchesRole = roleFilter === 'all' || effectiveRole === roleFilter
     const matchesTag = tagFilter === 'all' ||
       member.tags.some(t => t.id === tagFilter)
 
-    return matchesSearch && matchesTier && matchesRole && matchesTag
+    return matchesSearch && matchesRole && matchesTag
   })
 
+  // Stats based on role
   const stats = {
     total: members.length,
-    free: members.filter(m => m.tier === 'free').length,
-    partner: members.filter(m => m.tier === 'partner').length,
-    covenant: members.filter(m => m.tier === 'covenant').length,
-    admins: members.filter(m => m.is_admin).length,
+    free: members.filter(m => getEffectiveRole(m) === 'free').length,
+    member: members.filter(m => getEffectiveRole(m) === 'member').length,
+    partner: members.filter(m => ['partner', 'covenant'].includes(getEffectiveRole(m))).length,
+    staff: members.filter(m => getEffectiveRole(m) === 'staff').length,
+    admin: members.filter(m => getEffectiveRole(m) === 'admin').length,
   }
 
   if (loading) {
@@ -746,50 +786,74 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-5 mb-8">
+        {/* Stats Cards - 5 Role Distribution */}
+        <div className="grid gap-4 md:grid-cols-6 mb-8">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Members</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-navy">{stats.total}</div>
+              <div className="text-2xl font-bold text-navy">{stats.total}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Free Tier</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                <User className="h-4 w-4 text-gray-400" />
+                Free
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-600">{stats.free}</div>
+              <div className="text-2xl font-bold text-gray-600">{stats.free}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Partner Tier</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                <User className="h-4 w-4 text-green-600" />
+                Member
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">{stats.partner}</div>
+              <div className="text-2xl font-bold text-green-600">{stats.member}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Covenant Tier</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                <Sparkles className="h-4 w-4 text-blue-600" />
+                Partner
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gold">{stats.covenant}</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.partner}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Admins</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                <Shield className="h-4 w-4 text-purple-600" />
+                Staff
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-600">{stats.admins}</div>
+              <div className="text-2xl font-bold text-purple-600">{stats.staff}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                <Crown className="h-4 w-4 text-gold" />
+                Admin
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gold">{stats.admin}</div>
             </CardContent>
           </Card>
         </div>
@@ -810,28 +874,43 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                   />
                 </div>
               </div>
-              <div className="md:w-40">
-                <Select value={tierFilter} onValueChange={setTierFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Tiers" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Tiers</SelectItem>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="partner">Partner</SelectItem>
-                    <SelectItem value="covenant">Covenant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:w-40">
+              <div className="md:w-44">
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="admin">Admins Only</SelectItem>
-                    <SelectItem value="member">Members Only</SelectItem>
+                    <SelectItem value="free">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        Free
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="member">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-green-600" />
+                        Member
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="partner">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-blue-600" />
+                        Partner
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="staff">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-purple-600" />
+                        Staff
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-4 w-4 text-gold" />
+                        Admin
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -954,9 +1033,10 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                         />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Member</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Tier</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Role</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Tags</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Last Active</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Logins</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Joined</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
                     </tr>
@@ -992,15 +1072,10 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${getTierBadgeColor(member.tier)}`}>
-                            {getTierIcon(member.tier)}
-                            <span className="capitalize">{member.tier}</span>
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${getRoleBadgeColor(getEffectiveRole(member))}`}>
+                            {getRoleIcon(getEffectiveRole(member))}
+                            <span>{getRoleLabel(getEffectiveRole(member))}</span>
                           </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge variant={member.is_admin ? "default" : "outline"} className={member.is_admin ? "bg-purple-600" : ""}>
-                            {member.is_admin ? 'Admin' : 'Member'}
-                          </Badge>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex flex-wrap gap-1 max-w-[200px]">
@@ -1022,6 +1097,16 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                                 +{member.tags.length - 3}
                               </Badge>
                             )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm text-gray-600">
+                            {getTimeAgo(member.last_login_at || member.last_active_at)}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm text-gray-600">
+                            {member.login_count || 0}
                           </div>
                         </td>
                         <td className="py-3 px-4">
@@ -1119,37 +1204,53 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                 onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Membership Tier</Label>
-                <Select
-                  value={formData.tier}
-                  onValueChange={(v: any) => setFormData(prev => ({ ...prev, tier: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="partner">Partner</SelectItem>
-                    <SelectItem value="covenant">Covenant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_admin}
-                    onChange={e => setFormData(prev => ({ ...prev, is_admin: e.target.checked }))}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium flex items-center gap-1">
-                    <Shield className="h-4 w-4 text-purple-600" />
-                    Admin Access
-                  </span>
-                </label>
-              </div>
+            <div>
+              <Label>Member Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(v: any) => {
+                  const isAdmin = v === 'admin'
+                  const tier = ['partner', 'staff', 'admin'].includes(v) ? 'partner' : 'free'
+                  setFormData(prev => ({ ...prev, role: v, is_admin: isAdmin, tier }))
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-400" />
+                      Free - Limited access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="member">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-green-600" />
+                      Member - Standard access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="partner">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-blue-600" />
+                      Partner - Premium access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="staff">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-purple-600" />
+                      Staff - Admin portal access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-gold" />
+                      Admin - Full control
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">Higher roles inherit lower role access</p>
             </div>
             {availableTags.length > 0 && (
               <div>
@@ -1240,37 +1341,53 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                 onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Membership Tier</Label>
-                <Select
-                  value={formData.tier}
-                  onValueChange={(v: any) => setFormData(prev => ({ ...prev, tier: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="partner">Partner</SelectItem>
-                    <SelectItem value="covenant">Covenant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_admin}
-                    onChange={e => setFormData(prev => ({ ...prev, is_admin: e.target.checked }))}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium flex items-center gap-1">
-                    <Shield className="h-4 w-4 text-purple-600" />
-                    Admin Access
-                  </span>
-                </label>
-              </div>
+            <div>
+              <Label>Member Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(v: any) => {
+                  const isAdmin = v === 'admin'
+                  const tier = ['partner', 'staff', 'admin'].includes(v) ? 'partner' : 'free'
+                  setFormData(prev => ({ ...prev, role: v, is_admin: isAdmin, tier }))
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-400" />
+                      Free - Limited access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="member">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-green-600" />
+                      Member - Standard access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="partner">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-blue-600" />
+                      Partner - Premium access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="staff">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-purple-600" />
+                      Staff - Admin portal access
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-gold" />
+                      Admin - Full control
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">Higher roles inherit lower role access</p>
             </div>
             {availableTags.length > 0 && (
               <div>
@@ -1595,8 +1712,8 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div
-              onClick={() => handleBulkChangeTier('free')}
-              className="p-4 border rounded-lg cursor-pointer hover:border-navy hover:bg-gray-50 transition-colors"
+              onClick={() => handleBulkChangeRole('free')}
+              className="p-4 border rounded-lg cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
@@ -1604,13 +1721,28 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                 </div>
                 <div>
                   <div className="font-medium">Free</div>
-                  <div className="text-sm text-gray-500">Basic membership with limited access</div>
+                  <div className="text-sm text-gray-500">New members with limited access</div>
                 </div>
               </div>
             </div>
 
             <div
-              onClick={() => handleBulkChangeTier('partner')}
+              onClick={() => handleBulkChangeRole('member')}
+              className="p-4 border rounded-lg cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <User className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="font-medium text-green-600">Member</div>
+                  <div className="text-sm text-gray-500">Engaged members with standard access</div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => handleBulkChangeRole('partner')}
               className="p-4 border rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -1619,13 +1751,28 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                 </div>
                 <div>
                   <div className="font-medium text-blue-600">Partner</div>
-                  <div className="text-sm text-gray-500">Monthly supporters with additional features</div>
+                  <div className="text-sm text-gray-500">Committed supporters with premium access</div>
                 </div>
               </div>
             </div>
 
             <div
-              onClick={() => handleBulkChangeTier('covenant')}
+              onClick={() => handleBulkChangeRole('staff')}
+              className="p-4 border rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <div className="font-medium text-purple-600">Staff</div>
+                  <div className="text-sm text-gray-500">Ministry team with admin portal access</div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => handleBulkChangeRole('admin')}
               className="p-4 border rounded-lg cursor-pointer hover:border-gold hover:bg-amber-50 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -1633,8 +1780,8 @@ Jane,Smith,jane@example.com,555-987-6543,partner,false,Leadership;Prayer Team,Ac
                   <Crown className="h-5 w-5 text-gold" />
                 </div>
                 <div>
-                  <div className="font-medium text-gold">Covenant</div>
-                  <div className="text-sm text-gray-500">Premium annual supporters with full access</div>
+                  <div className="font-medium text-gold">Admin</div>
+                  <div className="text-sm text-gray-500">Full platform control</div>
                 </div>
               </div>
             </div>
