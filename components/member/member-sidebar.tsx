@@ -75,22 +75,19 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
         { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise },
         { name: 'Devotional', href: '/devotional', icon: Sun },
         { name: 'My Journal', href: '/journal', icon: PenLine },
-        { name: 'My Prophecies', href: '/my-prophecy', icon: ScrollText },
       ]
     },
     {
       title: 'Prayer',
       items: [
         { name: 'Prayer', href: '/prayer', icon: HeartIcon },
-        { name: 'Fasting', href: '/fasting', icon: Utensils },
       ]
     },
     {
       title: 'Learn & Grow',
       items: [
         { name: 'Library', href: '/library', icon: Library },
-        { name: 'PLANT Learning', href: '/plant', icon: Leaf },
-        { name: 'Seasons', href: '/seasons', icon: Calendar },
+        { name: 'Learning Paths', href: '/learning', icon: Leaf },
         { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
       ]
     },
@@ -98,20 +95,16 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       title: 'Community',
       items: [
         { name: 'Groups', href: '/groups', icon: Users },
-        { name: 'Directory', href: '/directory', icon: Cake },
-        { name: 'Testimonies', href: '/testimonies', icon: Star },
-        { name: 'Live Stream', href: '/live', icon: Radio },
         { name: 'Events', href: '/events', icon: CalendarDays },
+        { name: 'Live Stream', href: '/live', icon: Radio },
       ]
     },
     {
       title: 'My Account',
       items: [
         { name: 'My Journey', href: '/my-journey', icon: Sparkles },
-        { name: 'Achievements', href: '/achievements', icon: Trophy },
         { name: 'Giving', href: '/my-giving', icon: Gift },
-        { name: 'Profile', href: '/profile', icon: User },
-        { name: 'Settings', href: '/member-settings', icon: Settings },
+        { name: 'Account', href: '/account', icon: User },
       ]
     },
   ]

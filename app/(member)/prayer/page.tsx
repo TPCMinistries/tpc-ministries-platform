@@ -39,7 +39,11 @@ import {
   HandHeart,
   Send,
   CheckCircle,
-  Star
+  Star,
+  Utensils,
+  Flame,
+  Target,
+  Calendar
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -54,6 +58,24 @@ interface PrayerRequest {
   created_at: string
   prayer_count: number
 }
+
+interface FastingLog {
+  id: string
+  fast_date: string
+  fast_type: string
+  completed: boolean
+  prayer_focus?: string
+  reflections?: string
+  breakthroughs?: string
+}
+
+const FAST_TYPES = [
+  { value: 'full', label: 'Full Fast', description: 'No food, water only', icon: Target },
+  { value: 'partial', label: 'Partial Fast', description: 'Specific foods or meals', icon: Utensils },
+  { value: 'daniel', label: 'Daniel Fast', description: 'Fruits, vegetables, water', icon: Heart },
+  { value: 'social_media', label: 'Social Media Fast', description: 'No social media', icon: Users },
+  { value: 'custom', label: 'Custom Fast', description: 'Your own commitment', icon: Sparkles }
+]
 
 const CATEGORIES = [
   { value: 'all', label: 'All Categories', gradient: 'from-gray-400 to-slate-500' },
@@ -71,7 +93,7 @@ export default function PrayerWallPage() {
   const [requests, setRequests] = useState<PrayerRequest[]>([])
   const [communityRequests, setCommunityRequests] = useState<PrayerRequest[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'my-requests' | 'community'>('community')
+  const [activeTab, setActiveTab] = useState<'my-requests' | 'community' | 'fasting'>('community')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [prayersGiven, setPrayersGiven] = useState(0)
@@ -88,9 +110,22 @@ export default function PrayerWallPage() {
   const [justPrayed, setJustPrayed] = useState<string | null>(null)
   const [myRequestsFilter, setMyRequestsFilter] = useState<'all' | 'active' | 'answered'>('all')
 
+  // Fasting state
+  const [fastingLogs, setFastingLogs] = useState<FastingLog[]>([])
+  const [memberId, setMemberId] = useState<string | null>(null)
+  const [showFastForm, setShowFastForm] = useState(false)
+  const [fastForm, setFastForm] = useState({
+    fast_type: 'partial',
+    prayer_focus: '',
+    reflections: '',
+    breakthroughs: ''
+  })
+  const [fastSubmitting, setFastSubmitting] = useState(false)
+
   useEffect(() => {
     fetchPrayerRequests()
     fetchPrayersGiven()
+    fetchFastingLogs()
   }, [])
 
   const fetchPrayerRequests = async () => {
@@ -166,6 +201,86 @@ export default function PrayerWallPage() {
     } catch (error) {
       console.error('Error fetching prayers given:', error)
     }
+  }
+
+  const fetchFastingLogs = async () => {
+    const supabase = createClient()
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: member } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!member) return
+      setMemberId(member.id)
+
+      const { data: logs } = await supabase
+        .from('fasting_logs')
+        .select('*')
+        .eq('member_id', member.id)
+        .order('fast_date', { ascending: false })
+        .limit(30)
+
+      if (logs) {
+        setFastingLogs(logs)
+      }
+    } catch (error) {
+      console.error('Error fetching fasting logs:', error)
+    }
+  }
+
+  const logFast = async () => {
+    if (!memberId) return
+    setFastSubmitting(true)
+    const supabase = createClient()
+
+    try {
+      await supabase.from('fasting_logs').insert({
+        member_id: memberId,
+        fast_date: new Date().toISOString().split('T')[0],
+        fast_type: fastForm.fast_type,
+        prayer_focus: fastForm.prayer_focus,
+        reflections: fastForm.reflections,
+        breakthroughs: fastForm.breakthroughs,
+        completed: true
+      })
+
+      setShowFastForm(false)
+      setFastForm({ fast_type: 'partial', prayer_focus: '', reflections: '', breakthroughs: '' })
+      fetchFastingLogs()
+    } catch (error) {
+      console.error('Error logging fast:', error)
+    } finally {
+      setFastSubmitting(false)
+    }
+  }
+
+  const todayFastLogged = fastingLogs.some(
+    log => log.fast_date === new Date().toISOString().split('T')[0]
+  )
+
+  const fastingStreak = () => {
+    let streak = 0
+    const today = new Date()
+    for (let i = 0; i < fastingLogs.length; i++) {
+      const logDate = new Date(fastingLogs[i].fast_date)
+      const expectedDate = new Date(today)
+      expectedDate.setDate(today.getDate() - i)
+      if (logDate.toDateString() === expectedDate.toDateString()) {
+        streak++
+      } else {
+        break
+      }
+    }
+    return streak
+  }
+
+  const getFastTypeInfo = (type: string) => {
+    return FAST_TYPES.find(t => t.value === type) || FAST_TYPES[4]
   }
 
   const handleSubmit = async () => {
@@ -526,7 +641,7 @@ export default function PrayerWallPage() {
             }`}
           >
             <Users className="h-4 w-4" />
-            Community Wall ({communityRequests.length})
+            Community ({communityRequests.length})
           </button>
           <button
             onClick={() => setActiveTab('my-requests')}
@@ -537,7 +652,18 @@ export default function PrayerWallPage() {
             }`}
           >
             <HandHeart className="h-4 w-4" />
-            My Requests ({requests.length})
+            My Prayers ({requests.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('fasting')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              activeTab === 'fasting'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <Utensils className="h-4 w-4" />
+            Fasting
           </button>
         </div>
 
@@ -851,6 +977,187 @@ export default function PrayerWallPage() {
                 )
               })
             )}
+          </div>
+        )}
+
+        {/* Fasting Tab */}
+        {activeTab === 'fasting' && (
+          <div className="space-y-6">
+            {/* Fasting Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-orange-500 to-amber-500 text-white border-0">
+                <CardContent className="p-4 text-center">
+                  <Flame className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-2xl font-bold">{fastingStreak()}</p>
+                  <p className="text-xs opacity-80">Day Streak</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0">
+                <CardContent className="p-4 text-center">
+                  <Calendar className="h-8 w-8 mx-auto mb-2 text-navy" />
+                  <p className="text-2xl font-bold text-navy">{fastingLogs.length}</p>
+                  <p className="text-xs text-gray-500">Total Fasts</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0">
+                <CardContent className="p-4 text-center">
+                  <Sparkles className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                  <p className="text-2xl font-bold text-navy">{fastingLogs.filter(l => l.breakthroughs).length}</p>
+                  <p className="text-xs text-gray-500">Breakthroughs</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0">
+                <CardContent className="p-4 text-center">
+                  {todayFastLogged ? (
+                    <>
+                      <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                      <p className="text-sm font-medium text-green-600">Logged Today</p>
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm font-medium text-gray-500">Not Logged</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Log Fast Form */}
+            {!todayFastLogged && !showFastForm && (
+              <Card className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0">
+                <CardContent className="p-6 text-center">
+                  <h3 className="text-xl font-bold mb-2">Are you fasting today?</h3>
+                  <p className="opacity-80 mb-4">Log your fast to track your journey</p>
+                  <Button onClick={() => setShowFastForm(true)} className="bg-white text-orange-600 hover:bg-orange-50">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Log Today's Fast
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {showFastForm && (
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0">
+                <CardHeader>
+                  <CardTitle>Log Your Fast</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label className="text-sm font-medium mb-3 block">Type of Fast</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {FAST_TYPES.map((type) => {
+                        const Icon = type.icon
+                        return (
+                          <button
+                            key={type.value}
+                            onClick={() => setFastForm({ ...fastForm, fast_type: type.value })}
+                            className={`p-4 rounded-lg border-2 text-left transition-all ${
+                              fastForm.fast_type === type.value
+                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            }`}
+                          >
+                            <Icon className={`h-5 w-5 mb-2 ${fastForm.fast_type === type.value ? 'text-orange-500' : 'text-gray-400'}`} />
+                            <p className={`font-medium text-sm ${fastForm.fast_type === type.value ? 'text-orange-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {type.label}
+                            </p>
+                            <p className="text-xs text-gray-500">{type.description}</p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Prayer Focus</Label>
+                    <Textarea
+                      placeholder="What are you praying for during this fast?"
+                      value={fastForm.prayer_focus}
+                      onChange={(e) => setFastForm({ ...fastForm, prayer_focus: e.target.value })}
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Reflections</Label>
+                    <Textarea
+                      placeholder="What is God speaking to you?"
+                      value={fastForm.reflections}
+                      onChange={(e) => setFastForm({ ...fastForm, reflections: e.target.value })}
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Breakthroughs</Label>
+                    <Textarea
+                      placeholder="Any breakthroughs or answered prayers?"
+                      value={fastForm.breakthroughs}
+                      onChange={(e) => setFastForm({ ...fastForm, breakthroughs: e.target.value })}
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button onClick={logFast} disabled={fastSubmitting} className="flex-1 bg-orange-500 hover:bg-orange-600">
+                      {fastSubmitting ? 'Saving...' : 'Log Fast'}
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowFastForm(false)}>Cancel</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Fasting History */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Your Fasting History</h3>
+              {fastingLogs.length === 0 ? (
+                <Card className="bg-white/80 dark:bg-slate-800/80 border-0">
+                  <CardContent className="py-12 text-center">
+                    <Utensils className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Fasting History</h3>
+                    <p className="text-gray-500">Start logging your fasts to track your journey</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                fastingLogs.map((log) => {
+                  const info = getFastTypeInfo(log.fast_type)
+                  const Icon = info.icon
+                  return (
+                    <Card key={log.id} className="bg-white/80 dark:bg-slate-800/80 border-0">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-950/30 flex items-center justify-center">
+                            <Icon className="h-5 w-5 text-orange-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="font-medium text-navy dark:text-white">{info.label}</p>
+                              <span className="text-sm text-gray-500">{new Date(log.fast_date).toLocaleDateString()}</span>
+                            </div>
+                            {log.prayer_focus && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                <strong>Prayer:</strong> {log.prayer_focus}
+                              </p>
+                            )}
+                            {log.breakthroughs && (
+                              <div className="bg-green-50 dark:bg-green-950/30 p-2 rounded text-sm text-green-700 dark:text-green-400">
+                                <Sparkles className="h-3 w-3 inline mr-1" />
+                                {log.breakthroughs}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })
+              )}
+            </div>
           </div>
         )}
 

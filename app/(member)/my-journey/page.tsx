@@ -174,10 +174,10 @@ export default function MyJourneyPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-2 mb-8 flex-wrap">
           {[
             { id: 'overview', label: 'Overview', icon: Target },
-            { id: 'badges', label: 'Badges', icon: Trophy },
+            { id: 'badges', label: 'Achievements', icon: Trophy },
             { id: 'recommendations', label: 'For You', icon: Sparkles }
           ].map(tab => (
             <button
