@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -22,18 +22,22 @@ import {
   CheckCircle,
   Clock,
   Search,
-  Filter,
   BookOpen,
   Sparkles,
   Loader2,
   Video,
   FileText,
   Mic,
-  Play,
   ScrollText,
   HandHeart,
   MessageSquare,
   Radio,
+  ChevronRight,
+  Star,
+  Quote,
+  Volume2,
+  Play,
+  Pause,
 } from 'lucide-react'
 import Link from 'next/link'
 import AIWritingAssistant from '@/components/member/ai-writing-assistant'
@@ -81,12 +85,12 @@ const messageTypeIcons: Record<string, any> = {
   message: MessageSquare,
 }
 
-const messageTypeColors: Record<string, string> = {
-  prophetic_word: 'bg-purple-100 text-purple-700',
-  prayer: 'bg-blue-100 text-blue-700',
-  sermon: 'bg-amber-100 text-amber-700',
-  encouragement: 'bg-green-100 text-green-700',
-  message: 'bg-gray-100 text-gray-700',
+const messageTypeGradients: Record<string, string> = {
+  prophetic_word: 'from-purple-500 to-indigo-600',
+  prayer: 'from-blue-500 to-cyan-600',
+  sermon: 'from-amber-500 to-orange-600',
+  encouragement: 'from-emerald-500 to-teal-600',
+  message: 'from-gray-500 to-slate-600',
 }
 
 export default function ProphecyVaultPage() {
@@ -100,6 +104,7 @@ export default function ProphecyVaultPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'voice' | 'written'>('voice')
+  const [expandedVoiceMessage, setExpandedVoiceMessage] = useState<string | null>(null)
 
   const [editFormData, setEditFormData] = useState({
     journal: '',
@@ -158,7 +163,6 @@ export default function ProphecyVaultPage() {
     }
   }
 
-  // Extract all unique themes from prophecies
   const allThemes = Array.from(
     new Set(prophecies.flatMap((p) => p.themes || []))
   ).sort()
@@ -166,12 +170,6 @@ export default function ProphecyVaultPage() {
   const allMemberTags = Array.from(
     new Set(prophecies.flatMap((p) => p.member_tags || []))
   )
-
-  const statuses = [
-    { value: 'all', label: 'All' },
-    { value: 'unfolding', label: 'Unfolding' },
-    { value: 'manifested', label: 'Manifested' },
-  ]
 
   const handleEdit = (prophecy: Prophecy) => {
     setSelectedProphecy(prophecy)
@@ -205,7 +203,7 @@ export default function ProphecyVaultPage() {
 
       if (response.ok) {
         setIsEditDialogOpen(false)
-        fetchProphecies() // Refresh the list
+        fetchProphecies()
       } else {
         console.error('Failed to save prophecy tracking')
       }
@@ -224,557 +222,584 @@ export default function ProphecyVaultPage() {
     unreadVoice: voiceMessages.filter((v) => !v.is_read).length,
   }
 
-  if (loading && prophecies.length === 0) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    return formatDate(dateString)
+  }
+
+  if (loading && prophecies.length === 0 && voiceMessages.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 dark:from-slate-900 dark:via-purple-950/30 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading your prophecy vault...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="h-8 w-8 text-gold" />
-          <h1 className="text-3xl font-bold text-navy">My Prophecy Vault</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Your personal collection of prophetic words and their fulfillment journey
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 dark:from-slate-900 dark:via-purple-950/30 dark:to-slate-900 p-4 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Beautiful Header */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 p-8 text-white shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700 flex items-center gap-2">
-              <Mic className="h-4 w-4" />
-              Voice Messages
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-700">{stats.voiceMessages}</div>
-            {stats.unreadVoice > 0 && (
-              <p className="text-xs text-purple-600 mt-1">{stats.unreadVoice} new</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Written Prophecies
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-navy">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Unfolding</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gold">{stats.unfolding}</div>
-            <p className="text-xs text-muted-foreground mt-1">In progress</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Manifested</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">{stats.manifested}</div>
-            <p className="text-xs text-muted-foreground mt-1">Fulfilled</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 border-b">
-        <button
-          onClick={() => setActiveTab('voice')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-            activeTab === 'voice'
-              ? 'border-purple-600 text-purple-700'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Mic className="h-4 w-4" />
-          Voice Messages
-          {stats.unreadVoice > 0 && (
-            <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
-              {stats.unreadVoice}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('written')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-            activeTab === 'written'
-              ? 'border-navy text-navy'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <FileText className="h-4 w-4" />
-          Written Prophecies
-        </button>
-      </div>
-
-      {/* Voice Messages Tab */}
-      {activeTab === 'voice' && (
-        <div className="space-y-4">
-          {voiceMessages.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <Mic className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No voice messages yet</p>
-                <p className="text-muted-foreground">
-                  When Prophet Lorenzo sends you a personal message, it will appear here.
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-purple-200">Your Sacred Collection</p>
+                    <h1 className="text-3xl font-bold">My Prophecy Vault</h1>
+                  </div>
+                </div>
+                <p className="text-purple-200 mt-2 max-w-md">
+                  Personal prophetic words spoken over your life and their fulfillment journey.
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
-            voiceMessages.map((message) => {
-              const Icon = messageTypeIcons[message.message_type] || MessageSquare
-              const colorClass = messageTypeColors[message.message_type] || 'bg-gray-100 text-gray-700'
+              </div>
 
-              return (
-                <Card
-                  key={message.id}
-                  className={`overflow-hidden transition-all ${
-                    !message.is_read ? 'ring-2 ring-purple-400 bg-purple-50/30' : ''
-                  }`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${colorClass}`}>
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${colorClass}`}>
-                            {message.message_type.replace('_', ' ')}
-                          </span>
-                          {!message.is_read && (
-                            <span className="px-2 py-0.5 bg-purple-600 text-white rounded text-xs">
-                              New
-                            </span>
-                          )}
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message.created_at).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </span>
+              {stats.unreadVoice > 0 && (
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-5 py-3 flex items-center gap-3 animate-pulse">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center">
+                    <Mic className="h-5 w-5 text-purple-900" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-purple-200">New Messages</p>
+                    <p className="text-2xl font-bold">{stats.unreadVoice}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+                  <Mic className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Voice Messages</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.voiceMessages}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Written Words</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Unfolding</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.unfolding}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Manifested</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.manifested}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-1 rounded-xl shadow-sm">
+          <button
+            onClick={() => setActiveTab('voice')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              activeTab === 'voice'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <Mic className="h-4 w-4" />
+            Voice Messages
+            {stats.unreadVoice > 0 && (
+              <span className={`px-2 py-0.5 rounded-full text-xs ${
+                activeTab === 'voice' ? 'bg-white/20' : 'bg-purple-600 text-white'
+              }`}>
+                {stats.unreadVoice}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('written')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              activeTab === 'written'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Written Prophecies
+          </button>
+        </div>
+
+        {/* Voice Messages Tab */}
+        {activeTab === 'voice' && (
+          <div className="space-y-4">
+            {voiceMessages.length === 0 ? (
+              <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                <CardContent className="py-16 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 mx-auto mb-6 flex items-center justify-center">
+                    <Mic className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No Voice Messages Yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    When Prophet Lorenzo sends you a personal voice message, it will appear here for you to listen and revisit.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              voiceMessages.map((message) => {
+                const Icon = messageTypeIcons[message.message_type] || MessageSquare
+                const gradient = messageTypeGradients[message.message_type] || 'from-gray-500 to-slate-600'
+                const isExpanded = expandedVoiceMessage === message.id
+
+                return (
+                  <Card
+                    key={message.id}
+                    className={`bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm hover:shadow-lg transition-all ${
+                      !message.is_read ? 'ring-2 ring-purple-400 ring-offset-2' : ''
+                    }`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-14 h-14 rounded-full bg-gradient-to-r ${gradient} flex items-center justify-center flex-shrink-0 ${
+                          !message.is_read ? 'animate-pulse' : ''
+                        }`}>
+                          <Icon className="h-7 w-7 text-white" />
                         </div>
 
-                        {message.title && (
-                          <h3 className="text-lg font-semibold text-navy mb-2">{message.title}</h3>
-                        )}
-
-                        {message.description && (
-                          <p className="text-muted-foreground text-sm mb-4">{message.description}</p>
-                        )}
-
-                        <VoicePlayer
-                          audioUrl={message.audio_url}
-                          duration={message.audio_duration_seconds}
-                          onPlay={() => {
-                            if (!message.is_read) {
-                              markVoiceMessageRead(message.id)
-                              setVoiceMessages(prev =>
-                                prev.map(m => m.id === message.id ? { ...m, is_read: true } : m)
-                              )
-                            }
-                          }}
-                        />
-
-                        {message.transcription && (
-                          <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <FileText className="h-4 w-4 text-navy" />
-                              <h4 className="text-sm font-semibold text-navy">Transcript</h4>
-                            </div>
-                            <p className="text-sm text-muted-foreground italic whitespace-pre-wrap">
-                              {message.transcription}
-                            </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge className={`bg-gradient-to-r ${gradient} text-white border-0`}>
+                              {message.message_type.replace('_', ' ')}
+                            </Badge>
+                            {!message.is_read && (
+                              <Badge className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white border-0">
+                                New
+                              </Badge>
+                            )}
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {getTimeAgo(message.created_at)}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })
-          )}
-        </div>
-      )}
 
-      {/* Written Prophecies Tab */}
-      {activeTab === 'written' && (
-        <>
-          {/* Search and Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          {message.title && (
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                              {message.title}
+                            </h3>
+                          )}
+
+                          {message.description && (
+                            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                              {message.description}
+                            </p>
+                          )}
+
+                          <div className="mb-4">
+                            <VoicePlayer
+                              audioUrl={message.audio_url}
+                              duration={message.audio_duration_seconds}
+                              onPlay={() => {
+                                if (!message.is_read) {
+                                  markVoiceMessageRead(message.id)
+                                  setVoiceMessages(prev =>
+                                    prev.map(m => m.id === message.id ? { ...m, is_read: true } : m)
+                                  )
+                                }
+                              }}
+                            />
+                          </div>
+
+                          {message.transcription && (
+                            <button
+                              onClick={() => setExpandedVoiceMessage(isExpanded ? null : message.id)}
+                              className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1"
+                            >
+                              <FileText className="h-4 w-4" />
+                              {isExpanded ? 'Hide Transcript' : 'Show Transcript'}
+                              <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                            </button>
+                          )}
+
+                          {isExpanded && message.transcription && (
+                            <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-950/30 rounded-xl">
+                              <Quote className="h-6 w-6 text-purple-300 dark:text-purple-700 mb-2" />
+                              <p className="text-gray-700 dark:text-gray-300 italic whitespace-pre-wrap">
+                                {message.transcription}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {/* Written Prophecies Tab */}
+        {activeTab === 'written' && (
+          <div className="space-y-6">
+            {/* Search and Filters */}
+            <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       type="search"
                       placeholder="Search prophecies..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/80 dark:bg-slate-700/80 border-0"
                     />
                   </div>
-                </div>
-                <div className="md:w-48">
                   <select
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="px-3 py-2 bg-white/80 dark:bg-slate-700/80 border-0 rounded-md shadow-sm"
                     value={selectedTheme}
                     onChange={(e) => setSelectedTheme(e.target.value)}
                   >
                     <option value="all">All Themes</option>
                     {allThemes.map((theme) => (
-                      <option key={theme} value={theme}>
-                        {theme}
-                      </option>
+                      <option key={theme} value={theme}>{theme}</option>
                     ))}
                   </select>
-                </div>
-                <div className="md:w-48">
                   <select
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="px-3 py-2 bg-white/80 dark:bg-slate-700/80 border-0 rounded-md shadow-sm"
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                   >
-                    {statuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
+                    <option value="all">All Status</option>
+                    <option value="unfolding">Unfolding</option>
+                    <option value="manifested">Manifested</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Tag Cloud */}
-              {allMemberTags.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Your Tags:</p>
+                {allMemberTags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Your Tags:</span>
                     {allMemberTags.map((tag) => (
                       <button
                         key={tag}
-                        className="px-3 py-1 bg-gold/20 text-gold rounded-full text-xs font-medium hover:bg-gold/30 transition-colors"
+                        className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors"
                         onClick={() => setSearchQuery(tag)}
                       >
                         #{tag}
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* AI Writing Assistant */}
-          <AIWritingAssistant
-            mode="reflection"
-            placeholder="Reflect on a prophetic word..."
-          />
-
-          {/* Prophecies Timeline */}
-          {prophecies.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <Sparkles className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No prophecies yet</p>
-                <p className="text-muted-foreground mb-4">
-                  When you receive personal prophetic words, they will appear here.
-                </p>
+                )}
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-6">
-              {prophecies.map((prophecy) => (
-                <Card key={prophecy.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-navy/5 to-gold/5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              prophecy.fulfillment_status === 'manifested'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gold/20 text-gold'
-                            }`}
-                          >
-                            {prophecy.fulfillment_status === 'manifested' ? (
-                              <span className="flex items-center gap-1">
-                                <CheckCircle className="h-3 w-3" />
-                                Manifested
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                Unfolding
-                              </span>
-                            )}
-                          </span>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(prophecy.date).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </div>
-                          {prophecy.delivery_method && (
-                            <span className="text-sm text-muted-foreground">
-                              via {prophecy.delivery_method}
-                            </span>
+
+            {/* AI Writing Assistant */}
+            <AIWritingAssistant
+              mode="reflection"
+              placeholder="Reflect on a prophetic word..."
+            />
+
+            {/* Prophecies List */}
+            {prophecies.length === 0 ? (
+              <Card className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm">
+                <CardContent className="py-16 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 mx-auto mb-6 flex items-center justify-center">
+                    <FileText className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No Written Prophecies Yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    When you receive personal prophetic words, they will appear here for you to track and journal about.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {prophecies.map((prophecy) => (
+                  <Card key={prophecy.id} className="bg-white/80 dark:bg-slate-800/80 border-0 shadow-sm hover:shadow-lg transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          prophecy.fulfillment_status === 'manifested'
+                            ? 'bg-gradient-to-r from-emerald-400 to-green-500'
+                            : 'bg-gradient-to-r from-amber-400 to-orange-500'
+                        }`}>
+                          {prophecy.fulfillment_status === 'manifested' ? (
+                            <CheckCircle className="h-6 w-6 text-white" />
+                          ) : (
+                            <Clock className="h-6 w-6 text-white" />
                           )}
                         </div>
-                        <CardTitle className="text-xl text-navy">{prophecy.title}</CardTitle>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(prophecy)}>
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    </div>
-                  </CardHeader>
 
-                  <CardContent className="pt-6 space-y-4">
-                    {/* Media */}
-                    {prophecy.video_url && (
-                      <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                        <iframe
-                          src={prophecy.video_url}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    )}
-                    {prophecy.audio_url && !prophecy.video_url && (
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Headphones className="h-4 w-4 text-navy" />
-                          <span className="text-sm font-medium">Audio Recording</span>
-                          {prophecy.duration && (
-                            <span className="text-xs text-muted-foreground">({prophecy.duration})</span>
-                          )}
-                        </div>
-                        <audio controls className="w-full">
-                          <source src={prophecy.audio_url} type="audio/mpeg" />
-                          Your browser does not support the audio element.
-                        </audio>
-                      </div>
-                    )}
-
-                    {/* Transcript */}
-                    <div className="bg-muted/30 p-4 rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <BookOpen className="h-4 w-4 text-navy" />
-                        <h4 className="font-semibold text-navy">Transcript</h4>
-                      </div>
-                      <p className="text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
-                        {prophecy.transcript}
-                      </p>
-                    </div>
-
-                    {/* Themes */}
-                    {prophecy.themes && prophecy.themes.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold mb-2">Themes</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {prophecy.themes.map((theme) => (
-                            <span
-                              key={theme}
-                              className="px-2 py-1 bg-navy/10 text-navy rounded text-xs"
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4 mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <Badge className={
+                                  prophecy.fulfillment_status === 'manifested'
+                                    ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white border-0'
+                                    : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0'
+                                }>
+                                  {prophecy.fulfillment_status === 'manifested' ? 'Manifested' : 'Unfolding'}
+                                </Badge>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                  {formatDate(prophecy.date)}
+                                </span>
+                              </div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {prophecy.title}
+                              </h3>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(prophecy)}
+                              className="gap-2 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/50"
                             >
-                              {theme}
-                            </span>
-                          ))}
+                              <Edit3 className="h-4 w-4" />
+                              Edit
+                            </Button>
+                          </div>
+
+                          {/* Media */}
+                          {prophecy.audio_url && !prophecy.video_url && (
+                            <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-xl mb-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Volume2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Audio Recording</span>
+                              </div>
+                              <audio controls className="w-full">
+                                <source src={prophecy.audio_url} type="audio/mpeg" />
+                              </audio>
+                            </div>
+                          )}
+
+                          {/* Transcript Preview */}
+                          <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-xl mb-4">
+                            <Quote className="h-5 w-5 text-gray-300 dark:text-gray-600 mb-2" />
+                            <p className="text-gray-700 dark:text-gray-300 italic line-clamp-3">
+                              {prophecy.transcript}
+                            </p>
+                          </div>
+
+                          {/* Themes */}
+                          {prophecy.themes && prophecy.themes.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {prophecy.themes.map((theme) => (
+                                <Badge key={theme} variant="outline" className="text-xs">
+                                  {theme}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Member Journal Preview */}
+                          {prophecy.member_journal && (
+                            <div className="bg-amber-50 dark:bg-amber-950/30 border-l-4 border-amber-400 p-4 rounded-r-xl mb-4">
+                              <div className="flex items-center gap-2 mb-1">
+                                <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <span className="text-sm font-medium text-amber-700 dark:text-amber-300">My Journal</span>
+                              </div>
+                              <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-2">
+                                {prophecy.member_journal}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Manifestation Testimony */}
+                          {prophecy.fulfillment_status === 'manifested' && prophecy.manifested_testimony && (
+                            <div className="bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-emerald-400 p-4 rounded-r-xl mb-4">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Star className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Testimony</span>
+                              </div>
+                              <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-2">
+                                {prophecy.manifested_testimony}
+                              </p>
+                              {prophecy.manifested_date && (
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                                  Manifested on {formatDate(prophecy.manifested_date)}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Actions */}
+                          <Link href={`/journal?prophecy=${prophecy.id}`}>
+                            <Button variant="ghost" size="sm" className="gap-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/50">
+                              <FileText className="h-4 w-4" />
+                              Journal About This
+                            </Button>
+                          </Link>
                         </div>
                       </div>
-                    )}
-
-                    {/* Member Tags */}
-                    {prophecy.member_tags && prophecy.member_tags.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold mb-2">My Tags</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {prophecy.member_tags.map((tag) => (
-                            <span key={tag} className="px-2 py-1 bg-gold/20 text-gold rounded text-xs">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Journal */}
-                    {prophecy.member_journal && (
-                      <div className="bg-gold/5 p-4 rounded-lg border-l-4 border-gold">
-                        <h4 className="text-sm font-semibold text-navy mb-2 flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          My Journal
-                        </h4>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{prophecy.member_journal}</p>
-                      </div>
-                    )}
-
-                    {/* Manifestation Testimony */}
-                    {prophecy.fulfillment_status === 'manifested' && prophecy.manifested_testimony && (
-                      <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                        <h4 className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          Manifestation Testimony
-                        </h4>
-                        <p className="text-muted-foreground mb-2 whitespace-pre-wrap">
-                          {prophecy.manifested_testimony}
-                        </p>
-                        {prophecy.manifested_date && (
-                          <p className="text-sm text-green-600">
-                            Manifested on{' '}
-                            {new Date(prophecy.manifested_date).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Journal Link */}
-                    <div className="flex gap-2 pt-2">
-                      <Link href={`/journal?prophecy=${prophecy.id}`}>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <FileText className="h-4 w-4" />
-                          Journal About This
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-navy">Edit Prophecy Tracking</DialogTitle>
-            <DialogDescription>
-              Update your journal, fulfillment status, and personal tags
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Journal */}
-            <div className="space-y-2">
-              <Label htmlFor="journal">My Journal</Label>
-              <textarea
-                id="journal"
-                className="w-full min-h-[120px] px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                placeholder="Record your thoughts, prayers, and observations about this prophecy..."
-                value={editFormData.journal}
-                onChange={(e) => setEditFormData({ ...editFormData, journal: e.target.value })}
-              />
-            </div>
-
-            {/* Fulfillment Status */}
-            <div className="space-y-2">
-              <Label htmlFor="status">Fulfillment Status</Label>
-              <select
-                id="status"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                value={editFormData.fulfillmentStatus}
-                onChange={(e) =>
-                  setEditFormData({
-                    ...editFormData,
-                    fulfillmentStatus: e.target.value as 'unfolding' | 'manifested'
-                  })
-                }
-              >
-                <option value="unfolding">Unfolding</option>
-                <option value="manifested">Manifested</option>
-              </select>
-            </div>
-
-            {/* Manifested Fields */}
-            {editFormData.fulfillmentStatus === 'manifested' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="manifestedDate">Manifestation Date</Label>
-                  <Input
-                    id="manifestedDate"
-                    type="date"
-                    value={editFormData.manifestedDate}
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, manifestedDate: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="testimony">Manifestation Testimony</Label>
-                  <textarea
-                    id="testimony"
-                    className="w-full min-h-[100px] px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                    placeholder="Share how this prophecy was fulfilled..."
-                    value={editFormData.manifestedTestimony}
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, manifestedTestimony: e.target.value })
-                    }
-                  />
-                </div>
-              </>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
-
-            {/* Member Tags */}
-            <div className="space-y-2">
-              <Label htmlFor="tags">My Tags (comma-separated)</Label>
-              <Input
-                id="tags"
-                placeholder="business, breakthrough, healing"
-                value={editFormData.memberTags}
-                onChange={(e) => setEditFormData({ ...editFormData, memberTags: e.target.value })}
-              />
-              <p className="text-xs text-muted-foreground">
-                Add personal tags to help you find and organize your prophecies
-              </p>
-            </div>
           </div>
+        )}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit} disabled={saving}>
-              {saving ? (
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-gray-900 dark:text-white">Edit Prophecy Tracking</DialogTitle>
+              <DialogDescription>
+                Update your journal, fulfillment status, and personal tags
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="journal">My Journal</Label>
+                <textarea
+                  id="journal"
+                  className="w-full min-h-[120px] px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none dark:bg-slate-800 dark:border-slate-700"
+                  placeholder="Record your thoughts, prayers, and observations about this prophecy..."
+                  value={editFormData.journal}
+                  onChange={(e) => setEditFormData({ ...editFormData, journal: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Fulfillment Status</Label>
+                <select
+                  id="status"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-800 dark:border-slate-700"
+                  value={editFormData.fulfillmentStatus}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      fulfillmentStatus: e.target.value as 'unfolding' | 'manifested'
+                    })
+                  }
+                >
+                  <option value="unfolding">Unfolding</option>
+                  <option value="manifested">Manifested</option>
+                </select>
+              </div>
+
+              {editFormData.fulfillmentStatus === 'manifested' && (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  <div className="space-y-2">
+                    <Label htmlFor="manifestedDate">Manifestation Date</Label>
+                    <Input
+                      id="manifestedDate"
+                      type="date"
+                      value={editFormData.manifestedDate}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, manifestedDate: e.target.value })
+                      }
+                      className="dark:bg-slate-800 dark:border-slate-700"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="testimony">Manifestation Testimony</Label>
+                    <textarea
+                      id="testimony"
+                      className="w-full min-h-[100px] px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none dark:bg-slate-800 dark:border-slate-700"
+                      placeholder="Share how this prophecy was fulfilled..."
+                      value={editFormData.manifestedTestimony}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, manifestedTestimony: e.target.value })
+                      }
+                    />
+                  </div>
                 </>
-              ) : (
-                'Save Changes'
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags">My Tags (comma-separated)</Label>
+                <Input
+                  id="tags"
+                  placeholder="business, breakthrough, healing"
+                  value={editFormData.memberTags}
+                  onChange={(e) => setEditFormData({ ...editFormData, memberTags: e.target.value })}
+                  className="dark:bg-slate-800 dark:border-slate-700"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Add personal tags to help you find and organize your prophecies
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   )
 }
