@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -21,8 +22,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
+    // Use admin client with service role to bypass storage RLS
+    const adminClient = createAdminClient()
+
     // List files from Ebooks bucket (separate bucket, not folder)
-    const { data: files, error: storageError } = await supabase.storage
+    const { data: files, error: storageError } = await adminClient.storage
       .from('Ebooks')
       .list('', { limit: 100 })
 
@@ -37,8 +41,8 @@ export async function POST(request: NextRequest) {
       (f.name.endsWith('.pdf') || f.name.endsWith('.epub') || f.name.endsWith('.docx') || f.name.endsWith('.PDF'))
     )
 
-    // Get existing resources to avoid duplicates
-    const { data: existingResources } = await supabase
+    // Get existing resources to avoid duplicates (use admin client)
+    const { data: existingResources } = await adminClient
       .from('resources')
       .select('file_url')
 
@@ -66,8 +70,8 @@ export async function POST(request: NextRequest) {
       const type = file.name.endsWith('.pdf') ? 'ebook' :
                    file.name.endsWith('.epub') ? 'ebook' : 'document'
 
-      // Insert resource
-      const { error: insertError } = await supabase
+      // Insert resource (use admin client to bypass RLS)
+      const { error: insertError } = await adminClient
         .from('resources')
         .insert({
           title,
