@@ -20,8 +20,10 @@ import {
   Flame,
   Star,
   Quote,
-  Loader2
+  Loader2,
+  ExternalLink
 } from 'lucide-react'
+import Link from 'next/link'
 
 interface DailyScripture {
   id: string
@@ -412,6 +414,24 @@ export default function DailyCheckinPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Streams of Grace Devotional Link */}
+      <Link href="/devotional">
+        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:shadow-lg transition-all cursor-pointer group">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-navy">Streams of Grace</p>
+                <p className="text-sm text-gray-600">Read today's devotional</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-amber-500 group-hover:translate-x-1 transition-transform" />
+          </CardContent>
+        </Card>
+      </Link>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
