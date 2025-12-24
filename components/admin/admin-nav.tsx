@@ -26,7 +26,21 @@ import {
   Video,
   BarChart3,
   UserPlus,
-  HandHeart
+  HandHeart,
+  Radio,
+  FileText,
+  Image,
+  FolderOpen,
+  Flame,
+  Send,
+  Zap,
+  Target,
+  LineChart,
+  Workflow,
+  GraduationCap,
+  ClipboardList,
+  MessagesSquare,
+  Megaphone
 } from 'lucide-react'
 
 interface NavSection {
@@ -100,6 +114,7 @@ export default function AdminNav() {
         { name: 'Dashboard', href: '/admin-dashboard' },
         { name: 'Inbox', href: '/inbox', badge: unreadCount },
         { name: 'Analytics', href: '/analytics' },
+        { name: 'Reports', href: '/admin-reports' },
       ]
     },
     {
@@ -109,20 +124,23 @@ export default function AdminNav() {
       items: [
         { name: 'Members', href: '/members', badge: newLeadsCount },
         { name: 'Member Care', href: '/member-care' },
+        { name: 'Volunteers', href: '/admin-volunteer' },
       ]
     },
     {
-      title: 'Content',
+      title: 'Content & Media',
       icon: <BookOpen className="h-4 w-4" />,
       items: [
         { name: 'Content Library', href: '/admin-content' },
         { name: 'Daily Content', href: '/daily-content' },
         { name: 'Sermons', href: '/admin-sermons' },
+        { name: 'Resources', href: '/admin-resources' },
+        { name: 'Media Library', href: '/media' },
       ]
     },
     {
       title: 'Learning',
-      icon: <Leaf className="h-4 w-4" />,
+      icon: <GraduationCap className="h-4 w-4" />,
       items: [
         { name: 'PLANT Courses', href: '/admin-plant' },
         { name: 'Assessments', href: '/assessments-management' },
@@ -133,16 +151,33 @@ export default function AdminNav() {
       icon: <Heart className="h-4 w-4" />,
       items: [
         { name: 'Groups', href: '/admin-groups' },
+        { name: 'Events', href: '/admin-events' },
         { name: 'Prayer Requests', href: '/prayers' },
         { name: 'Testimonies', href: '/admin-testimonies' },
-        { name: 'Events', href: '/admin-events' },
+        { name: 'Fasting', href: '/admin-fasting' },
+      ]
+    },
+    {
+      title: 'Communications',
+      icon: <Megaphone className="h-4 w-4" />,
+      items: [
+        { name: 'Campaigns', href: '/communications' },
+        { name: 'Templates', href: '/communications-enhanced' },
+      ]
+    },
+    {
+      title: 'Live & Streaming',
+      icon: <Radio className="h-4 w-4" />,
+      items: [
+        { name: 'Live Stream', href: '/admin-live' },
       ]
     },
     {
       title: 'Finance',
       icon: <DollarSign className="h-4 w-4" />,
       items: [
-        { name: 'Giving', href: '/admin-giving' },
+        { name: 'Giving Overview', href: '/admin-giving' },
+        { name: 'Donations', href: '/donations' },
       ]
     },
     {
@@ -153,17 +188,17 @@ export default function AdminNav() {
       ]
     },
     {
-      title: 'AI & Automation',
+      title: 'AI & Intelligence',
       icon: <Brain className="h-4 w-4" />,
       defaultOpen: true,
       items: [
-        { name: 'AI Hub', href: '/admin-command-center', highlight: true, icon: 'brain' },
+        { name: 'AI Command Center', href: '/admin-command-center', highlight: true, icon: 'brain' },
         { name: 'Predictive Analytics', href: '/admin-predictive', highlight: true, icon: 'trending' },
         { name: 'Giving Forecast', href: '/admin-giving-forecast', highlight: true, icon: 'trending' },
         { name: 'AI Sermon Notes', href: '/admin-sermon-notes', highlight: true, icon: 'brain' },
-        { name: 'Volunteer Scheduler', href: '/admin-volunteer-scheduler', highlight: true, icon: 'brain' },
+        { name: 'Smart Scheduling', href: '/admin-volunteer-scheduler', highlight: true, icon: 'brain' },
         { name: 'AI Training', href: '/admin-ai-training', highlight: true, icon: 'brain' },
-        { name: 'Workflows', href: '/admin-workflows' },
+        { name: 'Workflows', href: '/admin-workflows', highlight: true, icon: 'brain' },
       ]
     },
     {
