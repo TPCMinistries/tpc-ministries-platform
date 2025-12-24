@@ -155,8 +155,14 @@ export default function AdminNav() {
     {
       title: 'AI & Automation',
       icon: <Brain className="h-4 w-4" />,
+      defaultOpen: true,
       items: [
         { name: 'AI Hub', href: '/admin-command-center', highlight: true, icon: 'brain' },
+        { name: 'Predictive Analytics', href: '/admin-predictive', highlight: true, icon: 'trending' },
+        { name: 'Giving Forecast', href: '/admin-giving-forecast', highlight: true, icon: 'trending' },
+        { name: 'AI Sermon Notes', href: '/admin-sermon-notes', highlight: true, icon: 'brain' },
+        { name: 'Volunteer Scheduler', href: '/admin-volunteer-scheduler', highlight: true, icon: 'brain' },
+        { name: 'AI Training', href: '/admin-ai-training', highlight: true, icon: 'brain' },
         { name: 'Workflows', href: '/admin-workflows' },
       ]
     },
