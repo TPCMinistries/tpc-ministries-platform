@@ -473,18 +473,19 @@ export default function PrayerWallPage() {
                 </p>
               </div>
 
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg gap-2">
-                    <Plus className="h-5 w-5" />
-                    Share Prayer Request
-                  </Button>
-                </DialogTrigger>
+              <div className="flex flex-col gap-3">
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg gap-2">
+                      <Plus className="h-5 w-5" />
+                      Share Prayer Request
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle className="text-xl">Share Your Prayer Need</DialogTitle>
                     <DialogDescription>
-                      Let the community stand with you in prayer
+                      Share with the community or submit privately to our ministry team for personal prayer
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
@@ -538,11 +539,18 @@ export default function PrayerWallPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="ministry">⛪ Ministry Team Only</SelectItem>
                             <SelectItem value="private">🔒 Just Me</SelectItem>
                             <SelectItem value="members">👥 Members Only</SelectItem>
                             <SelectItem value="public">🌍 Everyone</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formData.privacy === 'ministry' && 'Our ministry team will pray for you personally'}
+                          {formData.privacy === 'private' && 'Only you can see this prayer request'}
+                          {formData.privacy === 'members' && 'Visible to all TPC members on the prayer wall'}
+                          {formData.privacy === 'public' && 'Visible to everyone, including visitors'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -570,6 +578,10 @@ export default function PrayerWallPage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+                <p className="text-xs text-blue-200 text-center">
+                  Share with the community or privately with our ministry team
+                </p>
+              </div>
             </div>
           </div>
         </div>
