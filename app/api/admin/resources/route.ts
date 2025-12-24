@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, type, file_url, thumbnail_url, category, tier_required, is_published, author } = body
+    const { title, description, type, file_url, thumbnail_url, category, tags, tier_required, is_published, author } = body
 
     if (!title || !file_url) {
       return NextResponse.json({ error: 'Title and file URL are required' }, { status: 400 })
@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
         file_url,
         thumbnail_url,
         category,
+        tags: tags || [],
         tier_required: tier_required || 'free',
         published: is_published || false,
         author,

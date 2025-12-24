@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const tab = searchParams.get('tab') || 'all'
     const search = searchParams.get('search') || ''
+    const tagFilter = searchParams.get('tag') || ''
 
     // Tier hierarchy for access control
     const tierHierarchy = ['free', 'member', 'partner', 'covenant']
@@ -133,6 +134,7 @@ export async function GET(request: NextRequest) {
         tier_required: resource.tier_required || 'free',
         has_access: hasAccess,
         download_count: resource.download_count,
+        tags: resource.tags || [],
         created_at: resource.created_at,
         href: `/ebooks/${resource.id}`,
       })
@@ -173,11 +175,26 @@ export async function GET(request: NextRequest) {
         filteredContent = allContent.filter(c => c.type === 'ebook')
         break
       case 'progress':
-        filteredContent = allContent.filter(c => 
+        filteredContent = allContent.filter(c =>
           c.progress_percent > 0 || c.completed || c.last_accessed
         )
         break
     }
+
+    // Filter by tag
+    if (tagFilter) {
+      filteredContent = filteredContent.filter(c =>
+        c.tags && c.tags.includes(tagFilter.toLowerCase())
+      )
+    }
+
+    // Collect all unique tags for filtering options
+    const allTags = new Set<string>()
+    allContent.forEach(c => {
+      if (c.tags) {
+        c.tags.forEach((tag: string) => allTags.add(tag))
+      }
+    })
 
     // Sort by created_at (newest first) for most tabs, or last_accessed for progress tab
     if (tab === 'progress') {
@@ -204,6 +221,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: filteredContent,
       stats,
+      tags: Array.from(allTags).sort(),
       member_tier: memberTier,
     })
   } catch (error) {

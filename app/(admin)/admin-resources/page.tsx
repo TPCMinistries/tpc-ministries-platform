@@ -50,6 +50,8 @@ import {
   Loader2,
   ExternalLink,
   Upload,
+  X,
+  Tag,
 } from 'lucide-react'
 import FileUpload from '@/components/ui/file-upload'
 import ImageUpload from '@/components/ui/image-upload'
@@ -63,6 +65,7 @@ interface Resource {
   file_url: string
   thumbnail_url?: string
   category?: string
+  tags?: string[]
   tier_required: 'free' | 'partner' | 'covenant'
   published: boolean
   download_count: number
@@ -78,6 +81,7 @@ const defaultFormData = {
   file_url: '',
   thumbnail_url: '',
   category: '',
+  tags: [] as string[],
   tier_required: 'free' as const,
   is_published: false,
   author: '',
@@ -102,6 +106,7 @@ export default function AdminResourcesPage() {
   const [loadingStorage, setLoadingStorage] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<{imported: number, skipped: number} | null>(null)
+  const [tagInput, setTagInput] = useState('')
 
   useEffect(() => {
     fetchResources()
@@ -209,11 +214,25 @@ export default function AdminResourcesPage() {
       file_url: resource.file_url,
       thumbnail_url: resource.thumbnail_url || '',
       category: resource.category || '',
+      tags: resource.tags || [],
       tier_required: resource.tier_required,
       is_published: resource.published,
       author: resource.author || '',
     })
+    setTagInput('')
     setIsEditOpen(true)
+  }
+
+  const addTag = () => {
+    const tag = tagInput.trim().toLowerCase()
+    if (tag && !formData.tags.includes(tag)) {
+      setFormData({ ...formData, tags: [...formData.tags, tag] })
+    }
+    setTagInput('')
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter(t => t !== tagToRemove) })
   }
 
   const openDeleteDialog = (resource: Resource) => {
@@ -646,6 +665,45 @@ export default function AdminResourcesPage() {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="e.g., Prayer, Faith, Leadership"
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTag()
+                    }
+                  }}
+                  placeholder="Add a tag and press Enter"
+                />
+                <Button type="button" variant="outline" onClick={addTag}>
+                  <Tag className="h-4 w-4" />
+                </Button>
+              </div>
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:text-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Suggested: prayer, faith, healing, prophecy, leadership, family, finance, spiritual-growth
+              </p>
             </div>
 
             <div className="grid gap-2">

@@ -8,6 +8,13 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   BookOpen,
   Video,
   Headphones,
@@ -41,6 +48,7 @@ interface LibraryItem {
   download_count?: number
   sermon_date?: string
   series_name?: string
+  tags?: string[]
   created_at: string
   href: string
 }
@@ -60,16 +68,19 @@ export default function UnifiedLibraryPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
+  const [availableTags, setAvailableTags] = useState<string[]>([])
+  const [selectedTag, setSelectedTag] = useState('')
 
   useEffect(() => {
     fetchLibrary()
-  }, [activeTab])
+  }, [activeTab, selectedTag])
 
   const fetchLibrary = async () => {
     try {
       const params = new URLSearchParams()
       params.set('tab', activeTab)
       if (searchQuery) params.set('search', searchQuery)
+      if (selectedTag) params.set('tag', selectedTag)
 
       const response = await fetch(`/api/library?${params}`)
       const result = await response.json()
@@ -77,6 +88,7 @@ export default function UnifiedLibraryPage() {
       if (response.ok) {
         setContent(result.data || [])
         setStats(result.stats || { total: 0, videos: 0, audio: 0, ebooks: 0, inProgress: 0 })
+        setAvailableTags(result.tags || [])
         setMemberTier(result.member_tier || 'free')
       }
     } catch (error) {
@@ -163,20 +175,53 @@ export default function UnifiedLibraryPage() {
         <p className="text-gray-600">Browse all teachings, ebooks, sermons, and resources</p>
       </div>
 
-      {/* Search */}
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search library..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-10"
-          />
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 flex gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search library..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-10"
+            />
+          </div>
+          <Button onClick={handleSearch}>Search</Button>
         </div>
-        <Button onClick={handleSearch}>Search</Button>
+        {availableTags.length > 0 && (
+          <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tags</SelectItem>
+              {availableTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
+
+      {/* Active Tag Filter Badge */}
+      {selectedTag && selectedTag !== 'all' && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Filtered by:</span>
+          <Badge variant="secondary" className="flex items-center gap-1">
+            {selectedTag}
+            <button
+              onClick={() => setSelectedTag('')}
+              className="ml-1 hover:text-red-600"
+            >
+              <span className="text-xs">×</span>
+            </button>
+          </Badge>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

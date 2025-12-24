@@ -68,7 +68,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { title, description, type, file_url, thumbnail_url, category, tier_required, is_published, author } = body
+    const { title, description, type, file_url, thumbnail_url, category, tags, tier_required, is_published, author } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -83,6 +83,7 @@ export async function PUT(
         file_url,
         thumbnail_url,
         category,
+        tags: tags || [],
         tier_required,
         published: is_published,
         author,
