@@ -19,7 +19,15 @@ import {
   Download,
   RefreshCw,
   ChevronRight,
-  Loader2
+  Loader2,
+  Sparkles,
+  Target,
+  BookOpen,
+  Star,
+  Award,
+  Clock,
+  CheckCircle,
+  ArrowRight
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -34,7 +42,41 @@ interface AssessmentHistory {
     date: string
     topResults: string[]
     changes?: string
+    resultId?: string
   }[]
+}
+
+const ASSESSMENT_CONFIG: { [key: string]: { icon: any, gradient: string, description: string } } = {
+  'spiritual-gifts': {
+    icon: Gift,
+    gradient: 'from-purple-400 to-violet-500',
+    description: 'Discover your God-given spiritual gifts'
+  },
+  'seasonal': {
+    icon: Compass,
+    gradient: 'from-amber-400 to-orange-500',
+    description: 'Identify your current spiritual season'
+  },
+  'prophetic-expression': {
+    icon: Eye,
+    gradient: 'from-indigo-400 to-purple-500',
+    description: 'Understand your prophetic expression style'
+  },
+  'ministry-calling': {
+    icon: Heart,
+    gradient: 'from-rose-400 to-pink-500',
+    description: 'Discover where you\'re called to serve'
+  },
+  'redemptive-gifts': {
+    icon: Crown,
+    gradient: 'from-amber-400 to-yellow-500',
+    description: 'Understand your unique redemptive design'
+  },
+  'spiritual-maturity': {
+    icon: TreePine,
+    gradient: 'from-emerald-400 to-green-500',
+    description: 'Assess your spiritual development journey'
+  }
 }
 
 export default function MemberAssessmentsPage() {
@@ -82,17 +124,7 @@ export default function MemberAssessmentsPage() {
 
       // Convert to AssessmentHistory format
       const history: AssessmentHistory[] = Object.entries(groupedResults).map(([type, typeResults]) => {
-        const getIcon = (type: string) => {
-          switch (type) {
-            case 'spiritual-gifts': return Gift
-            case 'seasonal': return Compass
-            case 'prophetic-expression': return Eye
-            case 'ministry-calling': return Heart
-            case 'redemptive-gifts': return Crown
-            case 'spiritual-maturity': return TreePine
-            default: return Gift
-          }
-        }
+        const config = ASSESSMENT_CONFIG[type] || { icon: Gift, gradient: 'from-gray-400 to-slate-500', description: '' }
 
         const getTitle = (type: string) => {
           return type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
@@ -102,7 +134,7 @@ export default function MemberAssessmentsPage() {
           id: typeResults[0].id,
           slug: type,
           title: getTitle(type),
-          icon: getIcon(type),
+          icon: config.icon,
           lastTaken: new Date(typeResults[0].created_at).toISOString().split('T')[0],
           timesCompleted: typeResults.length,
           results: typeResults.map((r) => ({
@@ -129,162 +161,177 @@ export default function MemberAssessmentsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-navy mx-auto mb-4" />
-          <p className="text-gray-600">Loading your assessments...</p>
-        </div>
-      </div>
-    )
-  }
+  const availableAssessments = Object.entries(ASSESSMENT_CONFIG)
+    .filter(([slug]) => !assessmentHistory.find(h => h.slug === slug))
+    .map(([slug, config]) => ({
+      slug,
+      title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+      icon: config.icon,
+      description: config.description,
+      gradient: config.gradient
+    }))
 
-  // Mock data for reference (keep commented)
-  const oldMockData: AssessmentHistory[] = [
-    {
-      id: '1',
-      slug: 'spiritual-gifts',
-      title: 'Spiritual Gifts',
-      icon: Gift,
-      lastTaken: '2024-01-15',
-      timesCompleted: 2,
-      results: [
-        {
-          date: '2024-01-15',
-          topResults: ['Teaching (96%)', 'Exhortation (88%)', 'Discernment (76%)'],
-        },
-        {
-          date: '2023-06-20',
-          topResults: ['Teaching (92%)', 'Discernment (82%)', 'Exhortation (78%)'],
-          changes: 'Exhortation increased 10%, now #2 gift',
-        },
-      ],
-    },
-    {
-      id: '2',
-      slug: 'seasonal',
-      title: 'Seasonal',
-      icon: Compass,
-      lastTaken: '2024-01-10',
-      timesCompleted: 3,
-      results: [
-        {
-          date: '2024-01-10',
-          topResults: ['Growth Season'],
-        },
-        {
-          date: '2023-09-15',
-          topResults: ['Harvest Season'],
-          changes: 'Transitioned from Harvest to Growth',
-        },
-        {
-          date: '2023-03-01',
-          topResults: ['Planting Season'],
-          changes: 'Moved from Planting to Harvest',
-        },
-      ],
-    },
-    {
-      id: '3',
-      slug: 'prophetic-expression',
-      title: 'Prophetic Expression',
-      icon: Eye,
-      lastTaken: '2023-11-05',
-      timesCompleted: 1,
-      results: [
-        {
-          date: '2023-11-05',
-          topResults: ['Seer (94%)', 'Prophet (76%)', 'Intercessor (68%)'],
-        },
-      ],
-    },
-  ]
-
-  const availableAssessments = [
-    {
-      slug: 'ministry-calling',
-      title: 'Ministry Calling',
-      icon: Heart,
-      description: 'Identify where you\'re called to serve',
-      status: 'not-started',
-    },
-    {
-      slug: 'redemptive-gifts',
-      title: 'Redemptive Gifts',
-      icon: Crown,
-      description: 'Understand your unique design',
-      status: 'not-started',
-    },
-    {
-      slug: 'spiritual-maturity',
-      title: 'Spiritual Maturity',
-      icon: TreePine,
-      description: 'Assess your spiritual development',
-      status: 'not-started',
-    },
-  ]
-
-  const getChangeIcon = (change: string) => {
+  const getChangeIcon = (change?: string) => {
+    if (!change) return null
     if (change.toLowerCase().includes('increase')) return <TrendingUp className="h-4 w-4 text-green-600" />
     if (change.toLowerCase().includes('decrease')) return <TrendingDown className="h-4 w-4 text-red-600" />
     return <Minus className="h-4 w-4 text-gray-400" />
   }
 
-  return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      {/* Header */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-12">
-        <div className="container mx-auto max-w-6xl">
-          <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
-            My Assessments
-          </h1>
-          <p className="text-xl text-gray-300">
-            Track your spiritual growth journey over time
-          </p>
-        </div>
-      </section>
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
 
-      {/* Content */}
-      <section className="px-4 py-12">
-        <div className="container mx-auto max-w-6xl space-y-12">
-          {/* Completed Assessments */}
-          <div>
-            <h2 className="text-2xl font-bold text-navy mb-6">Your Assessment History</h2>
-            <div className="grid gap-6">
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-slate-900 dark:via-teal-950/30 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-teal-600 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading your assessments...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 dark:from-slate-900 dark:via-teal-950/30 dark:to-slate-900 p-4 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Beautiful Header */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 p-8 text-white shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
+
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <Target className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-teal-200">Know Yourself</p>
+                    <h1 className="text-3xl font-bold">My Assessments</h1>
+                  </div>
+                </div>
+                <p className="text-teal-100 mt-2 max-w-md">
+                  Discover your spiritual gifts, calling, and season through our prophetic assessments.
+                </p>
+              </div>
+
+              <Link href="/assessments">
+                <Button size="lg" className="bg-white text-teal-600 hover:bg-teal-50 shadow-lg gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Browse All Assessments
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-violet-500 flex items-center justify-center">
+                  <RefreshCw className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Taken</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalTaken}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Available</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{availableAssessments.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 flex items-center justify-center">
+                  <Award className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Insights</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalTaken * 3}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Completed Assessments */}
+        {assessmentHistory.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <CheckCircle className="h-6 w-6 text-teal-500" />
+              Your Assessment History
+            </h2>
+            <div className="space-y-4">
               {assessmentHistory.map((assessment) => {
+                const config = ASSESSMENT_CONFIG[assessment.slug] || { gradient: 'from-gray-400 to-slate-500' }
                 const Icon = assessment.icon
                 const isExpanded = selectedAssessment === assessment.id
                 const latestResult = assessment.results[0]
 
                 return (
-                  <Card key={assessment.id} className="border-2 border-navy/20">
-                    <CardHeader>
+                  <Card key={assessment.id} className="overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-lg transition-all">
+                    {/* Colored top bar */}
+                    <div className={`h-1.5 bg-gradient-to-r ${config.gradient}`} />
+                    <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-navy/10">
-                            <Icon className="h-6 w-6 text-navy" />
+                          <div className={`h-14 w-14 rounded-2xl bg-gradient-to-r ${config.gradient} flex items-center justify-center shadow-lg`}>
+                            <Icon className="h-7 w-7 text-white" />
                           </div>
                           <div>
-                            <CardTitle className="text-xl text-navy">{assessment.title} Assessment</CardTitle>
+                            <CardTitle className="text-xl text-gray-900 dark:text-white">{assessment.title}</CardTitle>
                             <CardDescription className="flex items-center gap-4 mt-1">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-4 w-4" />
-                                Last taken: {new Date(assessment.lastTaken).toLocaleDateString()}
+                                Last taken: {formatDate(assessment.lastTaken)}
                               </span>
-                              <span>Completed {assessment.timesCompleted}x</span>
+                              <Badge variant="outline" className="border-teal-200 dark:border-teal-800 text-teal-600 dark:text-teal-400">
+                                Completed {assessment.timesCompleted}x
+                              </Badge>
                             </CardDescription>
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Link href={`/assessments/${assessment.slug}/results?id=${latestResult.resultId || assessment.results[0].resultId}`}>
-                            <Button variant="outline" size="sm">
+                          <Link href={`/assessments/${assessment.slug}/results?id=${latestResult.resultId}`}>
+                            <Button variant="outline" size="sm" className="gap-1">
+                              <BookOpen className="h-4 w-4" />
                               View Results
                             </Button>
                           </Link>
                           <Link href={`/assessments/${assessment.slug}/quiz`}>
-                            <Button size="sm" className="bg-navy hover:bg-navy/90">
-                              <RefreshCw className="mr-2 h-4 w-4" />
+                            <Button size="sm" className={`bg-gradient-to-r ${config.gradient} hover:opacity-90 text-white border-0 gap-1`}>
+                              <RefreshCw className="h-4 w-4" />
                               Retake
                             </Button>
                           </Link>
@@ -294,14 +341,21 @@ export default function MemberAssessmentsPage() {
 
                     <CardContent className="space-y-4">
                       {/* Latest Results Summary */}
-                      <div className="bg-gold/5 border border-gold/20 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-navy">Latest Results</h4>
-                          <Badge className="bg-gold text-white">Current</Badge>
+                      <div className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl p-4 border border-teal-100 dark:border-teal-900">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-teal-500" />
+                            Latest Results
+                          </h4>
+                          <Badge className="bg-gradient-to-r from-teal-400 to-cyan-500 text-white border-0">Current</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {latestResult.topResults.map((result, i) => (
-                            <Badge key={i} variant="outline" className="border-navy/30">
+                            <Badge
+                              key={i}
+                              className={`${i === 0 ? `bg-gradient-to-r ${config.gradient} text-white border-0` : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'}`}
+                            >
+                              {i === 0 && <Star className="h-3 w-3 mr-1" />}
                               {result}
                             </Badge>
                           ))}
@@ -313,7 +367,7 @@ export default function MemberAssessmentsPage() {
                         <>
                           <button
                             onClick={() => setSelectedAssessment(isExpanded ? null : assessment.id)}
-                            className="flex items-center gap-2 text-sm text-navy hover:text-navy/80 transition-colors"
+                            className="flex items-center gap-2 text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors font-medium"
                           >
                             <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                             View History ({assessment.results.length - 1} previous {assessment.results.length - 1 === 1 ? 'result' : 'results'})
@@ -321,16 +375,16 @@ export default function MemberAssessmentsPage() {
 
                           {/* History Details */}
                           {isExpanded && (
-                            <div className="space-y-3 pl-6 border-l-2 border-navy/20">
+                            <div className="space-y-3 pl-6 border-l-2 border-teal-200 dark:border-teal-800 ml-2">
                               {assessment.results.slice(1).map((result, index) => (
-                                <div key={index} className="space-y-2">
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Calendar className="h-4 w-4" />
-                                    {new Date(result.date).toLocaleDateString()}
+                                <div key={index} className="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3 space-y-2">
+                                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <Clock className="h-4 w-4" />
+                                    {formatDate(result.date)}
                                   </div>
                                   <div className="flex flex-wrap gap-2">
                                     {result.topResults.map((res, i) => (
-                                      <Badge key={i} variant="outline" className="border-gray-300 text-gray-600">
+                                      <Badge key={i} variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400">
                                         {res}
                                       </Badge>
                                     ))}
@@ -338,7 +392,7 @@ export default function MemberAssessmentsPage() {
                                   {result.changes && (
                                     <div className="flex items-start gap-2 text-sm">
                                       {getChangeIcon(result.changes)}
-                                      <span className="text-gray-700">{result.changes}</span>
+                                      <span className="text-gray-700 dark:text-gray-300">{result.changes}</span>
                                     </div>
                                   )}
                                 </div>
@@ -349,10 +403,10 @@ export default function MemberAssessmentsPage() {
                       )}
 
                       {/* Download Option */}
-                      <div className="pt-2">
-                        <Button variant="ghost" size="sm" className="text-navy">
+                      <div className="pt-2 flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
                           <Download className="mr-2 h-4 w-4" />
-                          Download Assessment History (PDF)
+                          Download Results (PDF)
                         </Button>
                       </div>
                     </CardContent>
@@ -361,27 +415,32 @@ export default function MemberAssessmentsPage() {
               })}
             </div>
           </div>
+        )}
 
-          {/* Available Assessments */}
-          <div>
-            <h2 className="text-2xl font-bold text-navy mb-6">Available Assessments</h2>
+        {/* Available Assessments */}
+        {availableAssessments.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-amber-500" />
+              Available Assessments
+            </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {availableAssessments.map((assessment) => {
                 const Icon = assessment.icon
                 return (
-                  <Card key={assessment.slug} className="border-2 border-navy/10 hover:border-navy/30 transition-all">
-                    <CardHeader>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-navy/10 mb-4">
-                        <Icon className="h-6 w-6 text-navy" />
+                  <Card key={assessment.slug} className="overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-xl transition-all group">
+                    <CardHeader className="pb-3">
+                      <div className={`h-14 w-14 rounded-2xl bg-gradient-to-r ${assessment.gradient} flex items-center justify-center shadow-lg mb-4 transform group-hover:scale-105 transition-transform`}>
+                        <Icon className="h-7 w-7 text-white" />
                       </div>
-                      <CardTitle className="text-lg text-navy">{assessment.title}</CardTitle>
+                      <CardTitle className="text-lg text-gray-900 dark:text-white">{assessment.title}</CardTitle>
                       <CardDescription>{assessment.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <Link href={`/assessments/${assessment.slug}`}>
-                        <Button className="w-full bg-navy hover:bg-navy/90">
+                        <Button className={`w-full bg-gradient-to-r ${assessment.gradient} hover:opacity-90 text-white border-0 gap-2`}>
                           Take Assessment
-                          <ChevronRight className="ml-2 h-4 w-4" />
+                          <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
                     </CardContent>
@@ -390,38 +449,47 @@ export default function MemberAssessmentsPage() {
               })}
             </div>
           </div>
+        )}
 
-          {/* Growth Insights */}
-          <Card className="border-2 border-gold/20 bg-gold/5">
-            <CardHeader>
-              <CardTitle className="text-navy flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-gold" />
-                Your Growth Journey
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="bg-white p-4 rounded-lg border border-gold/20">
-                  <div className="text-2xl font-bold text-navy mb-1">{stats.completed}</div>
-                  <div className="text-sm text-gray-600">Assessments Completed</div>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-gold/20">
-                  <div className="text-2xl font-bold text-navy mb-1">{stats.totalTaken}</div>
-                  <div className="text-sm text-gray-600">Total Times Taken</div>
-                </div>
+        {/* Empty State */}
+        {assessmentHistory.length === 0 && availableAssessments.length === 0 && (
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-sm">
+            <CardContent className="py-16 text-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 mx-auto mb-6 flex items-center justify-center">
+                <Target className="h-10 w-10 text-white" />
               </div>
-              <p className="text-gray-700">
-                Retaking assessments 6-12 months apart helps you track spiritual growth and see how God is developing your gifts over time.
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">No Assessments Yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                Take your first assessment to discover your spiritual gifts, calling, and current season.
               </p>
               <Link href="/assessments">
-                <Button variant="outline" className="w-full border-gold text-navy hover:bg-gold/10">
-                  Explore All Assessments
+                <Button className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:opacity-90 text-white gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Browse Assessments
                 </Button>
               </Link>
             </CardContent>
           </Card>
-        </div>
-      </section>
+        )}
+
+        {/* Growth Journey Card */}
+        <Card className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 text-white border-0 shadow-xl overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="h-7 w-7" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold mb-1">Track Your Growth</h3>
+                <p className="text-teal-100 text-sm">
+                  Retaking assessments every 6-12 months helps you see how God is developing your gifts and calling over time.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
