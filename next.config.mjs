@@ -99,8 +99,19 @@ const nextConfig = {
       },
       {
         source: '/member/content',
-        destination: '/content',
+        destination: '/library',
         permanent: true,
+      },
+      // Redirect old content pages to unified library
+      {
+        source: '/content',
+        destination: '/library',
+        permanent: false,
+      },
+      {
+        source: '/ebooks',
+        destination: '/library',
+        permanent: false,
       },
       {
         source: '/member/give',

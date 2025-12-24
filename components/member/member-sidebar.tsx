@@ -32,15 +32,11 @@ import {
   Radio,
   Star,
   Utensils,
-  Video,
   UserCheck,
   Sunrise,
   Cake,
   Home as HomeIcon,
   Shield,
-  PlayCircle,
-  BookMarked,
-  FileText
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -94,11 +90,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     {
       title: 'Learn & Grow',
       items: [
-        { name: 'Content Library', href: '/content', icon: PlayCircle },
-        { name: 'My Library', href: '/library', icon: BookMarked },
-        { name: 'Ebooks & Resources', href: '/ebooks', icon: FileText },
+        { name: 'Library', href: '/library', icon: Library },
         { name: 'PLANT Learning', href: '/plant', icon: Leaf },
-        { name: 'Sermons', href: '/sermons', icon: Video },
         { name: 'Seasons', href: '/seasons', icon: Calendar },
         { name: 'My Assessments', href: '/my-assessments', icon: ClipboardList },
       ]
