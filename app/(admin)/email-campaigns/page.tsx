@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -105,7 +105,7 @@ interface Member {
   tier: 'free' | 'partner' | 'covenant'
 }
 
-export default function EmailCampaignsPage() {
+function EmailCampaignsContent() {
   const searchParams = useSearchParams()
   const urlTab = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<'campaigns' | 'templates' | 'subscribers' | 'quicksend'>('campaigns')
@@ -1237,5 +1237,17 @@ export default function EmailCampaignsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function EmailCampaignsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-navy" />
+      </div>
+    }>
+      <EmailCampaignsContent />
+    </Suspense>
   )
 }

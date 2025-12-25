@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -117,7 +117,7 @@ interface Lead {
 }
 
 // ============ MAIN COMPONENT ============
-export default function CommunicationsPage() {
+function CommunicationsContent() {
   const searchParams = useSearchParams()
   const urlTab = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<'conversations' | 'campaigns' | 'automations' | 'templates' | 'leads'>('conversations')
@@ -1167,5 +1167,17 @@ export default function CommunicationsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function CommunicationsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-navy" />
+      </div>
+    }>
+      <CommunicationsContent />
+    </Suspense>
   )
 }
