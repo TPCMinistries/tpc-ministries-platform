@@ -131,7 +131,7 @@ export default function AdminNav() {
       defaultOpen: true,
       items: [
         { name: 'Dashboard', href: '/admin-dashboard' },
-        { name: 'Communications', href: '/inbox', badge: unreadCount },
+        { name: 'Communications', href: '/communications', badge: unreadCount },
         { name: 'Analytics', href: '/analytics' },
         { name: 'Reports', href: '/admin-reports' },
       ]
