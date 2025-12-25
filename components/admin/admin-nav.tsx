@@ -161,6 +161,7 @@ export default function AdminNav() {
       title: 'Communications',
       icon: <Megaphone className="h-4 w-4" />,
       items: [
+        { name: 'Member Messages', href: '/admin-messages' },
         { name: 'Campaigns', href: '/communications' },
         { name: 'Templates', href: '/communications-enhanced' },
         { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },

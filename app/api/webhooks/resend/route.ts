@@ -2,9 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Use service role for webhook (no user auth)
-function getSupabase() { return createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,8 @@ export async function POST(request: NextRequest) {
 
     // Resend sends different event types
     const eventType = body.type
+
+    console.log('Resend webhook received:', eventType, body.data)
 
     if (eventType === 'email.received') {
       // Inbound email received
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
       const messageId = headers?.['message-id']
 
       if (inReplyTo) {
-        // Find existing thread by in-reply-to header
+        // Find existing email by in-reply-to header
         const { data: existingEmail } = await supabase
           .from('inbox_emails')
           .select('thread_id')
@@ -39,33 +42,12 @@ export async function POST(request: NextRequest) {
 
         if (existingEmail?.thread_id) {
           threadId = existingEmail.thread_id
-
-          // Update thread
-          await supabase
-            .from('email_threads')
-            .update({
-              last_message_at: new Date().toISOString(),
-              message_count: supabase.rpc('increment_message_count', { row_id: threadId }),
-              is_read: false
-            })
-            .eq('id', threadId)
         }
       }
 
-      // Create new thread if needed
+      // Generate thread ID if not found
       if (!threadId) {
-        const { data: newThread } = await supabase
-          .from('email_threads')
-          .insert({
-            subject: subject || '(No Subject)',
-            participant_emails: [from, to],
-            member_id: member?.id || null,
-            last_message_at: new Date().toISOString()
-          })
-          .select()
-          .single()
-
-        threadId = newThread?.id
+        threadId = crypto.randomUUID()
       }
 
       // Insert the email
@@ -83,6 +65,7 @@ export async function POST(request: NextRequest) {
           thread_id: threadId,
           member_id: member?.id || null,
           folder: 'inbox',
+          is_read: false,
           received_at: new Date().toISOString()
         })
 
@@ -94,31 +77,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Email received' })
     }
 
-    // Handle other event types (delivery, bounce, etc.)
-    if (eventType === 'email.delivered') {
-      const { email_id } = body.data
-      await supabase
-        .from('sent_emails')
-        .update({ status: 'delivered' })
-        .eq('resend_id', email_id)
+    // Handle email sent events
+    if (eventType === 'email.sent') {
+      const emailId = body.data.email_id
+      if (emailId) {
+        await supabase
+          .from('sent_emails')
+          .update({
+            resend_status: 'sent',
+            sent_at: new Date().toISOString()
+          })
+          .eq('resend_id', emailId)
+      }
     }
 
+    // Handle delivery events
+    if (eventType === 'email.delivered') {
+      const emailId = body.data.email_id
+      if (emailId) {
+        await supabase
+          .from('sent_emails')
+          .update({
+            resend_status: 'delivered',
+            delivered_at: new Date().toISOString()
+          })
+          .eq('resend_id', emailId)
+      }
+    }
+
+    // Handle open events
+    if (eventType === 'email.opened') {
+      const emailId = body.data.email_id
+      if (emailId) {
+        await supabase
+          .from('sent_emails')
+          .update({
+            resend_status: 'opened',
+            opened_at: new Date().toISOString()
+          })
+          .eq('resend_id', emailId)
+      }
+    }
+
+    // Handle bounce events
     if (eventType === 'email.bounced') {
-      const { email_id } = body.data
-      await supabase
-        .from('sent_emails')
-        .update({ status: 'bounced' })
-        .eq('resend_id', email_id)
+      const emailId = body.data.email_id
+      if (emailId) {
+        await supabase
+          .from('sent_emails')
+          .update({ resend_status: 'bounced' })
+          .eq('resend_id', emailId)
+      }
+    }
+
+    // Handle complaint events
+    if (eventType === 'email.complained') {
+      const emailId = body.data.email_id
+      if (emailId) {
+        await supabase
+          .from('sent_emails')
+          .update({ resend_status: 'complained' })
+          .eq('resend_id', emailId)
+      }
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Webhook error:', error)
+    console.error('Resend webhook error:', error)
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 }
 
 // Resend verifies webhooks with GET
 export async function GET() {
-  return NextResponse.json({ status: 'Webhook endpoint active' })
+  return NextResponse.json({ status: 'Resend webhook endpoint active' })
 }
