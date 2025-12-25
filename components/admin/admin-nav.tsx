@@ -163,6 +163,7 @@ export default function AdminNav() {
       items: [
         { name: 'Campaigns', href: '/communications' },
         { name: 'Templates', href: '/communications-enhanced' },
+        { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },
       ]
     },
     {
