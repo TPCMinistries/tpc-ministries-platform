@@ -111,6 +111,9 @@ function EmailCampaignsContent() {
   const [activeTab, setActiveTab] = useState<'campaigns' | 'templates' | 'subscribers' | 'quicksend'>('campaigns')
   const { toast } = useToast()
 
+  // Error state
+  const [pageError, setPageError] = useState<string | null>(null)
+
   // Handle URL tab parameter
   useEffect(() => {
     if (urlTab === 'quicksend' || urlTab === 'templates' || urlTab === 'subscribers' || urlTab === 'campaigns') {
@@ -195,9 +198,13 @@ function EmailCampaignsContent() {
 
       if (!error && data) {
         setMembers(data)
+      } else {
+        console.error('Error fetching members:', error)
+        setMembers([])
       }
     } catch (error) {
       console.error('Error fetching members:', error)
+      setMembers([])
     } finally {
       setMembersLoading(false)
     }
@@ -309,12 +316,21 @@ function EmailCampaignsContent() {
     setCampaignsLoading(true)
     try {
       const res = await fetch('/api/email/campaigns')
+      if (!res.ok) {
+        console.error('Campaigns API error:', res.status)
+        setCampaigns([])
+        return
+      }
       const data = await res.json()
       if (data.success) {
         setCampaigns(data.campaigns || [])
+      } else {
+        console.error('Campaigns error:', data.error)
+        setCampaigns([])
       }
     } catch (error) {
       console.error('Error fetching campaigns:', error)
+      setCampaigns([])
     } finally {
       setCampaignsLoading(false)
     }
@@ -324,12 +340,20 @@ function EmailCampaignsContent() {
     setTemplatesLoading(true)
     try {
       const res = await fetch('/api/email/templates')
+      if (!res.ok) {
+        console.error('Templates API error:', res.status)
+        setTemplates([])
+        return
+      }
       const data = await res.json()
       if (data.success) {
         setTemplates(data.templates || [])
+      } else {
+        setTemplates([])
       }
     } catch (error) {
       console.error('Error fetching templates:', error)
+      setTemplates([])
     } finally {
       setTemplatesLoading(false)
     }
@@ -339,12 +363,20 @@ function EmailCampaignsContent() {
     setStatsLoading(true)
     try {
       const res = await fetch('/api/email/subscriptions?stats=true')
+      if (!res.ok) {
+        console.error('Subscriptions API error:', res.status)
+        setSubStats({})
+        return
+      }
       const data = await res.json()
       if (data.success) {
         setSubStats(data.stats || {})
+      } else {
+        setSubStats({})
       }
     } catch (error) {
       console.error('Error fetching subscription stats:', error)
+      setSubStats({})
     } finally {
       setStatsLoading(false)
     }

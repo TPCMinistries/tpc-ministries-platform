@@ -7,40 +7,21 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import {
-  Brain,
-  TrendingUp,
-  Mic,
   LayoutDashboard,
-  Users,
   MessageSquare,
+  Users,
   BookOpen,
-  Heart,
-  Calendar,
   DollarSign,
-  Mail,
   Settings,
   ChevronDown,
   ChevronRight,
-  Sparkles,
-  Leaf,
+  Brain,
+  Calendar,
+  Heart,
   Video,
-  BarChart3,
-  UserPlus,
-  HandHeart,
-  Radio,
   FileText,
-  Image,
-  FolderOpen,
-  Flame,
-  Send,
-  Zap,
-  Target,
-  LineChart,
-  Workflow,
-  GraduationCap,
-  ClipboardList,
-  MessagesSquare,
-  Megaphone
+  HandHeart,
+  Sparkles,
 } from 'lucide-react'
 
 interface NavSection {
@@ -54,8 +35,6 @@ interface NavItem {
   name: string
   href: string
   badge?: number
-  highlight?: boolean
-  icon?: 'brain' | 'trending' | 'mic'
 }
 
 export default function AdminNav() {
@@ -63,9 +42,8 @@ export default function AdminNav() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [newLeadsCount, setNewLeadsCount] = useState(0)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    'AI & Intelligence': true,
-    'Overview': true,
-    'People': true,
+    'Main': true,
+    'People & Community': true,
   })
 
   useEffect(() => {
@@ -78,41 +56,28 @@ export default function AdminNav() {
     const supabase = createClient()
 
     try {
-      // Count unread internal messages
-      const { count: messagesCount, error: messagesError } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('recipient_type', 'admin')
-        .eq('is_read', false)
-
       // Count unread emails
-      const { count: emailCount, error: emailError } = await supabase
+      const { count: emailCount } = await supabase
         .from('inbox_emails')
         .select('*', { count: 'exact', head: true })
         .eq('folder', 'inbox')
         .eq('is_read', false)
 
       // Count unread SMS conversations
-      const { count: smsCount, error: smsError } = await supabase
+      const { count: smsCount } = await supabase
         .from('sms_conversations')
         .select('*', { count: 'exact', head: true })
         .eq('is_unread', true)
         .eq('is_archived', false)
 
-      // Combine all unread counts
-      let totalUnread = 0
-      if (!messagesError && messagesCount !== null) totalUnread += messagesCount
-      if (!emailError && emailCount !== null) totalUnread += emailCount
-      if (!smsError && smsCount !== null) totalUnread += smsCount
+      setUnreadCount((emailCount || 0) + (smsCount || 0))
 
-      setUnreadCount(totalUnread)
-
-      const { count: leadsCount, error: leadsError } = await supabase
+      const { count: leadsCount } = await supabase
         .from('leads')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'new')
 
-      if (!leadsError && leadsCount !== null) {
+      if (leadsCount !== null) {
         setNewLeadsCount(leadsCount)
       }
     } catch (error) {
@@ -126,68 +91,38 @@ export default function AdminNav() {
 
   const navSections: NavSection[] = [
     {
-      title: 'Overview',
+      title: 'Main',
       icon: <LayoutDashboard className="h-4 w-4" />,
       defaultOpen: true,
       items: [
         { name: 'Dashboard', href: '/admin-dashboard' },
         { name: 'Communications', href: '/communications', badge: unreadCount },
-        { name: 'Analytics', href: '/analytics' },
-        { name: 'Reports', href: '/admin-reports' },
       ]
     },
     {
-      title: 'People',
+      title: 'People & Community',
       icon: <Users className="h-4 w-4" />,
       defaultOpen: true,
       items: [
         { name: 'Members', href: '/members', badge: newLeadsCount },
         { name: 'Member Care', href: '/member-care' },
+        { name: 'Groups', href: '/admin-groups' },
+        { name: 'Events', href: '/admin-events' },
         { name: 'Volunteers', href: '/admin-volunteer' },
+        { name: 'Prayers', href: '/prayers' },
+        { name: 'Testimonies', href: '/admin-testimonies' },
       ]
     },
     {
-      title: 'Content & Media',
+      title: 'Content',
       icon: <BookOpen className="h-4 w-4" />,
       items: [
         { name: 'Content Library', href: '/admin-content' },
-        { name: 'Daily Content', href: '/daily-content' },
         { name: 'Sermons', href: '/admin-sermons' },
+        { name: 'Daily Content', href: '/daily-content' },
         { name: 'Resources', href: '/admin-resources' },
-        { name: 'Media Library', href: '/media' },
-      ]
-    },
-    {
-      title: 'Learning',
-      icon: <GraduationCap className="h-4 w-4" />,
-      items: [
+        { name: 'Media', href: '/media' },
         { name: 'PLANT Courses', href: '/admin-plant' },
-        { name: 'Assessments', href: '/assessments-management' },
-      ]
-    },
-    {
-      title: 'Community',
-      icon: <Heart className="h-4 w-4" />,
-      items: [
-        { name: 'Groups', href: '/admin-groups' },
-        { name: 'Events', href: '/admin-events' },
-        { name: 'Prayer Requests', href: '/prayers' },
-        { name: 'Testimonies', href: '/admin-testimonies' },
-        { name: 'Fasting', href: '/admin-fasting' },
-      ]
-    },
-    {
-      title: 'Outreach',
-      icon: <Megaphone className="h-4 w-4" />,
-      items: [
-        { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },
-      ]
-    },
-    {
-      title: 'Live & Streaming',
-      icon: <Radio className="h-4 w-4" />,
-      items: [
-        { name: 'Live Stream', href: '/admin-live' },
       ]
     },
     {
@@ -199,31 +134,20 @@ export default function AdminNav() {
       ]
     },
     {
-      title: 'Prophetic',
-      icon: <Sparkles className="h-4 w-4" />,
-      items: [
-        { name: 'Prophecy Queue', href: '/admin-prophecy' },
-      ]
-    },
-    {
-      title: 'AI & Intelligence',
+      title: 'AI Tools',
       icon: <Brain className="h-4 w-4" />,
-      defaultOpen: true,
       items: [
-        { name: 'AI Command Center', href: '/admin-command-center', highlight: true, icon: 'brain' },
-        { name: 'Predictive Analytics', href: '/admin-predictive', highlight: true, icon: 'trending' },
-        { name: 'Giving Forecast', href: '/admin-giving-forecast', highlight: true, icon: 'trending' },
-        { name: 'AI Sermon Notes', href: '/admin-sermon-notes', highlight: true, icon: 'brain' },
-        { name: 'Smart Scheduling', href: '/admin-volunteer-scheduler', highlight: true, icon: 'brain' },
-        { name: 'AI Training', href: '/admin-ai-training', highlight: true, icon: 'brain' },
-        { name: 'Workflows', href: '/admin-workflows', highlight: true, icon: 'brain' },
+        { name: 'Command Center', href: '/admin-command-center' },
+        { name: 'Predictions', href: '/admin-predictive' },
+        { name: 'Giving Forecast', href: '/admin-giving-forecast' },
+        { name: 'Workflows', href: '/admin-workflows' },
       ]
     },
     {
       title: 'Settings',
       icon: <Settings className="h-4 w-4" />,
       items: [
-        { name: 'General Settings', href: '/admin-settings' },
+        { name: 'Settings', href: '/admin-settings' },
       ]
     },
   ]
@@ -272,28 +196,14 @@ export default function AdminNav() {
                           'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors',
                           isActive
                             ? 'bg-gold text-navy font-medium'
-                            : item.highlight
-                            ? 'text-purple-300 hover:bg-purple-600/20'
                             : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                         )}
                       >
-                        {item.highlight && !isActive && item.icon === 'brain' && (
-                          <Brain className="h-3.5 w-3.5 text-purple-400" />
-                        )}
-                        {item.highlight && !isActive && item.icon === 'trending' && (
-                          <TrendingUp className="h-3.5 w-3.5 text-purple-400" />
-                        )}
-                        {!isActive && item.icon === 'mic' && (
-                          <Mic className="h-3.5 w-3.5 text-gold" />
-                        )}
                         <span className="flex-1">{item.name}</span>
                         {item.badge !== undefined && item.badge > 0 && (
                           <Badge className="bg-red-600 text-white text-xs px-1.5 py-0 h-5 min-w-[20px] flex items-center justify-center">
                             {item.badge}
                           </Badge>
-                        )}
-                        {item.highlight && !isActive && (
-                          <Badge className="bg-purple-600/80 text-white text-[10px] px-1 py-0">AI</Badge>
                         )}
                       </Link>
                     )
