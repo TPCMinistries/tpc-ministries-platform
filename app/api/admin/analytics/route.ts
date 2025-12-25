@@ -1,24 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-function getSupabase() { return createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const section = searchParams.get('section') || 'all'
+    const view = searchParams.get('view') || 'default' // board, pastoral, ministry
 
+    // Date range support
     const now = new Date()
+    const endDateParam = searchParams.get('endDate')
+    const startDateParam = searchParams.get('startDate')
+
+    const endDate = endDateParam ? new Date(endDateParam) : now
+    const defaultStartDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const startDate = startDateParam ? new Date(startDateParam) : defaultStartDate
+
+    // Calculate comparison period (same length as current period)
+    const periodLength = endDate.getTime() - startDate.getTime()
+    const comparisonEndDate = new Date(startDate.getTime() - 1)
+    const comparisonStartDate = new Date(comparisonEndDate.getTime() - periodLength)
+
+    // Quick date helpers
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    const analytics: any = {}
+    const analytics: any = {
+      dateRange: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        comparisonStartDate: comparisonStartDate.toISOString(),
+        comparisonEndDate: comparisonEndDate.toISOString()
+      }
+    }
 
     // =====================================
     // MEMBER METRICS
@@ -29,7 +51,21 @@ export async function GET(request: NextRequest) {
         .from('members')
         .select('*', { count: 'exact', head: true })
 
-      // New members this week
+      // New members in period
+      const { count: newInPeriod } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      // New members in comparison period
+      const { count: newInComparison } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', comparisonStartDate.toISOString())
+        .lte('created_at', comparisonEndDate.toISOString())
+
+      // New members this week (for quick stats)
       const { count: newThisWeek } = await supabase
         .from('members')
         .select('*', { count: 'exact', head: true })
@@ -41,13 +77,23 @@ export async function GET(request: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfMonth.toISOString())
 
-      // Active members (last 30 days)
+      // Active members in period
       const { data: activeData } = await supabase
         .from('member_activity')
         .select('member_id')
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
 
       const uniqueActiveMembers = new Set(activeData?.map(a => a.member_id) || []).size
+
+      // Active members in comparison period
+      const { data: activeDataComparison } = await supabase
+        .from('member_activity')
+        .select('member_id')
+        .gte('created_at', comparisonStartDate.toISOString())
+        .lte('created_at', comparisonEndDate.toISOString())
+
+      const uniqueActiveMembersComparison = new Set(activeDataComparison?.map(a => a.member_id) || []).size
 
       // Members by tier
       const { data: tierData } = await supabase
@@ -65,11 +111,30 @@ export async function GET(request: NextRequest) {
         ? Math.round((uniqueActiveMembers / totalMembers) * 100)
         : 0
 
+      const engagementRateComparison = totalMembers && totalMembers > 0
+        ? Math.round((uniqueActiveMembersComparison / totalMembers) * 100)
+        : 0
+
+      // Member growth trend (daily for charts)
+      const { data: growthTrend } = await supabase
+        .from('members')
+        .select('created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: true })
+
+      const dailyGrowth: Record<string, number> = {}
+      for (const m of growthTrend || []) {
+        const day = new Date(m.created_at).toISOString().split('T')[0]
+        dailyGrowth[day] = (dailyGrowth[day] || 0) + 1
+      }
+
       // Most active members
       const { data: activityCounts } = await supabase
         .from('member_activity')
         .select('member_id')
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
 
       const memberActivityCounts: Record<string, number> = {}
       for (const a of activityCounts || []) {
@@ -97,9 +162,11 @@ export async function GET(request: NextRequest) {
       }
 
       // At-risk members (inactive 30+ days)
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
       const { data: allMembers } = await supabase
         .from('members')
         .select('id, first_name, last_name')
+        .limit(50)
 
       const atRiskMembers: any[] = []
       for (const member of allMembers || []) {
@@ -136,9 +203,24 @@ export async function GET(request: NextRequest) {
         total: totalMembers || 0,
         newThisWeek: newThisWeek || 0,
         newThisMonth: newThisMonth || 0,
+        newInPeriod: newInPeriod || 0,
+        newInComparison: newInComparison || 0,
+        changePercent: newInComparison ? Math.round(((newInPeriod || 0) - newInComparison) / newInComparison * 100) : 0,
         activeMembers: uniqueActiveMembers,
+        activeMembersComparison: uniqueActiveMembersComparison,
         engagementRate,
+        engagementRateComparison,
+        engagementChange: engagementRate - engagementRateComparison,
         byTier: tiers,
+        tierChartData: [
+          { name: 'Free', value: tiers.free },
+          { name: 'Partner', value: tiers.partner },
+          { name: 'Covenant', value: tiers.covenant }
+        ],
+        growthTrend: Object.entries(dailyGrowth).map(([date, count]) => ({
+          date,
+          newMembers: count
+        })),
         mostActive: mostActiveMembers.slice(0, 5),
         atRisk: atRiskMembers.sort((a, b) => b.daysInactive - a.daysInactive).slice(0, 5)
       }
@@ -166,7 +248,8 @@ export async function GET(request: NextRequest) {
       const { data: searchData } = await supabase
         .from('search_logs')
         .select('query')
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
 
       const searchCounts: Record<string, number> = {}
       for (const s of searchData || []) {
@@ -184,12 +267,21 @@ export async function GET(request: NextRequest) {
         .from('teachings')
         .select('*', { count: 'exact', head: true })
 
-      // Total devotionals read
+      // Devotionals read in period
       const { count: devotionalsRead } = await supabase
         .from('member_activity')
         .select('*', { count: 'exact', head: true })
         .eq('activity_type', 'devotional_read')
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      // Devotionals read in comparison
+      const { count: devotionalsReadComparison } = await supabase
+        .from('member_activity')
+        .select('*', { count: 'exact', head: true })
+        .eq('activity_type', 'devotional_read')
+        .gte('created_at', comparisonStartDate.toISOString())
+        .lte('created_at', comparisonEndDate.toISOString())
 
       analytics.content = {
         teachings: {
@@ -213,7 +305,11 @@ export async function GET(request: NextRequest) {
           }))
         },
         searchTrends,
-        devotionalsRead: devotionalsRead || 0
+        devotionalsRead: devotionalsRead || 0,
+        devotionalsReadComparison: devotionalsReadComparison || 0,
+        devotionalsChange: devotionalsReadComparison
+          ? Math.round(((devotionalsRead || 0) - devotionalsReadComparison) / devotionalsReadComparison * 100)
+          : 0
       }
     }
 
@@ -221,6 +317,20 @@ export async function GET(request: NextRequest) {
     // REVENUE METRICS
     // =====================================
     if (section === 'all' || section === 'revenue') {
+      // Donations in period
+      const { data: periodDonations } = await supabase
+        .from('donations')
+        .select('amount, donation_type, fund_name, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      // Donations in comparison period
+      const { data: comparisonDonations } = await supabase
+        .from('donations')
+        .select('amount')
+        .gte('created_at', comparisonStartDate.toISOString())
+        .lte('created_at', comparisonEndDate.toISOString())
+
       // This month's donations
       const { data: thisMonthDonations } = await supabase
         .from('donations')
@@ -234,11 +344,21 @@ export async function GET(request: NextRequest) {
         .gte('created_at', startOfLastMonth.toISOString())
         .lte('created_at', endOfLastMonth.toISOString())
 
+      const periodTotal = (periodDonations || []).reduce((sum, d) => sum + (d.amount || 0), 0)
+      const comparisonTotal = (comparisonDonations || []).reduce((sum, d) => sum + (d.amount || 0), 0)
       const thisMonthTotal = (thisMonthDonations || []).reduce((sum, d) => sum + (d.amount || 0), 0)
       const lastMonthTotal = (lastMonthDonations || []).reduce((sum, d) => sum + (d.amount || 0), 0)
-      const revenueChange = lastMonthTotal > 0
-        ? Math.round(((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 * 10) / 10
+
+      const revenueChange = comparisonTotal > 0
+        ? Math.round(((periodTotal - comparisonTotal) / comparisonTotal) * 100)
         : 0
+
+      // Revenue trend (daily)
+      const dailyRevenue: Record<string, number> = {}
+      for (const d of periodDonations || []) {
+        const day = new Date(d.created_at).toISOString().split('T')[0]
+        dailyRevenue[day] = (dailyRevenue[day] || 0) + (d.amount || 0)
+      }
 
       // MRR from recurring donations/memberships
       const { data: recurringData } = await supabase
@@ -252,17 +372,12 @@ export async function GET(request: NextRequest) {
       // Revenue by tier
       const partnerCount = analytics.members?.byTier?.partner || 0
       const covenantCount = analytics.members?.byTier?.covenant || 0
-      const partnerMRR = partnerCount * 50 // Assuming $50/month for partners
-      const covenantMRR = covenantCount * 150 // Assuming $150/month for covenant
+      const partnerMRR = partnerCount * 50
+      const covenantMRR = covenantCount * 150
 
       // Donations by mission/fund
-      const { data: missionDonations } = await supabase
-        .from('donations')
-        .select('fund_name, amount')
-        .gte('created_at', startOfMonth.toISOString())
-
       const byMission: Record<string, { amount: number; count: number }> = {}
-      for (const d of missionDonations || []) {
+      for (const d of periodDonations || []) {
         const fund = d.fund_name || 'General'
         if (!byMission[fund]) byMission[fund] = { amount: 0, count: 0 }
         byMission[fund].amount += d.amount || 0
@@ -270,9 +385,12 @@ export async function GET(request: NextRequest) {
       }
 
       analytics.revenue = {
+        periodTotal,
+        comparisonTotal,
+        changePercent: revenueChange,
         thisMonth: thisMonthTotal,
         lastMonth: lastMonthTotal,
-        change: revenueChange,
+        change: lastMonthTotal > 0 ? Math.round(((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100) : 0,
         trend: thisMonthTotal >= lastMonthTotal ? 'up' : 'down',
         mrr: mrr || partnerMRR + covenantMRR,
         byTier: {
@@ -284,6 +402,14 @@ export async function GET(request: NextRequest) {
           amount: data.amount,
           donations: data.count
         })),
+        fundChartData: Object.entries(byMission).map(([name, data]) => ({
+          name,
+          value: data.amount
+        })),
+        revenueTrend: Object.entries(dailyRevenue).map(([date, amount]) => ({
+          date,
+          amount
+        })).sort((a, b) => a.date.localeCompare(b.date)),
         avgLifetimeValue: analytics.members?.total > 0
           ? Math.round((thisMonthTotal * 12) / analytics.members.total)
           : 0
@@ -311,6 +437,7 @@ export async function GET(request: NextRequest) {
       const wau = new Set(wauData?.map(a => a.member_id) || []).size
 
       // Monthly active users
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
       const { data: mauData } = await supabase
         .from('member_activity')
         .select('member_id')
@@ -318,15 +445,23 @@ export async function GET(request: NextRequest) {
 
       const mau = new Set(mauData?.map(a => a.member_id) || []).size
 
-      // Feature usage
+      // Feature usage in period
       const { data: featureData } = await supabase
         .from('member_activity')
-        .select('activity_type')
-        .gte('created_at', thirtyDaysAgo.toISOString())
+        .select('activity_type, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
 
       const featureCounts: Record<string, number> = {}
       for (const a of featureData || []) {
         featureCounts[a.activity_type] = (featureCounts[a.activity_type] || 0) + 1
+      }
+
+      // Activity trend (daily)
+      const dailyActivity: Record<string, number> = {}
+      for (const a of featureData || []) {
+        const day = new Date(a.created_at).toISOString().split('T')[0]
+        dailyActivity[day] = (dailyActivity[day] || 0) + 1
       }
 
       const featureLabels: Record<string, string> = {
@@ -351,15 +486,22 @@ export async function GET(request: NextRequest) {
           percentage: Math.round((usage / totalFeatureUsage) * 100)
         }))
 
-      // AI chat count
       const aiChats = featureCounts['ai_chat'] || 0
 
       analytics.engagement = {
         dau,
         wau,
         mau,
-        avgSessionDuration: '15:30', // Would need real session tracking
+        avgSessionDuration: '15:30',
         topFeatures,
+        featureChartData: topFeatures.map(f => ({
+          name: f.feature,
+          value: f.usage
+        })),
+        activityTrend: Object.entries(dailyActivity).map(([date, count]) => ({
+          date,
+          activities: count
+        })).sort((a, b) => a.date.localeCompare(b.date)),
         aiChats,
         prayerRequests: featureCounts['prayer_submitted'] || 0,
         journalEntries: featureCounts['journal_entry'] || 0
@@ -370,7 +512,6 @@ export async function GET(request: NextRequest) {
     // GROWTH TRENDS (Historical)
     // =====================================
     if (section === 'all' || section === 'growth') {
-      // Get member growth over last 90 days
       const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
 
       const { data: memberGrowth } = await supabase
@@ -379,7 +520,6 @@ export async function GET(request: NextRequest) {
         .gte('created_at', ninetyDaysAgo.toISOString())
         .order('created_at', { ascending: true })
 
-      // Group by week
       const weeklyGrowth: Record<string, number> = {}
       for (const m of memberGrowth || []) {
         const date = new Date(m.created_at)
@@ -392,6 +532,129 @@ export async function GET(request: NextRequest) {
         weekly: Object.entries(weeklyGrowth).map(([week, count]) => ({
           week,
           newMembers: count
+        }))
+      }
+    }
+
+    // =====================================
+    // PLANT LMS METRICS
+    // =====================================
+    if (section === 'all' || section === 'plant') {
+      // Course enrollments
+      const { count: totalEnrollments } = await supabase
+        .from('course_enrollments')
+        .select('*', { count: 'exact', head: true })
+
+      // Enrollments in period
+      const { count: enrollmentsInPeriod } = await supabase
+        .from('course_enrollments')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      // Completed courses
+      const { count: completedCourses } = await supabase
+        .from('course_enrollments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed')
+
+      // Lessons completed in period
+      const { count: lessonsCompleted } = await supabase
+        .from('lesson_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('completed', true)
+        .gte('completed_at', startDate.toISOString())
+        .lte('completed_at', endDate.toISOString())
+
+      // Quiz average scores
+      const { data: quizScores } = await supabase
+        .from('quiz_attempts')
+        .select('score')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      const avgQuizScore = quizScores?.length
+        ? Math.round(quizScores.reduce((sum, q) => sum + (q.score || 0), 0) / quizScores.length)
+        : 0
+
+      // Top courses by enrollment
+      const { data: topCourses } = await supabase
+        .from('course_enrollments')
+        .select('course_id, courses(title)')
+        .limit(100)
+
+      const courseCounts: Record<string, { count: number; title: string }> = {}
+      for (const e of topCourses || []) {
+        const id = e.course_id
+        if (!courseCounts[id]) {
+          courseCounts[id] = { count: 0, title: (e.courses as any)?.title || 'Unknown' }
+        }
+        courseCounts[id].count++
+      }
+
+      analytics.plant = {
+        totalEnrollments: totalEnrollments || 0,
+        enrollmentsInPeriod: enrollmentsInPeriod || 0,
+        completedCourses: completedCourses || 0,
+        completionRate: totalEnrollments ? Math.round((completedCourses || 0) / totalEnrollments * 100) : 0,
+        lessonsCompleted: lessonsCompleted || 0,
+        avgQuizScore,
+        topCourses: Object.entries(courseCounts)
+          .map(([id, data]) => ({ id, title: data.title, enrollments: data.count }))
+          .sort((a, b) => b.enrollments - a.enrollments)
+          .slice(0, 5)
+      }
+    }
+
+    // =====================================
+    // GAMIFICATION METRICS
+    // =====================================
+    if (section === 'all' || section === 'gamification') {
+      // Total points awarded in period
+      const { data: pointsData } = await supabase
+        .from('gamification_points')
+        .select('points')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+
+      const totalPointsAwarded = (pointsData || []).reduce((sum, p) => sum + (p.points || 0), 0)
+
+      // Badges awarded in period
+      const { count: badgesAwarded } = await supabase
+        .from('member_badges')
+        .select('*', { count: 'exact', head: true })
+        .gte('awarded_at', startDate.toISOString())
+        .lte('awarded_at', endDate.toISOString())
+
+      // Active streaks
+      const { count: activeStreaks } = await supabase
+        .from('member_streaks')
+        .select('*', { count: 'exact', head: true })
+        .gte('current_streak', 1)
+
+      // Achievements unlocked
+      const { count: achievementsUnlocked } = await supabase
+        .from('member_achievements')
+        .select('*', { count: 'exact', head: true })
+        .gte('unlocked_at', startDate.toISOString())
+        .lte('unlocked_at', endDate.toISOString())
+
+      // Leaderboard top 5
+      const { data: leaderboard } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, total_points')
+        .order('total_points', { ascending: false })
+        .limit(5)
+
+      analytics.gamification = {
+        totalPointsAwarded,
+        badgesAwarded: badgesAwarded || 0,
+        activeStreaks: activeStreaks || 0,
+        achievementsUnlocked: achievementsUnlocked || 0,
+        leaderboard: (leaderboard || []).map((m, i) => ({
+          rank: i + 1,
+          name: `${m.first_name} ${m.last_name}`,
+          points: m.total_points || 0
         }))
       }
     }

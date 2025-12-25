@@ -78,15 +78,34 @@ export default function AdminNav() {
     const supabase = createClient()
 
     try {
+      // Count unread internal messages
       const { count: messagesCount, error: messagesError } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
         .eq('recipient_type', 'admin')
         .eq('is_read', false)
 
-      if (!messagesError && messagesCount !== null) {
-        setUnreadCount(messagesCount)
-      }
+      // Count unread emails
+      const { count: emailCount, error: emailError } = await supabase
+        .from('inbox_emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('folder', 'inbox')
+        .eq('is_read', false)
+
+      // Count unread SMS conversations
+      const { count: smsCount, error: smsError } = await supabase
+        .from('sms_conversations')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_unread', true)
+        .eq('is_archived', false)
+
+      // Combine all unread counts
+      let totalUnread = 0
+      if (!messagesError && messagesCount !== null) totalUnread += messagesCount
+      if (!emailError && emailCount !== null) totalUnread += emailCount
+      if (!smsError && smsCount !== null) totalUnread += smsCount
+
+      setUnreadCount(totalUnread)
 
       const { count: leadsCount, error: leadsError } = await supabase
         .from('leads')
@@ -112,7 +131,7 @@ export default function AdminNav() {
       defaultOpen: true,
       items: [
         { name: 'Dashboard', href: '/admin-dashboard' },
-        { name: 'Inbox', href: '/inbox', badge: unreadCount },
+        { name: 'Communications', href: '/inbox', badge: unreadCount },
         { name: 'Analytics', href: '/analytics' },
         { name: 'Reports', href: '/admin-reports' },
       ]
@@ -158,12 +177,10 @@ export default function AdminNav() {
       ]
     },
     {
-      title: 'Communications',
+      title: 'Campaigns & Outreach',
       icon: <Megaphone className="h-4 w-4" />,
       items: [
-        { name: 'Member Messages', href: '/admin-messages' },
-        { name: 'Campaigns', href: '/communications' },
-        { name: 'Templates', href: '/communications-enhanced' },
+        { name: 'Campaigns', href: '/email-campaigns' },
         { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },
       ]
     },

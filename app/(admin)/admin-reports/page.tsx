@@ -1,23 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { LineChart, AreaChart, BarChart, DonutChart, CHART_COLORS } from '@/components/charts'
 import {
   FileText,
   Download,
   Users,
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Heart,
   Calendar,
   BarChart3,
-  PieChart,
   Loader2,
   RefreshCcw,
-  Filter
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
+  Eye,
+  BookOpen,
+  MessageSquare,
+  PenLine
 } from 'lucide-react'
 
 interface ReportData {
@@ -26,6 +33,7 @@ interface ReportData {
     new: number
     byTier: { free: number; partner: number; covenant: number }
     growthRate: string
+    trend?: Array<{ date: string; count: number }>
   }
   financial: {
     totalRevenue: number
@@ -34,12 +42,19 @@ interface ReportData {
     byFund: Array<{ fund: string; amount: number }>
     partnerMRR: number
     covenantMRR: number
+    trend?: Array<{ date: string; amount: number }>
+    recurring?: number
+    oneTime?: number
   }
   engagement: {
     activeMembers: number
     engagementRate: string
     totalActivities: number
     byActivityType: Array<{ type: string; count: number }>
+    trend?: Array<{ date: string; activities: number }>
+    dau?: number
+    wau?: number
+    mau?: number
   }
   spiritual: {
     prayerRequests: number
@@ -47,6 +62,8 @@ interface ReportData {
     answerRate: string
     teachingsWatched: number
     devotionalsRead: number
+    trend?: Array<{ date: string; prayers: number; answered: number }>
+    byCategory?: Array<{ category: string; count: number }>
   }
 }
 
@@ -60,11 +77,7 @@ export default function AdminReportsPage() {
     endDate: new Date().toISOString().split('T')[0]
   })
 
-  useEffect(() => {
-    fetchReport()
-  }, [reportType, dateRange])
-
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -81,7 +94,11 @@ export default function AdminReportsPage() {
       console.error('Error fetching report:', error)
     }
     setLoading(false)
-  }
+  }, [reportType, dateRange])
+
+  useEffect(() => {
+    fetchReport()
+  }, [fetchReport])
 
   const exportReport = async (format: 'json' | 'csv') => {
     setExporting(true)
@@ -120,6 +137,11 @@ export default function AdminReportsPage() {
       console.error('Error exporting report:', error)
     }
     setExporting(false)
+  }
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
   const reportTypes = [
@@ -289,55 +311,24 @@ export default function AdminReportsPage() {
                   </Card>
                 </div>
 
-                {/* Membership Breakdown */}
+                {/* Charts Row */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
-                        Membership by Tier
+                        Membership Distribution
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Free Members</span>
-                            <span className="font-medium">{reportData.membership.byTier.free}</span>
-                          </div>
-                          <Progress
-                            value={(reportData.membership.byTier.free / reportData.membership.total) * 100}
-                            className="h-2"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Partners ($50/mo)</span>
-                            <span className="font-medium">{reportData.membership.byTier.partner}</span>
-                          </div>
-                          <Progress
-                            value={(reportData.membership.byTier.partner / reportData.membership.total) * 100}
-                            className="h-2 [&>div]:bg-gold"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Covenant Partners ($150/mo)</span>
-                            <span className="font-medium">{reportData.membership.byTier.covenant}</span>
-                          </div>
-                          <Progress
-                            value={(reportData.membership.byTier.covenant / reportData.membership.total) * 100}
-                            className="h-2 [&>div]:bg-purple-500"
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm text-gray-600">
-                          Monthly Recurring: <span className="font-bold text-navy">
-                            ${(reportData.financial.partnerMRR + reportData.financial.covenantMRR).toLocaleString()}
-                          </span>
-                        </p>
-                      </div>
+                      <DonutChart
+                        data={[
+                          { name: 'Free', value: reportData.membership.byTier.free },
+                          { name: 'Partner', value: reportData.membership.byTier.partner },
+                          { name: 'Covenant', value: reportData.membership.byTier.covenant }
+                        ]}
+                        height={250}
+                      />
                     </CardContent>
                   </Card>
 
@@ -349,53 +340,52 @@ export default function AdminReportsPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        {reportData.financial.byFund.slice(0, 5).map((fund, i) => (
-                          <div key={i} className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full ${
-                              ['bg-navy', 'bg-gold', 'bg-purple-500', 'bg-green-500', 'bg-blue-500'][i]
-                            }`} />
-                            <span className="flex-1 text-sm">{fund.fund}</span>
-                            <span className="font-medium">${fund.amount.toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm text-gray-600">
-                          Average Donation: <span className="font-bold text-navy">
-                            ${reportData.financial.averageDonation.toFixed(2)}
-                          </span>
-                        </p>
-                      </div>
+                      {reportData.financial.byFund.length > 0 ? (
+                        <DonutChart
+                          data={reportData.financial.byFund.map(f => ({
+                            name: f.fund,
+                            value: f.amount
+                          }))}
+                          height={250}
+                          formatValue={(v) => `$${v.toLocaleString()}`}
+                        />
+                      ) : (
+                        <div className="h-[250px] flex items-center justify-center text-gray-400">
+                          No donation data
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Engagement & Spiritual */}
+                {/* Activity & Spiritual */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5" />
+                        <Activity className="h-5 w-5" />
                         Top Activities
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        {reportData.engagement.byActivityType.slice(0, 5).map((activity, i) => (
-                          <div key={i} className="flex items-center justify-between">
-                            <span className="text-sm capitalize">{activity.type.replace(/_/g, ' ')}</span>
-                            <Badge variant="outline">{activity.count}</Badge>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm text-gray-600">
-                          Total Activities: <span className="font-bold text-navy">
-                            {reportData.engagement.totalActivities.toLocaleString()}
-                          </span>
-                        </p>
-                      </div>
+                      {reportData.engagement.byActivityType.length > 0 ? (
+                        <BarChart
+                          data={reportData.engagement.byActivityType.slice(0, 6).map(a => ({
+                            name: a.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                            value: a.count
+                          }))}
+                          xAxisKey="name"
+                          bars={[{ dataKey: 'value', name: 'Count' }]}
+                          height={250}
+                          layout="vertical"
+                          colorByIndex
+                          showLegend={false}
+                        />
+                      ) : (
+                        <div className="h-[250px] flex items-center justify-center text-gray-400">
+                          No activity data
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -431,23 +421,442 @@ export default function AdminReportsPage() {
               </div>
             )}
 
-            {/* Other report types would show different views */}
-            {reportType !== 'board' && (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-navy mb-2">
-                    {reportTypes.find(r => r.id === reportType)?.label} Report
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Export this report to view detailed {reportType} data
-                  </p>
-                  <Button onClick={() => exportReport('csv')} className="bg-navy hover:bg-navy/90">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download CSV Report
-                  </Button>
-                </CardContent>
-              </Card>
+            {/* Members Report */}
+            {reportType === 'members' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Total Members</span>
+                        <Users className="h-5 w-5 text-navy" />
+                      </div>
+                      <p className="text-4xl font-bold text-navy">{reportData.membership.total}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">New This Period</span>
+                        <ArrowUpRight className="h-5 w-5 text-green-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-green-600">+{reportData.membership.new}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Growth Rate</span>
+                        <TrendingUp className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-purple-600">{reportData.membership.growthRate}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Paid Members</span>
+                        <DollarSign className="h-5 w-5 text-gold" />
+                      </div>
+                      <p className="text-4xl font-bold text-gold">
+                        {reportData.membership.byTier.partner + reportData.membership.byTier.covenant}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Membership by Tier</CardTitle>
+                      <CardDescription>Distribution across membership levels</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DonutChart
+                        data={[
+                          { name: 'Free', value: reportData.membership.byTier.free },
+                          { name: 'Partner ($50/mo)', value: reportData.membership.byTier.partner },
+                          { name: 'Covenant ($150/mo)', value: reportData.membership.byTier.covenant }
+                        ]}
+                        height={280}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Tier Breakdown</CardTitle>
+                      <CardDescription>Detailed membership metrics</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-medium">Free Members</span>
+                            <span className="text-gray-600">{reportData.membership.byTier.free}</span>
+                          </div>
+                          <Progress
+                            value={(reportData.membership.byTier.free / reportData.membership.total) * 100}
+                            className="h-3"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {Math.round((reportData.membership.byTier.free / reportData.membership.total) * 100)}% of total
+                          </p>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-medium">Partners</span>
+                            <span className="text-gray-600">{reportData.membership.byTier.partner}</span>
+                          </div>
+                          <Progress
+                            value={(reportData.membership.byTier.partner / reportData.membership.total) * 100}
+                            className="h-3 [&>div]:bg-gold"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            ${(reportData.membership.byTier.partner * 50).toLocaleString()}/mo MRR
+                          </p>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-2">
+                            <span className="font-medium">Covenant Partners</span>
+                            <span className="text-gray-600">{reportData.membership.byTier.covenant}</span>
+                          </div>
+                          <Progress
+                            value={(reportData.membership.byTier.covenant / reportData.membership.total) * 100}
+                            className="h-3 [&>div]:bg-purple-500"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            ${(reportData.membership.byTier.covenant * 150).toLocaleString()}/mo MRR
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Donations Report */}
+            {reportType === 'donations' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/80">Total Giving</span>
+                        <DollarSign className="h-5 w-5" />
+                      </div>
+                      <p className="text-4xl font-bold">${reportData.financial.totalRevenue.toLocaleString()}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Donations</span>
+                        <Heart className="h-5 w-5 text-red-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-navy">{reportData.financial.donationCount}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Average Gift</span>
+                        <TrendingUp className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-navy">${reportData.financial.averageDonation.toFixed(0)}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Monthly Recurring</span>
+                        <RefreshCcw className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-purple-600">
+                        ${(reportData.financial.partnerMRR + reportData.financial.covenantMRR).toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Giving by Fund</CardTitle>
+                      <CardDescription>Distribution across ministry funds</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {reportData.financial.byFund.length > 0 ? (
+                        <DonutChart
+                          data={reportData.financial.byFund.map(f => ({
+                            name: f.fund,
+                            value: f.amount
+                          }))}
+                          height={280}
+                          formatValue={(v) => `$${v.toLocaleString()}`}
+                        />
+                      ) : (
+                        <div className="h-[280px] flex items-center justify-center text-gray-400">
+                          No fund data available
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Fund Details</CardTitle>
+                      <CardDescription>Breakdown by giving category</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {reportData.financial.byFund.length > 0 ? (
+                        <div className="space-y-4">
+                          {reportData.financial.byFund.map((fund, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <div
+                                className="w-4 h-4 rounded-full"
+                                style={{ backgroundColor: Object.values(CHART_COLORS)[i % 6] }}
+                              />
+                              <span className="flex-1 font-medium">{fund.fund}</span>
+                              <span className="text-lg font-bold text-navy">${fund.amount.toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="h-[280px] flex items-center justify-center text-gray-400">
+                          No fund data available
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recurring Revenue Breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="p-6 bg-gold/10 rounded-lg border border-gold/20">
+                        <h3 className="text-lg font-bold text-navy mb-2">Partner Memberships</h3>
+                        <p className="text-3xl font-bold text-gold">${reportData.financial.partnerMRR.toLocaleString()}/mo</p>
+                        <p className="text-sm text-gray-600 mt-1">{reportData.membership.byTier.partner} members x $50</p>
+                      </div>
+                      <div className="p-6 bg-purple-50 rounded-lg border border-purple-200">
+                        <h3 className="text-lg font-bold text-navy mb-2">Covenant Memberships</h3>
+                        <p className="text-3xl font-bold text-purple-600">${reportData.financial.covenantMRR.toLocaleString()}/mo</p>
+                        <p className="text-sm text-gray-600 mt-1">{reportData.membership.byTier.covenant} members x $150</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Engagement Report */}
+            {reportType === 'engagement' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Active Members</span>
+                        <Users className="h-5 w-5 text-navy" />
+                      </div>
+                      <p className="text-4xl font-bold text-navy">{reportData.engagement.activeMembers}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Engagement Rate</span>
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-green-600">{reportData.engagement.engagementRate}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Total Activities</span>
+                        <Activity className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-purple-600">
+                        {reportData.engagement.totalActivities.toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Avg per Member</span>
+                        <BarChart3 className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-blue-600">
+                        {reportData.engagement.activeMembers > 0
+                          ? Math.round(reportData.engagement.totalActivities / reportData.engagement.activeMembers)
+                          : 0}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Activity Distribution</CardTitle>
+                      <CardDescription>Most popular platform features</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {reportData.engagement.byActivityType.length > 0 ? (
+                        <BarChart
+                          data={reportData.engagement.byActivityType.slice(0, 8).map(a => ({
+                            name: a.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                            value: a.count
+                          }))}
+                          xAxisKey="name"
+                          bars={[{ dataKey: 'value', name: 'Count' }]}
+                          height={300}
+                          layout="vertical"
+                          colorByIndex
+                          showLegend={false}
+                        />
+                      ) : (
+                        <div className="h-[300px] flex items-center justify-center text-gray-400">
+                          No activity data
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Activity Breakdown</CardTitle>
+                      <CardDescription>Detailed activity counts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {reportData.engagement.byActivityType.slice(0, 8).map((activity, i) => {
+                          const percentage = (activity.count / reportData.engagement.totalActivities) * 100
+                          return (
+                            <div key={i}>
+                              <div className="flex justify-between mb-1">
+                                <span className="text-sm capitalize">{activity.type.replace(/_/g, ' ')}</span>
+                                <span className="text-sm font-medium">{activity.count.toLocaleString()}</span>
+                              </div>
+                              <Progress value={percentage} className="h-2" />
+                              <p className="text-xs text-gray-500 mt-0.5">{percentage.toFixed(1)}% of total</p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Prayers Report */}
+            {reportType === 'prayers' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Prayer Requests</span>
+                        <Heart className="h-5 w-5 text-red-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-navy">{reportData.spiritual.prayerRequests}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Answered Prayers</span>
+                        <Heart className="h-5 w-5 text-green-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-green-600">{reportData.spiritual.answeredPrayers}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Answer Rate</span>
+                        <TrendingUp className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-purple-600">{reportData.spiritual.answerRate}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500">Pending</span>
+                        <MessageSquare className="h-5 w-5 text-amber-500" />
+                      </div>
+                      <p className="text-4xl font-bold text-amber-600">
+                        {reportData.spiritual.prayerRequests - reportData.spiritual.answeredPrayers}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Prayer Status</CardTitle>
+                      <CardDescription>Answered vs Pending prayers</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DonutChart
+                        data={[
+                          { name: 'Answered', value: reportData.spiritual.answeredPrayers },
+                          { name: 'Pending', value: reportData.spiritual.prayerRequests - reportData.spiritual.answeredPrayers }
+                        ]}
+                        height={280}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Spiritual Activity</CardTitle>
+                      <CardDescription>Content engagement metrics</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                          <div className="p-3 bg-blue-100 rounded-lg">
+                            <BookOpen className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">Teachings Watched</p>
+                            <p className="text-2xl font-bold text-blue-600">{reportData.spiritual.teachingsWatched}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 p-4 bg-purple-50 rounded-lg">
+                          <div className="p-3 bg-purple-100 rounded-lg">
+                            <PenLine className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">Devotionals Read</p>
+                            <p className="text-2xl font-bold text-purple-600">{reportData.spiritual.devotionalsRead}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg">
+                          <div className="p-3 bg-green-100 rounded-lg">
+                            <Heart className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">Prayer Answer Rate</p>
+                            <p className="text-2xl font-bold text-green-600">{reportData.spiritual.answerRate}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             )}
           </>
         ) : (
