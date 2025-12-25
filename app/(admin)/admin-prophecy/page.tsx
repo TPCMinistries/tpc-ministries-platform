@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -153,9 +153,12 @@ export default function AdminProphecyPage() {
   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string>('')
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('')
 
-  // Recipient selection
+  // Recipient selection - server-side search for scalability
   const [memberSearchQuery, setMemberSearchQuery] = useState('')
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<string[]>([])
+  const [searchingMembers, setSearchingMembers] = useState(false)
+  const [searchedMembers, setSearchedMembers] = useState<Member[]>([])
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const { toast } = useToast()
 
@@ -211,6 +214,7 @@ export default function AdminProphecyPage() {
     }
   }
 
+  // Load initial members (just first 20 for quick display)
   const fetchMembers = async () => {
     const supabase = createClient()
 
@@ -219,14 +223,63 @@ export default function AdminProphecyPage() {
         .from('members')
         .select('id, first_name, last_name, email, tier, phone')
         .order('first_name', { ascending: true })
+        .limit(20)
 
       if (!error && data) {
         setMembers(data)
+        setSearchedMembers(data)
       }
     } catch (error) {
       console.error('Error fetching members:', error)
     }
   }
+
+  // Server-side search with debouncing - scales to thousands of members
+  const searchMembers = useCallback(async (query: string) => {
+    const supabase = createClient()
+
+    if (!query.trim()) {
+      // If empty, show initial members
+      setSearchedMembers(members.slice(0, 20))
+      setSearchingMembers(false)
+      return
+    }
+
+    setSearchingMembers(true)
+
+    try {
+      // Search by name or email using ilike (case-insensitive)
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, email, tier, phone')
+        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .order('first_name', { ascending: true })
+        .limit(25)
+
+      if (!error && data) {
+        setSearchedMembers(data)
+      }
+    } catch (error) {
+      console.error('Error searching members:', error)
+    } finally {
+      setSearchingMembers(false)
+    }
+  }, [members])
+
+  // Debounced search - waits 300ms after user stops typing
+  const handleMemberSearch = useCallback((query: string) => {
+    setMemberSearchQuery(query)
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      searchMembers(query)
+    }, 300)
+  }, [searchMembers])
 
   // ============ FILE UPLOAD ============
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -793,12 +846,8 @@ export default function AdminProphecyPage() {
     }
   }
 
-  // Filter members for recipient selection
-  const filteredMembers = members.filter(m =>
-    m.first_name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
-    m.last_name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
-    m.email.toLowerCase().includes(memberSearchQuery.toLowerCase())
-  )
+  // Use server-side searched members (already filtered on server)
+  const filteredMembers = searchedMembers
 
   if (loading) {
     return (
@@ -1217,43 +1266,58 @@ export default function AdminProphecyPage() {
                 <div className="space-y-2">
                   <Label>Select Recipient *</Label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    {searchingMembers ? (
+                      <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
+                    ) : (
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    )}
                     <Input
                       type="search"
                       placeholder="Search members by name or email..."
                       value={memberSearchQuery}
-                      onChange={(e) => setMemberSearchQuery(e.target.value)}
+                      onChange={(e) => handleMemberSearch(e.target.value)}
                       className="pl-10"
                     />
                   </div>
                   <div className="max-h-48 overflow-y-auto border rounded-lg">
-                    {filteredMembers.slice(0, 50).map((member) => (
-                      <div
-                        key={member.id}
-                        className={`p-3 cursor-pointer border-b last:border-b-0 transition-colors ${
-                          selectedRecipientIds.includes(member.id)
-                            ? 'bg-navy/10 border-navy'
-                            : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => setSelectedRecipientIds([member.id])}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{member.first_name} {member.last_name}</div>
-                            <div className="text-sm text-gray-500">{member.email}</div>
-                          </div>
-                          <Badge variant="outline" className="capitalize">{member.tier}</Badge>
-                        </div>
+                    {searchingMembers ? (
+                      <div className="p-4 text-center text-gray-500">
+                        <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+                        Searching...
                       </div>
-                    ))}
+                    ) : filteredMembers.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        {memberSearchQuery ? 'No members found' : 'Type to search members'}
+                      </div>
+                    ) : (
+                      filteredMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          className={`p-3 cursor-pointer border-b last:border-b-0 transition-colors ${
+                            selectedRecipientIds.includes(member.id)
+                              ? 'bg-navy/10 border-navy'
+                              : 'hover:bg-gray-50'
+                          }`}
+                          onClick={() => setSelectedRecipientIds([member.id])}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{member.first_name} {member.last_name}</div>
+                              <div className="text-sm text-gray-500">{member.email}</div>
+                            </div>
+                            <Badge variant="outline" className="capitalize">{member.tier}</Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                   {selectedRecipientIds.length > 0 && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <div className="flex items-center gap-2 text-green-700">
                         <CheckCircle className="h-4 w-4" />
                         <span>
-                          Selected: {members.find(m => m.id === selectedRecipientIds[0])?.first_name}{' '}
-                          {members.find(m => m.id === selectedRecipientIds[0])?.last_name}
+                          Selected: {[...members, ...searchedMembers].find(m => m.id === selectedRecipientIds[0])?.first_name}{' '}
+                          {[...members, ...searchedMembers].find(m => m.id === selectedRecipientIds[0])?.last_name}
                         </span>
                       </div>
                     </div>
