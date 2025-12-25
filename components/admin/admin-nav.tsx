@@ -177,10 +177,9 @@ export default function AdminNav() {
       ]
     },
     {
-      title: 'Campaigns & Outreach',
+      title: 'Outreach',
       icon: <Megaphone className="h-4 w-4" />,
       items: [
-        { name: 'Campaigns', href: '/email-campaigns' },
         { name: 'Voice Messages', href: '/admin-voice-messages', icon: 'mic' },
       ]
     },

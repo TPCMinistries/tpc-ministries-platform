@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -851,10 +852,10 @@ function CommunicationsContent() {
               <CardDescription>Create and manage email campaigns</CardDescription>
             </div>
             <Button className="bg-navy hover:bg-navy/90" asChild>
-              <a href="/email-campaigns">
+              <Link href="/email-campaigns">
                 Open Campaign Manager
                 <ArrowRight className="h-4 w-4 ml-2" />
-              </a>
+              </Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -867,7 +868,7 @@ function CommunicationsContent() {
                 <Send className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No campaigns yet</p>
                 <Button className="mt-4" asChild>
-                  <a href="/email-campaigns">Create Your First Campaign</a>
+                  <Link href="/email-campaigns">Create Your First Campaign</Link>
                 </Button>
               </div>
             ) : (
