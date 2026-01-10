@@ -10,16 +10,13 @@ export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMissionsOpen, setIsMissionsOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
-  const [isConnectOpen, setIsConnectOpen] = useState(false)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const toggleMissions = () => setIsMissionsOpen(!isMissionsOpen)
   const toggleResources = () => setIsResourcesOpen(!isResourcesOpen)
-  const toggleConnect = () => setIsConnectOpen(!isConnectOpen)
 
   // Close all dropdowns on Escape key
   const closeAllDropdowns = useCallback(() => {
-    setIsConnectOpen(false)
     setIsMissionsOpen(false)
     setIsResourcesOpen(false)
   }, [])
@@ -59,14 +56,7 @@ export function Navigation() {
     // { href: '/teachings', label: 'Teachings' }, // Hidden until content is ready
     { href: '/blog', label: 'Blog' },
     { href: '/giving', label: 'Give' },
-  ]
-
-  const connectLinks = [
-    { href: '/visit', label: 'Plan Your Visit' },
-    { href: '/calendar', label: 'Events Calendar' },
-    { href: '/contact', label: 'Contact Us' },
-    { href: '/stories', label: 'Testimonies' },
-    { href: '/faq', label: 'FAQ' },
+    { href: '/connect', label: 'Connect' },
   ]
 
   const missionsLinks = [
@@ -111,42 +101,6 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-
-            {/* Connect Dropdown */}
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsConnectOpen(true)}
-              onMouseLeave={() => setIsConnectOpen(false)}
-            >
-              <button
-                className="flex items-center gap-1 text-sm font-medium text-tpc-navy transition-colors hover:text-tpc-navy/70"
-                aria-expanded={isConnectOpen}
-                aria-haspopup="true"
-                onKeyDown={(e) => handleDropdownKeyDown(e, isConnectOpen, setIsConnectOpen)}
-              >
-                Connect
-                <ChevronDown className="h-4 w-4" aria-hidden="true" />
-              </button>
-
-              {isConnectOpen && (
-                <div
-                  className="absolute top-full left-0 mt-0 w-48 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200"
-                  role="menu"
-                  aria-label="Connect submenu"
-                >
-                  {connectLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
-                      role="menuitem"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Missions Dropdown */}
             <div
@@ -268,33 +222,6 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-
-              {/* Mobile Connect Dropdown */}
-              <div>
-                <button
-                  onClick={toggleConnect}
-                  className="flex w-full items-center justify-between text-sm font-medium text-tpc-navy"
-                  aria-expanded={isConnectOpen}
-                  aria-haspopup="true"
-                >
-                  Connect
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isConnectOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                </button>
-                {isConnectOpen && (
-                  <div className="mt-2 ml-4 flex flex-col space-y-2">
-                    {connectLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="text-sm text-tpc-navy/80 hover:text-tpc-navy"
-                        onClick={toggleMenu}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
 
               {/* Mobile Missions Dropdown */}
               <div>
