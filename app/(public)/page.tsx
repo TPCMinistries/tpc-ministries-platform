@@ -340,93 +340,85 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Global Impact / Missions Section */}
-      <section className="bg-tpc-beige px-4 py-16 md:py-24">
-        <div className="container mx-auto">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 font-serif text-4xl font-bold text-tpc-navy md:text-5xl">
-              Global Impact
-            </h2>
-            <p className="text-lg text-slate-700">
-              Transforming communities across the nations
-            </p>
-          </div>
+      {/* Kenya Mission Trip Section */}
+      <section className="bg-gradient-to-br from-amber-900 via-amber-800 to-stone-900 px-4 py-16 md:py-24 overflow-hidden">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Content */}
+            <div className="text-white">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <Globe className="h-4 w-4 text-amber-300" />
+                <span className="text-amber-200 text-sm font-medium">Global Impact 2026</span>
+              </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {/* Kenya */}
-            <Link href="/missions/kenya">
-              <Card className="group h-full cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className="bg-gradient-to-br from-green-700 to-green-900 p-8 text-center">
-                  <div className="mb-4 text-7xl">🇰🇪</div>
-                  <h3 className="font-serif text-3xl font-bold text-white">Kenya</h3>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-xl text-tpc-navy">
-                    Empowering Communities
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    Through education, faith-based programs, and community development,
-                    we're transforming lives across Kenya.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="ghost" className="w-full text-tpc-navy group-hover:bg-tpc-navy/10">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6">
+                Answer the Call to
+                <span className="block text-amber-300">Kenya</span>
+              </h2>
 
-            {/* South Africa */}
-            <Link href="/missions/south-africa">
-              <Card className="group h-full cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className="bg-gradient-to-br from-blue-700 to-blue-900 p-8 text-center">
-                  <div className="mb-4 text-7xl">🇿🇦</div>
-                  <h3 className="font-serif text-3xl font-bold text-white">South Africa</h3>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-xl text-tpc-navy">
-                    Building Churches
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    Planting churches, training leaders, and establishing strong faith
-                    communities throughout South Africa.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="ghost" className="w-full text-tpc-navy group-hover:bg-tpc-navy/10">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
+              <p className="text-xl text-amber-100/90 mb-6 leading-relaxed">
+                Join TPC Ministries on a life-changing 17-day Kingdom Impact Trip
+                to Kenya. Serve in ministry, education, medical missions, and business
+                development across three cities.
+              </p>
 
-            {/* Grenada */}
-            <Link href="/missions/grenada">
-              <Card className="group h-full cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className="bg-gradient-to-br from-red-600 to-red-800 p-8 text-center">
-                  <div className="mb-4 text-7xl">🇬🇩</div>
-                  <h3 className="font-serif text-3xl font-bold text-white">Grenada</h3>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-white/10 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-amber-400">April 22</div>
+                  <div className="text-amber-200/70 text-sm">May 8, 2026</div>
                 </div>
-                <CardHeader>
-                  <CardTitle className="text-xl text-tpc-navy">
-                    Serving Families
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    Strengthening families, providing support, and building a strong
-                    foundation of faith in Grenada.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="ghost" className="w-full text-tpc-navy group-hover:bg-tpc-navy/10">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <div className="bg-white/10 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-amber-400">3 Cities</div>
+                  <div className="text-amber-200/70 text-sm">Nairobi • Mombasa • Kakamega</div>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center gap-3 text-amber-100">
+                  <Heart className="h-5 w-5 text-amber-400" />
+                  <span>6 Service Tracks to match your gifts</span>
+                </div>
+                <div className="flex items-center gap-3 text-amber-100">
+                  <Users className="h-5 w-5 text-amber-400" />
+                  <span>All-inclusive experience with safari</span>
+                </div>
+                <div className="flex items-center gap-3 text-amber-100">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  <span>Scholarships available</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/kenya">
+                  <Button size="lg" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold">
+                    Learn More & Apply
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </CardContent>
-              </Card>
-            </Link>
+                </Link>
+                <Link href="/kenya/give">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white/10">
+                    <Heart className="mr-2 h-5 w-5" />
+                    Support the Mission
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Trip Flier */}
+            <div className="hidden lg:block">
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 to-transparent rounded-3xl blur-2xl"></div>
+                <Link href="/kenya" className="block relative">
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 hover:border-amber-400/50 transition-colors">
+                    <img
+                      src="/images/kenya/kenya-flier.png"
+                      alt="Kenya Kingdom Impact Trip 2026"
+                      className="rounded-xl shadow-2xl w-full"
+                    />
+                  </div>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
