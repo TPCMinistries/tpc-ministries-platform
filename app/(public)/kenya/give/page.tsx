@@ -208,7 +208,7 @@ export default function KenyaGivingPage() {
             {/* Giving Form */}
             <div className="lg:col-span-2 space-y-6">
               {/* Giving Type Selection */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 bg-white">
                 <CardHeader>
                   <CardTitle className="text-2xl text-stone-900">Choose Your Impact</CardTitle>
                   <p className="text-stone-600">Select how you would like to support the Kenya mission</p>
@@ -229,7 +229,7 @@ export default function KenyaGivingPage() {
                           className={`p-5 rounded-xl border-2 transition-all text-left ${
                             isSelected
                               ? 'border-amber-500 bg-amber-50 shadow-md'
-                              : 'border-stone-200 hover:border-amber-300 hover:bg-stone-50'
+                              : 'bg-white border-stone-200 hover:border-amber-300 hover:bg-stone-50'
                           }`}
                         >
                           <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 ${
@@ -257,7 +257,7 @@ export default function KenyaGivingPage() {
                         className={`flex-1 py-3 px-6 rounded-xl border-2 font-medium transition-all ${
                           frequency === 'once'
                             ? 'border-amber-500 bg-amber-500 text-white'
-                            : 'border-stone-200 text-stone-700 hover:border-amber-300'
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
                         }`}
                       >
                         One-Time Gift
@@ -267,7 +267,7 @@ export default function KenyaGivingPage() {
                         className={`flex-1 py-3 px-6 rounded-xl border-2 font-medium transition-all ${
                           frequency === 'monthly'
                             ? 'border-amber-500 bg-amber-500 text-white'
-                            : 'border-stone-200 text-stone-700 hover:border-amber-300'
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
                         }`}
                       >
                         Monthly Gift
@@ -286,7 +286,7 @@ export default function KenyaGivingPage() {
                           className={`py-3 px-4 rounded-xl border-2 font-semibold transition-all ${
                             selectedAmount === amount && !customAmount
                               ? 'border-amber-500 bg-amber-500 text-white'
-                              : 'border-stone-200 text-stone-700 hover:border-amber-300'
+                              : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
                           }`}
                         >
                           ${amount}
@@ -367,7 +367,7 @@ export default function KenyaGivingPage() {
               </Card>
 
               {/* Why Give */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 bg-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-stone-900">Why Your Gift Matters</CardTitle>
                 </CardHeader>
@@ -385,7 +385,7 @@ export default function KenyaGivingPage() {
               </Card>
 
               {/* Tax Info */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 bg-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-stone-900">Tax Deductible</CardTitle>
                 </CardHeader>
@@ -397,7 +397,7 @@ export default function KenyaGivingPage() {
               </Card>
 
               {/* Contact */}
-              <Card className="border-stone-200">
+              <Card className="border-stone-200 bg-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-stone-900">Questions?</CardTitle>
                 </CardHeader>
