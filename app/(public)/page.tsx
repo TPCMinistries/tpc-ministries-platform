@@ -489,9 +489,9 @@ export default async function HomePage() {
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Link href="/my-prayers">
+              <Link href="/contact">
                 <Button size="lg" className="w-full bg-tpc-navy text-white hover:bg-tpc-navy/90 sm:w-auto">
-                  Submit Prayer Request
+                  Contact Us
                   <Send className="ml-2 h-5 w-5" />
                 </Button>
               </Link>

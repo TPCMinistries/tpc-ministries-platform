@@ -41,7 +41,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/give" className="text-sm text-slate-600 hover:text-blue-900">
+                <Link href="/giving" className="text-sm text-slate-600 hover:text-blue-900">
                   Give
                 </Link>
               </li>
@@ -54,46 +54,50 @@ export function Footer() {
             <ul className="space-y-2">
               <li className="flex items-start space-x-2 text-sm text-slate-600">
                 <Mail className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>info@tpcministries.org</span>
-              </li>
-              <li className="flex items-start space-x-2 text-sm text-slate-600">
-                <Phone className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <a href="mailto:info@tpcmin.org" className="hover:text-blue-900">info@tpcmin.org</a>
               </li>
               <li className="flex items-start space-x-2 text-sm text-slate-600">
                 <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                <span>Global Ministry Headquarters</span>
+                <span>Kenya • South Africa • Grenada</span>
               </li>
             </ul>
           </div>
 
           {/* Social Media */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-slate-900">Connect With Us</h3>
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">Follow @tpcmin</h3>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://facebook.com/tpcmin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-600 transition-colors hover:text-blue-900"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://twitter.com/tpcmin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-600 transition-colors hover:text-blue-900"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://instagram.com/tpcmin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-600 transition-colors hover:text-blue-900"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://youtube.com/@tpcmin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-slate-600 transition-colors hover:text-blue-900"
                 aria-label="YouTube"
               >

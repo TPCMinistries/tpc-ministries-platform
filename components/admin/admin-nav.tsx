@@ -22,6 +22,8 @@ import {
   FileText,
   HandHeart,
   Sparkles,
+  Megaphone,
+  Send,
 } from 'lucide-react'
 
 interface NavSection {
@@ -100,6 +102,16 @@ export default function AdminNav() {
       ]
     },
     {
+      title: 'Marketing',
+      icon: <Megaphone className="h-4 w-4" />,
+      items: [
+        { name: 'SMS Campaigns', href: '/sms-campaigns' },
+        { name: 'Email Campaigns', href: '/email-campaigns' },
+        { name: 'Lead Scoring', href: '/lead-scoring' },
+        { name: 'Automations', href: '/automations' },
+      ]
+    },
+    {
       title: 'People & Community',
       icon: <Users className="h-4 w-4" />,
       defaultOpen: true,
@@ -122,6 +134,7 @@ export default function AdminNav() {
         { name: 'Daily Content', href: '/daily-content' },
         { name: 'Resources', href: '/admin-resources' },
         { name: 'Media', href: '/media' },
+        { name: 'Photo Gallery', href: '/admin-gallery' },
         { name: 'PLANT Courses', href: '/admin-plant' },
       ]
     },
@@ -130,13 +143,13 @@ export default function AdminNav() {
       icon: <DollarSign className="h-4 w-4" />,
       items: [
         { name: 'Giving Overview', href: '/admin-giving' },
-        { name: 'Donations', href: '/donations' },
       ]
     },
     {
       title: 'AI Tools',
       icon: <Brain className="h-4 w-4" />,
       items: [
+        { name: 'AI Insights', href: '/ai-insights' },
         { name: 'Command Center', href: '/admin-command-center' },
         { name: 'Predictions', href: '/admin-predictive' },
         { name: 'Giving Forecast', href: '/admin-giving-forecast' },
@@ -144,9 +157,12 @@ export default function AdminNav() {
       ]
     },
     {
-      title: 'Settings',
+      title: 'Operations',
       icon: <Settings className="h-4 w-4" />,
       items: [
+        { name: 'Admin Tasks', href: '/admin-tasks' },
+        { name: 'Audit Log', href: '/admin-audit-log' },
+        { name: 'Volunteer Hours', href: '/admin-volunteer-hours' },
         { name: 'Settings', href: '/admin-settings' },
       ]
     },

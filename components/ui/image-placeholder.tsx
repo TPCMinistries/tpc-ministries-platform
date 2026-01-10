@@ -1,26 +1,39 @@
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon, Globe } from 'lucide-react'
 
 interface ImagePlaceholderProps {
   width?: number
   height?: number
   text?: string
   className?: string
+  aspectRatio?: string
+  showIcon?: boolean
 }
 
 export function ImagePlaceholder({
-  width = 400,
-  height = 300,
-  text = 'Image Placeholder',
+  width,
+  height,
+  text,
   className = '',
+  aspectRatio,
+  showIcon = false,
 }: ImagePlaceholderProps) {
+  const style: React.CSSProperties = {}
+
+  if (width) style.width = `${width}px`
+  if (height) style.height = `${height}px`
+  if (aspectRatio) style.aspectRatio = aspectRatio
+
   return (
     <div
-      className={`flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 ${className}`}
-      style={{ width: width ? `${width}px` : '100%', height: height ? `${height}px` : '100%' }}
+      className={`flex flex-col items-center justify-center bg-gradient-to-br from-navy/10 via-gold/5 to-navy/10 w-full h-full ${className}`}
+      style={style}
     >
-      <ImageIcon className="mb-2 h-12 w-12 text-slate-400" />
-      <p className="text-sm font-medium text-slate-500">{text}</p>
-      <p className="text-xs text-slate-400">Add image to public/images/</p>
+      {showIcon && (
+        <Globe className="h-16 w-16 text-navy/20" />
+      )}
+      {text && (
+        <p className="text-sm font-medium text-navy/40 mt-2">{text}</p>
+      )}
     </div>
   )
 }

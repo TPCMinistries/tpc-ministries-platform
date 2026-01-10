@@ -319,7 +319,7 @@ export default function GivingPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600">
-                    TPC Ministries is a 501(c)(3) non-profit organization. Your donation is tax-deductible to the full extent allowed by law. Tax ID: XX-XXXXXXX
+                    Your donation is tax-deductible to the full extent allowed by law. A receipt will be emailed to you for your records.
                   </p>
                 </CardContent>
               </Card>
@@ -331,16 +331,8 @@ export default function GivingPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div>
-                    <p className="font-medium text-navy mb-1">By Check</p>
-                    <p className="text-gray-600">Mail to: TPC Ministries<br />PO Box [Address]<br />City, State ZIP</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy mb-1">Bank Transfer</p>
-                    <p className="text-gray-600">Contact us for wire transfer details</p>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy mb-1">Stock Donations</p>
-                    <p className="text-gray-600">Gift appreciated securities tax-efficiently</p>
+                    <p className="font-medium text-navy mb-1">Contact Us</p>
+                    <p className="text-gray-600">For check, wire transfer, or stock donations, email us at <a href="mailto:info@tpcmin.org" className="text-gold hover:underline">info@tpcmin.org</a></p>
                   </div>
                 </CardContent>
               </Card>
@@ -349,42 +341,25 @@ export default function GivingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Scripture Section */}
       <section className="px-4 py-16 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Stories of Impact</h2>
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-bold text-navy mb-8">The Heart of Giving</h2>
           <div className="grid md:grid-cols-2 gap-8">
-            <Card>
+            <Card className="text-left">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-navy/10 rounded-full flex items-center justify-center">
-                    <span className="text-lg font-bold text-navy">MK</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-navy">Mary K.</p>
-                    <p className="text-sm text-gray-600">Kenya Mission Partner</p>
-                  </div>
-                </div>
-                <p className="text-gray-700 italic">
-                  "Because of your generosity, we were able to build a clean water well that now serves over 500 families in our village. This ministry is truly changing lives."
+                <p className="text-gray-700 italic mb-4">
+                  "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
                 </p>
+                <p className="text-navy font-semibold">2 Corinthians 9:7</p>
               </CardContent>
             </Card>
-
-            <Card>
+            <Card className="text-left">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center">
-                    <span className="text-lg font-bold text-gold">JT</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-navy">James T.</p>
-                    <p className="text-sm text-gray-600">Monthly Partner</p>
-                  </div>
-                </div>
-                <p className="text-gray-700 italic">
-                  "Giving monthly allows me to be part of something bigger. It's amazing to see how consistent support multiplies impact across communities."
+                <p className="text-gray-700 italic mb-4">
+                  "Honor the Lord with your wealth, with the firstfruits of all your crops; then your barns will be filled to overflowing."
                 </p>
+                <p className="text-navy font-semibold">Proverbs 3:9-10</p>
               </CardContent>
             </Card>
           </div>

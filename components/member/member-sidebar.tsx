@@ -41,6 +41,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
+import InstallButton from '@/components/pwa/install-button'
 
 interface MemberSidebarProps {
   member: {
@@ -72,7 +73,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     {
       title: 'Daily Walk',
       items: [
-        { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise },
+        { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise, highlight: true },
         { name: 'Devotional', href: '/devotional', icon: Sun },
         { name: 'My Journal', href: '/journal', icon: PenLine },
       ]
@@ -95,6 +96,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       title: 'Community',
       items: [
         { name: 'Groups', href: '/groups', icon: Users },
+        { name: 'Connections', href: '/connections', icon: UserCheck },
         { name: 'Events', href: '/events', icon: CalendarDays },
         { name: 'Live Stream', href: '/live', icon: Radio },
       ]
@@ -189,6 +191,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
           size="icon"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className="bg-white shadow-lg"
+          aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileOpen}
         >
           {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
@@ -205,30 +209,30 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200">
+          <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-navy-800">
               <Sparkles className="h-6 w-6 text-gold" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-navy">TPC Ministries</h1>
-              <p className="text-xs text-gray-500">Member Portal</p>
+              <h1 className="text-lg font-bold text-navy dark:text-white">TPC Ministries</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Member Portal</p>
             </div>
           </div>
 
           {/* Member Info */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy text-white font-semibold">
                 {member.first_name?.[0]}{member.last_name?.[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {member.first_name} {member.last_name}
                 </p>
                 <Badge variant="outline" className={cn('text-xs mt-1', getRoleColor(member.role, member.tier))}>
@@ -244,7 +248,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
               {navigationSections.map((section, sectionIndex) => (
                 <div key={sectionIndex}>
                   {section.title && (
-                    <h3 className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <h3 className="px-3 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                       {section.title}
                     </h3>
                   )}
@@ -263,8 +267,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                               isActive
                                 ? 'bg-navy text-white'
                                 : item.highlight
-                                ? 'bg-gradient-to-r from-gold/20 to-amber-100 text-amber-800 border border-gold/30 hover:from-gold/30 hover:to-amber-200'
-                                : 'text-gray-700 hover:bg-gray-100 hover:text-navy'
+                                ? 'bg-gradient-to-r from-gold/20 to-amber-100 dark:from-gold/30 dark:to-amber-900/30 text-amber-800 dark:text-amber-200 border border-gold/30 hover:from-gold/30 hover:to-amber-200 dark:hover:from-gold/40 dark:hover:to-amber-800/40'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-navy dark:hover:text-white'
                             )}
                           >
                             <Icon className={cn(
@@ -290,9 +294,14 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
             </div>
           </nav>
 
+          {/* Install App Button */}
+          <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-800">
+            <InstallButton variant="sidebar" />
+          </div>
+
           {/* Admin Portal Link - visible to staff and admins */}
           {canAccessAdmin() && (
-            <div className="px-3 py-4 border-t border-gray-200">
+            <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800">
               <Link href="/admin-dashboard">
                 <Button className="w-full bg-navy hover:bg-navy/90 text-white">
                   <Shield className="mr-2 h-4 w-4" />
@@ -304,10 +313,10 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
 
           {/* Upgrade CTA (for free and member roles - not partners/staff/admin) */}
           {['free', 'member'].includes(member.role || member.tier || 'free') && (
-            <div className="px-3 py-4 border-t border-gray-200">
-              <div className="bg-gradient-to-br from-gold/10 to-navy/10 rounded-lg p-4 border border-gold/20">
-                <p className="text-sm font-semibold text-navy mb-2">Upgrade Your Journey</p>
-                <p className="text-xs text-gray-600 mb-3">
+            <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="bg-gradient-to-br from-gold/10 to-navy/10 dark:from-gold/20 dark:to-navy/20 rounded-lg p-4 border border-gold/20">
+                <p className="text-sm font-semibold text-navy dark:text-white mb-2">Upgrade Your Journey</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                   Unlock exclusive content and prophetic words
                 </p>
                 <Link href="/partner">

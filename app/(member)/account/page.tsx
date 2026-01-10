@@ -55,7 +55,9 @@ import {
   Key,
   AlertTriangle,
   Settings,
+  Palette,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { createClient } from '@/lib/supabase/client'
 
 interface Notification {
@@ -432,6 +434,36 @@ export default function AccountPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Spiritual Profile */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-gold" />
+                  Your Spiritual Profile
+                </CardTitle>
+                <CardDescription>View your assessment results and spiritual gifts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-gray-600 mb-1">Top Spiritual Gift</p>
+                    <p className="text-lg font-semibold text-navy">Teaching</p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-sm text-gray-600 mb-1">Current Season</p>
+                    <p className="text-lg font-semibold text-navy">Growth Season</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm text-gray-600 mb-1">Assessments Taken</p>
+                    <p className="text-lg font-semibold text-navy">3 of 6</p>
+                  </div>
+                </div>
+                <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/my-assessments'}>
+                  View Full Assessment Results
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Settings Tab */}
@@ -496,6 +528,20 @@ export default function AccountPage() {
                       onCheckedChange={(checked) => setSettings({ ...settings, weekly_digest: checked })}
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Appearance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="h-5 w-5" />
+                    Appearance
+                  </CardTitle>
+                  <CardDescription>Customize how the app looks</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ThemeToggle />
                 </CardContent>
               </Card>
 
