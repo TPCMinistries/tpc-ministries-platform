@@ -16,7 +16,13 @@ import {
   Download,
   FileText,
   ImageIcon,
-  Newspaper
+  Newspaper,
+  GraduationCap,
+  Heart,
+  HandHeart,
+  Plane,
+  Gift,
+  CircleDollarSign
 } from 'lucide-react'
 import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
 import { ExpandableServiceTracks, ExpandableCities } from '@/components/kenya/expandable-sections'
@@ -328,6 +334,93 @@ export default function KenyaTripPage() {
         </div>
       </section>
 
+      {/* Scholarship Section */}
+      <section id="scholarship" className="px-4 py-20 md:py-28 bg-gradient-to-br from-amber-50 to-stone-50">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-amber-100 rounded-full px-4 py-2 mb-6">
+                <GraduationCap className="h-4 w-4 text-amber-700" />
+                <span className="text-amber-700 text-sm font-medium">Financial Assistance</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-6">
+                Scholarship Opportunities
+              </h2>
+              <p className="text-lg text-stone-600 mb-6">
+                We believe finances should not be a barrier to answering God's call. Limited partial
+                scholarships are available for qualified applicants who demonstrate both financial
+                need and strong alignment with our mission values.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                <h3 className="font-semibold text-stone-900">Priority given to:</h3>
+                <ul className="space-y-3">
+                  {[
+                    'Students and young adults with clear calling',
+                    'Emerging leaders in ministry or service',
+                    'Medical and education professionals with needed skills',
+                    'First-time mission trip participants',
+                    'Those filling strategic ministry roles',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-stone-600">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <a href="#apply">
+                <Button className="bg-amber-500 hover:bg-amber-600 text-stone-900 font-semibold px-8 h-12">
+                  Apply with Scholarship Request
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </a>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-stone-200">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <HandHeart className="h-10 w-10 text-amber-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-2">How It Works</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">1</div>
+                  <div>
+                    <h4 className="font-semibold text-stone-900">Indicate Need in Application</h4>
+                    <p className="text-stone-600 text-sm">Select "Yes" for scholarship on the application form</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">2</div>
+                  <div>
+                    <h4 className="font-semibold text-stone-900">Share Your Story</h4>
+                    <p className="text-stone-600 text-sm">Tell us about your calling and financial situation</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">3</div>
+                  <div>
+                    <h4 className="font-semibold text-stone-900">Prayerful Review</h4>
+                    <p className="text-stone-600 text-sm">Our team reviews applications and awards based on need and fit</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                <p className="text-sm text-stone-700">
+                  <strong className="text-amber-700">Note:</strong> Scholarships are partial, not full coverage.
+                  All team members contribute financially to demonstrate commitment and shared ownership.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Application Form */}
       <section id="apply" className="px-4 py-20 md:py-28 bg-white">
         <div className="container mx-auto max-w-2xl">
@@ -342,6 +435,100 @@ export default function KenyaTripPage() {
           </div>
 
           <KenyaTripForm />
+        </div>
+      </section>
+
+      {/* Support the Mission */}
+      <section id="give" className="px-4 py-20 md:py-28 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900 text-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <Heart className="h-4 w-4 text-amber-300" />
+              <span className="text-amber-200 text-sm font-medium">Partner With Us</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              Support the Kenya Mission
+            </h2>
+            <p className="text-xl text-stone-300">
+              Your generosity makes Kingdom impact possible. Help send teams, fund scholarships,
+              and resource communities in Kenya.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
+              <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Plane className="h-8 w-8 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Sponsor a Participant</h3>
+              <p className="text-stone-300 text-sm mb-4">
+                Help cover travel, lodging, and ministry costs for a team member called to serve.
+              </p>
+              <p className="text-amber-400 font-semibold">$500 - $2,500</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
+              <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Gift className="h-8 w-8 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Fund Ministry Supplies</h3>
+              <p className="text-stone-300 text-sm mb-4">
+                Provide medical supplies, school materials, business resources, or farming equipment.
+              </p>
+              <p className="text-amber-400 font-semibold">$50 - $500</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
+              <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <GraduationCap className="h-8 w-8 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Scholarship Fund</h3>
+              <p className="text-stone-300 text-sm mb-4">
+                Contribute to the scholarship fund to help qualified participants who need financial assistance.
+              </p>
+              <p className="text-amber-400 font-semibold">Any Amount</p>
+            </div>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-2xl font-bold mb-4">Give Today</h3>
+                <p className="text-stone-300 mb-6">
+                  100% of your gift designated for Kenya missions goes directly to supporting the trip,
+                  team members, and on-ground ministry. TPC Ministries is a registered 501(c)(3)
+                  nonprofit—your donation is tax-deductible.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link href="/giving?type=missions">
+                    <Button size="lg" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 h-14">
+                      <CircleDollarSign className="mr-2 h-5 w-5" />
+                      Give Online
+                    </Button>
+                  </Link>
+                  <a href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving">
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white/10 px-8 h-14">
+                      <Mail className="mr-2 h-5 w-5" />
+                      Contact Us
+                    </Button>
+                  </a>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="inline-block bg-white/10 rounded-2xl p-6 border border-white/20">
+                  <p className="text-stone-400 text-sm uppercase tracking-wider mb-2">2026 Missions Goal</p>
+                  <p className="text-5xl font-bold text-amber-400 mb-2">$50,000</p>
+                  <p className="text-stone-300 text-sm">For team support, supplies & scholarships</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-stone-400 text-sm">
+              Prefer to give by check? Mail to: TPC Ministries, [Address] • Memo: Kenya Mission 2026
+            </p>
+          </div>
         </div>
       </section>
 
