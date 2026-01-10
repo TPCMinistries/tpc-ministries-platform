@@ -500,10 +500,10 @@ export default function KenyaTripPage() {
                   nonprofit—your donation is tax-deductible.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/giving?type=missions">
+                  <Link href="/kenya/give">
                     <Button size="lg" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 h-14">
                       <CircleDollarSign className="mr-2 h-5 w-5" />
-                      Give Online
+                      Give to Kenya Mission
                     </Button>
                   </Link>
                   <a href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving">
