@@ -40,7 +40,7 @@ const stats = [
   { value: '17', label: 'Days of Impact' },
   { value: '3', label: 'Cities' },
   { value: '6', label: 'Service Tracks' },
-  { value: '100+', label: 'Lives Touched' },
+  { value: "1000's", label: 'Lives Touched' },
 ]
 
 const serviceAreas = [
