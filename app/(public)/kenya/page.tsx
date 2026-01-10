@@ -13,7 +13,10 @@ import {
   Shield,
   Clock,
   Globe2,
-  Download
+  Download,
+  FileText,
+  ImageIcon,
+  Newspaper
 } from 'lucide-react'
 import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
 import { ExpandableServiceTracks, ExpandableCities } from '@/components/kenya/expandable-sections'
@@ -339,6 +342,85 @@ export default function KenyaTripPage() {
           </div>
 
           <KenyaTripForm />
+        </div>
+      </section>
+
+      {/* Press & Media Downloads */}
+      <section id="press" className="px-4 py-20 md:py-28 bg-white border-t border-stone-200">
+        <div className="container mx-auto max-w-6xl">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-amber-100 rounded-full px-4 py-2 mb-4">
+              <Newspaper className="h-4 w-4 text-amber-700" />
+              <span className="text-amber-700 text-sm font-medium">Press & Media</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-4">
+              Download Trip Resources
+            </h2>
+            <p className="text-lg text-stone-600">
+              Access our official trip documentation, promotional materials, and press kit.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Full Trip Guide PDF */}
+            <a
+              href="/images/kenya/Kenya-Kingdom-Impact-Trip-2026.pdf"
+              download="Kenya-Kingdom-Impact-Trip-2026.pdf"
+              className="group bg-gradient-to-br from-stone-50 to-stone-100 rounded-2xl p-8 border border-stone-200 hover:border-amber-300 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-stone-900 mb-2 group-hover:text-amber-700 transition-colors">
+                    Complete Trip Guide
+                  </h3>
+                  <p className="text-stone-600 text-sm mb-4">
+                    19-page comprehensive guide with full trip details, service tracks, timeline, logistics, and more.
+                  </p>
+                  <div className="flex items-center gap-2 text-amber-600 font-semibold">
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            {/* Trip Flier */}
+            <a
+              href="/images/kenya/kenya-flier.png"
+              download="Kenya-Trip-2026-Flier.png"
+              className="group bg-gradient-to-br from-stone-50 to-stone-100 rounded-2xl p-8 border border-stone-200 hover:border-amber-300 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-stone-800 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <ImageIcon className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-stone-900 mb-2 group-hover:text-amber-700 transition-colors">
+                    Promotional Flier
+                  </h3>
+                  <p className="text-stone-600 text-sm mb-4">
+                    High-resolution promotional flier for sharing on social media, printing, or distributing.
+                  </p>
+                  <div className="flex items-center gap-2 text-amber-600 font-semibold">
+                    <Download className="h-4 w-4" />
+                    Download Image
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-stone-500 text-sm">
+              For media inquiries or additional resources, contact{' '}
+              <a href="mailto:info@tpcmin.org" className="text-amber-600 hover:underline font-medium">
+                info@tpcmin.org
+              </a>
+            </p>
+          </div>
         </div>
       </section>
 
