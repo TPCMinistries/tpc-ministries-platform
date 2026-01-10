@@ -8,16 +8,13 @@ import InstallButton from '@/components/pwa/install-button'
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isMissionsOpen, setIsMissionsOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
-  const toggleMissions = () => setIsMissionsOpen(!isMissionsOpen)
   const toggleResources = () => setIsResourcesOpen(!isResourcesOpen)
 
   // Close all dropdowns on Escape key
   const closeAllDropdowns = useCallback(() => {
-    setIsMissionsOpen(false)
     setIsResourcesOpen(false)
   }, [])
 
@@ -55,16 +52,9 @@ export function Navigation() {
     { href: '/about', label: 'About' },
     // { href: '/teachings', label: 'Teachings' }, // Hidden until content is ready
     { href: '/blog', label: 'Blog' },
+    { href: '/kenya', label: 'Kenya 2026' },
     { href: '/giving', label: 'Give' },
     { href: '/connect', label: 'Connect' },
-  ]
-
-  const missionsLinks = [
-    { href: '/missions', label: 'Missions Hub' },
-    { href: '/missions/kenya', label: 'Kenya' },
-    { href: '/missions/south-africa', label: 'South Africa' },
-    { href: '/missions/grenada', label: 'Grenada' },
-    { href: '/missions/support', label: 'Support' },
   ]
 
   const resourcesLinks = [
@@ -101,42 +91,6 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-
-            {/* Missions Dropdown */}
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsMissionsOpen(true)}
-              onMouseLeave={() => setIsMissionsOpen(false)}
-            >
-              <button
-                className="flex items-center gap-1 text-sm font-medium text-tpc-navy transition-colors hover:text-tpc-navy/70"
-                aria-expanded={isMissionsOpen}
-                aria-haspopup="true"
-                onKeyDown={(e) => handleDropdownKeyDown(e, isMissionsOpen, setIsMissionsOpen)}
-              >
-                Missions
-                <ChevronDown className="h-4 w-4" aria-hidden="true" />
-              </button>
-
-              {isMissionsOpen && (
-                <div
-                  className="absolute top-full left-0 mt-0 w-48 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200"
-                  role="menu"
-                  aria-label="Missions submenu"
-                >
-                  {missionsLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
-                      role="menuitem"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Resources Dropdown */}
             <div
@@ -222,33 +176,6 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-
-              {/* Mobile Missions Dropdown */}
-              <div>
-                <button
-                  onClick={toggleMissions}
-                  className="flex w-full items-center justify-between text-sm font-medium text-tpc-navy"
-                  aria-expanded={isMissionsOpen}
-                  aria-haspopup="true"
-                >
-                  Missions
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isMissionsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                </button>
-                {isMissionsOpen && (
-                  <div className="mt-2 ml-4 flex flex-col space-y-2">
-                    {missionsLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="text-sm text-tpc-navy/80 hover:text-tpc-navy"
-                        onClick={toggleMenu}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
 
               {/* Mobile Resources Dropdown */}
               <div>
