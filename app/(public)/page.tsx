@@ -18,7 +18,6 @@ import {
   ClipboardList
 } from 'lucide-react'
 import { getRecentTeachings, getPublicEbooks } from '@/lib/db/queries'
-import { NewsletterSignupForms } from '@/components/newsletter-signup-forms'
 
 export default async function HomePage() {
   const teachings = await getRecentTeachings(4).catch(() => [])
@@ -196,18 +195,79 @@ export default async function HomePage() {
       </section>
 
       {/* Daily Devotional Section */}
-      <section className="bg-white px-4 py-16 md:py-24">
+      <section className="bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-16 md:py-24">
         <div className="container mx-auto">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 font-serif text-4xl font-bold text-tpc-navy md:text-5xl">
-              Start Your Day With A Word In Season
-            </h2>
-            <p className="text-lg text-slate-600">
-              Receive daily inspiration and biblical insights directly to your inbox
-            </p>
-          </div>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Content */}
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-tpc-gold/20 rounded-full px-4 py-2 mb-6">
+                  <Sparkles className="h-4 w-4 text-tpc-gold-accent" />
+                  <span className="text-tpc-gold-accent text-sm font-medium">Daily Devotional</span>
+                </div>
+                <h2 className="mb-4 font-serif text-4xl font-bold text-tpc-navy md:text-5xl">
+                  Start Your Day With A Word In Season
+                </h2>
+                <p className="text-lg text-slate-600 mb-6">
+                  Begin each morning with fresh biblical insights, prophetic encouragement,
+                  and practical wisdom through our daily devotional platform.
+                </p>
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-slate-700">
+                    <div className="flex-shrink-0 w-6 h-6 bg-tpc-gold/20 rounded-full flex items-center justify-center">
+                      <BookOpen className="h-3 w-3 text-tpc-gold-accent" />
+                    </div>
+                    <span>Fresh daily devotionals & prophetic words</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-700">
+                    <div className="flex-shrink-0 w-6 h-6 bg-tpc-gold/20 rounded-full flex items-center justify-center">
+                      <Heart className="h-3 w-3 text-tpc-gold-accent" />
+                    </div>
+                    <span>Scripture-based encouragement for your journey</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-700">
+                    <div className="flex-shrink-0 w-6 h-6 bg-tpc-gold/20 rounded-full flex items-center justify-center">
+                      <Users className="h-3 w-3 text-tpc-gold-accent" />
+                    </div>
+                    <span>Join a growing community of believers</span>
+                  </div>
+                </div>
+                <a href="https://www.streamsofgrace.app" target="_blank" rel="noopener noreferrer">
+                  <Button size="lg" className="bg-tpc-gold-accent hover:bg-tpc-gold-accent/90 text-white font-bold">
+                    Visit Streams of Grace
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </a>
+              </div>
 
-          <NewsletterSignupForms />
+              {/* Visual */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-tpc-navy to-tpc-navy/80 rounded-2xl p-8 shadow-2xl">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-tpc-gold/20 rounded-full mb-6">
+                      <BookOpen className="h-10 w-10 text-tpc-gold" />
+                    </div>
+                    <h3 className="font-serif text-2xl font-bold text-white mb-2">
+                      Streams of Grace
+                    </h3>
+                    <p className="text-tpc-gold mb-6">Daily Devotional App</p>
+                    <div className="bg-white/10 rounded-xl p-4 text-left">
+                      <p className="text-white/60 text-xs uppercase tracking-wider mb-2">Today's Word</p>
+                      <p className="text-white italic">
+                        "For I know the plans I have for you, declares the Lord,
+                        plans to prosper you and not to harm you, plans to give you
+                        hope and a future."
+                      </p>
+                      <p className="text-tpc-gold text-sm mt-2">— Jeremiah 29:11</p>
+                    </div>
+                  </div>
+                </div>
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-tpc-gold/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-orange-200/50 rounded-full blur-2xl"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
