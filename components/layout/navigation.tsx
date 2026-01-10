@@ -58,7 +58,8 @@ export function Navigation() {
   ]
 
   const resourcesLinks = [
-    { href: '/devotional', label: 'Daily Devotional' },
+    { href: 'https://www.streamsofgrace.app', label: 'Daily Devotional', external: true },
+    { href: '/ebooks', label: 'Written Works' },
     { href: '/beliefs', label: 'Statement of Faith' },
     { href: '/assessments/seasonal', label: 'Seasonal Assessment', divider: true },
     { href: '/assessments', label: 'All Assessments' },
@@ -117,13 +118,25 @@ export function Navigation() {
                   {resourcesLinks.map((link) => (
                     <div key={link.href}>
                       {link.divider && <div className="my-1 border-t border-gray-200" role="separator" />}
-                      <Link
-                        href={link.href}
-                        className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
-                        role="menuitem"
-                      >
-                        {link.label}
-                      </Link>
+                      {link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
+                          role="menuitem"
+                        >
+                          {link.label} ↗
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
+                          role="menuitem"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -193,13 +206,25 @@ export function Navigation() {
                     {resourcesLinks.map((link) => (
                       <div key={link.href}>
                         {link.divider && <div className="my-2 border-t border-tpc-navy/20" />}
-                        <Link
-                          href={link.href}
-                          className="text-sm text-tpc-navy/80 hover:text-tpc-navy block"
-                          onClick={toggleMenu}
-                        >
-                          {link.label}
-                        </Link>
+                        {link.external ? (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-tpc-navy/80 hover:text-tpc-navy block"
+                            onClick={toggleMenu}
+                          >
+                            {link.label} ↗
+                          </a>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            className="text-sm text-tpc-navy/80 hover:text-tpc-navy block"
+                            onClick={toggleMenu}
+                          >
+                            {link.label}
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>
