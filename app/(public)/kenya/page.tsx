@@ -3,19 +3,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
-  Heart,
-  GraduationCap,
-  Stethoscope,
-  Briefcase,
-  Wheat,
-  Package,
   CheckCircle,
   ArrowRight,
   Calendar,
   MapPin,
   Mail,
   Users,
-  Plane,
   Star,
   Shield,
   Clock,
@@ -23,6 +16,7 @@ import {
   Download
 } from 'lucide-react'
 import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
+import { ExpandableServiceTracks, ExpandableCities } from '@/components/kenya/expandable-sections'
 
 export const metadata: Metadata = {
   title: 'Kenya Kingdom Impact Trip 2026 | TPC Ministries',
@@ -41,39 +35,6 @@ const stats = [
   { value: '3', label: 'Cities' },
   { value: '6', label: 'Service Tracks' },
   { value: "1000's", label: 'Lives Touched' },
-]
-
-const serviceAreas = [
-  {
-    title: 'Ministry & Spiritual Care',
-    icon: Heart,
-    description: 'Teaching, preaching, prayer ministry, and pastoral support for local churches.',
-  },
-  {
-    title: 'Education & Youth',
-    icon: GraduationCap,
-    description: 'Mentorship, financial literacy training, and leadership development for young people.',
-  },
-  {
-    title: 'Medical Missions',
-    icon: Stethoscope,
-    description: 'Healthcare outreach, clinics, and health education in underserved communities.',
-  },
-  {
-    title: 'Business Development',
-    icon: Briefcase,
-    description: 'Entrepreneurship training, business mentorship, and economic empowerment.',
-  },
-  {
-    title: 'Food Security',
-    icon: Wheat,
-    description: 'Agricultural initiatives, farming support, and sustainable food systems.',
-  },
-  {
-    title: 'Material Support',
-    icon: Package,
-    description: 'Distribution of clothing, medical supplies, and educational resources.',
-  },
 ]
 
 const included = [
@@ -266,25 +227,31 @@ export default function KenyaTripPage() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-900 mb-6">
               Serve According to Your Gifts
             </h2>
-            <p className="text-xl text-stone-600">
+            <p className="text-xl text-stone-600 mb-4">
               Choose from six service tracks based on your skills, experience, and calling.
             </p>
+            <p className="text-stone-500 text-sm">Click any track to learn more</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {serviceAreas.map((area) => (
-              <div
-                key={area.title}
-                className="group bg-stone-50 hover:bg-amber-50 rounded-2xl p-6 border border-stone-200 hover:border-amber-300 transition-all duration-300"
-              >
-                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:shadow-md transition-shadow">
-                  <area.icon className="h-7 w-7 text-amber-600" />
-                </div>
-                <h3 className="text-lg font-bold text-stone-900 mb-2">{area.title}</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">{area.description}</p>
-              </div>
-            ))}
+          <ExpandableServiceTracks />
+        </div>
+      </section>
+
+      {/* Cities Section */}
+      <section className="px-4 py-20 md:py-28 bg-gradient-to-br from-stone-900 to-stone-800">
+        <div className="container mx-auto max-w-6xl">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <p className="text-amber-400 font-semibold tracking-wider uppercase mb-3">Where We Serve</p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+              Three Cities, One Mission
+            </h2>
+            <p className="text-xl text-stone-300 mb-4">
+              Experience the diversity of Kenya across urban, coastal, and rural communities.
+            </p>
+            <p className="text-stone-500 text-sm">Click any city to explore</p>
           </div>
+
+          <ExpandableCities />
         </div>
       </section>
 
