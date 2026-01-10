@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
     title: 'Kenya Kingdom Impact Trip | TPC Ministries',
     description: 'Join TPC Ministries on a transformational mission trip to Kenya in April–May 2026. Serve alongside local churches and communities.',
     type: 'website',
+    images: ['/images/kenya/kenya-flier.png'],
   },
 }
 
@@ -121,42 +123,51 @@ const whoIsThisFor = [
 export default function KenyaTripPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-green-700 via-green-800 to-green-900 px-4 py-20 md:py-32">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+      {/* Hero Section with Flier Image */}
+      <section className="relative overflow-hidden min-h-[70vh] md:min-h-[80vh] flex items-center">
+        {/* Background Image */}
+        <Image
+          src="/images/kenya/kenya-hero.png"
+          alt="Kenya Kingdom Impact Trip - Giraffes and Mount Kilimanjaro"
+          fill
+          className="object-cover object-top"
+          priority
+        />
+        {/* Overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
 
-        <div className="container relative mx-auto max-w-5xl">
+        <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32">
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-white/70 text-sm">
-            <Link href="/" className="hover:text-white">Home</Link>
+          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-white/80 text-sm">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            <Link href="/missions" className="hover:text-white">Missions</Link>
+            <Link href="/missions" className="hover:text-white transition-colors">Missions</Link>
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            <span className="text-white" aria-current="page">Kenya Trip 2026</span>
+            <span className="text-white font-medium" aria-current="page">Kenya Trip 2026</span>
           </nav>
 
           <div className="text-center">
-            <div className="mb-6 text-7xl md:text-8xl" role="img" aria-label="Kenya flag">🇰🇪</div>
-            <h1 className="mb-4 font-serif text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl">
+            <h1 className="mb-4 font-serif text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl drop-shadow-lg"
+                style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.5)' }}>
               Kenya Kingdom Impact Trip
             </h1>
-            <p className="mb-2 text-xl text-gold font-medium md:text-2xl">
+            <p className="mb-2 text-xl text-gold font-semibold md:text-2xl drop-shadow-md">
               April 22/23 – May 8, 2026
             </p>
-            <div className="mb-6 flex items-center justify-center gap-2 text-white/80">
+            <div className="mb-6 flex items-center justify-center gap-2 text-white">
               <MapPin className="h-4 w-4" aria-hidden="true" />
-              <span>Nairobi • Mombasa • Kakamega</span>
+              <span className="drop-shadow-md">Nairobi • Mombasa • Kakamega</span>
             </div>
-            <p className="mb-4 text-2xl font-serif text-white md:text-3xl italic">
+            <p className="mb-4 text-2xl font-serif text-white md:text-3xl italic drop-shadow-lg"
+               style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.6)' }}>
               This is more than a trip. It's a Kingdom assignment.
             </p>
-            <p className="mb-8 text-lg text-white/90 max-w-2xl mx-auto">
+            <p className="mb-8 text-lg text-white/95 max-w-2xl mx-auto drop-shadow-md">
               A journey of faith, service, and partnership alongside local churches and communities.
             </p>
             <a href="#apply">
-              <Button size="lg" className="bg-gold hover:bg-gold/90 text-navy text-lg px-8">
-                Apply / Learn More
+              <Button size="lg" className="bg-gold hover:bg-gold/90 text-navy text-lg px-8 shadow-lg">
+                Apply Now
                 <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
               </Button>
             </a>

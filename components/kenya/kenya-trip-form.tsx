@@ -78,27 +78,29 @@ export function KenyaTripForm() {
   }
 
   return (
-    <Card>
+    <Card className="bg-white border-gray-200">
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName" className="text-gray-700">First Name *</Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 required
+                className="bg-white text-gray-900 border-gray-300"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName" className="text-gray-700">Last Name *</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 required
+                className="bg-white text-gray-900 border-gray-300"
               />
             </div>
           </div>
@@ -106,105 +108,109 @@ export function KenyaTripForm() {
           {/* Contact */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-gray-700">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
+                className="bg-white text-gray-900 border-gray-300"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone" className="text-gray-700">Phone</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="bg-white text-gray-900 border-gray-300"
               />
             </div>
           </div>
 
           {/* Location */}
           <div className="space-y-2">
-            <Label htmlFor="cityState">City/State</Label>
+            <Label htmlFor="cityState" className="text-gray-700">City/State</Label>
             <Input
               id="cityState"
               value={formData.cityState}
               onChange={(e) => setFormData({ ...formData, cityState: e.target.value })}
               placeholder="e.g., Atlanta, GA"
+              className="bg-white text-gray-900 border-gray-300"
             />
           </div>
 
           {/* Preferred Track */}
           <div className="space-y-2">
-            <Label htmlFor="preferredTrack">Preferred Service Track *</Label>
+            <Label htmlFor="preferredTrack" className="text-gray-700">Preferred Service Track *</Label>
             <Select
               value={formData.preferredTrack}
               onValueChange={(value) => setFormData({ ...formData, preferredTrack: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white text-gray-900 border-gray-300">
                 <SelectValue placeholder="Select a track" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ministry">Ministry & Spiritual Care</SelectItem>
-                <SelectItem value="education">Education & Youth Development</SelectItem>
-                <SelectItem value="medical">Medical Missions</SelectItem>
-                <SelectItem value="business">Business & Economic Development</SelectItem>
-                <SelectItem value="food-security">Food Security & Social Enterprise</SelectItem>
-                <SelectItem value="not-sure">Not Sure Yet</SelectItem>
+              <SelectContent className="bg-white text-gray-900 border-gray-200">
+                <SelectItem value="ministry" className="focus:bg-green-50">Ministry & Spiritual Care</SelectItem>
+                <SelectItem value="education" className="focus:bg-green-50">Education & Youth Development</SelectItem>
+                <SelectItem value="medical" className="focus:bg-green-50">Medical Missions</SelectItem>
+                <SelectItem value="business" className="focus:bg-green-50">Business & Economic Development</SelectItem>
+                <SelectItem value="food-security" className="focus:bg-green-50">Food Security & Social Enterprise</SelectItem>
+                <SelectItem value="not-sure" className="focus:bg-green-50">Not Sure Yet</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Passport Status */}
           <div className="space-y-2">
-            <Label htmlFor="passportStatus">Passport Status *</Label>
+            <Label htmlFor="passportStatus" className="text-gray-700">Passport Status *</Label>
             <Select
               value={formData.passportStatus}
               onValueChange={(value) => setFormData({ ...formData, passportStatus: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white text-gray-900 border-gray-300">
                 <SelectValue placeholder="Select your passport status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="valid">Have valid passport</SelectItem>
-                <SelectItem value="renew">Need to renew</SelectItem>
-                <SelectItem value="apply">Need to apply</SelectItem>
+              <SelectContent className="bg-white text-gray-900 border-gray-200">
+                <SelectItem value="valid" className="focus:bg-green-50">Have valid passport</SelectItem>
+                <SelectItem value="renew" className="focus:bg-green-50">Need to renew</SelectItem>
+                <SelectItem value="apply" className="focus:bg-green-50">Need to apply</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Scholarship */}
           <div className="space-y-2">
-            <Label htmlFor="scholarshipNeeded">Scholarship Needed? *</Label>
+            <Label htmlFor="scholarshipNeeded" className="text-gray-700">Scholarship Needed? *</Label>
             <Select
               value={formData.scholarshipNeeded}
               onValueChange={(value) => setFormData({ ...formData, scholarshipNeeded: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white text-gray-900 border-gray-300">
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">Yes</SelectItem>
-                <SelectItem value="no">No</SelectItem>
+              <SelectContent className="bg-white text-gray-900 border-gray-200">
+                <SelectItem value="yes" className="focus:bg-green-50">Yes</SelectItem>
+                <SelectItem value="no" className="focus:bg-green-50">No</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes / Skills / Background</Label>
+            <Label htmlFor="notes" className="text-gray-700">Notes / Skills / Background</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Tell us about relevant skills, experience, or anything else you'd like to share..."
               rows={4}
+              className="bg-white text-gray-900 border-gray-300"
             />
           </div>
 
