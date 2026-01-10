@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -921,7 +922,9 @@ export default function MemberCarePage() {
                         return (
                           <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
                             {member.photo_url ? (
-                              <img src={member.photo_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                              <div className="w-10 h-10 rounded-full overflow-hidden relative">
+                                <Image src={member.photo_url} alt={`${member.first_name} ${member.last_name}`} fill className="object-cover" sizes="40px" />
+                              </div>
                             ) : (
                               <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
                                 <span className="text-pink-600 font-medium">
@@ -1128,7 +1131,9 @@ export default function MemberCarePage() {
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
                           {s.photo_url ? (
-                            <img src={s.photo_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                            <div className="w-12 h-12 rounded-full overflow-hidden relative">
+                              <Image src={s.photo_url} alt={s.name} fill className="object-cover" sizes="48px" />
+                            </div>
                           ) : (
                             <div className="w-12 h-12 bg-navy/10 rounded-full flex items-center justify-center">
                               <User className="h-6 w-6 text-navy/40" />

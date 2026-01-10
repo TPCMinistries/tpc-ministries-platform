@@ -60,11 +60,13 @@ export default function ForgotPasswordPage() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-              {error}
-            </div>
-          )}
+          <div role="alert" aria-live="polite">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

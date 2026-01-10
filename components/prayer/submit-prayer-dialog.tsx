@@ -97,11 +97,13 @@ export function SubmitPrayerDialog() {
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
-              {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                  {error}
-                </div>
-              )}
+              <div role="alert" aria-live="polite">
+                {error && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    {error}
+                  </div>
+                )}
+              </div>
 
               {/* Prayer Request Text */}
               <div className="space-y-2">

@@ -24,6 +24,13 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import DailyHub from '@/components/member/daily-hub'
 import PlantWidget from '@/components/member/plant-widget'
+import EngagementWidget from '@/components/member/engagement-widget'
+import ActivityFeed from '@/components/member/activity-feed'
+import QuickActionsWidget from '@/components/member/quick-actions-widget'
+import RecommendationsWidget from '@/components/member/recommendations-widget'
+import StreakWarningBanner from '@/components/member/streak-warning-banner'
+import AIInsightsWidget from '@/components/member/ai-insights-widget'
+import { EmptyState, emptyStates } from '@/components/ui/empty-state'
 
 interface DashboardStats {
   total_content_consumed: number
@@ -264,6 +271,9 @@ export default function MemberDashboardPage() {
 
   return (
     <div className="p-4 lg:p-8 space-y-8">
+      {/* Streak Warning Banner - Shows when streak is at risk */}
+      <StreakWarningBanner />
+
       {/* Welcome Banner */}
       <div className="bg-gradient-to-br from-navy to-navy-800 rounded-xl p-8 text-white">
         <div className="flex items-start justify-between">
@@ -298,9 +308,10 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* Daily Spiritual Hub - Scripture, Check-in, Streaks */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
         <DailyHub />
         <PlantWidget />
+        <EngagementWidget />
       </div>
 
       {/* Stats Overview */}
@@ -443,116 +454,46 @@ export default function MemberDashboardPage() {
         </div>
       )}
 
-      {/* Recommended For You */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-navy">Recommended For You</h2>
-          <Link href="/content">
-            <Button variant="ghost" size="sm">
-              Browse All
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {recommendedContent.map((content) => {
-            const Icon = getContentIcon(content.content_type)
-            return (
-              <Link key={content.id} href={`/content/${content.id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  {content.thumbnail_url && (
-                    <div className="aspect-video bg-gray-200 rounded-t-lg"></div>
-                  )}
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start gap-2 mb-2">
-                      <Icon className="h-4 w-4 text-navy flex-shrink-0 mt-0.5" />
-                      <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
-                    </div>
-                    <CardDescription className="flex items-center justify-between">
-                      <span>{content.author}</span>
-                      {content.duration_minutes && (
-                        <span className="flex items-center gap-1 text-xs">
-                          <Clock className="h-3 w-3" />
-                          {content.duration_minutes}m
-                        </span>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  {content.season_name && (
-                    <CardContent className="pt-0">
-                      <Badge
-                        variant="outline"
-                        style={{
-                          borderColor: content.season_color,
-                          color: content.season_color
-                        }}
-                      >
-                        {content.season_name}
-                      </Badge>
-                    </CardContent>
-                  )}
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+      {/* Personalized Recommendations */}
+      <RecommendationsWidget />
 
-      {/* Quick Actions & Upcoming Events */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-navy">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <Link href="/seasons">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <Sparkles className="h-6 w-6 text-gold" />
-                <span className="text-sm">Browse Seasons</span>
-              </Button>
-            </Link>
-            <Link href="/assessments">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-                <span className="text-sm">Take Assessment</span>
-              </Button>
-            </Link>
-            <Link href="/prayer">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <Heart className="h-6 w-6 text-red-600" />
-                <span className="text-sm">Prayer Request</span>
-              </Button>
-            </Link>
-            <Link href="/give">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <DollarSign className="h-6 w-6 text-blue-600" />
-                <span className="text-sm">Give</span>
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+      {/* AI Insights - Personalized recommendations */}
+      <AIInsightsWidget />
+
+      {/* Quick Actions, Activity Feed & Upcoming Events */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Smart Quick Actions */}
+        <QuickActionsWidget />
+
+        {/* Community Activity Feed */}
+        <ActivityFeed limit={8} />
 
         {/* Upcoming Events */}
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-navy">Upcoming Events</CardTitle>
+            <CardTitle className="text-navy dark:text-white">Upcoming Events</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {upcomingEvents.map((event) => (
-              <div key={event.id} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
-                <div className="flex-shrink-0 w-12 h-12 bg-navy/10 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-navy" />
+              <div key={event.id} className="flex items-start gap-4 pb-4 border-b dark:border-gray-700 last:border-0 last:pb-0">
+                <div className="flex-shrink-0 w-12 h-12 bg-navy/10 dark:bg-navy/30 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-navy dark:text-gold" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-navy truncate">{event.title}</p>
-                  <p className="text-sm text-gray-600">{event.date} at {event.time}</p>
+                  <p className="font-semibold text-navy dark:text-white truncate">{event.title}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{event.date} at {event.time}</p>
                   <Badge variant="outline" className="mt-1">{event.type}</Badge>
                 </div>
               </div>
             ))}
             {upcomingEvents.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No upcoming events</p>
+              <EmptyState
+                variant="compact"
+                icon={Calendar}
+                title="No upcoming events"
+                description="Check back soon for gatherings"
+                action={{ label: "View Calendar", href: "/events" }}
+              />
             )}
           </CardContent>
         </Card>

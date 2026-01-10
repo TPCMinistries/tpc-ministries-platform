@@ -365,3 +365,17 @@ export async function getResources() {
   if (error) throw error
   return data as Resource[]
 }
+
+export async function getPublicEbooks(limit: number = 4) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('resources')
+    .select('*')
+    .eq('published', true)
+    .eq('type', 'ebook')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data as Resource[]
+}

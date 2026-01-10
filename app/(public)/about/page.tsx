@@ -1,7 +1,18 @@
+import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { Heart, Globe, Users, Award, ArrowRight } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Learn about TPC Ministries - a prophetic ministry transforming lives through Christ-centered teaching, discipleship, and global missions across Kenya, South Africa, and Grenada.',
+  openGraph: {
+    title: 'About TPC Ministries',
+    description: 'Transforming lives through Christ-centered teaching, discipleship, and global missions.',
+    type: 'website',
+  },
+}
 
 export default function AboutPage() {
   return (

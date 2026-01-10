@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -426,6 +427,16 @@ export default function AdminEventsPage() {
                     </div>
 
                     <div className="flex gap-2">
+                      <Link href={`/admin-events/checkin?event_id=${event.id}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 hover:bg-green-50"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Check-in
+                        </Button>
+                      </Link>
                       <Button
                         variant="outline"
                         size="sm"

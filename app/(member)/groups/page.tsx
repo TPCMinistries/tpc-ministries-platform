@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
+import { showToast } from '@/lib/toast'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Users,
   Search,
@@ -151,25 +153,35 @@ export default function GroupsPage() {
 
     const supabase = createClient()
 
-    await supabase.from('group_members').insert({
-      group_id: groupId,
-      member_id: memberId,
-      status: requiresApproval ? 'pending' : 'active'
-    })
+    try {
+      const { error } = await supabase.from('group_members').insert({
+        group_id: groupId,
+        member_id: memberId,
+        status: requiresApproval ? 'pending' : 'active'
+      })
 
-    // Update members count if immediately active
-    if (!requiresApproval) {
-      const group = groups.find(g => g.id === groupId)
-      if (group) {
-        await supabase
-          .from('community_groups')
-          .update({ members_count: group.members_count + 1 })
-          .eq('id', groupId)
+      if (error) throw error
+
+      // Update members count if immediately active
+      if (!requiresApproval) {
+        const group = groups.find(g => g.id === groupId)
+        if (group) {
+          await supabase
+            .from('community_groups')
+            .update({ members_count: group.members_count + 1 })
+            .eq('id', groupId)
+        }
+        showToast.success('Welcome to the group!', 'You can now participate in discussions')
+      } else {
+        showToast.info('Request submitted', 'The group leader will review your request')
       }
-    }
 
-    fetchGroups()
-    fetchMyGroups()
+      fetchGroups()
+      fetchMyGroups()
+    } catch (error) {
+      console.error('Error joining group:', error)
+      showToast.error('Failed to join group', 'Please try again')
+    }
   }
 
   const getTypeIcon = (type: string) => {
@@ -282,7 +294,7 @@ export default function GroupsPage() {
                       {/* Cover Image */}
                       <div className="h-32 bg-gradient-to-br from-navy to-navy/70 relative">
                         {group.image_url ? (
-                          <img src={group.image_url} alt="" className="w-full h-full object-cover" />
+                          <Image src={group.image_url} alt={group.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <TypeIcon className="h-16 w-16 text-white/20" />
@@ -395,7 +407,7 @@ export default function GroupsPage() {
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                         <div className="h-24 bg-gradient-to-br from-navy to-navy/70 relative">
                           {group.image_url ? (
-                            <img src={group.image_url} alt="" className="w-full h-full object-cover" />
+                            <Image src={group.image_url} alt={group.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <TypeIcon className="h-12 w-12 text-white/20" />

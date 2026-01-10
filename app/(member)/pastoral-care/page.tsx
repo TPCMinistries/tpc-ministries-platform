@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import {
   Heart,
   Calendar,
@@ -201,9 +202,9 @@ export default function PastoralCarePage() {
             <CardContent className="space-y-6">
               {/* Selected Pastor */}
               <div className="flex items-center gap-4 p-4 bg-navy/5 rounded-lg">
-                <div className="w-12 h-12 rounded-full bg-navy/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-navy/10 flex items-center justify-center relative overflow-hidden">
                   {selectedPastor.photo_url ? (
-                    <img src={selectedPastor.photo_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                    <Image src={selectedPastor.photo_url} alt={`${selectedPastor.member?.first_name} ${selectedPastor.member?.last_name}`} fill className="object-cover" sizes="48px" />
                   ) : (
                     <User className="h-6 w-6 text-navy" />
                   )}
@@ -382,9 +383,9 @@ export default function PastoralCarePage() {
               <Card key={pastor.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-full bg-navy/10 flex items-center justify-center overflow-hidden">
+                    <div className="w-16 h-16 rounded-full bg-navy/10 flex items-center justify-center overflow-hidden relative">
                       {pastor.photo_url ? (
-                        <img src={pastor.photo_url} alt="" className="w-16 h-16 object-cover" />
+                        <Image src={pastor.photo_url} alt={`${pastor.member?.first_name} ${pastor.member?.last_name}`} fill className="object-cover" sizes="64px" />
                       ) : (
                         <User className="h-8 w-8 text-navy" />
                       )}

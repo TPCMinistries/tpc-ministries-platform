@@ -46,6 +46,7 @@ import {
   Calendar
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { showToast } from '@/lib/toast'
 
 interface PrayerRequest {
   id: string
@@ -252,8 +253,10 @@ export default function PrayerWallPage() {
       setShowFastForm(false)
       setFastForm({ fast_type: 'partial', prayer_focus: '', reflections: '', breakthroughs: '' })
       fetchFastingLogs()
+      showToast.success('Fast logged!', 'Keep pressing in - God honors your sacrifice')
     } catch (error) {
       console.error('Error logging fast:', error)
+      showToast.error('Failed to log fast', 'Please try again')
     } finally {
       setFastSubmitting(false)
     }
@@ -317,8 +320,10 @@ export default function PrayerWallPage() {
       })
       setIsDialogOpen(false)
       fetchPrayerRequests()
+      showToast.success('Prayer request submitted', 'The community will be praying with you')
     } catch (error) {
       console.error('Error submitting prayer request:', error)
+      showToast.error('Failed to submit prayer', 'Please try again')
     } finally {
       setSubmitting(false)
     }
@@ -369,8 +374,10 @@ export default function PrayerWallPage() {
         .eq('id', requestId)
 
       fetchPrayerRequests()
+      showToast.success('Praise God!', 'Your prayer has been marked as answered')
     } catch (error) {
       console.error('Error marking request as answered:', error)
+      showToast.error('Failed to update prayer', 'Please try again')
     }
   }
 
@@ -385,8 +392,10 @@ export default function PrayerWallPage() {
         .eq('id', requestId)
 
       fetchPrayerRequests()
+      showToast.success('Prayer request deleted')
     } catch (error) {
       console.error('Error deleting prayer request:', error)
+      showToast.error('Failed to delete prayer', 'Please try again')
     }
   }
 

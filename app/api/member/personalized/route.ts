@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'memberId required' }, { status: 400 })
     }
 
+    const supabase = getSupabase()
     const now = new Date()
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 

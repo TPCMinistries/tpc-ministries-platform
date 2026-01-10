@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import {
   Play,
   Users,
@@ -427,9 +428,9 @@ export default function LiveStreamPage() {
                 <Card key={stream.id} className="bg-gray-800 border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-32 h-20 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-32 h-20 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
                         {stream.thumbnail_url ? (
-                          <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                          <Image src={stream.thumbnail_url} alt={stream.title} fill className="object-cover" sizes="128px" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Play className="h-8 w-8 text-gray-600" />
@@ -485,7 +486,7 @@ export default function LiveStreamPage() {
                 <Card key={stream.id} className="bg-gray-800 border-gray-700 overflow-hidden group cursor-pointer">
                   <div className="aspect-video bg-gray-700 relative">
                     {stream.thumbnail_url ? (
-                      <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      <Image src={stream.thumbnail_url} alt={stream.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Play className="h-12 w-12 text-gray-600" />

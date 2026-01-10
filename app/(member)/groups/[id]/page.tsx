@@ -24,6 +24,9 @@ import {
   Link as LinkIcon
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import DiscussionList from '@/components/groups/discussion-list'
+import DiscussionThread from '@/components/groups/discussion-thread'
 
 interface Group {
   id: string
@@ -80,7 +83,8 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true)
   const [memberId, setMemberId] = useState<string | null>(null)
   const [isLeader, setIsLeader] = useState(false)
-  const [activeTab, setActiveTab] = useState<'posts' | 'members'>('posts')
+  const [activeTab, setActiveTab] = useState<'discussions' | 'members'>('discussions')
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(null)
 
   // New post state
   const [showPostForm, setShowPostForm] = useState(false)
@@ -282,7 +286,7 @@ export default function GroupDetailPage() {
       {/* Cover Image */}
       <div className="h-48 bg-gradient-to-br from-navy to-navy/70 relative">
         {group.cover_image_url && (
-          <img src={group.cover_image_url} alt="" className="w-full h-full object-cover" />
+          <Image src={group.cover_image_url} alt={group.name} fill className="object-cover" sizes="100vw" priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
@@ -355,9 +359,12 @@ export default function GroupDetailPage() {
         {/* Tabs */}
         <div className="flex gap-4 mb-6">
           <Button
-            variant={activeTab === 'posts' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('posts')}
-            className={activeTab === 'posts' ? 'bg-navy' : ''}
+            variant={activeTab === 'discussions' ? 'default' : 'outline'}
+            onClick={() => {
+              setActiveTab('discussions')
+              setSelectedDiscussionId(null)
+            }}
+            className={activeTab === 'discussions' ? 'bg-navy' : ''}
           >
             <MessageCircle className="h-4 w-4 mr-2" />
             Discussions
@@ -372,151 +379,35 @@ export default function GroupDetailPage() {
           </Button>
         </div>
 
-        {activeTab === 'posts' && (
-          <>
-            {/* New Post Button */}
-            {!showPostForm ? (
-              <Button
-                onClick={() => setShowPostForm(true)}
-                className="w-full mb-4 bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 justify-start"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Start a discussion...
-              </Button>
+        {activeTab === 'discussions' && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+            {selectedDiscussionId ? (
+              <DiscussionThread
+                groupId={groupId}
+                discussionId={selectedDiscussionId}
+                onBack={() => setSelectedDiscussionId(null)}
+              />
             ) : (
-              <Card className="mb-4">
-                <CardContent className="p-4">
-                  <div className="flex gap-2 mb-3">
-                    {['discussion', 'prayer_request', 'question', 'testimony'].map(type => (
-                      <Button
-                        key={type}
-                        size="sm"
-                        variant={newPost.post_type === type ? 'default' : 'outline'}
-                        onClick={() => setNewPost({ ...newPost, post_type: type })}
-                        className={newPost.post_type === type ? 'bg-navy' : ''}
-                      >
-                        {getPostTypeLabel(type)}
-                      </Button>
-                    ))}
-                  </div>
-                  <Textarea
-                    placeholder="What's on your heart?"
-                    value={newPost.content}
-                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                    rows={4}
-                    className="mb-3"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowPostForm(false)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleCreatePost}
-                      disabled={submitting || !newPost.content.trim()}
-                      className="bg-gold hover:bg-gold/90 text-navy"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Post
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <DiscussionList
+                groupId={groupId}
+                onSelectDiscussion={(id) => setSelectedDiscussionId(id)}
+              />
             )}
-
-            {/* Posts Feed */}
-            {posts.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700">No posts yet</h3>
-                  <p className="text-gray-500">Be the first to start a discussion!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {posts.map(post => (
-                  <Card key={post.id} className={post.is_pinned ? 'ring-2 ring-gold' : ''}>
-                    {post.is_pinned && (
-                      <div className="bg-gold/10 text-gold text-xs font-medium px-4 py-1 flex items-center gap-1">
-                        <Pin className="h-3 w-3" />
-                        Pinned
-                      </div>
-                    )}
-                    <CardContent className="p-4">
-                      {/* Post Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center">
-                            <User className="h-5 w-5 text-navy" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-navy">
-                              {post.member?.first_name} {post.member?.last_name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(post.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge className={getPostTypeColor(post.post_type)}>
-                          {getPostTypeLabel(post.post_type)}
-                        </Badge>
-                      </div>
-
-                      {/* Post Content */}
-                      <p className="text-gray-700 whitespace-pre-wrap mb-4">{post.content}</p>
-
-                      {post.image_url && (
-                        <img
-                          src={post.image_url}
-                          alt=""
-                          className="rounded-lg mb-4 max-h-64 object-cover"
-                        />
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-4 pt-3 border-t">
-                        <button
-                          onClick={() => handleLikePost(post.id)}
-                          className={`flex items-center gap-1 text-sm transition-colors ${
-                            post.has_liked
-                              ? 'text-red-500'
-                              : 'text-gray-500 hover:text-red-500'
-                          }`}
-                        >
-                          <Heart className={`h-5 w-5 ${post.has_liked ? 'fill-current' : ''}`} />
-                          <span>{post.likes_count}</span>
-                        </button>
-                        <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-navy">
-                          <MessageCircle className="h-5 w-5" />
-                          <span>{post.comments_count}</span>
-                        </button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </>
+          </div>
         )}
 
         {activeTab === 'members' && (
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="space-y-3">
                 {members.map(m => (
-                  <div key={m.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-navy" />
+                      <div className="w-10 h-10 rounded-full bg-navy/10 dark:bg-navy/30 flex items-center justify-center">
+                        <User className="h-5 w-5 text-navy dark:text-gold" />
                       </div>
                       <div>
-                        <p className="font-medium text-navy">
+                        <p className="font-medium text-navy dark:text-white">
                           {m.member?.first_name} {m.member?.last_name}
                         </p>
                       </div>

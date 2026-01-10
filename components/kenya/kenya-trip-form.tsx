@@ -176,24 +176,37 @@ export function KenyaTripForm() {
         </div>
 
         {/* Passport Status */}
-        <div className="space-y-2">
-          <Label htmlFor="passportStatus" className="text-stone-700 font-medium">
+        <div className="space-y-3">
+          <Label className="text-stone-700 font-medium">
             Passport Status <span className="text-amber-600">*</span>
           </Label>
-          <Select
-            value={formData.passportStatus}
-            onValueChange={(value) => setFormData({ ...formData, passportStatus: value })}
-            required
-          >
-            <SelectTrigger className="bg-white text-stone-900 border-stone-300 focus:border-amber-500 focus:ring-amber-500">
-              <SelectValue placeholder="Select your passport status" />
-            </SelectTrigger>
-            <SelectContent className="bg-white text-stone-900 border-stone-200">
-              <SelectItem value="valid" className="focus:bg-amber-50">Have valid passport</SelectItem>
-              <SelectItem value="renew" className="focus:bg-amber-50">Need to renew</SelectItem>
-              <SelectItem value="apply" className="focus:bg-amber-50">Need to apply</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { value: 'valid', label: 'I have a valid passport', icon: '✓' },
+              { value: 'renew', label: 'Need to renew', icon: '↻' },
+              { value: 'apply', label: 'Need to apply', icon: '+' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, passportStatus: option.value })}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  formData.passportStatus === option.value
+                    ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200'
+                    : 'border-stone-200 bg-white hover:border-amber-300 hover:bg-amber-50/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`text-lg ${formData.passportStatus === option.value ? 'text-amber-600' : 'text-stone-400'}`}>
+                    {option.icon}
+                  </span>
+                  <span className={`text-sm font-medium ${formData.passportStatus === option.value ? 'text-amber-700' : 'text-stone-700'}`}>
+                    {option.label}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Scholarship */}

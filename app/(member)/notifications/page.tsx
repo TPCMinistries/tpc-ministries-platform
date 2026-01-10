@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -20,8 +20,32 @@ import {
   MessageCircle,
   Calendar,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Smartphone,
+  Laptop,
+  Monitor,
+  X
 } from 'lucide-react'
+
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
+interface PushDevice {
+  id: string
+  device_name: string
+  created_at: string
+  last_used_at: string
+}
 
 interface Notification {
   id: string
@@ -55,17 +79,132 @@ export default function NotificationsPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [memberId, setMemberId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const [pushDevices, setPushDevices] = useState<PushDevice[]>([])
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushSupported, setPushSupported] = useState(false)
+  const [enablingPush, setEnablingPush] = useState(false)
 
   useEffect(() => {
     fetchMember()
+    checkPushSupport()
   }, [])
 
   useEffect(() => {
     if (memberId) {
       fetchNotifications()
       fetchPreferences()
+      fetchPushDevices()
     }
   }, [memberId, filter])
+
+  const checkPushSupport = async () => {
+    if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
+      setPushSupported(true)
+
+      // Check if already subscribed
+      try {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
+        setPushEnabled(!!subscription && Notification.permission === 'granted')
+      } catch (error) {
+        console.error('Error checking push status:', error)
+      }
+    }
+  }
+
+  const fetchPushDevices = async () => {
+    try {
+      const response = await fetch('/api/notifications/subscribe')
+      if (response.ok) {
+        const data = await response.json()
+        setPushDevices(data.devices || [])
+      }
+    } catch (error) {
+      console.error('Error fetching push devices:', error)
+    }
+  }
+
+  const enablePushNotifications = async () => {
+    if (!pushSupported || !VAPID_PUBLIC_KEY) return
+
+    setEnablingPush(true)
+    try {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        setEnablingPush(false)
+        return
+      }
+
+      const registration = await navigator.serviceWorker.ready
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      })
+
+      const response = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))),
+            auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!)))
+          },
+          deviceName: getDeviceName()
+        })
+      })
+
+      if (response.ok) {
+        setPushEnabled(true)
+        fetchPushDevices()
+      }
+    } catch (error) {
+      console.error('Error enabling push:', error)
+    } finally {
+      setEnablingPush(false)
+    }
+  }
+
+  const disablePushNotifications = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready
+      const subscription = await registration.pushManager.getSubscription()
+      if (subscription) {
+        await subscription.unsubscribe()
+      }
+
+      await fetch('/api/notifications/subscribe', { method: 'DELETE' })
+      setPushEnabled(false)
+      fetchPushDevices()
+    } catch (error) {
+      console.error('Error disabling push:', error)
+    }
+  }
+
+  const removeDevice = async (deviceId: string) => {
+    try {
+      await fetch(`/api/notifications/subscribe?id=${deviceId}`, { method: 'DELETE' })
+      fetchPushDevices()
+    } catch (error) {
+      console.error('Error removing device:', error)
+    }
+  }
+
+  const getDeviceName = () => {
+    const ua = navigator.userAgent
+    if (/iPhone|iPad|iPod/.test(ua)) return 'iPhone/iPad'
+    if (/Android/.test(ua)) return 'Android Device'
+    if (/Mac/.test(ua)) return 'Mac'
+    if (/Windows/.test(ua)) return 'Windows PC'
+    if (/Linux/.test(ua)) return 'Linux'
+    return 'Unknown Device'
+  }
+
+  const getDeviceIcon = (deviceName: string) => {
+    if (/iPhone|iPad|Android|Mobile/.test(deviceName)) return Smartphone
+    if (/Mac|Laptop/.test(deviceName)) return Laptop
+    return Monitor
+  }
 
   const fetchMember = async () => {
     const supabase = createClient()
@@ -245,7 +384,82 @@ export default function NotificationsPage() {
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Push Notifications Section */}
+              {pushSupported && (
+                <div className="pb-4 border-b">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="font-medium">Push Notifications on This Device</h4>
+                      <p className="text-sm text-gray-500">
+                        {pushEnabled
+                          ? 'Notifications are enabled on this device'
+                          : 'Enable to receive instant notifications'}
+                      </p>
+                    </div>
+                    <Button
+                      variant={pushEnabled ? 'outline' : 'default'}
+                      size="sm"
+                      onClick={pushEnabled ? disablePushNotifications : enablePushNotifications}
+                      disabled={enablingPush}
+                      className={pushEnabled ? '' : 'bg-navy hover:bg-navy/90'}
+                    >
+                      {enablingPush ? (
+                        'Enabling...'
+                      ) : pushEnabled ? (
+                        <>
+                          <BellOff className="h-4 w-4 mr-2" />
+                          Disable
+                        </>
+                      ) : (
+                        <>
+                          <Bell className="h-4 w-4 mr-2" />
+                          Enable
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Registered Devices */}
+                  {pushDevices.length > 0 && (
+                    <div className="mt-4">
+                      <h5 className="text-sm font-medium text-gray-500 mb-2">
+                        Registered Devices ({pushDevices.length})
+                      </h5>
+                      <div className="space-y-2">
+                        {pushDevices.map((device) => {
+                          const DeviceIcon = getDeviceIcon(device.device_name)
+                          return (
+                            <div
+                              key={device.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <DeviceIcon className="h-5 w-5 text-gray-500" />
+                                <div>
+                                  <p className="font-medium text-sm">{device.device_name}</p>
+                                  <p className="text-xs text-gray-400">
+                                    Added {new Date(device.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeDevice(device.id)}
+                                className="text-gray-400 hover:text-red-500"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Global Settings */}
               <div className="grid grid-cols-2 gap-4 pb-4 border-b">
                 <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

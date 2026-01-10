@@ -14,6 +14,82 @@ const nextConfig = {
   staticPageGenerationTimeout: 180,
   // Skip trailing slash redirect during build
   skipTrailingSlashRedirect: true,
+  // Enable compression
+  compress: true,
+  // Image optimization configuration
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.youtube.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+  },
+  // HTTP Headers for caching and security
+  async headers() {
+    return [
+      // Cache static assets
+      {
+        source: '/:all*(svg|jpg|jpeg|png|gif|webp|avif|ico)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Cache Next.js static files
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Security headers for all routes
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // Specific redirects for member routes (middleware handles these, but this is a fallback)
@@ -105,11 +181,6 @@ const nextConfig = {
       // Redirect old content pages to unified library
       {
         source: '/content',
-        destination: '/library',
-        permanent: false,
-      },
-      {
-        source: '/ebooks',
         destination: '/library',
         permanent: false,
       },

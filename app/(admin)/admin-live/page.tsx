@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -356,9 +357,9 @@ export default function AdminLivePage() {
                   <TableRow key={stream.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0 relative">
                           {stream.thumbnail_url ? (
-                            <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                            <Image src={stream.thumbnail_url} alt={stream.title} fill className="object-cover" sizes="64px" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Video className="h-5 w-5 text-gray-400" />

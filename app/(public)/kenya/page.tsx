@@ -58,7 +58,7 @@ const included = [
 ]
 
 const timeline = [
-  { phase: 'Arrival', dates: 'April 22–23', description: 'Welcome, orientation, and team bonding' },
+  { phase: 'Arrival', dates: 'April 22–23', description: 'Meet in Nairobi for welcome, orientation, and team bonding' },
   { phase: 'Immersion', dates: 'April 24–25', description: 'Cultural experiences and safari adventure' },
   { phase: 'Sabbath', dates: 'April 26', description: 'Worship, rest, and spiritual preparation' },
   { phase: 'Service', dates: 'April 27 – May 8', description: 'Kingdom impact across three cities' },
@@ -90,10 +90,15 @@ export default function KenyaTripPage() {
                 <span className="block font-semibold text-white">It's a Kingdom assignment.</span>
               </p>
 
-              <p className="text-lg text-amber-200/80 mb-8 flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Nairobi • Mombasa • Kakamega
-              </p>
+              <div className="mb-8">
+                <p className="text-lg text-amber-200/80 flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Nairobi • Mombasa • Kakamega
+                </p>
+                <p className="text-amber-200/60 text-sm mt-1 ml-7">
+                  Team meets in Nairobi (NBO) to begin the journey
+                </p>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <a href="#apply">
@@ -102,11 +107,12 @@ export default function KenyaTripPage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </a>
-                <a href="#details">
+                <Link href="/kenya/give">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 h-14">
-                    Learn More
+                    <Heart className="mr-2 h-5 w-5" />
+                    Support the Mission
                   </Button>
-                </a>
+                </Link>
               </div>
 
               <p className="text-amber-200/70 text-sm">

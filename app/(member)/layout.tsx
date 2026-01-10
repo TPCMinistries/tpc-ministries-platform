@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import MemberSidebar from '@/components/member/member-sidebar'
 import MemberTopBar from '@/components/member/member-topbar'
+import MobileBottomNav from '@/components/member/mobile-bottom-nav'
 
 // Force dynamic rendering for all member pages
 export const dynamic = 'force-dynamic'
@@ -58,7 +59,7 @@ export default async function MemberLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <MemberSidebar member={memberWithAuth} />
 
@@ -68,10 +69,13 @@ export default async function MemberLayout({
         <MemberTopBar member={memberWithAuth} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   )
 }

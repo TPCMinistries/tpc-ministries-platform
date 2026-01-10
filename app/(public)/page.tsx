@@ -17,11 +17,12 @@ import {
   Sparkles,
   ClipboardList
 } from 'lucide-react'
-import { getRecentTeachings } from '@/lib/db/queries'
+import { getRecentTeachings, getPublicEbooks } from '@/lib/db/queries'
 import { NewsletterSignupForms } from '@/components/newsletter-signup-forms'
 
 export default async function HomePage() {
   const teachings = await getRecentTeachings(4).catch(() => [])
+  const ebooks = await getPublicEbooks(4).catch(() => [])
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
@@ -218,20 +219,20 @@ export default async function HomePage() {
               Written Works
             </h2>
             <p className="text-lg text-tpc-gold">
-              Transformative teachings available for your spiritual growth
+              Ebooks and resources for your spiritual growth
             </p>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {teachings.length > 0 ? (
-              teachings.map((teaching) => (
-                <Link href={`/teachings/${teaching.id}`} key={teaching.id}>
+            {ebooks.length > 0 ? (
+              ebooks.map((ebook) => (
+                <Link href={`/ebooks/${ebook.id}`} key={ebook.id}>
                   <Card className="overflow-hidden bg-white/10 backdrop-blur border-tpc-gold/30 hover:border-tpc-gold transition-all cursor-pointer">
                     <div className="relative aspect-[3/4] bg-gradient-to-br from-tpc-gold to-tpc-gold-accent">
-                      {teaching.thumbnail_url ? (
+                      {ebook.thumbnail_url ? (
                         <img
-                          src={teaching.thumbnail_url}
-                          alt={teaching.title}
+                          src={ebook.thumbnail_url}
+                          alt={ebook.title}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -242,15 +243,17 @@ export default async function HomePage() {
                     </div>
                     <CardHeader>
                       <CardTitle className="font-serif text-white line-clamp-2">
-                        {teaching.title}
+                        {ebook.title}
                       </CardTitle>
-                      <CardDescription className="text-tpc-gold/80">
-                        {teaching.speaker}
-                      </CardDescription>
+                      {ebook.author && (
+                        <CardDescription className="text-tpc-gold/80">
+                          {ebook.author}
+                        </CardDescription>
+                      )}
                     </CardHeader>
                     <CardContent>
                       <Button variant="outline" className="w-full border-tpc-gold text-tpc-gold hover:bg-tpc-gold hover:text-tpc-navy">
-                        Watch Now
+                        Read Now
                       </Button>
                     </CardContent>
                   </Card>
@@ -258,19 +261,22 @@ export default async function HomePage() {
               ))
             ) : (
               <div className="col-span-4 text-center text-tpc-gold/60 py-12">
-                <p>No teachings available yet. Check back soon!</p>
+                <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p>Ebooks coming soon! Check back for new resources.</p>
               </div>
             )}
           </div>
 
-          <div className="mt-12 text-center">
-            <Link href="/teachings">
-              <Button size="lg" variant="outline" className="border-2 border-tpc-gold text-tpc-gold hover:bg-tpc-gold hover:text-tpc-navy">
-                View Full Library
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
+          {ebooks.length > 0 && (
+            <div className="mt-12 text-center">
+              <Link href="/ebooks">
+                <Button size="lg" variant="outline" className="border-2 border-tpc-gold text-tpc-gold hover:bg-tpc-gold hover:text-tpc-navy">
+                  View All Ebooks
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

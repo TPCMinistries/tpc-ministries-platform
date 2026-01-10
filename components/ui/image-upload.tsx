@@ -269,17 +269,18 @@ export default function ImageUpload({
               size="icon"
               className="absolute top-2 right-2"
               onClick={handleRemove}
+              aria-label="Remove image"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
           {uploading && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="status" aria-live="polite">
               <div className="text-center text-white">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm font-medium">Uploading...</p>
                 <div className="w-48 mt-2">
-                  <Progress value={progress} className="h-2" />
+                  <Progress value={progress} className="h-2" aria-label={`Upload progress: ${progress}%`} />
                 </div>
               </div>
             </div>
@@ -320,12 +321,14 @@ export default function ImageUpload({
         </Card>
       )}
 
-      {error && (
-        <Alert variant="destructive" className="mt-3">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <div role="alert" aria-live="assertive">
+        {error && (
+          <Alert variant="destructive" className="mt-3">
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
     </div>
   )
 }

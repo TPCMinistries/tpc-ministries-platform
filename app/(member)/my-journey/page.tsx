@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import {
   Trophy,
   Flame,
@@ -483,7 +484,7 @@ export default function MyJourneyPage() {
                     <Card key={teaching.id} className="hover:shadow-lg transition-shadow overflow-hidden">
                       {teaching.thumbnail_url && (
                         <div className="aspect-video bg-gray-100 relative">
-                          <img src={teaching.thumbnail_url} alt={teaching.title} className="w-full h-full object-cover" />
+                          <Image src={teaching.thumbnail_url} alt={teaching.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                             <Play className="h-12 w-12 text-white" />
                           </div>

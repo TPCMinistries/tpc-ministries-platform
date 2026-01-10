@@ -1,25 +1,72 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Menu, X, ChevronDown } from 'lucide-react'
+import InstallButton from '@/components/pwa/install-button'
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMissionsOpen, setIsMissionsOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
+  const [isConnectOpen, setIsConnectOpen] = useState(false)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const toggleMissions = () => setIsMissionsOpen(!isMissionsOpen)
   const toggleResources = () => setIsResourcesOpen(!isResourcesOpen)
+  const toggleConnect = () => setIsConnectOpen(!isConnectOpen)
+
+  // Close all dropdowns on Escape key
+  const closeAllDropdowns = useCallback(() => {
+    setIsConnectOpen(false)
+    setIsMissionsOpen(false)
+    setIsResourcesOpen(false)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeAllDropdowns()
+        setIsMenuOpen(false)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [closeAllDropdowns])
+
+  // Handle keyboard navigation for dropdown buttons
+  const handleDropdownKeyDown = (
+    e: React.KeyboardEvent,
+    isOpen: boolean,
+    setOpen: (open: boolean) => void
+  ) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      setOpen(!isOpen)
+    } else if (e.key === 'ArrowDown' && !isOpen) {
+      e.preventDefault()
+      setOpen(true)
+    } else if (e.key === 'Escape' && isOpen) {
+      e.preventDefault()
+      setOpen(false)
+    }
+  }
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/teachings', label: 'Teachings' },
-    { href: '/prophecy', label: 'Prophecy' },
+    { href: '/blog', label: 'Blog' },
     { href: '/giving', label: 'Give' },
+  ]
+
+  const connectLinks = [
+    { href: '/visit', label: 'Plan Your Visit' },
+    { href: '/calendar', label: 'Events Calendar' },
+    { href: '/contact', label: 'Contact Us' },
+    { href: '/stories', label: 'Testimonies' },
+    { href: '/faq', label: 'FAQ' },
   ]
 
   const missionsLinks = [
@@ -32,8 +79,9 @@ export function Navigation() {
 
   const resourcesLinks = [
     { href: '/devotional', label: 'Daily Devotional' },
-    { href: '/assessments/seasonal', label: 'Seasonal Assessment' },
-    { href: '/assessments', label: 'All Assessments', divider: true },
+    { href: '/beliefs', label: 'Statement of Faith' },
+    { href: '/assessments/seasonal', label: 'Seasonal Assessment', divider: true },
+    { href: '/assessments', label: 'All Assessments' },
     { href: '/assessments/spiritual-gifts', label: 'Spiritual Gifts' },
     { href: '/assessments/prophetic-expression', label: 'Prophetic Expression' },
     { href: '/assessments/ministry-calling', label: 'Ministry Calling' },
@@ -41,7 +89,7 @@ export function Navigation() {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-tpc-gold/30 bg-tpc-gold backdrop-blur">
+    <nav className="sticky top-0 z-50 w-full border-b border-tpc-gold/30 bg-tpc-gold backdrop-blur" aria-label="Main navigation">
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
@@ -64,6 +112,42 @@ export function Navigation() {
               </Link>
             ))}
 
+            {/* Connect Dropdown */}
+            <div
+              className="relative group"
+              onMouseEnter={() => setIsConnectOpen(true)}
+              onMouseLeave={() => setIsConnectOpen(false)}
+            >
+              <button
+                className="flex items-center gap-1 text-sm font-medium text-tpc-navy transition-colors hover:text-tpc-navy/70"
+                aria-expanded={isConnectOpen}
+                aria-haspopup="true"
+                onKeyDown={(e) => handleDropdownKeyDown(e, isConnectOpen, setIsConnectOpen)}
+              >
+                Connect
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </button>
+
+              {isConnectOpen && (
+                <div
+                  className="absolute top-full left-0 mt-0 w-48 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200"
+                  role="menu"
+                  aria-label="Connect submenu"
+                >
+                  {connectLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
+                      role="menuitem"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Missions Dropdown */}
             <div
               className="relative group"
@@ -72,20 +156,26 @@ export function Navigation() {
             >
               <button
                 className="flex items-center gap-1 text-sm font-medium text-tpc-navy transition-colors hover:text-tpc-navy/70"
+                aria-expanded={isMissionsOpen}
+                aria-haspopup="true"
+                onKeyDown={(e) => handleDropdownKeyDown(e, isMissionsOpen, setIsMissionsOpen)}
               >
                 Missions
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </button>
 
               {isMissionsOpen && (
                 <div
                   className="absolute top-full left-0 mt-0 w-48 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200"
+                  role="menu"
+                  aria-label="Missions submenu"
                 >
                   {missionsLinks.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
                       className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
+                      role="menuitem"
                     >
                       {link.label}
                     </Link>
@@ -102,21 +192,27 @@ export function Navigation() {
             >
               <button
                 className="flex items-center gap-1 text-sm font-medium text-tpc-navy transition-colors hover:text-tpc-navy/70"
+                aria-expanded={isResourcesOpen}
+                aria-haspopup="true"
+                onKeyDown={(e) => handleDropdownKeyDown(e, isResourcesOpen, setIsResourcesOpen)}
               >
                 Tools & Resources
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </button>
 
               {isResourcesOpen && (
                 <div
                   className="absolute top-full left-0 mt-0 w-56 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200"
+                  role="menu"
+                  aria-label="Tools and Resources submenu"
                 >
                   {resourcesLinks.map((link) => (
                     <div key={link.href}>
-                      {link.divider && <div className="my-1 border-t border-gray-200" />}
+                      {link.divider && <div className="my-1 border-t border-gray-200" role="separator" />}
                       <Link
                         href={link.href}
                         className="block px-4 py-2 text-sm text-navy hover:bg-gold/10 transition-colors"
+                        role="menuitem"
                       >
                         {link.label}
                       </Link>
@@ -129,6 +225,7 @@ export function Navigation() {
 
           {/* Auth Buttons */}
           <div className="hidden items-center space-x-4 md:flex">
+            <InstallButton variant="compact" />
             <Link href="/auth/login">
               <Button variant="ghost" className="text-tpc-navy hover:bg-tpc-navy/10">
                 Login
@@ -145,7 +242,9 @@ export function Navigation() {
           <button
             onClick={toggleMenu}
             className="md:hidden"
-            aria-label="Toggle menu"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
           >
             {isMenuOpen ? (
               <X className="h-6 w-6 text-tpc-navy" />
@@ -157,7 +256,7 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="border-t border-tpc-navy/20 py-4 md:hidden">
+          <div id="mobile-menu" className="border-t border-tpc-navy/20 py-4 md:hidden" role="menu">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <Link
@@ -170,14 +269,43 @@ export function Navigation() {
                 </Link>
               ))}
 
+              {/* Mobile Connect Dropdown */}
+              <div>
+                <button
+                  onClick={toggleConnect}
+                  className="flex w-full items-center justify-between text-sm font-medium text-tpc-navy"
+                  aria-expanded={isConnectOpen}
+                  aria-haspopup="true"
+                >
+                  Connect
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isConnectOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+                {isConnectOpen && (
+                  <div className="mt-2 ml-4 flex flex-col space-y-2">
+                    {connectLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="text-sm text-tpc-navy/80 hover:text-tpc-navy"
+                        onClick={toggleMenu}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Mobile Missions Dropdown */}
               <div>
                 <button
                   onClick={toggleMissions}
                   className="flex w-full items-center justify-between text-sm font-medium text-tpc-navy"
+                  aria-expanded={isMissionsOpen}
+                  aria-haspopup="true"
                 >
                   Missions
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isMissionsOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isMissionsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                 </button>
                 {isMissionsOpen && (
                   <div className="mt-2 ml-4 flex flex-col space-y-2">
@@ -200,9 +328,11 @@ export function Navigation() {
                 <button
                   onClick={toggleResources}
                   className="flex w-full items-center justify-between text-sm font-medium text-tpc-navy"
+                  aria-expanded={isResourcesOpen}
+                  aria-haspopup="true"
                 >
                   Tools & Resources
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                 </button>
                 {isResourcesOpen && (
                   <div className="mt-2 ml-4 flex flex-col space-y-2">
@@ -223,6 +353,7 @@ export function Navigation() {
               </div>
 
               <div className="flex flex-col space-y-2 pt-4">
+                <InstallButton variant="default" className="w-full" />
                 <Link href="/auth/login" onClick={toggleMenu}>
                   <Button variant="ghost" className="w-full text-tpc-navy">
                     Login

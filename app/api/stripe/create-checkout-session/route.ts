@@ -1,8 +1,88 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 export const runtime = 'nodejs'
+
+// Handle ebook purchases via GET request (from Link component)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type')
+    const id = searchParams.get('id')
+
+    if (type !== 'ebook' || !id) {
+      return NextResponse.redirect(new URL('/ebooks', request.url))
+    }
+
+    // Fetch the ebook from Supabase
+    const supabase = await createClient()
+    const { data: ebook, error: ebookError } = await supabase
+      .from('resources')
+      .select('*')
+      .eq('id', id)
+      .eq('type', 'ebook')
+      .eq('published', true)
+      .single()
+
+    if (ebookError || !ebook) {
+      console.error('Ebook not found:', ebookError)
+      return NextResponse.redirect(new URL('/ebooks', request.url))
+    }
+
+    // Get the current user if logged in
+    let user = null
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      user = authUser
+    } catch (supabaseError) {
+      console.warn('Supabase auth error (non-fatal):', supabaseError)
+    }
+
+    // Determine the correct URL for redirects
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || request.headers.get('origin') || 'http://localhost:3001'
+
+    // Initialize Stripe
+    const stripe = getStripe()
+
+    // Create one-time payment for ebook ($9.99)
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: ebook.title,
+              description: ebook.description || `Ebook by ${ebook.author || 'TPC Ministries'}`,
+              ...(ebook.thumbnail_url ? { images: [ebook.thumbnail_url] } : {}),
+            },
+            unit_amount: 999, // $9.99 in cents
+          },
+          quantity: 1,
+        },
+      ],
+      ...(user?.email ? { customer_email: user.email } : {}),
+      ...(user?.id ? { client_reference_id: user.id } : {}),
+      metadata: {
+        type: 'ebook',
+        ebook_id: ebook.id,
+        ebook_title: ebook.title,
+        user_id: user?.id || 'anonymous',
+      },
+      success_url: `${baseUrl}/ebooks/${ebook.id}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/ebooks/${ebook.id}`,
+    })
+
+    // Redirect to Stripe checkout
+    return NextResponse.redirect(session.url!)
+  } catch (error: any) {
+    console.error('Ebook checkout error:', error)
+    return NextResponse.redirect(new URL('/ebooks', request.url))
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {

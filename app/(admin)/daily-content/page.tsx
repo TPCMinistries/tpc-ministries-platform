@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -886,7 +887,9 @@ export default function DailyContentPage() {
                     <CardContent className="p-6">
                       <div className="flex items-start gap-6">
                         {plan.cover_image_url ? (
-                          <img src={plan.cover_image_url} alt="" className="w-20 h-20 rounded-lg object-cover" />
+                          <div className="w-20 h-20 rounded-lg overflow-hidden relative">
+                            <Image src={plan.cover_image_url} alt={plan.title} fill className="object-cover" sizes="80px" />
+                          </div>
                         ) : (
                           <div className="w-20 h-20 bg-navy/10 rounded-lg flex items-center justify-center">
                             <BookOpen className="h-8 w-8 text-navy/40" />

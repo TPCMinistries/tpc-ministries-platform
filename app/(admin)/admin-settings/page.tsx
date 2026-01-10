@@ -257,6 +257,57 @@ export default function AdminSettingsPage() {
           <p className="text-gray-600">Manage admin users and permissions</p>
         </div>
 
+        {/* Quick Links */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg text-navy">Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <a
+                href="/admin-settings/permissions"
+                className="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 hover:border-navy transition-colors"
+              >
+                <Shield className="h-5 w-5 text-navy" />
+                <div>
+                  <p className="font-medium text-navy">Permissions</p>
+                  <p className="text-xs text-gray-500">Manage role permissions</p>
+                </div>
+              </a>
+              <a
+                href="/admin-audit-log"
+                className="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 hover:border-navy transition-colors"
+              >
+                <SettingsIcon className="h-5 w-5 text-purple-600" />
+                <div>
+                  <p className="font-medium text-navy">Audit Log</p>
+                  <p className="text-xs text-gray-500">View admin actions</p>
+                </div>
+              </a>
+              <a
+                href="/admin-tasks"
+                className="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 hover:border-navy transition-colors"
+              >
+                <Check className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="font-medium text-navy">Admin Tasks</p>
+                  <p className="text-xs text-gray-500">Team task management</p>
+                </div>
+              </a>
+              <a
+                href="/admin-volunteer-hours"
+                className="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 hover:border-navy transition-colors"
+              >
+                <User className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="font-medium text-navy">Volunteer Hours</p>
+                  <p className="text-xs text-gray-500">Track service hours</p>
+                </div>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Current Admins */}
         <Card className="mb-8">
           <CardHeader>

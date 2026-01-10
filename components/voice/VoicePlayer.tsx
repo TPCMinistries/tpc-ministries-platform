@@ -108,11 +108,12 @@ export default function VoicePlayer({
           variant="ghost"
           size="sm"
           className="rounded-full w-8 h-8 p-0 bg-navy/10 hover:bg-navy/20"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <Pause className="h-3 w-3 text-navy" />
+            <Pause className="h-3 w-3 text-navy" aria-hidden="true" />
           ) : (
-            <Play className="h-3 w-3 text-navy ml-0.5" />
+            <Play className="h-3 w-3 text-navy ml-0.5" aria-hidden="true" />
           )}
         </Button>
 
@@ -148,11 +149,12 @@ export default function VoicePlayer({
           type="button"
           onClick={togglePlay}
           className="rounded-full w-12 h-12 p-0 bg-navy hover:bg-navy/90"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <Pause className="h-5 w-5 text-white" />
+            <Pause className="h-5 w-5 text-white" aria-hidden="true" />
           ) : (
-            <Play className="h-5 w-5 text-white ml-0.5" />
+            <Play className="h-5 w-5 text-white ml-0.5" aria-hidden="true" />
           )}
         </Button>
 
@@ -165,6 +167,11 @@ export default function VoicePlayer({
             max={totalDuration || 100}
             value={currentTime}
             onChange={handleSeek}
+            aria-label="Seek audio position"
+            aria-valuemin={0}
+            aria-valuemax={totalDuration || 100}
+            aria-valuenow={currentTime}
+            aria-valuetext={`${formatTime(currentTime)} of ${formatTime(totalDuration)}`}
             className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer
               [&::-webkit-slider-thumb]:appearance-none
               [&::-webkit-slider-thumb]:w-3
@@ -195,11 +202,12 @@ export default function VoicePlayer({
           variant="ghost"
           size="sm"
           className="rounded-full w-8 h-8 p-0"
+          aria-label={isMuted ? 'Unmute' : 'Mute'}
         >
           {isMuted ? (
-            <VolumeX className="h-4 w-4 text-gray-400" />
+            <VolumeX className="h-4 w-4 text-gray-400" aria-hidden="true" />
           ) : (
-            <Volume2 className="h-4 w-4 text-gray-600" />
+            <Volume2 className="h-4 w-4 text-gray-600" aria-hidden="true" />
           )}
         </Button>
       </div>

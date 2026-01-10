@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -309,9 +310,9 @@ export default function AdminSermonsPage() {
               const thumbnail = sermon.thumbnail_url || getVideoThumbnail(sermon.video_url)
               return (
                 <Card key={sermon.id} className={!sermon.is_published ? 'opacity-60' : ''}>
-                  <div className="relative aspect-video bg-gray-100">
+                  <div className="relative aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
                     {thumbnail ? (
-                      <img src={thumbnail} alt="" className="w-full h-full object-cover rounded-t-lg" />
+                      <Image src={thumbnail} alt={sermon.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Video className="h-16 w-16 text-gray-300" />

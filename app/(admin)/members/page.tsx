@@ -1006,6 +1006,21 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
                 <Tag className="h-4 w-4 mr-2" />
                 Manage Tags
               </Button>
+              <Button variant="outline" onClick={async () => {
+                const res = await fetch('/api/admin/members/export?format=csv')
+                if (res.ok) {
+                  const blob = await res.blob()
+                  const url = window.URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `members-export-${new Date().toISOString().split('T')[0]}.csv`
+                  a.click()
+                  window.URL.revokeObjectURL(url)
+                }
+              }}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
               <Button variant="outline" onClick={() => { setImportResults(null); setShowImportModal(true) }}>
                 <Upload className="h-4 w-4 mr-2" />
                 Import CSV

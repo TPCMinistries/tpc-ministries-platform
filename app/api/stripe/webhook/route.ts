@@ -33,7 +33,12 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        await recordDonation(session)
+        // Check if this is an ebook purchase or donation
+        if (session.metadata?.type === 'ebook') {
+          await recordEbookPurchase(session)
+        } else {
+          await recordDonation(session)
+        }
         break
       }
 
@@ -59,6 +64,61 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Webhook handler error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+async function recordEbookPurchase(session: Stripe.Checkout.Session) {
+  const supabase = await createClient()
+
+  const ebookId = session.metadata?.ebook_id
+  const ebookTitle = session.metadata?.ebook_title
+  const userId = session.metadata?.user_id !== 'anonymous' ? session.metadata?.user_id : null
+  const customerEmail = session.customer_email || session.customer_details?.email
+
+  // Record purchase in donations table with type 'ebook_purchase'
+  const purchaseData = {
+    amount: (session.amount_total || 0) / 100,
+    type: 'ebook_purchase',
+    frequency: 'once',
+    user_id: userId,
+    donor_email: customerEmail,
+    donor_name: session.customer_details?.name || 'Customer',
+    stripe_session_id: session.id,
+    stripe_payment_intent: session.payment_intent as string,
+    status: 'completed',
+    notes: `Ebook: ${ebookTitle} (ID: ${ebookId})`,
+    created_at: new Date().toISOString(),
+  }
+
+  const { error: purchaseError } = await supabase.from('donations').insert(purchaseData)
+
+  if (purchaseError) {
+    console.error('Error recording ebook purchase:', purchaseError)
+    // Don't throw - still try to update download count
+  } else {
+    console.log('Ebook purchase recorded:', purchaseData)
+  }
+
+  // Increment download count on the ebook resource
+  if (ebookId) {
+    const { data: resource } = await supabase
+      .from('resources')
+      .select('download_count')
+      .eq('id', ebookId)
+      .single()
+
+    const currentCount = resource?.download_count || 0
+
+    const { error: updateError } = await supabase
+      .from('resources')
+      .update({ download_count: currentCount + 1 })
+      .eq('id', ebookId)
+
+    if (updateError) {
+      console.error('Error incrementing download count:', updateError)
+    } else {
+      console.log(`Download count incremented for ebook ${ebookId}`)
+    }
   }
 }
 

@@ -3,6 +3,10 @@ import localFont from "next/font/local";
 import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import PWAProvider from "@/components/pwa/pwa-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
+import { SkipLink } from "@/components/a11y/skip-link";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -110,20 +114,43 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1E3A5F" />
+        {/* JSON-LD Structured Data */}
+        <OrganizationSchema />
+        <WebSiteSchema />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
       >
+        <SkipLink />
         <GoogleAnalytics />
-        <PWAProvider>
-          {children}
-        </PWAProvider>
+        <ThemeProvider>
+          <PWAProvider>
+            <main id="main-content" tabIndex={-1} className="outline-none">
+              {children}
+            </main>
+            <Toaster />
+          </PWAProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

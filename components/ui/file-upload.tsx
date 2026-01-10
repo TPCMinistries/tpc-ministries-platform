@@ -228,18 +228,19 @@ export default function FileUpload({
                 variant="destructive"
                 size="icon"
                 onClick={handleRemove}
+                aria-label="Remove file"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </Button>
             )}
           </div>
           {uploading && (
-            <div className="mt-3">
+            <div className="mt-3" role="status" aria-live="polite">
               <div className="flex items-center gap-2 mb-2">
-                <Loader2 className="h-4 w-4 animate-spin text-navy" />
+                <Loader2 className="h-4 w-4 animate-spin text-navy" aria-hidden="true" />
                 <span className="text-sm text-gray-600">Uploading...</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <Progress value={progress} className="h-2" aria-label={`Upload progress: ${progress}%`} />
             </div>
           )}
         </Card>
@@ -278,12 +279,14 @@ export default function FileUpload({
         </Card>
       )}
 
-      {error && (
-        <Alert variant="destructive" className="mt-3">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <div role="alert" aria-live="assertive">
+        {error && (
+          <Alert variant="destructive" className="mt-3">
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
     </div>
   )
 }
