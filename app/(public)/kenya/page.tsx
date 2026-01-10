@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Heart,
   GraduationCap,
@@ -15,8 +14,9 @@ import {
   Calendar,
   MapPin,
   Mail,
-  Globe,
-  Sparkles,
+  Users,
+  Mountain,
+  Plane,
   ChevronRight
 } from 'lucide-react'
 import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
@@ -37,22 +37,26 @@ const timeline = [
   {
     dates: 'April 22–23',
     title: 'Arrival & Orientation',
-    description: 'Arrival, welcome, team orientation, rest, shared meals',
+    description: 'Welcome reception, team orientation, rest and fellowship',
+    icon: Plane,
   },
   {
     dates: 'April 24–25',
     title: 'Cultural Immersion',
-    description: 'Cultural immersion & safari experiences',
+    description: 'Safari experiences and cultural exchange',
+    icon: Mountain,
   },
   {
     dates: 'April 26',
     title: 'Worship & Rest',
-    description: 'Church, worship, prayer, and rest',
+    description: 'Sunday worship, prayer, and spiritual preparation',
+    icon: Heart,
   },
   {
     dates: 'April 27 – May 8',
     title: 'Kingdom Service',
-    description: 'Kingdom service across Nairobi, Mombasa, and Kakamega',
+    description: 'Ministry across Nairobi, Mombasa, and Kakamega',
+    icon: Users,
   },
 ]
 
@@ -60,263 +64,127 @@ const serviceAreas = [
   {
     title: 'Ministry & Spiritual Care',
     icon: Heart,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    color: '#8B5CF6',
     items: [
       'Teaching and preaching',
       'Prayer and prophetic ministry',
-      'Church gatherings and pastors\' support',
+      'Church gatherings and pastoral support',
     ],
   },
   {
-    title: 'Education & Youth Development',
+    title: 'Education & Youth',
     icon: GraduationCap,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    color: '#3B82F6',
     items: [
       'Youth mentorship and engagement',
       'Financial literacy and life skills',
-      'Leadership development and school/community collaboration',
+      'Leadership development',
     ],
   },
   {
     title: 'Medical Missions',
     icon: Stethoscope,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
+    color: '#EF4444',
     items: [
       'Medical outreach and clinics',
-      'Health education and compassionate care',
-      'Ethical service aligned with local systems',
+      'Health education',
+      'Compassionate care',
     ],
   },
   {
-    title: 'Business & Economic Development',
+    title: 'Business Development',
     icon: Briefcase,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
+    color: '#10B981',
     items: [
-      'Entrepreneurship gatherings and capacity building',
-      'Mentorship and faith-aligned enterprise',
-      'Empowerment and sustainability',
+      'Entrepreneurship training',
+      'Business mentorship',
+      'Economic empowerment',
     ],
   },
   {
-    title: 'Food Security & Social Enterprise',
+    title: 'Food Security',
     icon: Wheat,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
+    color: '#F59E0B',
     items: [
-      'Farming initiatives and food systems support',
-      'Social entrepreneurship and community resilience',
+      'Farming initiatives',
+      'Social entrepreneurship',
+      'Community resilience',
+    ],
+  },
+  {
+    title: 'Material Support',
+    icon: Package,
+    color: '#C4A052',
+    items: [
+      'Clothing distribution',
+      'Medical supplies',
+      'Educational resources',
     ],
   },
 ]
 
-const whoIsThisFor = [
-  'Servant-hearted and purpose-driven',
-  'Team-oriented and adaptable',
-  'Spiritually mature',
-  'Ready to prepare and commit',
+const highlights = [
+  'High-quality accommodations',
+  'Cultural immersion & safari',
+  'Kingdom service in 3 cities',
+  'Limited scholarships available',
+]
+
+const qualifications = [
+  'Servant Hearts',
+  'Team Players',
+  'Spiritually Mature',
+  'Purpose-Driven',
+  'Adaptable',
 ]
 
 export default function KenyaTripPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* Hero Section with Flier Image */}
-      <section className="relative overflow-hidden min-h-[70vh] md:min-h-[80vh] flex items-center">
-        {/* Background Image */}
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden min-h-[80vh] flex items-end">
         <Image
           src="/images/kenya/kenya-hero.png"
-          alt="Kenya Kingdom Impact Trip - Giraffes and Mount Kilimanjaro"
+          alt="Kenya Kingdom Impact Trip - Mount Kilimanjaro and African Savanna"
           fill
-          className="object-cover object-top"
+          className="object-cover"
           priority
         />
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-        <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32">
-          {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-white/80 text-sm">
+        <div className="container relative mx-auto max-w-6xl px-4 pb-16 md:pb-24">
+          <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-white/70 text-sm">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4" />
             <Link href="/missions" className="hover:text-white transition-colors">Missions</Link>
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            <span className="text-white font-medium" aria-current="page">Kenya Trip 2026</span>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-white">Kenya 2026</span>
           </nav>
 
-          <div className="text-center">
-            <h1 className="mb-4 font-serif text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl drop-shadow-lg"
-                style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.5)' }}>
-              Kenya Kingdom Impact Trip
-            </h1>
-            <p className="mb-2 text-xl text-gold font-semibold md:text-2xl drop-shadow-md">
+          <div className="max-w-3xl">
+            <p className="text-amber-400 font-semibold tracking-wider uppercase mb-3">
               April 22/23 – May 8, 2026
             </p>
-            <div className="mb-6 flex items-center justify-center gap-2 text-white">
-              <MapPin className="h-4 w-4" aria-hidden="true" />
-              <span className="drop-shadow-md">Nairobi • Mombasa • Kakamega</span>
-            </div>
-            <p className="mb-4 text-2xl font-serif text-white md:text-3xl italic drop-shadow-lg"
-               style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.6)' }}>
-              This is more than a trip. It's a Kingdom assignment.
+            <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight">
+              Kenya Kingdom<br />Impact Trip
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 mb-2 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-amber-400" />
+              Nairobi • Mombasa • Kakamega
             </p>
-            <p className="mb-8 text-lg text-white/95 max-w-2xl mx-auto drop-shadow-md">
-              A journey of faith, service, and partnership alongside local churches and communities.
+            <p className="text-2xl md:text-3xl font-serif italic text-white/95 mt-6 mb-8">
+              "This is more than a trip. It's a Kingdom assignment."
             </p>
-            <a href="#apply">
-              <Button size="lg" className="bg-gold hover:bg-gold/90 text-navy text-lg px-8 shadow-lg">
-                Apply Now
-                <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Trip Timeline */}
-      <section className="px-4 py-16 md:py-24 bg-white" aria-labelledby="timeline-heading">
-        <div className="container mx-auto max-w-4xl">
-          <h2 id="timeline-heading" className="mb-4 text-center font-serif text-3xl font-bold text-navy md:text-4xl">
-            Trip Flow
-          </h2>
-          <p className="mb-12 text-center text-gray-600">
-            A thoughtfully planned journey of preparation, immersion, and service
-          </p>
-
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-green-200 -translate-x-1/2" aria-hidden="true"></div>
-
-            <div className="space-y-8">
-              {timeline.map((item, index) => (
-                <div
-                  key={item.dates}
-                  className={`relative flex items-start gap-6 ${
-                    index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                  }`}
-                >
-                  {/* Timeline dot */}
-                  <div className="absolute left-4 md:left-1/2 w-4 h-4 bg-green-600 rounded-full border-4 border-white shadow -translate-x-1/2 z-10" aria-hidden="true"></div>
-
-                  {/* Content */}
-                  <div className={`ml-12 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                    <Card className="border-green-200 hover:shadow-lg transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 mb-2 text-green-700 font-semibold">
-                          <Calendar className="h-4 w-4" aria-hidden="true" />
-                          <time>{item.dates}</time>
-                        </div>
-                        <h3 className="text-lg font-bold text-navy mb-1">{item.title}</h3>
-                        <p className="text-gray-600">{item.description}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Areas of Service */}
-      <section className="px-4 py-16 md:py-24 bg-gray-50" aria-labelledby="service-heading">
-        <div className="container mx-auto max-w-6xl">
-          <h2 id="service-heading" className="mb-4 text-center font-serif text-3xl font-bold text-navy md:text-4xl">
-            Areas of Service & Partnership
-          </h2>
-          <p className="mb-12 text-center text-gray-600 max-w-2xl mx-auto">
-            Serve according to your gifts and calling in one of five focus areas
-          </p>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {serviceAreas.map((area) => (
-              <Card key={area.title} className="hover:shadow-lg transition-shadow h-full">
-                <CardHeader>
-                  <div className={`mb-3 w-12 h-12 rounded-lg ${area.bgColor} flex items-center justify-center`}>
-                    <area.icon className={`h-6 w-6 ${area.color}`} aria-hidden="true" />
-                  </div>
-                  <CardTitle className="text-lg text-navy">{area.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {area.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-gray-600 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* Material Support Card */}
-            <Card className="hover:shadow-lg transition-shadow h-full bg-gradient-to-br from-gold/10 to-amber-50 border-gold/30">
-              <CardHeader>
-                <div className="mb-3 w-12 h-12 rounded-lg bg-gold/20 flex items-center justify-center">
-                  <Package className="h-6 w-6 text-gold" aria-hidden="true" />
-                </div>
-                <CardTitle className="text-lg text-navy">Material Support</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm">
-                  Clothing, medical supplies, and educational resources distributed with dignity in coordination with local leadership.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Scholarships */}
-      <section className="px-4 py-16 bg-gradient-to-br from-navy to-navy-800" aria-labelledby="scholarship-heading">
-        <div className="container mx-auto max-w-4xl text-center">
-          <Sparkles className="h-12 w-12 text-gold mx-auto mb-4" aria-hidden="true" />
-          <h2 id="scholarship-heading" className="mb-4 font-serif text-3xl font-bold text-white md:text-4xl">
-            Scholarships Available
-          </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Limited partial scholarships are available for participants who demonstrate need and alignment with the mission.
-          </p>
-        </div>
-      </section>
-
-      {/* Who This Is For */}
-      <section className="px-4 py-16 md:py-24 bg-white" aria-labelledby="who-heading">
-        <div className="container mx-auto max-w-4xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 id="who-heading" className="mb-6 font-serif text-3xl font-bold text-navy md:text-4xl">
-                Who This Trip Is For
-              </h2>
-              <p className="mb-6 text-gray-600">
-                We're looking for team members who are ready to serve with excellence and humility.
-              </p>
-              <ul className="space-y-4">
-                {whoIsThisFor.map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
-                    </div>
-                    <span className="text-navy font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-gradient-to-br from-green-50 to-gold/10 rounded-xl p-8">
-              <Globe className="h-16 w-16 text-green-700 mx-auto mb-4" aria-hidden="true" />
-              <h3 className="text-xl font-bold text-navy text-center mb-2">
-                Join the Delegation
-              </h3>
-              <p className="text-gray-600 text-center mb-6">
-                Be part of a team making lasting Kingdom impact across Kenya.
-              </p>
-              <a href="#apply" className="block">
-                <Button className="w-full bg-navy hover:bg-navy/90">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="#apply">
+                <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg px-8 h-14">
                   Apply Now
-                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </a>
+              <a href="#details">
+                <Button size="lg" variant="outline" className="border-white/50 text-white hover:bg-white/10 text-lg px-8 h-14">
+                  Learn More
                 </Button>
               </a>
             </div>
@@ -324,47 +192,192 @@ export default function KenyaTripPage() {
         </div>
       </section>
 
+      {/* Trip Highlights Bar */}
+      <section className="bg-gradient-to-r from-amber-50 to-orange-50 border-y border-amber-200">
+        <div className="container mx-auto max-w-6xl px-4 py-6">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
+            {highlights.map((item) => (
+              <div key={item} className="flex items-center gap-2 text-amber-900">
+                <CheckCircle className="h-5 w-5 text-amber-600" />
+                <span className="font-medium">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trip Flow Timeline */}
+      <section id="details" className="px-4 py-20 md:py-28 bg-stone-50">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <p className="text-amber-600 font-semibold tracking-wider uppercase mb-3">Your Journey</p>
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-stone-900 mb-4">
+              Trip Flow
+            </h2>
+            <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+              A thoughtfully planned journey of preparation, immersion, and service
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {timeline.map((item, index) => (
+              <div
+                key={item.dates}
+                className="relative bg-white rounded-2xl p-6 shadow-sm border border-stone-200 hover:shadow-md transition-shadow"
+              >
+                <div className="absolute -top-3 left-6 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  {index + 1}
+                </div>
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+                  <item.icon className="h-6 w-6 text-amber-700" />
+                </div>
+                <p className="text-amber-700 font-semibold text-sm mb-1">{item.dates}</p>
+                <h3 className="text-lg font-bold text-stone-900 mb-2">{item.title}</h3>
+                <p className="text-stone-600 text-sm">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Areas of Service */}
+      <section className="px-4 py-20 md:py-28 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <p className="text-amber-600 font-semibold tracking-wider uppercase mb-3">Service Tracks</p>
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-stone-900 mb-4">
+              Areas of Service & Partnership
+            </h2>
+            <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+              Serve according to your gifts and calling in one of six focus areas
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {serviceAreas.map((area) => (
+              <div
+                key={area.title}
+                className="bg-stone-50 rounded-2xl p-6 border border-stone-200 hover:border-amber-300 transition-colors"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                  style={{ backgroundColor: `${area.color}15` }}
+                >
+                  <area.icon className="h-6 w-6" style={{ color: area.color }} />
+                </div>
+                <h3 className="text-lg font-bold text-stone-900 mb-3">{area.title}</h3>
+                <ul className="space-y-2">
+                  {area.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-stone-600 text-sm">
+                      <CheckCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Who This Is For */}
+      <section className="px-4 py-20 md:py-28 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-amber-400 font-semibold tracking-wider uppercase mb-3">Ideal Candidates</p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-white mb-6">
+                Who This Trip Is For
+              </h2>
+              <p className="text-stone-300 text-lg mb-8">
+                We're looking for team members who are ready to serve with excellence and humility alongside our Kenyan partners.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {qualifications.map((item) => (
+                  <span
+                    key={item}
+                    className="bg-amber-500/20 text-amber-300 px-4 py-2 rounded-full text-sm font-medium border border-amber-500/30"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-3xl p-8 border border-amber-500/30">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-amber-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="h-10 w-10 text-amber-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Join the Delegation
+                </h3>
+                <p className="text-stone-300 mb-6">
+                  Be part of a team making lasting Kingdom impact across Kenya.
+                </p>
+                <a href="#apply">
+                  <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold px-8 h-12">
+                    Apply Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Application Form */}
-      <section id="apply" className="px-4 py-16 md:py-24 bg-gray-50" aria-labelledby="apply-heading">
+      <section id="apply" className="px-4 py-20 md:py-28 bg-stone-50">
         <div className="container mx-auto max-w-2xl">
-          <h2 id="apply-heading" className="mb-4 text-center font-serif text-3xl font-bold text-navy md:text-4xl">
-            Apply for the Kenya Trip
-          </h2>
-          <p className="mb-8 text-center text-gray-600">
-            Complete this interest form and we'll be in touch with next steps.
-          </p>
+          <div className="text-center mb-12">
+            <p className="text-amber-600 font-semibold tracking-wider uppercase mb-3">Get Started</p>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-stone-900 mb-4">
+              Apply for the Kenya Trip
+            </h2>
+            <p className="text-lg text-stone-600">
+              Complete this interest form and we'll be in touch with next steps.
+            </p>
+          </div>
 
           <KenyaTripForm />
         </div>
       </section>
 
       {/* Contact */}
-      <section className="px-4 py-12 bg-white border-t" aria-labelledby="contact-heading">
+      <section className="px-4 py-12 bg-white border-t border-stone-200">
         <div className="container mx-auto max-w-4xl text-center">
-          <Mail className="h-8 w-8 text-navy mx-auto mb-3" aria-hidden="true" />
-          <h3 id="contact-heading" className="text-xl font-bold text-navy mb-2">Questions?</h3>
-          <p className="text-gray-600">
+          <Mail className="h-8 w-8 text-amber-600 mx-auto mb-3" />
+          <h3 className="text-xl font-bold text-stone-900 mb-2">Questions?</h3>
+          <p className="text-stone-600">
             Email us at{' '}
-            <a href="mailto:info@tpcmin.org" className="text-gold hover:underline font-medium">
+            <a href="mailto:info@tpcmin.org" className="text-amber-600 hover:underline font-medium">
               info@tpcmin.org
             </a>
           </p>
         </div>
       </section>
 
-      {/* Footer CTA */}
-      <section className="px-4 py-16 bg-gradient-to-br from-green-700 to-green-900" aria-labelledby="cta-heading">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 id="cta-heading" className="mb-4 font-serif text-3xl font-bold text-white md:text-4xl">
-            Ready to join the delegation?
+      {/* Final CTA */}
+      <section className="relative px-4 py-20 overflow-hidden">
+        <Image
+          src="/images/kenya/kenya-hero.png"
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/70"></div>
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <p className="text-amber-400 font-semibold mb-4">Say Yes to the Call</p>
+          <h2 className="font-serif text-3xl md:text-5xl font-bold text-white mb-6">
+            Ready to Join the Delegation?
           </h2>
-          <p className="mb-8 text-xl text-white/90">
+          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
             Take the first step toward your Kingdom assignment in Kenya.
           </p>
           <a href="#apply">
-            <Button size="lg" className="bg-gold hover:bg-gold/90 text-navy text-lg px-8">
+            <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg px-10 h-14">
               Apply Now
-              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </a>
         </div>
