@@ -210,18 +210,19 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {/* Video 1 */}
             <div className="group">
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/8uUheKZ9HD4"
-                  title="TPC Ministries Teaching"
+                  title="Prophet Lorenzo Speaks About Purpose"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Prophet Lorenzo Speaks About Purpose</h3>
             </div>
 
             {/* Video 2 */}
@@ -229,12 +230,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/E05bXP7bq6A"
-                  title="TPC Ministries Teaching"
+                  title="Prophet Lorenzo Ministers To The Nations"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Prophet Lorenzo Ministers To The Nations</h3>
             </div>
 
             {/* Video 3 */}
@@ -242,12 +244,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/vKGQERI3VzY"
-                  title="TPC Ministries Teaching"
+                  title="The Work of Christian Transformation"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">The Work of Christian Transformation</h3>
             </div>
 
             {/* Video 4 */}
@@ -255,12 +258,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/ET4Gesxc49g"
-                  title="TPC Ministries Teaching"
+                  title="Bible Study: Fruits of The Spirit"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Bible Study: Fruits of The Spirit</h3>
             </div>
 
             {/* Video 5 */}
@@ -268,12 +272,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/mOAtkdiMKKg"
-                  title="TPC Ministries Teaching"
+                  title="Bible Study: Parable of The Talents"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Bible Study: Parable of The Talents</h3>
             </div>
 
             {/* Video 6 */}
@@ -281,12 +286,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/c-IiTvUed3c"
-                  title="TPC Ministries Teaching"
+                  title="TPC Wealth Calculator Video"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">TPC Wealth Calculator</h3>
             </div>
           </div>
 
