@@ -230,13 +230,13 @@ export default async function HomePage() {
               <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
                 <iframe
                   src="https://www.youtube.com/embed/E05bXP7bq6A"
-                  title="Prophet Lorenzo Ministers To The Nations"
+                  title="Prophet Lorenzo Ministers on the Street"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               </div>
-              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Prophet Lorenzo Ministers To The Nations</h3>
+              <h3 className="mt-3 font-semibold text-tpc-navy text-lg">Prophet Lorenzo Ministers on the Street</h3>
             </div>
 
             {/* Video 3 */}
