@@ -84,11 +84,29 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "TPC Ministries",
+    images: [
+      {
+        url: '/images/logos/logo-gold.png',
+        width: 512,
+        height: 512,
+        alt: 'TPC Ministries Logo',
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "TPC Ministries",
     description: "Transforming Lives Through Christ",
+    images: ['/images/logos/logo-gold.png'],
+  },
+  icons: {
+    icon: [
+      { url: '/icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   robots: {
     index: true,
@@ -116,10 +134,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
-        <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1E3A5F" />
         {/* JSON-LD Structured Data */}
         <OrganizationSchema />
         <WebSiteSchema />
