@@ -50,8 +50,6 @@ export function Navigation() {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
-    // { href: '/teachings', label: 'Teachings' }, // Hidden until content is ready
-    { href: '/blog', label: 'Blog' },
     { href: '/kenya', label: 'Kenya 2026' },
     { href: '/giving', label: 'Give' },
     { href: '/connect', label: 'Connect' },
