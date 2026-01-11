@@ -73,15 +73,8 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     {
       title: 'Daily Walk',
       items: [
-        { name: 'Daily Check-in', href: '/daily-checkin', icon: Sunrise, highlight: true },
-        { name: 'Devotional', href: '/devotional', icon: Sun },
+        { name: 'Streams of Grace', href: 'https://www.streamsofgrace.app', icon: Sunrise, highlight: true, external: true },
         { name: 'My Journal', href: '/journal', icon: PenLine },
-      ]
-    },
-    {
-      title: 'Prayer',
-      items: [
-        { name: 'Prayer', href: '/prayer', icon: HeartIcon },
       ]
     },
     {
@@ -255,12 +248,16 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                   <ul className="space-y-1">
                     {section.items.map((item: any) => {
                       const Icon = item.icon
-                      const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                      const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'))
+                      const LinkComponent = item.external ? 'a' : Link
+                      const linkProps = item.external
+                        ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' }
+                        : { href: item.href }
 
                       return (
                         <li key={item.name}>
-                          <Link
-                            href={item.href}
+                          <LinkComponent
+                            {...linkProps}
                             onClick={() => setIsMobileOpen(false)}
                             className={cn(
                               'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -281,10 +278,13 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                                 {item.badge}
                               </Badge>
                             )}
-                            {item.highlight && !isActive && (
+                            {item.external && (
+                              <Badge className="bg-tpc-gold/80 text-white text-xs px-1.5 py-0">App</Badge>
+                            )}
+                            {item.highlight && !isActive && !item.external && (
                               <Badge className="bg-gold text-white text-xs px-1.5 py-0">AI</Badge>
                             )}
-                          </Link>
+                          </LinkComponent>
                         </li>
                       )
                     })}
