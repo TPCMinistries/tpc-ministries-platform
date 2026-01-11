@@ -69,29 +69,17 @@ export default function QuickActionsWidget() {
         .eq('date', today)
         .single()
 
-      // Daily Routine - highest priority if not done
-      if (!todayCheckin) {
-        contextualActions.push({
-          id: 'daily-routine',
-          label: 'Daily Routine',
-          description: 'Start your spiritual practice',
-          icon: <Sparkles className="h-5 w-5 text-gold" />,
-          href: '/daily-routine',
-          priority: 1,
-          highlight: true,
-          badge: 'Today'
-        })
-      } else {
-        contextualActions.push({
-          id: 'daily-routine',
-          label: 'Daily Routine',
-          description: 'Completed for today!',
-          icon: <CheckCircle className="h-5 w-5 text-green-500" />,
-          href: '/daily-routine',
-          priority: 10,
-          completed: true
-        })
-      }
+      // Streams of Grace - primary daily spiritual practice
+      contextualActions.push({
+        id: 'streams-of-grace',
+        label: 'Streams of Grace',
+        description: 'Daily devotional & prayer',
+        icon: <Sunrise className="h-5 w-5 text-amber-500" />,
+        href: 'https://www.streamsofgrace.app',
+        priority: 1,
+        highlight: true,
+        badge: 'Daily'
+      })
 
       // Check onboarding status
       const { data: onboarding } = await supabase
@@ -146,11 +134,11 @@ export default function QuickActionsWidget() {
           badge: 'AI'
         },
         {
-          id: 'prayer',
-          label: 'Prayer Wall',
-          description: 'Submit or pray for others',
-          icon: <Heart className="h-5 w-5 text-red-500" />,
-          href: '/prayer',
+          id: 'assessments',
+          label: 'Assessments',
+          description: 'Discover your gifts',
+          icon: <ClipboardList className="h-5 w-5 text-purple-500" />,
+          href: '/my-assessments',
           priority: 5
         },
         {
@@ -206,20 +194,20 @@ export default function QuickActionsWidget() {
       // Fallback actions
       setActions([
         {
-          id: 'daily-routine',
-          label: 'Daily Routine',
-          description: 'Start your day',
-          icon: <Sparkles className="h-5 w-5 text-gold" />,
-          href: '/daily-routine',
+          id: 'streams-of-grace',
+          label: 'Streams of Grace',
+          description: 'Daily devotional',
+          icon: <Sunrise className="h-5 w-5 text-amber-500" />,
+          href: 'https://www.streamsofgrace.app',
           priority: 1,
           highlight: true
         },
         {
-          id: 'prayer',
-          label: 'Prayer',
-          description: 'Submit a request',
-          icon: <Heart className="h-5 w-5 text-red-500" />,
-          href: '/prayer',
+          id: 'assessments',
+          label: 'Assessments',
+          description: 'Discover your gifts',
+          icon: <ClipboardList className="h-5 w-5 text-purple-500" />,
+          href: '/my-assessments',
           priority: 2
         },
         {
