@@ -194,6 +194,117 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Video Teachings Section */}
+      <section className="bg-white px-4 py-16 md:py-24">
+        <div className="container mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-tpc-navy/10 rounded-full px-4 py-2 mb-6">
+              <Play className="h-4 w-4 text-tpc-navy" />
+              <span className="text-tpc-navy text-sm font-medium">Video Teachings</span>
+            </div>
+            <h2 className="mb-4 font-serif text-4xl font-bold text-tpc-navy md:text-5xl">
+              Watch & Be Transformed
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Powerful teachings and prophetic insights to awaken your purpose and ignite your vision
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Video 1 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/8uUheKZ9HD4"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Video 2 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/E05bXP7bq6A"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Video 3 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/vKGQERI3VzY"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Video 4 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/ET4Gesxc49g"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Video 5 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/mOAtkdiMKKg"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+
+            {/* Video 6 */}
+            <div className="group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                <iframe
+                  src="https://www.youtube.com/embed/c-IiTvUed3c"
+                  title="TPC Ministries Teaching"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <a
+              href="https://www.youtube.com/@TPCMinistries"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button size="lg" variant="outline" className="border-2 border-tpc-navy text-tpc-navy hover:bg-tpc-navy hover:text-white">
+                <Play className="mr-2 h-5 w-5" />
+                Subscribe on YouTube
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Daily Devotional Section */}
       <section className="bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-16 md:py-24">
         <div className="container mx-auto">
