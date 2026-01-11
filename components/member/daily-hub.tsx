@@ -104,7 +104,7 @@ export default function DailyHub() {
               rel="noopener noreferrer"
               className="flex-1"
             >
-              <Button variant="outline" className="w-full border-white/30 text-white hover:bg-white/10">
+              <Button className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30">
                 <Smartphone className="h-4 w-4 mr-2" />
                 Get the App
               </Button>
