@@ -275,11 +275,13 @@ export default function MemberDashboardPage() {
       <StreakWarningBanner />
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-br from-navy to-navy-800 rounded-xl p-8 text-white">
-        <div className="flex items-start justify-between">
+      <div className="relative bg-gradient-to-br from-tpc-navy via-tpc-navy/95 to-tpc-navy/90 rounded-2xl p-8 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <div className="relative flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {memberName}!</h1>
-            <p className="text-gray-300 text-lg">
+            <p className="text-tpc-gold text-sm font-medium mb-1">Good to see you</p>
+            <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2">Welcome back, {memberName}!</h1>
+            <p className="text-white/70 text-lg">
               Continue your spiritual journey today
             </p>
             {currentSeasons.length > 0 && (
@@ -288,20 +290,19 @@ export default function MemberDashboardPage() {
                   <Badge
                     key={season.id}
                     variant="outline"
-                    className="border-white/30 text-white"
-                    style={{ backgroundColor: `${season.color}20` }}
+                    className="border-tpc-gold/30 text-white bg-tpc-gold/10"
                   >
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Sparkles className="h-3 w-3 mr-1 text-tpc-gold" />
                     {season.name}
                   </Badge>
                 ))}
               </div>
             )}
           </div>
-          <div className="hidden md:flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-300">Days in Journey</p>
-              <p className="text-3xl font-bold">{stats?.days_since_joining}</p>
+          <div className="hidden md:flex items-center gap-6">
+            <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <p className="text-sm text-tpc-gold">Days in Journey</p>
+              <p className="text-4xl font-bold">{stats?.days_since_joining || 0}</p>
             </div>
           </div>
         </div>
@@ -315,50 +316,50 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-l-4 border-l-tpc-navy">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Content</CardTitle>
-            <BookOpen className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-stone-600">Total Content</CardTitle>
+            <BookOpen className="h-4 w-4 text-tpc-navy" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-navy">{stats?.total_content_consumed}</div>
-            <p className="text-xs text-gray-600 mt-1">
-              +{stats?.content_this_week} this week
+            <div className="text-3xl font-bold text-tpc-navy">{stats?.total_content_consumed || 0}</div>
+            <p className="text-xs text-stone-500 mt-1">
+              +{stats?.content_this_week || 0} this week
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-tpc-gold">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Season Streak</CardTitle>
-            <TrendingUp className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-stone-600">Season Streak</CardTitle>
+            <TrendingUp className="h-4 w-4 text-tpc-gold-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-navy">{stats?.current_season_streak}</div>
-            <p className="text-xs text-gray-600 mt-1">consecutive days</p>
+            <div className="text-3xl font-bold text-tpc-navy">{stats?.current_season_streak || 0}</div>
+            <p className="text-xs text-stone-500 mt-1">consecutive days</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Assessments</CardTitle>
-            <CheckCircle className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-stone-600">Assessments</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-navy">{stats?.assessments_completed}</div>
-            <p className="text-xs text-gray-600 mt-1">completed</p>
+            <div className="text-3xl font-bold text-tpc-navy">{stats?.assessments_completed || 0}</div>
+            <p className="text-xs text-stone-500 mt-1">completed</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">This Month</CardTitle>
-            <Calendar className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-stone-600">This Month</CardTitle>
+            <Calendar className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-navy">{stats?.content_this_month}</div>
-            <p className="text-xs text-gray-600 mt-1">content consumed</p>
+            <div className="text-3xl font-bold text-tpc-navy">{stats?.content_this_month || 0}</div>
+            <p className="text-xs text-stone-500 mt-1">content consumed</p>
           </CardContent>
         </Card>
       </div>
@@ -367,7 +368,7 @@ export default function MemberDashboardPage() {
       {currentSeasons.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-navy">Your Journey</CardTitle>
+            <CardTitle className="text-tpc-navy">Your Journey</CardTitle>
             <CardDescription>Track your progress through your current seasons</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -379,7 +380,7 @@ export default function MemberDashboardPage() {
                       className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: season.color }}
                     />
-                    <span className="font-semibold text-navy">{season.name}</span>
+                    <span className="font-semibold text-tpc-navy">{season.name}</span>
                   </div>
                   <span className="text-sm text-gray-600">
                     {season.content_completed}/{season.content_total} completed
@@ -403,7 +404,7 @@ export default function MemberDashboardPage() {
       {continueWatching.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-navy">Continue Watching</h2>
+            <h2 className="text-2xl font-bold text-tpc-navy">Continue Watching</h2>
             <Link href="/content?tab=in-progress">
               <Button variant="ghost" size="sm">
                 View All
@@ -433,7 +434,7 @@ export default function MemberDashboardPage() {
                     </div>
                     <CardHeader className="pb-3">
                       <div className="flex items-start gap-2 mb-2">
-                        <Icon className="h-4 w-4 text-navy flex-shrink-0 mt-0.5" />
+                        <Icon className="h-4 w-4 text-tpc-navy flex-shrink-0 mt-0.5" />
                         <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
                       </div>
                       <CardDescription className="flex items-center justify-between">
@@ -471,16 +472,16 @@ export default function MemberDashboardPage() {
         {/* Upcoming Events */}
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-navy dark:text-white">Upcoming Events</CardTitle>
+            <CardTitle className="text-tpc-navy dark:text-white">Upcoming Events</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {upcomingEvents.map((event) => (
               <div key={event.id} className="flex items-start gap-4 pb-4 border-b dark:border-gray-700 last:border-0 last:pb-0">
-                <div className="flex-shrink-0 w-12 h-12 bg-navy/10 dark:bg-navy/30 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-navy dark:text-gold" />
+                <div className="flex-shrink-0 w-12 h-12 bg-tpc-navy/10 dark:bg-tpc-navy/30 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-tpc-navy dark:text-tpc-gold" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-navy dark:text-white truncate">{event.title}</p>
+                  <p className="font-semibold text-tpc-navy dark:text-white truncate">{event.title}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{event.date} at {event.time}</p>
                   <Badge variant="outline" className="mt-1">{event.type}</Badge>
                 </div>
