@@ -24,6 +24,7 @@ import {
   Sparkles,
   Megaphone,
   Send,
+  Mail,
 } from 'lucide-react'
 
 interface NavSection {
@@ -98,7 +99,8 @@ export default function AdminNav() {
       defaultOpen: true,
       items: [
         { name: 'Dashboard', href: '/admin-dashboard' },
-        { name: 'Communications', href: '/communications', badge: unreadCount },
+        { name: 'Email Inbox', href: '/inbox', badge: unreadCount },
+        { name: 'Communications', href: '/communications' },
       ]
     },
     {

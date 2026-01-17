@@ -9,17 +9,10 @@ import { Progress } from '@/components/ui/progress'
 import {
   BookOpen,
   CheckCircle,
-  Clock,
   TrendingUp,
   Calendar,
-  Play,
-  Heart,
-  DollarSign,
   Sparkles,
-  ArrowRight,
-  Video,
-  FileText,
-  Headphones
+  ArrowRight
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import DailyHub from '@/components/member/daily-hub'
@@ -27,10 +20,7 @@ import PlantWidget from '@/components/member/plant-widget'
 import EngagementWidget from '@/components/member/engagement-widget'
 import ActivityFeed from '@/components/member/activity-feed'
 import QuickActionsWidget from '@/components/member/quick-actions-widget'
-import RecommendationsWidget from '@/components/member/recommendations-widget'
-import StreakWarningBanner from '@/components/member/streak-warning-banner'
-import AIInsightsWidget from '@/components/member/ai-insights-widget'
-import { EmptyState, emptyStates } from '@/components/ui/empty-state'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface DashboardStats {
   total_content_consumed: number
@@ -51,17 +41,6 @@ interface Season {
   content_total: number
 }
 
-interface ContentItem {
-  id: string
-  title: string
-  author: string
-  content_type: string
-  thumbnail_url?: string
-  duration_minutes?: number
-  progress_percentage?: number
-  season_name?: string
-  season_color?: string
-}
 
 interface UpcomingEvent {
   id: string
@@ -76,8 +55,6 @@ export default function MemberDashboardPage() {
   const [memberName, setMemberName] = useState('')
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [currentSeasons, setCurrentSeasons] = useState<Season[]>([])
-  const [recommendedContent, setRecommendedContent] = useState<ContentItem[]>([])
-  const [continueWatching, setContinueWatching] = useState<ContentItem[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
 
   useEffect(() => {
@@ -167,52 +144,6 @@ export default function MemberDashboardPage() {
           setCurrentSeasons([])
         }
 
-        // Fetch recent teachings for recommended content
-        const { data: teachings } = await supabase
-          .from('teachings')
-          .select('*')
-          .order('published_at', { ascending: false })
-          .limit(3)
-
-        if (teachings) {
-          setRecommendedContent(teachings.map(t => ({
-            id: t.id,
-            title: t.title,
-            author: t.speaker,
-            content_type: t.video_url ? 'video' : t.audio_url ? 'audio' : 'article',
-            duration_minutes: t.duration_minutes,
-            thumbnail_url: t.thumbnail_url
-          })))
-        } else {
-          setRecommendedContent([])
-        }
-
-        // Fetch in-progress teachings
-        const { data: inProgress } = await supabase
-          .from('teaching_progress')
-          .select(`
-            *,
-            teaching:teachings(*)
-          `)
-          .eq('member_id', member.id)
-          .eq('completed', false)
-          .order('last_watched_at', { ascending: false })
-          .limit(2)
-
-        if (inProgress) {
-          setContinueWatching(inProgress.map(p => ({
-            id: p.teaching.id,
-            title: p.teaching.title,
-            author: p.teaching.speaker,
-            content_type: p.teaching.video_url ? 'video' : 'audio',
-            duration_minutes: p.teaching.duration_minutes,
-            progress_percentage: Math.round((p.progress_seconds / (p.teaching.duration_minutes * 60)) * 100),
-            thumbnail_url: p.teaching.thumbnail_url
-          })))
-        } else {
-          setContinueWatching([])
-        }
-
         // Fetch upcoming events
         const { data: events } = await supabase
           .from('events')
@@ -241,18 +172,6 @@ export default function MemberDashboardPage() {
     }
   }
 
-  const getContentIcon = (type: string) => {
-    switch (type) {
-      case 'video':
-        return Video
-      case 'audio':
-        return Headphones
-      case 'article':
-        return FileText
-      default:
-        return BookOpen
-    }
-  }
 
   if (loading) {
     return (
@@ -271,9 +190,6 @@ export default function MemberDashboardPage() {
 
   return (
     <div className="p-4 lg:p-8 space-y-8">
-      {/* Streak Warning Banner - Shows when streak is at risk */}
-      <StreakWarningBanner />
-
       {/* Welcome Banner */}
       <div className="relative bg-gradient-to-br from-tpc-navy via-tpc-navy/95 to-tpc-navy/90 rounded-2xl p-8 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
@@ -399,67 +315,6 @@ export default function MemberDashboardPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Continue Watching/Reading */}
-      {continueWatching.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-tpc-navy">Continue Watching</h2>
-            <Link href="/content?tab=in-progress">
-              <Button variant="ghost" size="sm">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {continueWatching.map((content) => {
-              const Icon = getContentIcon(content.content_type)
-              return (
-                <Link key={content.id} href={`/content/${content.id}`}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                    <div className="relative">
-                      {content.thumbnail_url && (
-                        <div className="aspect-video bg-gray-200 rounded-t-lg relative overflow-hidden">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Play className="h-12 w-12 text-white opacity-80" />
-                          </div>
-                        </div>
-                      )}
-                      {content.progress_percentage && (
-                        <div className="absolute bottom-0 left-0 right-0">
-                          <Progress value={content.progress_percentage} className="h-1 rounded-none" />
-                        </div>
-                      )}
-                    </div>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-2 mb-2">
-                        <Icon className="h-4 w-4 text-tpc-navy flex-shrink-0 mt-0.5" />
-                        <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
-                      </div>
-                      <CardDescription className="flex items-center justify-between">
-                        <span>{content.author}</span>
-                        {content.duration_minutes && (
-                          <span className="flex items-center gap-1 text-xs">
-                            <Clock className="h-3 w-3" />
-                            {content.duration_minutes}m
-                          </span>
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Personalized Recommendations */}
-      <RecommendationsWidget />
-
-      {/* AI Insights - Personalized recommendations */}
-      <AIInsightsWidget />
 
       {/* Quick Actions, Activity Feed & Upcoming Events */}
       <div className="grid gap-6 lg:grid-cols-3">

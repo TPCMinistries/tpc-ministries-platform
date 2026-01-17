@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     const memberTier = member?.tier || 'free'
+    const memberId = member?.id
     const isAdmin = member?.role === 'admin'
 
     // Get query params
@@ -26,6 +27,8 @@ export async function GET(request: NextRequest) {
     const tab = searchParams.get('tab') || 'all'
     const search = searchParams.get('search') || ''
     const tagFilter = searchParams.get('tag') || ''
+    const seriesFilter = searchParams.get('series') || ''
+    const sortBy = searchParams.get('sort') || 'newest'
 
     // Tier hierarchy for access control
     const tierHierarchy = ['free', 'member', 'partner', 'covenant']
@@ -80,13 +83,23 @@ export async function GET(request: NextRequest) {
       (teachingProgress || []).map(p => [p.teaching_id, p])
     )
 
+    // Fetch user's watchlist
+    const { data: watchlistData } = await supabase
+      .from('member_watchlist')
+      .select('content_id, content_type')
+      .eq('member_id', memberId)
+
+    const watchlistSet = new Set(
+      (watchlistData || []).map(w => `${w.content_type}-${w.content_id}`)
+    )
+
     // Combine all content into unified format
     const allContent: any[] = []
 
     // Add teachings
     for (const teaching of teachings || []) {
       const progress = progressMap.get(teaching.id)
-      const progressPercent = progress && teaching.duration_minutes 
+      const progressPercent = progress && teaching.duration_minutes
         ? Math.round((progress.progress_seconds / (teaching.duration_minutes * 60)) * 100)
         : 0
 
@@ -113,7 +126,12 @@ export async function GET(request: NextRequest) {
         progress_percent: progressPercent,
         completed: progress?.completed || false,
         last_accessed: progress?.last_watched_at,
+        view_count: teaching.view_count || 0,
+        is_featured: teaching.is_featured || false,
+        tags: teaching.tags || [],
+        series_name: teaching.series_name,
         created_at: teaching.created_at,
+        in_watchlist: watchlistSet.has(`teaching-${teaching.id}`),
         href: `/content/${teaching.id}`,
       })
     }
@@ -133,9 +151,12 @@ export async function GET(request: NextRequest) {
         thumbnail_url: resource.thumbnail_url,
         tier_required: resource.tier_required || 'free',
         has_access: hasAccess,
-        download_count: resource.download_count,
+        download_count: resource.download_count || 0,
+        view_count: resource.download_count || 0,
+        is_featured: resource.is_featured || false,
         tags: resource.tags || [],
         created_at: resource.created_at,
+        in_watchlist: watchlistSet.has(`resource-${resource.id}`),
         href: `/ebooks/${resource.id}`,
       })
     }
@@ -151,15 +172,72 @@ export async function GET(request: NextRequest) {
         source: 'sermon',
         thumbnail_url: sermon.thumbnail_url,
         duration_minutes: sermon.duration_minutes,
-        tier_required: 'free', // Sermons are typically free
+        tier_required: 'free',
         has_access: true,
         sermon_date: sermon.sermon_date,
         series_name: sermon.series_name,
         video_url: sermon.video_url,
+        view_count: sermon.view_count || 0,
+        is_featured: sermon.is_featured || false,
         created_at: sermon.created_at,
-        href: `/sermons`, // Sermons page handles detail view inline
+        in_watchlist: watchlistSet.has(`sermon-${sermon.id}`),
+        href: `/sermons`,
       })
     }
+
+    // Build special sections
+
+    // Continue Watching - in-progress content sorted by last accessed
+    const continueWatching = allContent
+      .filter(c => c.progress_percent > 0 && c.progress_percent < 100 && !c.completed)
+      .sort((a, b) => {
+        const dateA = a.last_accessed ? new Date(a.last_accessed).getTime() : 0
+        const dateB = b.last_accessed ? new Date(b.last_accessed).getTime() : 0
+        return dateB - dateA
+      })
+      .slice(0, 10)
+
+    // Recently Added - newest content from last 30 days
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const recentlyAdded = allContent
+      .filter(c => new Date(c.created_at) >= thirtyDaysAgo)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 10)
+
+    // Featured Content
+    const featured = allContent
+      .filter(c => c.is_featured)
+      .slice(0, 6)
+
+    // Build Series/Collections from sermons and teachings with series_name
+    const seriesMap = new Map<string, any[]>()
+    allContent.forEach(c => {
+      if (c.series_name) {
+        if (!seriesMap.has(c.series_name)) {
+          seriesMap.set(c.series_name, [])
+        }
+        seriesMap.get(c.series_name)!.push(c)
+      }
+    })
+
+    const series = Array.from(seriesMap.entries())
+      .map(([name, items]) => ({
+        name,
+        count: items.length,
+        thumbnail: items[0]?.thumbnail_url,
+        type: items[0]?.type,
+        items: items.sort((a, b) =>
+          new Date(a.sermon_date || a.created_at).getTime() -
+          new Date(b.sermon_date || b.created_at).getTime()
+        )
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    // Popular Content (by view count)
+    const popular = [...allContent]
+      .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+      .slice(0, 10)
 
     // Filter by tab
     let filteredContent = allContent
@@ -179,6 +257,14 @@ export async function GET(request: NextRequest) {
           c.progress_percent > 0 || c.completed || c.last_accessed
         )
         break
+      case 'watchlist':
+        filteredContent = allContent.filter(c => c.in_watchlist)
+        break
+    }
+
+    // Filter by series
+    if (seriesFilter) {
+      filteredContent = filteredContent.filter(c => c.series_name === seriesFilter)
     }
 
     // Filter by tag
@@ -186,6 +272,37 @@ export async function GET(request: NextRequest) {
       filteredContent = filteredContent.filter(c =>
         c.tags && c.tags.includes(tagFilter.toLowerCase())
       )
+    }
+
+    // Sort content
+    switch (sortBy) {
+      case 'oldest':
+        filteredContent.sort((a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+        break
+      case 'popular':
+        filteredContent.sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+        break
+      case 'duration-short':
+        filteredContent.sort((a, b) => (a.duration_minutes || 999) - (b.duration_minutes || 999))
+        break
+      case 'duration-long':
+        filteredContent.sort((a, b) => (b.duration_minutes || 0) - (a.duration_minutes || 0))
+        break
+      case 'recent-activity':
+        filteredContent.sort((a, b) => {
+          const dateA = a.last_accessed ? new Date(a.last_accessed).getTime() : 0
+          const dateB = b.last_accessed ? new Date(b.last_accessed).getTime() : 0
+          return dateB - dateA
+        })
+        break
+      case 'newest':
+      default:
+        filteredContent.sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        break
     }
 
     // Collect all unique tags for filtering options
@@ -196,19 +313,6 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Sort by created_at (newest first) for most tabs, or last_accessed for progress tab
-    if (tab === 'progress') {
-      filteredContent.sort((a, b) => {
-        const dateA = a.last_accessed ? new Date(a.last_accessed).getTime() : 0
-        const dateB = b.last_accessed ? new Date(b.last_accessed).getTime() : 0
-        return dateB - dateA
-      })
-    } else {
-      filteredContent.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
-    }
-
     // Calculate stats
     const stats = {
       total: allContent.length,
@@ -216,10 +320,18 @@ export async function GET(request: NextRequest) {
       audio: allContent.filter(c => c.type === 'audio').length,
       ebooks: allContent.filter(c => c.type === 'ebook').length,
       inProgress: allContent.filter(c => c.progress_percent > 0 && !c.completed).length,
+      watchlist: allContent.filter(c => c.in_watchlist).length,
     }
 
     return NextResponse.json({
       data: filteredContent,
+      sections: {
+        continueWatching,
+        recentlyAdded,
+        featured,
+        popular,
+      },
+      series,
       stats,
       tags: Array.from(allTags).sort(),
       member_tier: memberTier,
