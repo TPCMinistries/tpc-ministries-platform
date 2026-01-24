@@ -107,12 +107,11 @@ export default function KenyaTripPage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </a>
-                <Link
-                  href="/kenya/give"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/30 text-white hover:bg-white/10 text-lg px-8 h-14 rounded-md font-bold transition-colors"
-                >
-                  <Heart className="h-5 w-5" />
-                  Support the Mission
+                <Link href="/kenya/give">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 bg-transparent text-white hover:bg-white/10 font-bold text-lg px-8 h-14">
+                    <Heart className="mr-2 h-5 w-5" />
+                    Support the Mission
+                  </Button>
                 </Link>
               </div>
 
