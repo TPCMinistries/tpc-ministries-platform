@@ -101,14 +101,14 @@ export default function KenyaTripPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <a href="#apply">
-                  <Button size="lg" className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold text-lg px-8 h-14 shadow-lg shadow-amber-500/25">
+                <a href="#apply" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold text-lg px-8 h-14 shadow-lg shadow-amber-500/25">
                     Apply Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </a>
-                <Link href="/kenya/give">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 bg-transparent text-white hover:bg-white/10 font-bold text-lg px-8 h-14">
+                <Link href="/kenya/give" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full border-2 border-white/30 bg-transparent text-white hover:bg-white/10 font-bold text-lg px-8 h-14">
                     <Heart className="mr-2 h-5 w-5" />
                     Support the Mission
                   </Button>
