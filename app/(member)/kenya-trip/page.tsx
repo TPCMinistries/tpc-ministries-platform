@@ -154,7 +154,7 @@ interface Member {
 
 // Trip details from tpcmin.org/kenya
 const TRIP_INFO = {
-  dates: 'April 22 – May 8, 2026',
+  dates: 'April 21 – May 7, 2025',
   duration: '17 days',
   locations: [
     { name: 'Nairobi', description: 'Capital city, 4.4+ million people' },
@@ -162,10 +162,10 @@ const TRIP_INFO = {
     { name: 'Kakamega', description: 'Rural western Kenya, near tropical rainforest' },
   ],
   itinerary: [
-    { phase: 'Arrival', dates: 'April 22-23', description: 'Meet in Nairobi for welcome and orientation' },
-    { phase: 'Immersion', dates: 'April 24-25', description: 'Cultural experiences and safari adventure' },
-    { phase: 'Sabbath', dates: 'April 26', description: 'Worship, rest, and spiritual preparation' },
-    { phase: 'Service', dates: 'April 27–May 8', description: 'Kingdom impact across three cities' },
+    { phase: 'Arrival', dates: 'April 21-22', description: 'Meet in Nairobi for welcome and orientation' },
+    { phase: 'Immersion', dates: 'April 23-24', description: 'Cultural experiences and safari adventure' },
+    { phase: 'Sabbath', dates: 'April 25', description: 'Worship, rest, and spiritual preparation' },
+    { phase: 'Service', dates: 'April 26–May 7', description: 'Kingdom impact across three cities' },
   ],
   whatsIncluded: [
     'Round-trip international flights',
