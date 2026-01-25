@@ -25,6 +25,7 @@ import {
   Megaphone,
   Send,
   Mail,
+  Plane,
 } from 'lucide-react'
 
 interface NavSection {
@@ -145,6 +146,13 @@ export default function AdminNav() {
       icon: <DollarSign className="h-4 w-4" />,
       items: [
         { name: 'Giving Overview', href: '/admin-giving' },
+      ]
+    },
+    {
+      title: 'Missions',
+      icon: <Plane className="h-4 w-4" />,
+      items: [
+        { name: 'Kenya Command Center', href: '/kenya-command-center' },
       ]
     },
     {
