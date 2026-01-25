@@ -48,6 +48,10 @@ import {
   Home,
   Sparkles,
   Gift,
+  Upload,
+  File,
+  Trash2,
+  Eye,
 } from 'lucide-react'
 
 interface Trip {
@@ -84,6 +88,12 @@ interface Participant {
   payment_status: string
   application_status: string
   application_date: string
+  // Document URLs
+  passport_document_url: string | null
+  visa_document_url: string | null
+  vaccination_document_url: string | null
+  insurance_document_url: string | null
+  medical_form_url: string | null
 }
 
 interface Announcement {
@@ -203,6 +213,7 @@ export default function KenyaTripPage() {
   const [packingItems, setPackingItems] = useState<PackingItem[]>([])
   const [packingStatus, setPackingStatus] = useState<PackingStatus[]>([])
   const [activeTab, setActiveTab] = useState('overview')
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
 
   // Application form state
   const [applying, setApplying] = useState(false)
@@ -405,6 +416,93 @@ export default function KenyaTripPage() {
       return [...prev, { packing_item_id: itemId, is_packed: true }]
     })
   }
+
+  // Document upload handler
+  const uploadDocument = async (
+    file: File,
+    documentType: 'passport' | 'visa' | 'vaccination' | 'insurance' | 'medical_form'
+  ) => {
+    if (!participant || !member) return
+
+    setUploadingDoc(documentType)
+    const supabase = createClient()
+
+    try {
+      // Get current user for folder path
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}/${documentType}_${Date.now()}.${fileExt}`
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('kenya-trip-documents')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) throw uploadError
+
+      // Get public URL (signed URL for private bucket)
+      const { data: urlData } = await supabase.storage
+        .from('kenya-trip-documents')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365) // 1 year expiry
+
+      const documentUrl = urlData?.signedUrl || uploadData.path
+
+      // Update participant record with document URL
+      const columnName = `${documentType}_document_url` as const
+      const { error: updateError } = await supabase
+        .from('kenya_trip_participants')
+        .update({ [columnName]: documentUrl })
+        .eq('id', participant.id)
+
+      if (updateError) throw updateError
+
+      // Refresh participant data
+      fetchData()
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Failed to upload document. Please try again.')
+    } finally {
+      setUploadingDoc(null)
+    }
+  }
+
+  // Delete document handler
+  const deleteDocument = async (documentType: 'passport' | 'visa' | 'vaccination' | 'insurance' | 'medical_form') => {
+    if (!participant) return
+
+    if (!confirm('Are you sure you want to delete this document?')) return
+
+    const supabase = createClient()
+
+    try {
+      const columnName = `${documentType}_document_url` as const
+      const { error } = await supabase
+        .from('kenya_trip_participants')
+        .update({ [columnName]: null })
+        .eq('id', participant.id)
+
+      if (error) throw error
+      fetchData()
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert('Failed to delete document.')
+    }
+  }
+
+  // Document types configuration
+  const documentTypes = [
+    { key: 'passport' as const, label: 'Passport Copy', description: 'Upload a clear copy of your passport photo page', required: true },
+    { key: 'visa' as const, label: 'Kenya Visa', description: 'Upload your approved Kenya visa or eVisa confirmation', required: true },
+    { key: 'vaccination' as const, label: 'Vaccination Records', description: 'Yellow fever certificate and other vaccination records', required: true },
+    { key: 'insurance' as const, label: 'Travel Insurance', description: 'Proof of travel/medical insurance coverage', required: true },
+    { key: 'medical_form' as const, label: 'Medical Form', description: 'Completed medical information form (if required)', required: false },
+  ]
 
   // Intelligently recommend a service track based on occupation/profession
   const getRecommendedTrack = (occupation: string | null | undefined): string => {
@@ -935,6 +1033,111 @@ export default function KenyaTripPage() {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Document Uploads */}
+                <Card className="md:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      My Documents
+                    </CardTitle>
+                    <CardDescription>
+                      Upload required documents for trip verification. All file formats accepted.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {documentTypes.map((docType) => {
+                        const docUrl = participant[`${docType.key}_document_url` as keyof Participant] as string | null
+                        const isUploading = uploadingDoc === docType.key
+
+                        return (
+                          <div
+                            key={docType.key}
+                            className={`p-4 rounded-lg border-2 ${
+                              docUrl ? 'border-green-200 bg-green-50' : docType.required ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <p className="font-medium flex items-center gap-2">
+                                  {docUrl ? (
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <File className="h-4 w-4 text-gray-400" />
+                                  )}
+                                  {docType.label}
+                                  {docType.required && !docUrl && (
+                                    <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-300">Required</Badge>
+                                  )}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">{docType.description}</p>
+                              </div>
+                            </div>
+
+                            {docUrl ? (
+                              <div className="flex items-center gap-2 mt-3">
+                                <a
+                                  href={docUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1"
+                                >
+                                  <Button variant="outline" size="sm" className="w-full gap-2">
+                                    <Eye className="h-4 w-4" />
+                                    View Document
+                                  </Button>
+                                </a>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deleteDocument(docType.key)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="mt-3">
+                                <label className="cursor-pointer">
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) uploadDocument(file, docType.key)
+                                    }}
+                                    disabled={isUploading}
+                                  />
+                                  <div className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed transition-colors ${
+                                    isUploading
+                                      ? 'border-gray-300 bg-gray-50 cursor-not-allowed'
+                                      : 'border-navy/30 hover:border-navy hover:bg-navy/5 cursor-pointer'
+                                  }`}>
+                                    {isUploading ? (
+                                      <>
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                        <span className="text-sm">Uploading...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Upload className="h-4 w-4 text-navy" />
+                                        <span className="text-sm text-navy font-medium">Upload File</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 text-center">
+                      Accepted formats: PDF, JPG, PNG, DOC, DOCX, and more. Max 10MB per file.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             ) : (
               /* Application Form */
