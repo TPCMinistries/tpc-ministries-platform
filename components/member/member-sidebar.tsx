@@ -37,6 +37,7 @@ import {
   Cake,
   Home as HomeIcon,
   Shield,
+  Plane,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -66,6 +67,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       title: null, // No header for primary actions
       items: [
         { name: 'Dashboard', href: '/dashboard', icon: Home },
+        { name: 'Kenya 2026', href: '/kenya-trip', icon: Plane, highlight: true },
         { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
         { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
       ]
