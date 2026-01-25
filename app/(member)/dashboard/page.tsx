@@ -109,9 +109,9 @@ export default function MemberDashboardPage() {
           new Date(p.completed_at) >= oneMonthAgo
         ).length || 0
 
-        // Fetch assessment results (fix: use member_id instead of user_id)
+        // Fetch assessment results
         const { data: assessmentResults } = await supabase
-          .from('assessment_results')
+          .from('member_assessment_results')
           .select('id')
           .eq('member_id', member.id)
 

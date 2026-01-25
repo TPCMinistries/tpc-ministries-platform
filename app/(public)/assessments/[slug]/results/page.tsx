@@ -86,7 +86,7 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
         // Fetch assessment results
         if (resultId) {
           const { data: resultData, error } = await supabase
-            .from('assessment_results')
+            .from('member_assessment_results')
             .select('*')
             .eq('id', resultId)
             .single()
