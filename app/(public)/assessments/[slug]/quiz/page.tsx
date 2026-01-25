@@ -396,7 +396,7 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
       }
 
       const { data: resultData, error: resultError } = await supabase
-        .from('assessment_results')
+        .from('member_assessment_results')
         .insert(resultInsertData)
         .select()
         .single()
