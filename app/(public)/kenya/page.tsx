@@ -108,7 +108,7 @@ export default function KenyaTripPage() {
                   </Button>
                 </a>
                 <Link href="/kenya/give" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full border-2 border-white/30 bg-transparent text-white hover:bg-white/10 font-bold text-lg px-8 h-14">
+                  <Button size="lg" className="w-full border-2 border-white/30 bg-transparent text-white hover:bg-white/10 font-bold text-lg px-8 h-14">
                     <Heart className="mr-2 h-5 w-5" />
                     Support the Mission
                   </Button>
