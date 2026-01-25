@@ -70,7 +70,7 @@ export default function EngagementWidget() {
 
       // Get assessment count
       const { count: assessmentCount } = await supabase
-        .from('assessment_results')
+        .from('member_assessment_results')
         .select('id', { count: 'exact', head: true })
         .eq('member_id', memberId)
 

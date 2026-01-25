@@ -106,7 +106,7 @@ export default function MemberAssessmentsPage() {
 
       // Fetch all assessment results for this member
       const { data: results, error } = await supabase
-        .from('assessment_results')
+        .from('member_assessment_results')
         .select('*')
         .eq('member_id', member.id)
         .order('created_at', { ascending: false })

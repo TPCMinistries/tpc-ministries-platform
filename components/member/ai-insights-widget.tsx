@@ -61,7 +61,7 @@ export default function AIInsightsWidget() {
         .limit(10)
 
       const { data: assessmentResults } = await supabase
-        .from('assessment_results')
+        .from('member_assessment_results')
         .select('*')
         .eq('member_id', member.id)
         .order('created_at', { ascending: false })
