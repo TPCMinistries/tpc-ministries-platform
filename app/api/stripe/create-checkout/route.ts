@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getStripe } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,23 +40,68 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Create Stripe checkout session
-    // For now, return placeholder data
-    const checkoutUrl = `/checkout/success?tier=${tier.slug}&billing=${billing_cycle}`
+    // Get member details
+    const { data: member } = await supabase
+      .from('members')
+      .select('id, email, first_name, last_name')
+      .eq('user_id', user.id)
+      .single()
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'
+    const stripe = getStripe()
+
+    // Determine price based on billing cycle
+    const amount = billing_cycle === 'monthly' ? tier.price_monthly : tier.price_annual
+    const interval = billing_cycle === 'monthly' ? 'month' : 'year'
+
+    // Create Stripe checkout session for membership subscription
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${tier.name} Membership`,
+              description: tier.description || `TPC Ministries ${tier.name} membership`,
+            },
+            recurring: {
+              interval: interval,
+            },
+            unit_amount: Math.round(amount * 100), // Convert to cents
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: member?.email || user.email,
+      client_reference_id: user.id,
+      metadata: {
+        tier_id: tier.id,
+        tier_slug: tier.slug,
+        tier_name: tier.name,
+        user_id: user.id,
+        member_id: member?.id || '',
+        billing_cycle: billing_cycle,
+        type: 'membership',
+      },
+      success_url: `${baseUrl}/member/account?tab=membership&success=true&tier=${tier.slug}`,
+      cancel_url: `${baseUrl}/member/account?tab=membership&canceled=true`,
+    })
 
     return NextResponse.json(
       {
-        message: 'Checkout session created (placeholder)',
-        checkout_url: checkoutUrl,
+        checkout_url: session.url,
+        session_id: session.id,
         tier: tier.name,
-        amount: billing_cycle === 'monthly' ? tier.price_monthly : tier.price_annual,
+        amount: amount,
       },
       { status: 200 }
     )
-  } catch (error) {
-    console.error('Error creating checkout session:', error)
+  } catch (error: any) {
+    console.error('Error creating membership checkout session:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     )
   }

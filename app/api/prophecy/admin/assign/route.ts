@@ -1,22 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireStaff, AuthResult } from '@/lib/auth-server'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Check authentication and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    // Require staff/admin access
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    // TODO: Check if user is admin
-    // For now, allow all authenticated users
+    const { user } = authResult as AuthResult
+    const supabase = await createClient()
 
     const body = await request.json()
     const {
@@ -46,6 +41,13 @@ export async function POST(request: NextRequest) {
     // Generate title from first sentence if not provided
     const generatedTitle = title || transcript.split('.')[0].substring(0, 100)
 
+    // Get member details for notification
+    const { data: memberData } = await supabase
+      .from('members')
+      .select('id, email, first_name, last_name')
+      .eq('id', member_id)
+      .single()
+
     // Create the personal prophecy
     const { data, error } = await supabase
       .from('personal_prophecies')
@@ -73,8 +75,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Send notification to member
-    // This could be an email, in-app notification, or both
+    // Send in-app notification to member
+    if (memberData) {
+      try {
+        await supabase.from('notifications').insert({
+          user_id: member_id,
+          type: 'prophecy',
+          title: 'New Prophetic Word Received',
+          message: `You have received a new prophetic word: "${generatedTitle}"`,
+          link: '/my-prophecies',
+          is_read: false,
+        })
+      } catch (notifError) {
+        console.warn('Failed to create notification:', notifError)
+      }
+
+      // Send email notification
+      if (memberData.email) {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/email/send-prophecy-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: memberData.email,
+              name: memberData.first_name || 'Beloved',
+              prophecyTitle: generatedTitle,
+              prophecyId: data.id,
+            }),
+          })
+        } catch (emailError) {
+          console.warn('Failed to send prophecy email:', emailError)
+        }
+      }
+    }
 
     return NextResponse.json(
       { message: 'Personal prophecy assigned successfully', data },

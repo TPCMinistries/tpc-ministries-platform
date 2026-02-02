@@ -1,30 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireStaff } from '@/lib/auth-server'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify user is admin
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized'
-        },
-        { status: 401 }
-      )
+    // Require staff/admin access
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    // TODO: Add admin role check
-    // const { data: member } = await supabase
-    //   .from('members')
-    //   .select('role')
-    //   .eq('user_id', user.id)
-    //   .single()
-    // if (member?.role !== 'admin') return NextResponse.json({success: false, error: 'Forbidden'}, {status: 403})
+    const supabase = await createClient()
 
     const body = await request.json()
     const {

@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { SkipLink } from "@/components/a11y/skip-link";
 import { Toaster } from "@/components/ui/toaster";
+import { CelebrationProvider } from "@/components/providers/celebration-provider";
+import { CommandMenu } from "@/components/ui/command-menu";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -158,12 +160,15 @@ export default function RootLayout({
         <SkipLink />
         <GoogleAnalytics />
         <ThemeProvider>
-          <PWAProvider>
-            <main id="main-content" tabIndex={-1} className="outline-none">
-              {children}
-            </main>
-            <Toaster />
-          </PWAProvider>
+          <CelebrationProvider>
+            <PWAProvider>
+              <main id="main-content" tabIndex={-1} className="outline-none">
+                {children}
+              </main>
+              <CommandMenu />
+              <Toaster />
+            </PWAProvider>
+          </CelebrationProvider>
         </ThemeProvider>
       </body>
     </html>

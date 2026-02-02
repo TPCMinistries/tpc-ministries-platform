@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import AdminNav from '@/components/admin/admin-nav'
+import { AdminSimplifiedNav } from '@/components/admin/redesign/admin-simplified-nav'
+import { AdminBottomNav } from '@/components/admin/redesign/admin-bottom-nav'
 import { ArrowLeftRight } from 'lucide-react'
 
 // Force dynamic rendering for all admin pages
@@ -77,8 +78,8 @@ export default async function AdminLayout({
               </Link>
             </div>
 
-            {/* Navigation */}
-            <AdminNav />
+            {/* Navigation - Redesigned */}
+            <AdminSimplifiedNav />
 
             {/* User Info */}
             <div className="border-t border-gray-700 px-3 py-4">
@@ -96,10 +97,13 @@ export default async function AdminLayout({
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation - Redesigned */}
+      <AdminBottomNav />
     </div>
   )
 }

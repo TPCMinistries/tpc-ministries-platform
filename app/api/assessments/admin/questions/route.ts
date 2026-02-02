@@ -1,25 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireStaff } from '@/lib/auth-server'
 
 // Create a new question
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify user is admin
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized'
-        },
-        { status: 401 }
-      )
+    // Require staff/admin access
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    // TODO: Add admin role check
+    const supabase = await createClient()
 
     const body = await request.json()
     const {
@@ -124,22 +116,13 @@ export async function POST(request: NextRequest) {
 // Update a question
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify user is admin
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized'
-        },
-        { status: 401 }
-      )
+    // Require staff/admin access
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    // TODO: Add admin role check
+    const supabase = await createClient()
 
     const body = await request.json()
     const {
@@ -243,22 +226,13 @@ export async function PUT(request: NextRequest) {
 // Delete a question
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify user is admin
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized'
-        },
-        { status: 401 }
-      )
+    // Require staff/admin access
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    // TODO: Add admin role check
+    const supabase = await createClient()
 
     const searchParams = request.nextUrl.searchParams
     const question_id = searchParams.get('question_id')

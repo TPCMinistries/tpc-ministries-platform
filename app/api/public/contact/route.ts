@@ -47,8 +47,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Send email notification to admin
-    // TODO: Send confirmation email to user
+    // Send email notification to admin
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+      await fetch(`${baseUrl}/api/email/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: process.env.ADMIN_EMAIL || 'info@tpcmin.org',
+          subject: `New Contact Form: ${subject || category || 'General Inquiry'}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>From:</strong> ${name} (${email})</p>
+            ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+            <p><strong>Category:</strong> ${category || 'General'}</p>
+            ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
+            <h3>Message:</h3>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+          `,
+        }),
+      })
+    } catch (emailError) {
+      console.warn('Failed to send admin notification email:', emailError)
+    }
+
+    // Send confirmation email to user
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+      await fetch(`${baseUrl}/api/email/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          subject: 'Thank you for contacting TPC Ministries',
+          html: `
+            <h2>Thank You for Reaching Out!</h2>
+            <p>Dear ${name},</p>
+            <p>We have received your message and will respond as soon as possible.</p>
+            <p>For reference, here's what you submitted:</p>
+            <blockquote style="border-left: 3px solid #ccc; padding-left: 15px; margin: 15px 0;">
+              ${message.replace(/\n/g, '<br>')}
+            </blockquote>
+            <p>Blessings,<br>TPC Ministries Team</p>
+          `,
+        }),
+      })
+    } catch (emailError) {
+      console.warn('Failed to send confirmation email:', emailError)
+    }
 
     return NextResponse.json(
       { success: true, message: 'Thank you for contacting us!' },
