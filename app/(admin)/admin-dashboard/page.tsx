@@ -40,6 +40,9 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { AdminQuickStats } from '@/components/admin/redesign/admin-quick-stats'
+import { NeedsAttentionPanel } from '@/components/admin/redesign/needs-attention-panel'
+import { SearchTrigger } from '@/components/ui/search-trigger'
 
 interface DashboardStats {
   totalMembers: number
@@ -402,10 +405,13 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl font-bold text-navy">{greeting}!</h1>
             <p className="text-gray-600">Here's what's happening with your ministry today.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-3">
+            <SearchTrigger className="hidden md:flex" />
+            <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Needs Attention Banner */}
@@ -437,93 +443,36 @@ export default function AdminDashboardPage() {
           </Card>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-navy/5 rounded-full -mr-10 -mt-10" />
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">Total Members</CardTitle>
-                <Users className="h-4 w-4 text-navy" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-navy">{stats.totalMembers.toLocaleString()}</div>
-              <div className="flex items-center gap-2 mt-1">
-                {memberGrowth >= 0 ? (
-                  <span className="text-xs text-green-600 flex items-center gap-0.5">
-                    <ArrowUpRight className="h-3 w-3" />
-                    {memberGrowth}%
-                  </span>
-                ) : (
-                  <span className="text-xs text-red-600 flex items-center gap-0.5">
-                    <ArrowDownRight className="h-3 w-3" />
-                    {Math.abs(memberGrowth)}%
-                  </span>
-                )}
-                <span className="text-xs text-gray-500">vs last week</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-gold/10 rounded-full -mr-10 -mt-10" />
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">Revenue This Month</CardTitle>
-                <DollarSign className="h-4 w-4 text-gold" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-navy">${stats.revenueThisMonth.toLocaleString()}</div>
-              <div className="flex items-center gap-2 mt-1">
-                {revenueGrowth >= 0 ? (
-                  <span className="text-xs text-green-600 flex items-center gap-0.5">
-                    <ArrowUpRight className="h-3 w-3" />
-                    {revenueGrowth}%
-                  </span>
-                ) : (
-                  <span className="text-xs text-red-600 flex items-center gap-0.5">
-                    <ArrowDownRight className="h-3 w-3" />
-                    {Math.abs(revenueGrowth)}%
-                  </span>
-                )}
-                <span className="text-xs text-gray-500">vs last month</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10" />
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">Engagement Rate</CardTitle>
-                <Activity className="h-4 w-4 text-green-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-navy">{engagementRate}%</div>
-              <div className="mt-2">
-                <Progress value={engagementRate} className="h-1.5" />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">{stats.activeMembers} active of {stats.totalMembers}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -mr-10 -mt-10" />
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">Content Views</CardTitle>
-                <Eye className="h-4 w-4 text-purple-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-navy">{stats.teachingViews.toLocaleString()}</div>
-              <p className="text-xs text-gray-500 mt-1">across {stats.totalTeachings} teachings</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Cards - Redesigned */}
+        <AdminQuickStats
+          stats={[
+            {
+              label: "Total Members",
+              value: stats.totalMembers.toLocaleString(),
+              change: memberGrowth,
+              changeLabel: "vs last week",
+              icon: "members"
+            },
+            {
+              label: "Revenue This Month",
+              value: `$${stats.revenueThisMonth.toLocaleString()}`,
+              change: revenueGrowth,
+              changeLabel: "vs last month",
+              icon: "revenue"
+            },
+            {
+              label: "Pending Prayers",
+              value: stats.pendingPrayerRequests,
+              icon: "prayers"
+            },
+            {
+              label: "Content Views",
+              value: stats.teachingViews.toLocaleString(),
+              changeLabel: `${stats.totalTeachings} teachings`,
+              icon: "teachings"
+            }
+          ]}
+        />
 
         {/* Main Grid */}
         <div className="grid gap-6 lg:grid-cols-3">

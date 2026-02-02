@@ -18,9 +18,14 @@ import { createClient } from '@/lib/supabase/client'
 import DailyHub from '@/components/member/daily-hub'
 import PlantWidget from '@/components/member/plant-widget'
 import EngagementWidget from '@/components/member/engagement-widget'
+import VerseOfTheDayWidget from '@/components/member/VerseOfTheDay'
 import ActivityFeed from '@/components/member/activity-feed'
 import QuickActionsWidget from '@/components/member/quick-actions-widget'
 import { EmptyState } from '@/components/ui/empty-state'
+import { StreakDisplay } from '@/components/ui/streak-display'
+import { VerseCard } from '@/components/ui/verse-card'
+import { QuickStats } from '@/components/ui/quick-stats'
+import { useCelebration } from '@/components/ui/celebration'
 
 interface DashboardStats {
   total_content_consumed: number
@@ -56,6 +61,7 @@ export default function MemberDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [currentSeasons, setCurrentSeasons] = useState<Season[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
+  const { celebrate } = useCelebration()
 
   useEffect(() => {
     fetchDashboardData()
@@ -215,7 +221,12 @@ export default function MemberDashboardPage() {
               </div>
             )}
           </div>
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
+            <StreakDisplay
+              count={stats?.current_season_streak || 0}
+              variant="badge"
+              className="bg-white/10 border-white/20"
+            />
             <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <p className="text-sm text-tpc-gold">Days in Journey</p>
               <p className="text-4xl font-bold">{stats?.days_since_joining || 0}</p>
@@ -224,6 +235,9 @@ export default function MemberDashboardPage() {
         </div>
       </div>
 
+      {/* Verse of the Day */}
+      <VerseOfTheDayWidget className="mb-6" />
+
       {/* Daily Spiritual Hub - Scripture, Check-in, Streaks */}
       <div className="grid gap-6 lg:grid-cols-3">
         <DailyHub />
@@ -231,54 +245,33 @@ export default function MemberDashboardPage() {
         <EngagementWidget />
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-l-4 border-l-tpc-navy">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-stone-600">Total Content</CardTitle>
-            <BookOpen className="h-4 w-4 text-tpc-navy" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-tpc-navy">{stats?.total_content_consumed || 0}</div>
-            <p className="text-xs text-stone-500 mt-1">
-              +{stats?.content_this_week || 0} this week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-tpc-gold">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-stone-600">Season Streak</CardTitle>
-            <TrendingUp className="h-4 w-4 text-tpc-gold-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-tpc-navy">{stats?.current_season_streak || 0}</div>
-            <p className="text-xs text-stone-500 mt-1">consecutive days</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-stone-600">Assessments</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-tpc-navy">{stats?.assessments_completed || 0}</div>
-            <p className="text-xs text-stone-500 mt-1">completed</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-stone-600">This Month</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-tpc-navy">{stats?.content_this_month || 0}</div>
-            <p className="text-xs text-stone-500 mt-1">content consumed</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Overview - Redesigned */}
+      <QuickStats
+        stats={[
+          {
+            label: "Total Content",
+            value: stats?.total_content_consumed || 0,
+            change: stats?.content_this_week ? stats.content_this_week : undefined,
+            icon: BookOpen,
+          },
+          {
+            label: "Day Streak",
+            value: stats?.current_season_streak || 0,
+            icon: TrendingUp,
+          },
+          {
+            label: "Assessments",
+            value: stats?.assessments_completed || 0,
+            icon: CheckCircle,
+          },
+          {
+            label: "This Month",
+            value: stats?.content_this_month || 0,
+            icon: Calendar,
+          },
+        ]}
+        variant="card"
+      />
 
       {/* Your Journey */}
       {currentSeasons.length > 0 && (
