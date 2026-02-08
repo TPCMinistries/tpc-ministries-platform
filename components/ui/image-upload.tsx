@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 
 interface ImageUploadProps {
-  folder: 'teachings' | 'prophecies' | 'events' | 'resources' | 'profiles' | 'missions'
+  folder: 'teachings' | 'prophecies' | 'events' | 'resources' | 'profiles' | 'missions' | 'blog' | 'general'
   currentImageUrl?: string
   onUploadComplete: (url: string) => void
   onUploadError?: (error: string) => void

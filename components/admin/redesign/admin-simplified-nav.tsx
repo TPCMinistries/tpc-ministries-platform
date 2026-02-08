@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   LayoutDashboard, MessageSquare, FileText, Users, BarChart3,
   Mail, Inbox, Send, Megaphone,
-  Video, BookOpen, Sparkles, Image, FileDown,
+  Video, BookOpen, Sparkles, Image, FileDown, PenSquare,
   UserPlus, Heart, Calendar, UsersRound,
   DollarSign, TrendingUp, Brain, Settings,
   ChevronDown, ChevronRight, ExternalLink, Bell,
@@ -49,6 +49,7 @@ const navSections: NavSection[] = [
     label: "Content",
     icon: FileText,
     items: [
+      { label: "Content Hub", href: "/content-hub", icon: PenSquare },
       { label: "Teachings", href: "/admin-sermons", icon: Video },
       { label: "Resources", href: "/admin-resources", icon: FileDown },
       { label: "Prophecy Hub", href: "/admin-prophecy", icon: Sparkles },
