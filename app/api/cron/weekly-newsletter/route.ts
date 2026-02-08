@@ -9,7 +9,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 interface WeeklyStats {
   prayersAnswered: number
@@ -197,7 +199,7 @@ export async function GET(request: NextRequest) {
             })
           )
 
-          await resend.emails.send({
+          await getResend().emails.send({
             from: 'TPC Ministries <newsletter@tpcmin.com>',
             to: recipient.email,
             subject: `This Week at TPC Ministries - ${weekDate}`,

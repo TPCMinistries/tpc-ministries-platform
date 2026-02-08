@@ -7,7 +7,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 interface ReportMetrics {
   totalMembers: number
@@ -107,7 +109,7 @@ export async function GET(request: NextRequest) {
     const results = []
     for (const recipient of recipients) {
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: 'TPC Ministries <reports@tpcministries.org>',
           to: recipient.email,
           subject,
