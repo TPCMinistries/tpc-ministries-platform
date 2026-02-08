@@ -3,7 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 const adminSupabase = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     // If test email, just send to that address
     if (testEmail) {
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: 'TPC Ministries <info@tpcmin.com>',
           to: testEmail,
           subject: `[TEST] ${campaign.subject}`,
@@ -160,7 +162,7 @@ export async function POST(request: NextRequest) {
           const personalizedSubject = campaign.subject
             .replace(/\{\{firstName\}\}/g, recipient.firstName)
 
-          await resend.emails.send({
+          await getResend().emails.send({
             from: 'TPC Ministries <info@tpcmin.com>',
             to: recipient.email,
             subject: personalizedSubject,
