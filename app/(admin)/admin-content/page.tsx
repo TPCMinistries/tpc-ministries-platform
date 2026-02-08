@@ -62,6 +62,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import ImageUpload from '@/components/ui/image-upload'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
+
+const TiptapEditor = dynamic(() => import('@/components/editor/tiptap-editor'), { ssr: false })
 
 interface Teaching {
   id: string
@@ -409,11 +412,10 @@ export default function ContentManagementPage() {
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy resize-none"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        <TiptapEditor
+          content={formData.description}
+          onChange={(html) => setFormData({ ...formData, description: html })}
+          placeholder="Write a description for this teaching..."
         />
       </div>
 
