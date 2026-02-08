@@ -52,6 +52,7 @@ export function Navigation() {
     { href: '/about', label: 'About' },
     { href: '/kenya', label: 'Kenya 2026' },
     { href: '/giving', label: 'Give' },
+    { href: '/blog', label: 'Blog' },
     { href: '/connect', label: 'Connect' },
   ]
 
