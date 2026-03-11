@@ -51,7 +51,7 @@ export async function POST(request: Request) {
             currency: 'usd',
             product_data: {
               name: `Donation for ${participant.first_name} ${participant.last_name}`,
-              description: `Kenya Kingdom Impact Trip 2025 - Support ${participant.first_name}'s mission`,
+              description: `Kenya Kingdom Impact Trip 2026 - Support ${participant.first_name}'s mission`,
             },
             unit_amount: Math.round(amount * 100), // Convert to cents
           },
