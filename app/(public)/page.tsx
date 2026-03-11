@@ -474,15 +474,15 @@ export default async function HomePage() {
               </h2>
 
               <p className="text-xl text-amber-100/90 mb-6 leading-relaxed">
-                Join TPC Ministries on a life-changing 17-day Kingdom Impact Trip
-                to Kenya. Serve in ministry, education, medical missions, and business
+                Join TPC Ministries on a life-changing 14-day Global Impact Delegation
+                to Kenya. Serve in ministry, education, healthcare, and business
                 development across three cities.
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-white/10 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-amber-400">April 22</div>
-                  <div className="text-amber-200/70 text-sm">May 8, 2026</div>
+                  <div className="text-2xl font-bold text-amber-400">April 23</div>
+                  <div className="text-amber-200/70 text-sm">May 6, 2026</div>
                 </div>
                 <div className="bg-white/10 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-amber-400">3 Cities</div>

@@ -200,8 +200,8 @@ interface Member {
 
 // Trip details from tpcmin.org/kenya
 const TRIP_INFO = {
-  dates: 'April 21 – May 7, 2025',
-  duration: '17 days',
+  dates: 'April 23 – May 6, 2026',
+  duration: '14 days',
   locations: [
     { name: 'Nairobi', description: 'Capital city, 4.4+ million people' },
     { name: 'Mombasa', description: 'Coastal city, Indian Ocean port' },
@@ -1493,7 +1493,7 @@ export default function KenyaTripPage() {
                     <CardTitle>About the Trip</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 mb-4">{trip.description || "Transform Lives. Be Transformed. Join us for a 17-day Kingdom assignment across three Kenyan cities."}</p>
+                    <p className="text-gray-600 mb-4">{trip.description || "Transform Lives. Be Transformed. Join us for a 14-day Kingdom assignment across three Kenyan cities."}</p>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <Calendar className="h-5 w-5 text-navy" />

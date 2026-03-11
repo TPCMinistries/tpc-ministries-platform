@@ -72,9 +72,9 @@ const givingOptions = {
 
 const impactStats = [
   { value: '3', label: 'Cities Served' },
-  { value: '6', label: 'Ministry Tracks' },
-  { value: '17', label: 'Days of Service' },
-  { value: "1000's", label: 'Lives Impacted' },
+  { value: '4', label: 'Service Tracks' },
+  { value: '16', label: 'Days of Service' },
+  { value: '20+', label: 'Delegates' },
 ]
 
 export default function KenyaGivingPage() {
@@ -157,26 +157,26 @@ export default function KenyaGivingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900 px-4 py-16 md:py-20">
+      <section className="relative bg-gradient-to-br from-navy-dark via-navy to-navy-light px-4 py-16 md:py-20">
         <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5" />
         <div className="container relative mx-auto max-w-6xl">
           <Link
             href="/kenya"
-            className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-gold-light hover:text-gold mb-6 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Kenya Trip
           </Link>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <Globe2 className="h-4 w-4" />
                 Kenya Kingdom Impact Trip 2026
               </div>
               <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
                 Your Gift Changes Lives
               </h1>
-              <p className="text-xl text-stone-300 mb-8">
+              <p className="text-xl text-white/70 mb-8">
                 Every dollar you give sends teams, equips communities, and creates lasting Kingdom impact in Kenya.
               </p>
 
@@ -184,21 +184,21 @@ export default function KenyaGivingPage() {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-amber-400" />
+                    <Target className="h-5 w-5 text-gold" />
                     <span className="font-semibold text-white">2026 Mission Goal</span>
                   </div>
                   <span className="text-white">
-                    <span className="font-bold text-amber-400">${currentRaised.toLocaleString()}</span>
-                    <span className="text-stone-400"> / ${fundraisingGoal.toLocaleString()}</span>
+                    <span className="font-bold text-gold">${currentRaised.toLocaleString()}</span>
+                    <span className="text-white/40"> / ${fundraisingGoal.toLocaleString()}</span>
                   </span>
                 </div>
-                <div className="h-4 bg-stone-700 rounded-full overflow-hidden">
+                <div className="h-4 bg-navy-dark rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <p className="text-sm text-stone-400 mt-2">
+                <p className="text-sm text-white/40 mt-2">
                   {Math.round(progressPercent)}% raised • Help us reach our goal
                 </p>
               </div>
@@ -208,8 +208,8 @@ export default function KenyaGivingPage() {
             <div className="hidden lg:grid grid-cols-2 gap-4">
               {impactStats.map((stat) => (
                 <div key={stat.label} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
-                  <div className="text-3xl font-bold text-amber-400 mb-1">{stat.value}</div>
-                  <div className="text-stone-300 text-sm">{stat.label}</div>
+                  <div className="text-3xl font-bold text-gold mb-1">{stat.value}</div>
+                  <div className="text-white/60 text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -218,14 +218,14 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Main Giving Section */}
-      <section className="px-4 py-12 md:py-16 bg-stone-50">
+      <section className="px-4 py-12 md:py-16 bg-cream">
         <div className="container mx-auto max-w-5xl">
           {/* Giving Type Selection */}
           <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-navy mb-3">
               Choose How to Give
             </h2>
-            <p className="text-stone-600">
+            <p className="text-navy/60">
               Select where you want your gift to make the biggest impact
             </p>
           </div>
@@ -244,19 +244,19 @@ export default function KenyaGivingPage() {
                   }}
                   className={`p-6 rounded-2xl border-2 transition-all text-left ${
                     isSelected
-                      ? 'border-amber-500 bg-amber-50 shadow-lg'
-                      : 'bg-white border-stone-200 hover:border-amber-300 hover:shadow-md'
+                      ? 'border-gold bg-gold/5 shadow-lg'
+                      : 'bg-white border-navy/10 hover:border-gold hover:shadow-md'
                   }`}
                 >
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${
-                    isSelected ? 'bg-amber-500' : 'bg-stone-100'
+                    isSelected ? 'bg-gold' : 'bg-navy/5'
                   }`}>
-                    <Icon className={`h-7 w-7 ${isSelected ? 'text-white' : 'text-stone-500'}`} />
+                    <Icon className={`h-7 w-7 ${isSelected ? 'text-navy' : 'text-navy/40'}`} />
                   </div>
-                  <h3 className={`text-lg font-bold mb-2 ${isSelected ? 'text-amber-700' : 'text-stone-900'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isSelected ? 'text-gold-dark' : 'text-navy'}`}>
                     {option.title}
                   </h3>
-                  <p className="text-sm text-stone-600 leading-relaxed">
+                  <p className="text-sm text-navy/60 leading-relaxed">
                     {option.description}
                   </p>
                 </button>
@@ -265,20 +265,20 @@ export default function KenyaGivingPage() {
           </div>
 
           {/* Giving Form Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-stone-200 overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-xl border border-navy/10 overflow-hidden">
             <div className="grid lg:grid-cols-5">
               {/* Left Side - Form */}
               <div className="lg:col-span-3 p-8 md:p-10">
                 {/* Frequency Toggle */}
                 <div className="mb-8">
-                  <Label className="text-sm font-semibold text-stone-700 mb-3 block">Giving Frequency</Label>
+                  <Label className="text-sm font-semibold text-navy/70 mb-3 block">Giving Frequency</Label>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setFrequency('once')}
                       className={`flex-1 py-3 px-6 rounded-xl border-2 font-semibold transition-all ${
                         frequency === 'once'
-                          ? 'border-amber-500 bg-amber-500 text-white'
-                          : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
+                          ? 'border-gold bg-gold text-navy'
+                          : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
                       }`}
                     >
                       One-Time
@@ -287,8 +287,8 @@ export default function KenyaGivingPage() {
                       onClick={() => setFrequency('monthly')}
                       className={`flex-1 py-3 px-6 rounded-xl border-2 font-semibold transition-all ${
                         frequency === 'monthly'
-                          ? 'border-amber-500 bg-amber-500 text-white'
-                          : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
+                          ? 'border-gold bg-gold text-navy'
+                          : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
                       }`}
                     >
                       Monthly
@@ -298,7 +298,7 @@ export default function KenyaGivingPage() {
 
                 {/* Amount Selection */}
                 <div className="mb-8">
-                  <Label className="text-sm font-semibold text-stone-700 mb-3 block">Select Amount</Label>
+                  <Label className="text-sm font-semibold text-navy/70 mb-3 block">Select Amount</Label>
                   <div className="grid grid-cols-3 gap-3 mb-4">
                     {currentOption.suggestedAmounts.map((amount) => (
                       <button
@@ -306,8 +306,8 @@ export default function KenyaGivingPage() {
                         onClick={() => handleAmountClick(amount)}
                         className={`py-4 px-4 rounded-xl border-2 font-bold text-lg transition-all ${
                           selectedAmount === amount && !customAmount
-                            ? 'border-amber-500 bg-amber-500 text-white'
-                            : 'bg-white border-stone-200 text-stone-700 hover:border-amber-300'
+                            ? 'border-gold bg-gold text-navy'
+                            : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
                         }`}
                       >
                         ${amount}
@@ -315,13 +315,13 @@ export default function KenyaGivingPage() {
                     ))}
                   </div>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
+                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-navy/40" />
                     <Input
                       type="number"
                       placeholder="Other amount"
                       value={customAmount}
                       onChange={(e) => handleCustomAmountChange(e.target.value)}
-                      className="pl-11 h-14 text-lg bg-white border-stone-200 focus:border-amber-500 focus:ring-amber-500 rounded-xl"
+                      className="pl-11 h-14 text-lg bg-white border-navy/10 focus:border-gold focus:ring-gold rounded-xl"
                     />
                   </div>
                 </div>
@@ -336,7 +336,7 @@ export default function KenyaGivingPage() {
                 {/* Submit Button */}
                 <Button
                   size="lg"
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold h-16 text-xl rounded-xl shadow-lg shadow-amber-500/25"
+                  className="w-full bg-gold hover:bg-gold-light text-navy font-bold h-16 text-xl rounded-xl shadow-lg shadow-gold/25"
                   disabled={!getCurrentAmount() || loading}
                   onClick={handleSubmit}
                 >
@@ -353,37 +353,37 @@ export default function KenyaGivingPage() {
                   )}
                 </Button>
 
-                <div className="flex items-center justify-center gap-2 text-sm text-stone-500 mt-4">
+                <div className="flex items-center justify-center gap-2 text-sm text-navy/50 mt-4">
                   <Shield className="h-4 w-4" />
                   Secure • Tax-deductible • 100% goes to Kenya mission
                 </div>
               </div>
 
               {/* Right Side - Impact */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-amber-50 to-stone-50 p-8 md:p-10 border-l border-stone-200">
+              <div className="lg:col-span-2 bg-gradient-to-br from-gold/5 to-cream p-8 md:p-10 border-l border-navy/10">
                 <div className="flex items-center gap-2 mb-6">
-                  <Sparkles className="h-5 w-5 text-amber-600" />
-                  <h3 className="font-bold text-stone-900">Your Impact</h3>
+                  <Sparkles className="h-5 w-5 text-gold-dark" />
+                  <h3 className="font-bold text-navy">Your Impact</h3>
                 </div>
                 <div className="space-y-4">
                   {currentOption.impact.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-16 flex-shrink-0">
-                        <span className="text-amber-600 font-bold text-sm">{item.amount}</span>
+                        <span className="text-gold-dark font-bold text-sm">{item.amount}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start gap-2">
-                          <CheckCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-stone-700">{item.description}</p>
+                          <CheckCircle className="h-4 w-4 text-gold mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-navy/70">{item.description}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-stone-200">
-                  <p className="text-sm text-stone-600 leading-relaxed">
-                    <strong className="text-stone-900">TPC Ministries</strong> is a registered 501(c)(3). Your donation is tax-deductible and you will receive a receipt via email.
+                <div className="mt-8 pt-6 border-t border-navy/10">
+                  <p className="text-sm text-navy/60 leading-relaxed">
+                    <strong className="text-navy">TPC Ministries</strong> is a registered 501(c)(3). Your donation is tax-deductible and you will receive a receipt via email.
                   </p>
                 </div>
               </div>
@@ -393,32 +393,32 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Trip Info Section */}
-      <section className="px-4 py-16 bg-white border-t border-stone-200">
+      <section className="px-4 py-16 bg-white border-t border-navy/10">
         <div className="container mx-auto max-w-5xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-navy mb-4">
                 About the Kenya Trip
               </h2>
-              <p className="text-stone-600 mb-6 leading-relaxed">
-                The Kenya Kingdom Impact Trip brings together believers from across America for 17 days of meaningful service in Nairobi, Mombasa, and Kakamega. Teams serve in ministry, education, medical outreach, business development, and food security initiatives.
+              <p className="text-navy/60 mb-6 leading-relaxed">
+                The Kenya Global Impact Delegation brings together leaders, professionals, and ministry partners for a 14-day multi-sector initiative in Nairobi, Kakamega, and Mombasa. Teams serve across four tracks: ministry, health and wellness, education and technology, and business and economic empowerment.
               </p>
               <div className="space-y-3 mb-8">
                 {[
-                  'April 22 – May 8, 2026',
-                  'Multiple service tracks based on your skills',
+                  'April 23 – May 6, 2026',
+                  'Four service tracks based on your skills',
                   'Cultural immersion and safari experience',
                   'Scholarships available for qualified applicants',
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-stone-700">{item}</span>
+                    <CheckCircle className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
+                    <span className="text-navy/70">{item}</span>
                   </div>
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/kenya#apply">
-                  <Button className="bg-stone-900 hover:bg-stone-800 text-white font-semibold px-6 h-12 rounded-xl">
+                  <Button className="bg-navy hover:bg-navy-dark text-white font-semibold px-6 h-12 rounded-xl">
                     Apply for the Trip
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -426,7 +426,7 @@ export default function KenyaGivingPage() {
                 <a
                   href="/images/kenya/Kenya-Kingdom-Impact-Trip-2026.pdf"
                   download
-                  className="inline-flex items-center justify-center gap-2 px-6 h-12 rounded-xl border-2 border-stone-200 text-stone-700 font-semibold hover:border-amber-300 hover:bg-amber-50 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-6 h-12 rounded-xl border-2 border-navy/10 text-navy/70 font-semibold hover:border-gold hover:bg-gold/5 transition-colors"
                 >
                   <Download className="h-4 w-4" />
                   Download Trip Guide
@@ -436,8 +436,8 @@ export default function KenyaGivingPage() {
 
             {/* Trip Flier */}
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/10 to-transparent rounded-3xl blur-xl"></div>
-              <div className="relative bg-stone-100 rounded-2xl p-4 border border-stone-200">
+              <div className="absolute -inset-4 bg-gradient-to-r from-gold/10 to-transparent rounded-3xl blur-xl"></div>
+              <div className="relative bg-cream rounded-2xl p-4 border border-navy/10">
                 <Image
                   src="/images/kenya/kenya-flier.png"
                   alt="Kenya Kingdom Impact Trip 2026"
@@ -448,7 +448,7 @@ export default function KenyaGivingPage() {
                 <a
                   href="/images/kenya/kenya-flier.png"
                   download="Kenya-Trip-2026-Flier.png"
-                  className="mt-4 flex items-center justify-center gap-2 text-amber-600 hover:text-amber-700 transition-colors text-sm font-medium"
+                  className="mt-4 flex items-center justify-center gap-2 text-gold-dark hover:text-gold-dark transition-colors text-sm font-medium"
                 >
                   <Download className="h-4 w-4" />
                   Download Flier
@@ -460,15 +460,15 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Other Ways to Give */}
-      <section className="px-4 py-12 bg-stone-50 border-t border-stone-200">
+      <section className="px-4 py-12 bg-cream border-t border-navy/10">
         <div className="container mx-auto max-w-3xl text-center">
-          <h3 className="text-xl font-bold text-stone-900 mb-4">Other Ways to Give</h3>
-          <p className="text-stone-600 mb-6">
+          <h3 className="text-xl font-bold text-navy mb-4">Other Ways to Give</h3>
+          <p className="text-navy/60 mb-6">
             For check, wire transfer, or stock donations, or to sponsor a specific team member, contact us:
           </p>
           <a
             href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving"
-            className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-semibold text-lg"
+            className="inline-flex items-center gap-2 text-gold-dark hover:text-gold-dark font-semibold text-lg"
           >
             info@tpcmin.org
             <ArrowRight className="h-4 w-4" />
@@ -477,15 +477,15 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="px-4 py-12 bg-gradient-to-r from-amber-500 to-amber-400">
+      <section className="px-4 py-12 bg-gradient-to-r from-gold to-gold-light">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3">
+          <h2 className="text-2xl md:text-3xl font-bold text-navy mb-3">
             Every Gift Makes a Difference
           </h2>
-          <p className="text-lg text-stone-800/80 mb-6 max-w-2xl mx-auto">
+          <p className="text-lg text-navy/70 mb-6 max-w-2xl mx-auto">
             Whether you give $25 or $2,500, your generosity sends teams, equips communities, and transforms lives in Kenya.
           </p>
-          <p className="text-stone-900/70 italic">
+          <p className="text-navy/70 italic">
             "Truly I tell you, whatever you did for one of the least of these brothers and sisters of mine, you did for me." — Matthew 25:40
           </p>
         </div>

@@ -1,14 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/resend'
 import { NextRequest, NextResponse } from 'next/server'
 
 const trackLabels: Record<string, string> = {
   ministry: 'Ministry & Spiritual Care',
   education: 'Education & Youth Development',
-  medical: 'Medical Missions',
+  health: 'Health & Wellness',
   business: 'Business & Economic Development',
-  'food-security': 'Food Security & Social Enterprise',
-  'not-sure': 'Not Sure Yet',
+  all: 'All Ministries',
 }
 
 const passportLabels: Record<string, string> = {
@@ -17,10 +16,10 @@ const passportLabels: Record<string, string> = {
   apply: 'Need to apply',
 }
 
-// POST - Submit Kenya trip application
+// POST - Submit Kenya trip interest/application
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const body = await request.json()
     const {
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate consent
     if (!consent) {
       return NextResponse.json(
         { error: 'Please agree to be contacted to continue' },
@@ -52,7 +50,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -61,58 +58,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try to insert into kenya_trip_applications table
-    // If table doesn't exist, fall back to contact_submissions
-    let insertError = null
+    // Check for duplicate email on this trip
+    const { data: existing } = await supabase
+      .from('kenya_trip_participants')
+      .select('id, email')
+      .eq('email', email)
+      .limit(1)
+      .maybeSingle()
 
-    // First, try the dedicated table
-    const { error: kenyaError } = await supabase
-      .from('kenya_trip_applications')
+    if (existing) {
+      return NextResponse.json(
+        { error: 'An application with this email already exists. If you need to update your information, please contact info@tpcmin.org.' },
+        { status: 409 }
+      )
+    }
+
+    // Get the active trip
+    const { data: trip } = await supabase
+      .from('kenya_trips')
+      .select('id')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    // Insert directly into participants table as pending application
+    const { error: insertError } = await supabase
+      .from('kenya_trip_participants')
       .insert({
+        trip_id: trip?.id || null,
         first_name: firstName,
         last_name: lastName,
         email,
         phone: phone || null,
-        city_state: cityState || null,
-        preferred_track: preferredTrack,
-        passport_status: passportStatus,
-        scholarship_needed: scholarshipNeeded === 'yes',
+        location: cityState || null,
+        service_track: preferredTrack,
+        passport_status: passportStatus === 'valid' ? 'submitted' : 'pending',
+        scholarship_requested: scholarshipNeeded === 'yes',
         notes: notes || null,
-        consent: true,
-        status: 'pending',
-        trip_year: 2026,
+        application_status: 'pending',
+        interest_form_completed_at: new Date().toISOString(),
       })
-
-    if (kenyaError) {
-      // Table might not exist - fall back to contact_submissions
-      console.log('Kenya trip table not found, using contact_submissions:', kenyaError.message)
-
-      const { error: contactError } = await supabase
-        .from('contact_submissions')
-        .insert({
-          name: `${firstName} ${lastName}`,
-          email,
-          phone: phone || null,
-          subject: 'Kenya Kingdom Impact Trip 2026 Application',
-          message: `
-KENYA TRIP APPLICATION
-
-Name: ${firstName} ${lastName}
-Email: ${email}
-Phone: ${phone || 'Not provided'}
-City/State: ${cityState || 'Not provided'}
-Preferred Track: ${preferredTrack}
-Passport Status: ${passportStatus}
-Scholarship Needed: ${scholarshipNeeded}
-
-Notes/Skills/Background:
-${notes || 'None provided'}
-          `.trim(),
-          category: 'missions',
-        })
-
-      insertError = contactError
-    }
 
     if (insertError) {
       console.error('Error saving Kenya trip application:', insertError)
@@ -122,7 +107,7 @@ ${notes || 'None provided'}
       )
     }
 
-    // Send email notification to admin
+    // Send admin notification email
     const adminEmailHtml = `
       <!DOCTYPE html>
       <html>
@@ -143,11 +128,11 @@ ${notes || 'None provided'}
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">New Kenya Trip Application</h1>
+              <h1 style="margin: 0;">New Kenya Trip Interest</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Kingdom Impact Trip 2026</p>
             </div>
             <div class="content">
-              <p>A new application has been submitted for the Kenya Kingdom Impact Trip.</p>
+              <p>A new interest form has been submitted for the Kenya Kingdom Impact Trip.</p>
 
               <table>
                 <tr>
@@ -167,7 +152,7 @@ ${notes || 'None provided'}
                   <td>${cityState || 'Not provided'}</td>
                 </tr>
                 <tr>
-                  <td>Preferred Track</td>
+                  <td>Ministry Interest</td>
                   <td>${trackLabels[preferredTrack] || preferredTrack}</td>
                 </tr>
                 <tr>
@@ -186,21 +171,24 @@ ${notes || 'None provided'}
                   <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${notes}</p>
                 </div>
               ` : ''}
+
+              <p style="margin-top: 20px; color: #6b7280; font-size: 13px;">
+                View and manage this application in the <a href="https://tpcmin.org/kenya-command-center">Kenya Command Center</a>.
+              </p>
             </div>
             <div class="footer">
-              <p>This application was submitted via <a href="https://tpcmin.org/kenya">tpcmin.org/kenya</a></p>
-              <p>© ${new Date().getFullYear()} TPC Ministries</p>
+              <p>Submitted via <a href="https://tpcmin.org/kenya">tpcmin.org/kenya</a></p>
+              <p>&copy; ${new Date().getFullYear()} TPC Ministries</p>
             </div>
           </div>
         </body>
       </html>
     `
 
-    // Send admin notification (don't fail the request if email fails)
     try {
       await sendEmail({
         to: 'info@tpcmin.org',
-        subject: `New Kenya Trip Application: ${firstName} ${lastName}`,
+        subject: `New Kenya Trip Interest: ${firstName} ${lastName}`,
         html: adminEmailHtml,
       })
     } catch (emailError) {
@@ -224,31 +212,37 @@ ${notes || 'None provided'}
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">Application Received!</h1>
+              <h1 style="margin: 0;">We Received Your Interest!</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Kenya Kingdom Impact Trip 2026</p>
             </div>
             <div class="content">
               <p>Dear ${firstName},</p>
 
-              <p>Thank you for your interest in joining the <strong>Kenya Kingdom Impact Trip 2026</strong>! We have received your application and our team will review it shortly.</p>
+              <p>Thank you for your interest in the <strong>Kenya Kingdom Impact Trip 2026</strong>! We're excited about the possibility of you joining us on this transformative journey.</p>
 
               <div class="highlight">
                 <strong>What happens next?</strong>
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
-                  <li>Our missions team will review your application</li>
-                  <li>We'll reach out within 5-7 business days</li>
-                  <li>You'll receive information about next steps, including orientation dates and preparation materials</li>
+                  <li>Our missions team will review your submission</li>
+                  <li>We'll reach out within a few days with next steps</li>
+                  <li>You'll receive a link to complete your travel details and secure your spot</li>
                 </ul>
               </div>
 
-              <p>In the meantime, if you have any questions, please don't hesitate to reach out to us at <a href="mailto:info@tpcmin.org">info@tpcmin.org</a>.</p>
+              <p><strong>Trip Details:</strong></p>
+              <ul>
+                <li><strong>Dates:</strong> April 22 &ndash; May 7, 2026</li>
+                <li><strong>Cities:</strong> Nairobi, Kakamega &amp; Mombasa</li>
+                <li><strong>Cost:</strong> $3,500 &ndash; $5,000 (payment plans available)</li>
+                <li><strong>Your Interest:</strong> ${trackLabels[preferredTrack] || preferredTrack}</li>
+              </ul>
 
-              <p>We're excited about the possibility of serving alongside you in Kenya!</p>
+              <p>If you have any questions, don't hesitate to reach out to us at <a href="mailto:info@tpcmin.org">info@tpcmin.org</a>.</p>
 
               <p>Blessings,<br><strong>TPC Ministries Missions Team</strong></p>
             </div>
             <div class="footer">
-              <p>© ${new Date().getFullYear()} TPC Ministries</p>
+              <p>&copy; ${new Date().getFullYear()} TPC Ministries</p>
               <p><a href="https://tpcmin.org">tpcmin.org</a></p>
             </div>
           </div>
@@ -259,7 +253,7 @@ ${notes || 'None provided'}
     try {
       await sendEmail({
         to: email,
-        subject: 'Your Kenya Trip Application - TPC Ministries',
+        subject: 'Your Kenya Trip Interest - TPC Ministries',
         html: confirmationEmailHtml,
       })
     } catch (emailError) {
@@ -269,7 +263,7 @@ ${notes || 'None provided'}
     return NextResponse.json(
       {
         success: true,
-        message: 'Thank you for your application! We will be in touch soon.',
+        message: 'Thank you for your interest! We will be in touch soon.',
       },
       { status: 201 }
     )
@@ -280,45 +274,19 @@ ${notes || 'None provided'}
 }
 
 // GET - Retrieve applications (admin use)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
-    // Check if user is authenticated and is admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    // Try to get from dedicated table first
+    // Fetch all participants ordered by most recent
     const { data, error } = await supabase
-      .from('kenya_trip_applications')
+      .from('kenya_trip_participants')
       .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
-      // Fall back to contact submissions filtered by subject
-      const { data: contactData, error: contactError } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .ilike('subject', '%Kenya%')
-        .order('created_at', { ascending: false })
-
-      if (contactError) {
-        return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 })
-      }
-
-      return NextResponse.json({ applications: contactData })
+      console.error('Error fetching participants:', error)
+      return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 })
     }
 
     return NextResponse.json({ applications: data })
