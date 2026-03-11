@@ -66,7 +66,7 @@ const navSections: NavSection[] = [
       { label: "Groups", href: "/admin-groups", icon: Users },
       { label: "Prayer Requests", href: "/admin-prayers", icon: Heart },
       { label: "Events", href: "/admin-events", icon: Calendar },
-      { label: "Kenya 2026", href: "/admin-kenya", icon: UserPlus },
+      { label: "Kenya 2026", href: "/kenya-command-center", icon: UserPlus },
     ]
   },
   {
