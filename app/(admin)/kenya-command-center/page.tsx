@@ -386,6 +386,51 @@ export default function KenyaCommandCenter() {
       .reduce((sum, e) => sum + e.amount, 0)
   }
 
+  // CSV export
+  const exportCSV = () => {
+    const headers = [
+      'First Name', 'Last Name', 'Email', 'Phone', 'Service Track',
+      'Application Status', 'Passport Status', 'Visa Status',
+      'Payment Status', 'Trip Cost', 'Amount Paid', 'Amount Raised',
+      'Honorific', 'Legal Full Name', 'Date of Birth', 'Organization', 'Title',
+      'Mailing Address', 'Location',
+      'Travel Accommodation', 'Travel Date In', 'Travel Date Out',
+      'Departure Airport', 'Return Airport',
+      'Special Assistance', 'TSA/KTN', 'Travel Notes',
+      'Interest Form', 'Travel Form', 'Medical Form', 'Waiver',
+      'Application Date',
+    ]
+
+    const rows = participants.map(p => {
+      const pa = p as any
+      return [
+        p.first_name, p.last_name, p.email, p.phone || '',
+        p.service_track || '', p.application_status, p.passport_status, p.visa_status,
+        p.payment_status, pa.trip_cost || '3500', pa.amount_paid || '0', p.amount_raised || '0',
+        pa.honorific || '', pa.legal_full_name || '', pa.date_of_birth || '',
+        pa.organization || '', pa.org_title || '',
+        pa.mailing_address || '', pa.location || '',
+        pa.travel_accommodation_type || '', pa.travel_date_in || '', pa.travel_date_out || '',
+        pa.departure_airport || '', pa.return_airport || '',
+        pa.special_assistance || '', pa.tsa_known_traveler_number || '', pa.travel_notes || '',
+        pa.interest_form_completed_at ? 'Yes' : 'No',
+        pa.travel_form_completed_at ? 'Yes' : 'No',
+        pa.medical_form_completed_at ? 'Yes' : 'No',
+        pa.waiver_signed_at ? 'Yes' : 'No',
+        p.application_date ? new Date(p.application_date).toLocaleDateString() : '',
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`)
+    })
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `kenya-trip-participants-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Filter participants
   const filteredParticipants = participants.filter(p => {
     const matchesSearch =
@@ -538,9 +583,9 @@ export default function KenyaCommandCenter() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={exportCSV}>
               <Download className="mr-2 h-4 w-4" />
-              Export
+              Export CSV
             </Button>
           </div>
         </div>
@@ -859,6 +904,7 @@ export default function KenyaCommandCenter() {
                       <th className="text-left p-4 text-sm font-medium text-gray-600">Visa</th>
                       <th className="text-left p-4 text-sm font-medium text-gray-600">Fundraising</th>
                       <th className="text-left p-4 text-sm font-medium text-gray-600">Payment</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-600">Forms</th>
                       <th className="text-left p-4 text-sm font-medium text-gray-600">Status</th>
                       <th className="text-left p-4 text-sm font-medium text-gray-600">Actions</th>
                     </tr>
@@ -940,6 +986,29 @@ export default function KenyaCommandCenter() {
                             }`}>
                               {p.payment_status}
                             </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-1">
+                              {[
+                                { key: 'interest_form_completed_at', label: 'I' },
+                                { key: 'travel_form_completed_at', label: 'T' },
+                                { key: 'medical_form_completed_at', label: 'M' },
+                                { key: 'waiver_signed_at', label: 'W' },
+                              ].map(f => {
+                                const done = !!(p as any)[f.key]
+                                return (
+                                  <span
+                                    key={f.key}
+                                    title={`${f.label === 'I' ? 'Interest' : f.label === 'T' ? 'Travel' : f.label === 'M' ? 'Medical' : 'Waiver'} Form`}
+                                    className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center ${
+                                      done ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+                                    }`}
+                                  >
+                                    {f.label}
+                                  </span>
+                                )
+                              })}
+                            </div>
                           </td>
                           <td className="p-4">
                             <span className={`px-2 py-1 rounded text-xs ${
