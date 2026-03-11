@@ -206,18 +206,18 @@ export default function KenyaTripPage() {
           </p>
           <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
             {partners.map((partner) => (
-              <div key={partner.name} className="opacity-50 hover:opacity-90 transition-opacity">
+              <div key={partner.name} className="hover:scale-105 transition-transform">
                 {partner.image ? (
-                  <div className="relative h-[40px] w-[130px]">
+                  <div className="relative h-[48px] w-[140px] bg-white/15 rounded-lg px-3 py-1.5">
                     <Image
                       src={partner.image}
                       alt={partner.name}
                       fill
-                      className="object-contain brightness-0 invert"
+                      className="object-contain drop-shadow-md"
                     />
                   </div>
                 ) : (
-                  <span className="text-white/80 font-serif text-sm md:text-base font-medium tracking-wide">
+                  <span className="text-white/80 font-serif text-sm md:text-base font-medium tracking-wide bg-white/10 rounded-lg px-4 py-2">
                     {partner.name}
                   </span>
                 )}
@@ -564,7 +564,7 @@ export default function KenyaTripPage() {
                     </Button>
                   </Link>
                   <a href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving">
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white/10 px-8 h-14">
+                    <Button size="lg" className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-white hover:text-navy font-bold px-8 h-14">
                       <Mail className="mr-2 h-5 w-5" />
                       Contact Us
                     </Button>
@@ -675,13 +675,13 @@ export default function KenyaTripPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="mailto:info@tpcmin.org">
-              <Button variant="outline" className="border-navy/20 text-navy hover:bg-navy hover:text-white">
+              <Button className="bg-navy text-white hover:bg-navy-dark font-semibold px-6">
                 <Mail className="h-4 w-4 mr-2" />
                 info@tpcmin.org
               </Button>
             </a>
             <Link href="/contact">
-              <Button variant="outline" className="border-navy/20 text-navy hover:bg-navy hover:text-white">
+              <Button className="bg-white border-2 border-navy text-navy hover:bg-navy hover:text-white font-semibold px-6">
                 Contact Us
               </Button>
             </Link>
