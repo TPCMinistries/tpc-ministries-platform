@@ -58,12 +58,14 @@ const config: Config = {
   			'tpc-beige-dark': '#e8dfc9',
   			// Convenient aliases
   			gold: {
-  				DEFAULT: '#c9a961',
-  				light: '#d4b883',
-  				dark: '#b8935d'
+  				DEFAULT: '#D4AF37',
+  				light: '#EBD278',
+  				dark: '#B8960E'
   			},
   			navy: {
-  				DEFAULT: '#1e3a8a',
+  				DEFAULT: '#0F172A',
+  				dark: '#080C1C',
+  				light: '#1E293B',
   				'50': '#f0f4ff',
   				'100': '#e0e9ff',
   				'200': '#c7d9ff',
@@ -74,7 +76,8 @@ const config: Config = {
   				'700': '#2d47eb',
   				'800': '#1e3a8a',
   				'900': '#1a2f6e'
-  			}
+  			},
+  			cream: '#FAF5EB'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

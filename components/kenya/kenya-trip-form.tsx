@@ -166,11 +166,10 @@ export function KenyaTripForm() {
             </SelectTrigger>
             <SelectContent className="bg-white text-stone-900 border-stone-200">
               <SelectItem value="ministry" className="focus:bg-amber-50">Ministry & Spiritual Care</SelectItem>
+              <SelectItem value="health" className="focus:bg-amber-50">Health & Wellness</SelectItem>
               <SelectItem value="education" className="focus:bg-amber-50">Education & Youth Development</SelectItem>
-              <SelectItem value="medical" className="focus:bg-amber-50">Medical Missions</SelectItem>
               <SelectItem value="business" className="focus:bg-amber-50">Business & Economic Development</SelectItem>
-              <SelectItem value="food-security" className="focus:bg-amber-50">Food Security & Social Enterprise</SelectItem>
-              <SelectItem value="not-sure" className="focus:bg-amber-50">Not Sure Yet</SelectItem>
+              <SelectItem value="all" className="focus:bg-amber-50">All Ministries</SelectItem>
             </SelectContent>
           </Select>
         </div>

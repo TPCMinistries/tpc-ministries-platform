@@ -6,16 +6,11 @@ import {
   GraduationCap,
   Stethoscope,
   Briefcase,
-  Wheat,
-  Package,
-  MapPin,
   ChevronDown,
-  Users,
   Building2,
   Droplets,
   TreePine,
   Church,
-  Factory,
 } from 'lucide-react'
 
 const serviceAreas = [
@@ -23,108 +18,73 @@ const serviceAreas = [
     id: 'ministry',
     title: 'Ministry & Spiritual Care',
     icon: Heart,
-    description: 'Teaching, preaching, prayer ministry, and pastoral support for local churches.',
+    description: 'Teaching, preaching, prayer ministry, and pastoral support for local churches across all three cities.',
     details: {
-      overview: 'Partner with Kenyan pastors and church leaders to provide spiritual encouragement, prophetic ministry, and practical support for growing congregations.',
+      overview: 'Partner with Kenyan pastors and church leaders to provide spiritual encouragement, prophetic ministry, and practical support for growing congregations. This track runs across Nairobi, Kakamega, and Mombasa.',
       activities: [
-        'Preach and teach at local church services and conferences',
-        'Lead prayer and deliverance ministry sessions',
-        'Conduct pastoral care and counseling training',
-        'Support church leadership development',
-        'Facilitate worship and intercession gatherings',
+        'Pastoral conferences and leadership training',
+        'Prayer, worship, and prophetic ministry',
+        'Church planting and strengthening support',
+        'Community evangelism and outreach',
+        'Facilitate teaching and discipleship programs',
       ],
       idealFor: 'Pastors, ministers, intercessors, worship leaders, and those with gifts in teaching or prophecy.',
       impact: 'You will strengthen local church leadership and leave behind resources that continue to build up the Body of Christ long after you return home.',
     },
   },
   {
-    id: 'education',
-    title: 'Education & Youth',
-    icon: GraduationCap,
-    description: 'Mentorship, financial literacy training, and leadership development for young people.',
+    id: 'health',
+    title: 'Health & Wellness',
+    icon: Stethoscope,
+    description: 'Healthcare outreach, workforce development, and health education in underserved communities.',
     details: {
-      overview: 'Invest in Kenya\'s next generation by teaching practical life skills, biblical principles, and leadership foundations to students and young adults.',
+      overview: 'Led by Dr. Michele Y. Griffith, this track brings hope and healing to communities with limited healthcare access through workforce development, community health outreach, and medical leadership roundtables.',
       activities: [
-        'Teach financial literacy and stewardship workshops',
-        'Lead youth leadership development sessions',
-        'Mentor students in career and life planning',
-        'Conduct after-school programs and tutoring',
-        'Facilitate team-building and character development activities',
+        'Healthcare workforce development programs',
+        'Community health outreach clinics',
+        'Medical leadership roundtables',
+        'Hospital and partner engagement',
+        'Health education and prevention workshops',
       ],
-      idealFor: 'Teachers, youth pastors, mentors, coaches, financial professionals, and anyone passionate about investing in young people.',
-      impact: 'Many Kenyan youth lack access to practical life skills training. Your investment helps them build a foundation for future success.',
+      idealFor: 'Doctors, nurses, EMTs, pharmacists, dentists, public health professionals, and healthcare students.',
+      impact: 'Many rural Kenyans travel hours to reach medical facilities. Your service brings care directly to those in need and strengthens the local healthcare workforce.',
     },
   },
   {
-    id: 'medical',
-    title: 'Medical Missions',
-    icon: Stethoscope,
-    description: 'Healthcare outreach, clinics, and health education in underserved communities.',
+    id: 'education',
+    title: 'Education & Technology',
+    icon: GraduationCap,
+    description: 'Digital literacy, teacher development, STEM workshops, and youth mentorship programs.',
     details: {
-      overview: 'Bring hope and healing to communities with limited healthcare access through mobile clinics, health screenings, and preventive care education.',
+      overview: 'Equip Kenya\'s next generation with digital skills, technology access, and practical education. This track focuses on bridging the digital divide and building sustainable education infrastructure.',
       activities: [
-        'Conduct health screenings and basic medical assessments',
-        'Provide first aid and primary care services',
-        'Lead health education workshops (hygiene, nutrition, disease prevention)',
-        'Distribute medical supplies and medications',
-        'Train local health workers in basic care protocols',
+        'Digital literacy and technology training',
+        'Teacher development and school partnerships',
+        'Youth mentorship and career readiness programs',
+        'STEM workshops and computer lab setup',
+        'Financial literacy and life skills education',
       ],
-      idealFor: 'Doctors, nurses, EMTs, pharmacists, dentists, public health professionals, and healthcare students.',
-      impact: 'Many rural Kenyans travel hours to reach medical facilities. Your service brings care directly to those in need.',
+      idealFor: 'Teachers, tech professionals, youth pastors, mentors, coaches, and anyone passionate about education and technology.',
+      impact: 'Many Kenyan students lack access to technology and digital skills. Your investment helps them build a foundation for future success in a connected world.',
     },
   },
   {
     id: 'business',
-    title: 'Business Development',
+    title: 'Business & Economic Empowerment',
     icon: Briefcase,
-    description: 'Entrepreneurship training, business mentorship, and economic empowerment.',
+    description: 'Investment conferences, entrepreneur mentorship, and cross-border economic partnerships.',
     details: {
-      overview: 'Empower Kenyan entrepreneurs and small business owners with the knowledge and skills to build sustainable enterprises that transform their communities.',
+      overview: 'Two 1-day business conferences — one in Nairobi and one in Mombasa — designed to create real deals, real investments, and real economic movement. Where capital meets opportunity.',
       activities: [
-        'Teach business planning and strategy workshops',
-        'Provide one-on-one mentorship to local entrepreneurs',
-        'Lead marketing and sales training sessions',
-        'Facilitate microfinance and savings group education',
-        'Consult with existing businesses on growth strategies',
+        'Investor pitch sessions with vetted Kenyan companies',
+        'Entrepreneurship and scaling strategies',
+        'Access to capital — connecting founders with investors',
+        'Cross-border partnership and market entry strategy',
+        'Leadership and organizational development',
+        'Technology and digital business tools for East Africa',
       ],
-      idealFor: 'Business owners, entrepreneurs, consultants, marketers, accountants, and professionals with business expertise.',
-      impact: 'Economic empowerment creates lasting change. When businesses thrive, families are fed, children go to school, and communities flourish.',
-    },
-  },
-  {
-    id: 'food-security',
-    title: 'Food Security',
-    icon: Wheat,
-    description: 'Agricultural initiatives, farming support, and sustainable food systems.',
-    details: {
-      overview: 'Address food insecurity at its root by teaching sustainable farming practices, supporting local agriculture, and building community gardens.',
-      activities: [
-        'Teach sustainable farming and irrigation techniques',
-        'Help establish community and school gardens',
-        'Train families in food preservation methods',
-        'Support poultry and livestock management projects',
-        'Educate on nutrition and meal planning with local foods',
-      ],
-      idealFor: 'Farmers, agricultural specialists, nutritionists, environmental scientists, and anyone passionate about food justice.',
-      impact: 'With proper training, families can grow enough food to feed themselves year-round and generate income from surplus.',
-    },
-  },
-  {
-    id: 'material',
-    title: 'Material Support',
-    icon: Package,
-    description: 'Distribution of clothing, medical supplies, and educational resources.',
-    details: {
-      overview: 'Organize and distribute donated materials to families, schools, churches, and medical facilities where they are needed most.',
-      activities: [
-        'Sort and organize donated materials for distribution',
-        'Coordinate distribution events in communities',
-        'Deliver supplies to schools and orphanages',
-        'Pack and distribute hygiene kits and school supplies',
-        'Document and track material distribution for accountability',
-      ],
-      idealFor: 'Anyone with a heart to serve! This track welcomes all skill levels and ages.',
-      impact: 'A simple pair of shoes, a school uniform, or basic medical supplies can dramatically improve a child\'s quality of life.',
+      idealFor: 'Investors, business owners, entrepreneurs, consultants, and professionals with business expertise seeking African market exposure.',
+      impact: 'These conferences create economic infrastructure. Investment commitments, partnership agreements, and mentorship pairings that produce real returns long after the trip.',
     },
   },
 ]
@@ -148,10 +108,10 @@ const cities = [
         'Pastoral support for growing churches',
       ],
       activities: [
+        'Business conference — investor pitch sessions and partnerships (April 24)',
         'Church services and pastoral conferences',
         'Youth leadership and mentorship programs',
         'Medical outreach in underserved communities',
-        'Business development workshops',
       ],
     },
   },
@@ -173,10 +133,10 @@ const cities = [
         'Church planting and pastoral training',
       ],
       activities: [
-        'Community health education',
+        'Business conference — coastal companies and trade partnerships (May 1–4)',
+        'Community health education and outreach',
         'Children\'s ministry and education support',
         'Pastoral care and church strengthening',
-        'Food security and nutrition programs',
       ],
     },
   },
@@ -212,7 +172,7 @@ export function ExpandableServiceTracks() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-2 gap-6">
       {serviceAreas.map((area) => {
         const isExpanded = expandedId === area.id
         const Icon = area.icon
@@ -220,10 +180,10 @@ export function ExpandableServiceTracks() {
         return (
           <div
             key={area.id}
-            className={`group bg-stone-50 rounded-2xl border transition-all duration-300 cursor-pointer ${
+            className={`group bg-cream rounded-2xl border transition-all duration-300 cursor-pointer ${
               isExpanded
-                ? 'bg-amber-50 border-amber-300 shadow-lg col-span-1 md:col-span-2 lg:col-span-3'
-                : 'border-stone-200 hover:border-amber-300 hover:bg-amber-50'
+                ? 'bg-gold/5 border-gold shadow-lg col-span-1 md:col-span-2'
+                : 'border-navy/10 hover:border-gold hover:bg-gold/5'
             }`}
             onClick={() => setExpandedId(isExpanded ? null : area.id)}
           >
@@ -231,49 +191,49 @@ export function ExpandableServiceTracks() {
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow flex-shrink-0">
-                    <Icon className="h-7 w-7 text-amber-600" />
+                    <Icon className="h-7 w-7 text-gold-dark" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-stone-900 mb-1">{area.title}</h3>
-                    <p className="text-stone-600 text-sm leading-relaxed">{area.description}</p>
+                    <h3 className="text-lg font-bold text-navy mb-1">{area.title}</h3>
+                    <p className="text-navy/60 text-sm leading-relaxed">{area.description}</p>
                   </div>
                 </div>
                 <ChevronDown
-                  className={`h-5 w-5 text-stone-400 transition-transform duration-300 flex-shrink-0 ml-4 ${
+                  className={`h-5 w-5 text-navy/40 transition-transform duration-300 flex-shrink-0 ml-4 ${
                     isExpanded ? 'rotate-180' : ''
                   }`}
                 />
               </div>
 
               {isExpanded && (
-                <div className="mt-6 pt-6 border-t border-amber-200">
+                <div className="mt-6 pt-6 border-t border-gold/30">
                   <div className="grid md:grid-cols-2 gap-8">
                     <div>
-                      <h4 className="font-semibold text-stone-900 mb-3">Overview</h4>
-                      <p className="text-stone-600 text-sm leading-relaxed mb-6">
+                      <h4 className="font-semibold text-navy mb-3">Overview</h4>
+                      <p className="text-navy/60 text-sm leading-relaxed mb-6">
                         {area.details.overview}
                       </p>
 
-                      <h4 className="font-semibold text-stone-900 mb-3">Ideal For</h4>
-                      <p className="text-stone-600 text-sm leading-relaxed">
+                      <h4 className="font-semibold text-navy mb-3">Ideal For</h4>
+                      <p className="text-navy/60 text-sm leading-relaxed">
                         {area.details.idealFor}
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-stone-900 mb-3">What You will Do</h4>
+                      <h4 className="font-semibold text-navy mb-3">What You&apos;ll Do</h4>
                       <ul className="space-y-2">
                         {area.details.activities.map((activity, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-stone-600">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <li key={i} className="flex items-start gap-2 text-sm text-navy/60">
+                            <span className="w-1.5 h-1.5 bg-gold rounded-full mt-2 flex-shrink-0"></span>
                             {activity}
                           </li>
                         ))}
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-6 p-4 bg-amber-100/50 rounded-xl">
-                    <p className="text-stone-700 text-sm">
-                      <strong className="text-amber-700">Your Impact:</strong> {area.details.impact}
+                  <div className="mt-6 p-4 bg-gold/10 rounded-xl">
+                    <p className="text-navy/70 text-sm">
+                      <strong className="text-gold-dark">Your Impact:</strong> {area.details.impact}
                     </p>
                   </div>
                 </div>
@@ -300,56 +260,56 @@ export function ExpandableCities() {
             key={city.id}
             className={`group rounded-2xl border transition-all duration-300 cursor-pointer ${
               isExpanded
-                ? 'bg-stone-800 border-amber-500 shadow-xl col-span-1 md:col-span-3'
-                : 'bg-stone-800/50 border-stone-700 hover:border-amber-500/50 hover:bg-stone-800'
+                ? 'bg-white/10 border-gold shadow-xl col-span-1 md:col-span-3'
+                : 'bg-white/5 border-white/10 hover:border-gold/50 hover:bg-white/10'
             }`}
             onClick={() => setExpandedId(isExpanded ? null : city.id)}
           >
             <div className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-7 w-7 text-amber-400" />
+                  <div className="w-14 h-14 bg-gold/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="h-7 w-7 text-gold" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white mb-1">{city.name}</h3>
-                    <p className="text-amber-400 text-sm font-medium">{city.subtitle}</p>
+                    <p className="text-gold text-sm font-medium">{city.subtitle}</p>
                     {!isExpanded && (
-                      <p className="text-stone-400 text-sm mt-2 leading-relaxed line-clamp-2">
+                      <p className="text-white/40 text-sm mt-2 leading-relaxed line-clamp-2">
                         {city.overview}
                       </p>
                     )}
                   </div>
                 </div>
                 <ChevronDown
-                  className={`h-5 w-5 text-stone-400 transition-transform duration-300 flex-shrink-0 ml-4 ${
+                  className={`h-5 w-5 text-white/40 transition-transform duration-300 flex-shrink-0 ml-4 ${
                     isExpanded ? 'rotate-180' : ''
                   }`}
                 />
               </div>
 
               {isExpanded && (
-                <div className="mt-6 pt-6 border-t border-stone-700">
-                  <p className="text-stone-300 leading-relaxed mb-6">{city.overview}</p>
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <p className="text-white/60 leading-relaxed mb-6">{city.overview}</p>
 
                   <div className="grid md:grid-cols-3 gap-8">
                     <div>
                       <div className="mb-4">
-                        <span className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Population</span>
+                        <span className="text-gold text-sm font-semibold uppercase tracking-wider">Population</span>
                         <p className="text-white font-medium mt-1">{city.details.population}</p>
                       </div>
                       <div>
-                        <span className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Known For</span>
-                        <p className="text-stone-300 text-sm mt-1">{city.details.knownFor}</p>
+                        <span className="text-gold text-sm font-semibold uppercase tracking-wider">Known For</span>
+                        <p className="text-white/60 text-sm mt-1">{city.details.knownFor}</p>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Key Needs</span>
+                      <span className="text-gold text-sm font-semibold uppercase tracking-wider">Key Needs</span>
                       <ul className="mt-2 space-y-2">
                         {city.details.needs.map((need, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-stone-300">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <li key={i} className="flex items-start gap-2 text-sm text-white/60">
+                            <span className="w-1.5 h-1.5 bg-gold rounded-full mt-2 flex-shrink-0"></span>
                             {need}
                           </li>
                         ))}
@@ -357,11 +317,11 @@ export function ExpandableCities() {
                     </div>
 
                     <div>
-                      <span className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Our Activities</span>
+                      <span className="text-gold text-sm font-semibold uppercase tracking-wider">Our Activities</span>
                       <ul className="mt-2 space-y-2">
                         {city.details.activities.map((activity, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-stone-300">
-                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
+                          <li key={i} className="flex items-start gap-2 text-sm text-white/60">
+                            <span className="w-1.5 h-1.5 bg-gold rounded-full mt-2 flex-shrink-0"></span>
                             {activity}
                           </li>
                         ))}
@@ -369,10 +329,10 @@ export function ExpandableCities() {
                     </div>
                   </div>
 
-                  <div className="mt-6 p-4 bg-stone-900/50 rounded-xl border border-stone-700">
+                  <div className="mt-6 p-4 bg-black/20 rounded-xl border border-white/10">
                     <div className="flex items-start gap-3">
-                      <Church className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-stone-300 text-sm">
+                      <Church className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
+                      <p className="text-white/60 text-sm">
                         <strong className="text-white">Our Partnership:</strong> {city.details.ministry}
                       </p>
                     </div>
