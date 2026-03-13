@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import InstallButton from '@/components/pwa/install-button'
@@ -74,10 +75,14 @@ export function Navigation() {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-tpc-navy">
-              <span className="text-2xl font-bold text-tpc-gold">✝</span>
-            </div>
-            <span className="font-serif text-2xl font-bold text-tpc-navy">TPC Ministries</span>
+            <Image
+              src="/images/logos/tpc-logo.png"
+              alt="TPC Ministries"
+              width={160}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

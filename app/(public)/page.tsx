@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -63,13 +64,13 @@ export default async function HomePage() {
           <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
             {/* TPC Logo */}
             <div className="flex justify-center">
-              <div className="flex h-64 w-64 items-center justify-center rounded-full bg-tpc-navy shadow-2xl md:h-80 md:w-80">
-                <div className="text-center">
-                  <div className="mb-4 text-6xl font-bold text-tpc-gold md:text-7xl">✝</div>
-                  <div className="font-serif text-3xl font-bold text-tpc-gold md:text-4xl">TPC</div>
-                  <div className="font-serif text-xl text-tpc-gold">Ministries</div>
-                </div>
-              </div>
+              <Image
+                src="/images/logos/tpc-logo.png"
+                alt="TPC Ministries"
+                width={320}
+                height={320}
+                className="h-64 w-auto md:h-80"
+              />
             </div>
 
             {/* Mission Statement */}
