@@ -88,9 +88,9 @@ export const metadata: Metadata = {
     siteName: "TPC Ministries",
     images: [
       {
-        url: '/images/logos/logo-gold.png',
-        width: 512,
-        height: 512,
+        url: 'https://tpcmin.org/images/logos/tpc-logo.png',
+        width: 500,
+        height: 500,
         alt: 'TPC Ministries Logo',
       },
     ],
@@ -99,7 +99,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TPC Ministries",
     description: "Transforming Lives Through Christ",
-    images: ['/images/logos/logo-gold.png'],
+    images: ['https://tpcmin.org/images/logos/tpc-logo.png'],
   },
   icons: {
     icon: [
