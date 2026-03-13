@@ -619,26 +619,28 @@ export default function KenyaTripPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Overview + Flier */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-8">
             <a
-              href="/images/kenya/Kenya-Kingdom-Impact-Trip-2026.pdf"
-              download="Kenya-Kingdom-Impact-Trip-2026.pdf"
+              href="/documents/kenya/overview.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group bg-cream rounded-2xl p-8 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gold rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <FileText className="h-8 w-8 text-navy" />
+                <div className="w-14 h-14 bg-gold rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <FileText className="h-7 w-7 text-navy" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-navy mb-2 group-hover:text-gold-dark transition-colors">
-                    Complete Trip Guide
+                  <h3 className="text-lg font-bold text-navy mb-1 group-hover:text-gold-dark transition-colors">
+                    Trip Overview
                   </h3>
-                  <p className="text-navy/50 text-sm mb-4">
-                    19-page comprehensive guide with full trip details, service tracks, timeline, logistics, and more.
+                  <p className="text-navy/50 text-sm mb-3">
+                    Full overview — 16 days, 4 tracks, 3 cities, 5 partner organizations, timeline, and vision.
                   </p>
-                  <div className="flex items-center gap-2 text-gold-dark font-semibold">
+                  <div className="flex items-center gap-2 text-gold-dark font-semibold text-sm">
                     <Download className="h-4 w-4" />
-                    Download PDF
+                    View PDF
                   </div>
                 </div>
               </div>
@@ -650,23 +652,53 @@ export default function KenyaTripPage() {
               className="group bg-cream rounded-2xl p-8 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-navy rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <ImageIcon className="h-8 w-8 text-white" />
+                <div className="w-14 h-14 bg-navy rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <ImageIcon className="h-7 w-7 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-navy mb-2 group-hover:text-gold-dark transition-colors">
+                  <h3 className="text-lg font-bold text-navy mb-1 group-hover:text-gold-dark transition-colors">
                     Promotional Flier
                   </h3>
-                  <p className="text-navy/50 text-sm mb-4">
-                    High-resolution promotional flier for sharing on social media, printing, or distributing.
+                  <p className="text-navy/50 text-sm mb-3">
+                    High-resolution flier for sharing on social media, printing, or distributing.
                   </p>
-                  <div className="flex items-center gap-2 text-gold-dark font-semibold">
+                  <div className="flex items-center gap-2 text-gold-dark font-semibold text-sm">
                     <Download className="h-4 w-4" />
                     Download Image
                   </div>
                 </div>
               </div>
             </a>
+          </div>
+
+          {/* Track Decks */}
+          <div className="max-w-5xl mx-auto">
+            <h3 className="text-xl font-bold text-navy text-center mb-6">Service Track Details</h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { name: 'Ministry', color: 'bg-purple-600', file: 'ministry-track.pdf', desc: 'Pastors conferences, revivals, crusades, and prophetic ministry' },
+                { name: 'Health & Wellness', color: 'bg-red-700', file: 'health-wellness-track.pdf', desc: 'Medical camps, telemedicine, doctor training — led by Dr. Michele Griffith' },
+                { name: 'Education & Tech', color: 'bg-teal-700', file: 'education-technology-track.pdf', desc: 'School partnerships, AI literacy, orphan sponsorship — led by IHA' },
+                { name: 'Business', color: 'bg-green-700', file: 'business-empowerment-track.pdf', desc: 'Investment conferences in Nairobi & Mombasa — led by Uplift Communities' },
+              ].map((track) => (
+                <a
+                  key={track.name}
+                  href={`/documents/kenya/${track.file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group bg-white rounded-xl p-5 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300 text-center"
+                >
+                  <div className={`${track.color} text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3`}>
+                    {track.name.toUpperCase()}
+                  </div>
+                  <p className="text-navy/50 text-xs mb-4 leading-relaxed">{track.desc}</p>
+                  <div className="flex items-center justify-center gap-2 text-gold-dark font-semibold text-sm">
+                    <Download className="h-3.5 w-3.5" />
+                    View Deck
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
 
           <div className="mt-12 text-center">
