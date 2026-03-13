@@ -32,7 +32,21 @@ export const metadata: Metadata = {
     title: 'Kenya 2026 Kingdom Impact Trip',
     description: '14 days of Kingdom impact across Kenya. Apply now — spaces limited.',
     type: 'website',
-    images: ['/images/kenya/kenya-flier-2026.png'],
+    siteName: 'TPC Ministries',
+    images: [
+      {
+        url: 'https://tpcmin.org/images/kenya/kenya-flier-2026.png',
+        width: 1200,
+        height: 630,
+        alt: 'Kenya 2026 Kingdom Impact Trip - TPC Ministries',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kenya 2026 Kingdom Impact Trip',
+    description: '14 days of Kingdom impact across Kenya. Apply now — spaces limited.',
+    images: ['https://tpcmin.org/images/kenya/kenya-flier-2026.png'],
   },
 }
 
