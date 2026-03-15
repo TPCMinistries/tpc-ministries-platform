@@ -10,14 +10,17 @@ import { CountdownTimer } from './_components/countdown-timer'
 import { StatsHeader } from './_components/stats-header'
 import { TabOverview } from './_components/tab-overview'
 import { TabPeople } from './_components/tab-people'
+import { TabActions } from './_components/tab-actions'
 import { TabItinerary } from './_components/tab-itinerary'
 import { TabLogistics } from './_components/tab-logistics'
+import { TabTracks } from './_components/tab-tracks'
 import { TabBudget } from './_components/tab-budget'
 import { TabPacking } from './_components/tab-packing'
 import { TabComms } from './_components/tab-comms'
 import { TabMedia } from './_components/tab-media'
 import { TabPipeline } from './_components/tab-pipeline'
 import { TabPrayer } from './_components/tab-prayer'
+import { TabNotes } from './_components/tab-notes'
 import { ModalExpense } from './_components/modal-expense'
 import { ModalAnnouncement } from './_components/modal-announcement'
 import { ModalDailyFocus } from './_components/modal-daily-focus'
@@ -128,6 +131,9 @@ export default function KenyaCommandCenter() {
           <TabPeople
             trip={trip}
             filteredParticipants={data.filteredParticipants}
+            participants={data.participants}
+            lodging={data.lodging}
+            contacts={data.contacts}
             searchQuery={data.searchQuery}
             setSearchQuery={data.setSearchQuery}
             filterTrack={data.filterTrack}
@@ -136,6 +142,19 @@ export default function KenyaCommandCenter() {
             setFilterStatus={data.setFilterStatus}
             setSelectedParticipant={data.setSelectedParticipant}
             updateParticipantStatus={data.updateParticipantStatus}
+            updateParticipantField={data.updateParticipantField}
+            updateLodgingField={data.updateLodgingField}
+            saveStatus={data.saveStatus}
+          />
+        )}
+
+        {activeTab === 'actions' && (
+          <TabActions
+            actionItems={data.actionItems}
+            addActionItem={data.addActionItem}
+            updateActionItemField={data.updateActionItemField}
+            deleteActionItem={data.deleteActionItem}
+            saveStatus={data.saveStatus}
           />
         )}
 
@@ -159,6 +178,21 @@ export default function KenyaCommandCenter() {
             addConferenceSession={data.addConferenceSession}
             deleteConferenceSession={data.deleteConferenceSession}
             copyFromItinerary={data.copyFromItinerary}
+          />
+        )}
+
+        {activeTab === 'tracks' && (
+          <TabTracks
+            participants={data.participants}
+            contacts={data.contacts}
+            conferenceSessions={data.conferenceSessions}
+            trackDetails={data.trackDetails}
+            trackMaterials={data.trackMaterials}
+            updateTrackDetailField={data.updateTrackDetailField}
+            addTrackMaterial={data.addTrackMaterial}
+            toggleTrackMaterial={data.toggleTrackMaterial}
+            deleteTrackMaterial={data.deleteTrackMaterial}
+            saveStatus={data.saveStatus}
           />
         )}
 
@@ -225,6 +259,16 @@ export default function KenyaCommandCenter() {
             participants={data.participants}
             dailyFocus={data.dailyFocus}
             setShowDailyFocusModal={data.setShowDailyFocusModal}
+          />
+        )}
+
+        {activeTab === 'notes' && (
+          <TabNotes
+            adminNotes={data.adminNotes}
+            addAdminNote={data.addAdminNote}
+            updateAdminNoteField={data.updateAdminNoteField}
+            deleteAdminNote={data.deleteAdminNote}
+            saveStatus={data.saveStatus}
           />
         )}
       </div>
