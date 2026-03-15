@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type {
   Trip, Participant, ItineraryItem, Flight, Lodging, Contact,
   BudgetCategory, Expense, Announcement, Document, FAQ, DailyFocus, Stats,
   PackingItem, PackingStatus, ConferenceSession, LogisticsMatrix,
-  MediaCalendarItem, MediaAssignment, ShotListItem, WaitingListEntry
+  MediaCalendarItem, MediaAssignment, ShotListItem, WaitingListEntry,
+  ActionItem, TrackDetail, TrackMaterial, AdminNote
 } from './types'
 
 export function useKenyaData() {
@@ -27,7 +28,7 @@ export function useKenyaData() {
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const [dailyFocus, setDailyFocus] = useState<DailyFocus[]>([])
 
-  // New data state
+  // Phase 2/3 data state
   const [packingItems, setPackingItems] = useState<PackingItem[]>([])
   const [packingStatuses, setPackingStatuses] = useState<PackingStatus[]>([])
   const [conferenceSessions, setConferenceSessions] = useState<ConferenceSession[]>([])
@@ -36,6 +37,16 @@ export function useKenyaData() {
   const [mediaAssignments, setMediaAssignments] = useState<MediaAssignment[]>([])
   const [shotList, setShotList] = useState<ShotListItem[]>([])
   const [waitingList, setWaitingList] = useState<WaitingListEntry[]>([])
+
+  // Phase 4 data state (migration 045)
+  const [actionItems, setActionItems] = useState<ActionItem[]>([])
+  const [trackDetails, setTrackDetails] = useState<TrackDetail[]>([])
+  const [trackMaterials, setTrackMaterials] = useState<TrackMaterial[]>([])
+  const [adminNotes, setAdminNotes] = useState<AdminNote[]>([])
+
+  // Save indicator
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Stats
   const [stats, setStats] = useState<Stats>({
@@ -94,6 +105,13 @@ export function useKenyaData() {
     fetchData()
   }, [])
 
+  // Save indicator helper
+  const flashSave = useCallback((success: boolean = true) => {
+    setSaveStatus(success ? 'saved' : 'error')
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    saveTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000)
+  }, [])
+
   const fetchData = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
@@ -147,7 +165,7 @@ export function useKenyaData() {
       setFaqs(faqsRes.data || [])
       setDailyFocus(dailyFocusRes.data || [])
 
-      // Fetch new tables (wrapped in try/catch - may not exist yet before migration)
+      // Fetch packing tables
       try {
         const [packingItemsRes, packingStatusRes] = await Promise.all([
           supabase.from('kenya_trip_packing_items').select('*').eq('trip_id', tripData.id).order('sort_order'),
@@ -157,6 +175,7 @@ export function useKenyaData() {
         setPackingStatuses(packingStatusRes.data || [])
       } catch { /* tables may not exist yet */ }
 
+      // Fetch phase 2/3 tables
       try {
         const [confRes, logRes, mcRes, maRes, slRes, wlRes] = await Promise.all([
           supabase.from('kenya_trip_conference_sessions').select('*').eq('trip_id', tripData.id).order('conference_date').order('start_time'),
@@ -172,7 +191,21 @@ export function useKenyaData() {
         setMediaAssignments(maRes.data || [])
         setShotList(slRes.data || [])
         setWaitingList(wlRes.data || [])
-      } catch { /* tables may not exist yet - migration 044 needed */ }
+      } catch { /* tables may not exist yet */ }
+
+      // Fetch phase 4 tables (migration 045)
+      try {
+        const [actionRes, trackRes, materialRes, notesRes] = await Promise.all([
+          supabase.from('kenya_trip_action_items').select('*').eq('trip_id', tripData.id).order('sort_order'),
+          supabase.from('kenya_trip_track_details').select('*').eq('trip_id', tripData.id).order('track'),
+          supabase.from('kenya_trip_track_materials').select('*').order('sort_order'),
+          supabase.from('kenya_trip_admin_notes').select('*').eq('trip_id', tripData.id).order('sort_order'),
+        ])
+        setActionItems(actionRes.data || [])
+        setTrackDetails(trackRes.data || [])
+        setTrackMaterials(materialRes.data || [])
+        setAdminNotes(notesRes.data || [])
+      } catch { /* tables may not exist yet */ }
 
       // Calculate stats
       const p = participantsRes.data || []
@@ -215,6 +248,7 @@ export function useKenyaData() {
       'Travel Accommodation', 'Travel Date In', 'Travel Date Out',
       'Departure Airport', 'Return Airport',
       'Special Assistance', 'TSA/KTN', 'Travel Notes',
+      'Flight Status', 'Hotel Status', 'Booking Type',
       'Interest Form', 'Travel Form', 'Medical Form', 'Waiver',
       'Application Date',
     ]
@@ -230,6 +264,7 @@ export function useKenyaData() {
         p.travel_accommodation_type || '', p.travel_date_in || '', p.travel_date_out || '',
         p.departure_airport || '', p.return_airport || '',
         p.special_assistance || '', p.tsa_known_traveler_number || '', p.travel_notes || '',
+        p.flight_status || 'not_booked', p.hotel_status || 'not_booked', p.booking_type || 'tbd',
         p.interest_form_completed_at ? 'Yes' : 'No',
         p.travel_form_completed_at ? 'Yes' : 'No',
         p.medical_form_completed_at ? 'Yes' : 'No',
@@ -257,6 +292,49 @@ export function useKenyaData() {
     const matchesStatus = filterStatus === 'all' || p.application_status === filterStatus
     return matchesSearch && matchesTrack && matchesStatus
   })
+
+  // ============ GENERIC INLINE EDIT (Optimistic) ============
+
+  const updateParticipantField = useCallback(async (id: string, field: string, value: string) => {
+    // Optimistic update
+    setParticipants(prev => prev.map(p =>
+      p.id === id ? { ...p, [field]: value } : p
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_participants')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData() // Revert on error
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const updateLodgingField = useCallback(async (id: string, field: string, value: string | number) => {
+    setLodging(prev => prev.map(l =>
+      l.id === id ? { ...l, [field]: value } : l
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_lodging')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
 
   // ============ EXISTING CRUD HANDLERS ============
 
@@ -515,7 +593,6 @@ export function useKenyaData() {
   const promoteToDelegate = async (entry: WaitingListEntry) => {
     if (!trip) return
     const supabase = createClient()
-    // Create participant
     const { data: newParticipant, error: pError } = await supabase.from('kenya_trip_participants').insert({
       trip_id: trip.id,
       first_name: entry.first_name,
@@ -532,13 +609,141 @@ export function useKenyaData() {
     }).select().single()
 
     if (!pError && newParticipant) {
-      // Update waiting list entry
       await supabase.from('kenya_trip_waiting_list').update({
         status: 'promoted',
         promoted_to_participant_id: newParticipant.id,
       }).eq('id', entry.id)
       fetchData()
     }
+  }
+
+  // ============ ACTION ITEMS HANDLERS ============
+
+  const addActionItem = async (item: { title: string; category: string; priority: string }) => {
+    if (!trip || !item.title) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_action_items').insert({
+      trip_id: trip.id,
+      title: item.title,
+      category: item.category,
+      priority: item.priority,
+      sort_order: actionItems.length,
+    })
+    if (!error) fetchData()
+  }
+
+  const updateActionItemField = useCallback(async (id: string, field: string, value: string | null) => {
+    setActionItems(prev => prev.map(a =>
+      a.id === id ? { ...a, [field]: value } : a
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_action_items')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteActionItem = async (id: string) => {
+    setActionItems(prev => prev.filter(a => a.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_action_items').delete().eq('id', id)
+  }
+
+  // ============ TRACK HANDLERS ============
+
+  const updateTrackDetailField = useCallback(async (id: string, field: string, value: string) => {
+    setTrackDetails(prev => prev.map(t =>
+      t.id === id ? { ...t, [field]: value } : t
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_track_details')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const addTrackMaterial = async (trackDetailId: string, itemName: string) => {
+    if (!itemName.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_track_materials').insert({
+      track_detail_id: trackDetailId,
+      item_name: itemName.trim(),
+      sort_order: trackMaterials.filter(m => m.track_detail_id === trackDetailId).length,
+    })
+    if (!error) fetchData()
+  }
+
+  const toggleTrackMaterial = useCallback(async (id: string, currentlyChecked: boolean) => {
+    setTrackMaterials(prev => prev.map(m =>
+      m.id === id ? { ...m, is_checked: !currentlyChecked } : m
+    ))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_track_materials')
+      .update({ is_checked: !currentlyChecked })
+      .eq('id', id)
+  }, [])
+
+  const deleteTrackMaterial = async (id: string) => {
+    setTrackMaterials(prev => prev.filter(m => m.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_track_materials').delete().eq('id', id)
+  }
+
+  // ============ ADMIN NOTES HANDLERS ============
+
+  const addAdminNote = async (note: { note_type: string; title?: string; content?: string; url?: string }) => {
+    if (!trip) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_admin_notes').insert({
+      trip_id: trip.id,
+      ...note,
+      sort_order: adminNotes.filter(n => n.note_type === note.note_type).length,
+    })
+    if (!error) fetchData()
+  }
+
+  const updateAdminNoteField = useCallback(async (id: string, field: string, value: string) => {
+    setAdminNotes(prev => prev.map(n =>
+      n.id === id ? { ...n, [field]: value } : n
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_admin_notes')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteAdminNote = async (id: string) => {
+    setAdminNotes(prev => prev.filter(n => n.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_admin_notes').delete().eq('id', id)
   }
 
   return {
@@ -549,6 +754,10 @@ export function useKenyaData() {
     budgetCategories, expenses, announcements, documents, faqs, dailyFocus,
     packingItems, packingStatuses, conferenceSessions, logisticsMatrix,
     mediaCalendar, mediaAssignments, shotList, waitingList,
+    // Phase 4 data
+    actionItems, trackDetails, trackMaterials, adminNotes,
+    // Save status
+    saveStatus,
     // Stats
     stats,
     // UI state
@@ -568,6 +777,8 @@ export function useKenyaData() {
     // Existing handlers
     handleAddExpense, handleAddAnnouncement, handleAddDailyFocus,
     updateParticipantStatus, updateExpenseStatus, exportCSV,
+    // Inline edit handlers
+    updateParticipantField, updateLodgingField,
     // Packing handlers
     addPackingItem, deletePackingItem, togglePackingStatus, initializePackingForAll,
     // Logistics handlers
@@ -578,5 +789,11 @@ export function useKenyaData() {
     addShotListItem, toggleShotCaptured, deleteShotListItem,
     // Pipeline handlers
     addWaitingListEntry, updateWaitingListEntry, deleteWaitingListEntry, promoteToDelegate,
+    // Action items handlers
+    addActionItem, updateActionItemField, deleteActionItem,
+    // Track handlers
+    updateTrackDetailField, addTrackMaterial, toggleTrackMaterial, deleteTrackMaterial,
+    // Admin notes handlers
+    addAdminNote, updateAdminNoteField, deleteAdminNote,
   }
 }

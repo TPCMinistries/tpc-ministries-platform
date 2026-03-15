@@ -58,6 +58,10 @@ export interface Participant {
   waiver_signed_at?: string
   trip_cost?: number
   amount_paid?: number
+  // New fields from migration 045
+  flight_status?: string
+  hotel_status?: string
+  booking_type?: string
 }
 
 export interface ItineraryItem {
@@ -95,6 +99,10 @@ export interface Lodging {
   check_in_date: string
   check_out_date: string
   total_rooms: number
+  // New fields from migration 045
+  booking_status?: string
+  rate_per_night?: number
+  notes?: string
 }
 
 export interface Contact {
@@ -182,7 +190,7 @@ export interface Stats {
   daysUntilTrip: number
 }
 
-// ========== NEW Types for Phase 2 & 3 ==========
+// ========== Phase 2 & 3 Types ==========
 
 export interface PackingItem {
   id: string
@@ -282,4 +290,53 @@ export interface WaitingListEntry {
   created_at: string
 }
 
-export type TabType = 'overview' | 'people' | 'itinerary' | 'logistics' | 'budget' | 'packing' | 'comms' | 'media' | 'pipeline' | 'prayer'
+// ========== Phase 4 Types (migration 045) ==========
+
+export interface ActionItem {
+  id: string
+  trip_id: string
+  title: string
+  category: string
+  assigned_to: string | null
+  due_date: string | null
+  status: string
+  priority: string
+  notes: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TrackDetail {
+  id: string
+  trip_id: string
+  track: string
+  objectives: string
+  scope: string
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TrackMaterial {
+  id: string
+  track_detail_id: string
+  item_name: string
+  is_checked: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface AdminNote {
+  id: string
+  trip_id: string
+  note_type: string
+  title: string | null
+  content: string | null
+  url: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'packing' | 'comms' | 'media' | 'pipeline' | 'prayer' | 'notes'
