@@ -617,6 +617,112 @@ export function useKenyaData() {
     }
   }
 
+  // ============ ADD DELEGATE / CONTACT HANDLERS ============
+
+  const addParticipantDirect = async (firstName: string, lastName: string) => {
+    if (!trip || !firstName.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_participants').insert({
+      trip_id: trip.id,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: '',
+      phone: '',
+      application_status: 'approved',
+      payment_status: 'pending',
+      passport_status: '❓ Unknown',
+      visa_status: '❓ Unknown',
+      flight_status: '⬜ Not booked',
+      hotel_status: '⬜ Not booked',
+      booking_type: 'TBD',
+      fundraising_goal: 3500,
+      amount_raised: 0,
+      team_leader: false,
+    })
+    if (!error) fetchData()
+  }
+
+  const addContact = async (name: string) => {
+    if (!trip || !name.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_contacts').insert({
+      trip_id: trip.id,
+      name: name.trim(),
+      role: '',
+      organization: '',
+      phone: '',
+      email: '',
+      city: '',
+      is_primary: false,
+    })
+    if (!error) fetchData()
+  }
+
+  const deleteParticipant = async (id: string) => {
+    setParticipants(prev => prev.filter(p => p.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_participants').delete().eq('id', id)
+  }
+
+  const deleteContact = async (id: string) => {
+    setContacts(prev => prev.filter(c => c.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_contacts').delete().eq('id', id)
+  }
+
+  const updateContactField = useCallback(async (id: string, field: string, value: string) => {
+    setContacts(prev => prev.map(c =>
+      c.id === id ? { ...c, [field]: value } : c
+    ))
+    setSaveStatus('saving')
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_contacts')
+      .update({ [field]: value })
+      .eq('id', id)
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  // Itinerary CRUD
+  const addItineraryItem = async (item: { date: string; day_number: number; title: string; description: string; start_time: string; category: string; location: string }) => {
+    if (!trip) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_itinerary').insert({
+      trip_id: trip.id,
+      ...item,
+    })
+    if (!error) fetchData()
+  }
+
+  const updateItineraryField = useCallback(async (id: string, field: string, value: string) => {
+    setItinerary(prev => prev.map(i =>
+      i.id === id ? { ...i, [field]: value } : i
+    ))
+    setSaveStatus('saving')
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_itinerary')
+      .update({ [field]: value })
+      .eq('id', id)
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteItineraryItem = async (id: string) => {
+    setItinerary(prev => prev.filter(i => i.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_itinerary').delete().eq('id', id)
+  }
+
   // ============ ACTION ITEMS HANDLERS ============
 
   const addActionItem = async (item: { title: string; category: string; priority: string }) => {
@@ -778,7 +884,11 @@ export function useKenyaData() {
     handleAddExpense, handleAddAnnouncement, handleAddDailyFocus,
     updateParticipantStatus, updateExpenseStatus, exportCSV,
     // Inline edit handlers
-    updateParticipantField, updateLodgingField,
+    updateParticipantField, updateLodgingField, updateContactField,
+    // Add/delete delegates & contacts
+    addParticipantDirect, deleteParticipant, addContact, deleteContact,
+    // Itinerary handlers
+    addItineraryItem, updateItineraryField, deleteItineraryItem,
     // Packing handlers
     addPackingItem, deletePackingItem, togglePackingStatus, initializePackingForAll,
     // Logistics handlers

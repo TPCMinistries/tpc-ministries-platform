@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AdminSimplifiedNav } from '@/components/admin/redesign/admin-simplified-nav'
 import { AdminBottomNav } from '@/components/admin/redesign/admin-bottom-nav'
+import { AdminCollapsibleShell } from '@/components/admin/admin-collapsible-shell'
 import { ArrowLeftRight } from 'lucide-react'
 
 // Force dynamic rendering for all admin pages
@@ -52,10 +53,9 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <aside className="w-64 bg-navy border-r border-gray-700">
-          <div className="flex flex-col h-full">
+      <AdminCollapsibleShell
+        sidebar={
+          <>
             {/* Logo */}
             <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-700">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold">
@@ -93,14 +93,11 @@ export default async function AdminLayout({
                 </div>
               </div>
             </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-          {children}
-        </main>
-      </div>
+          </>
+        }
+      >
+        {children}
+      </AdminCollapsibleShell>
 
       {/* Mobile Bottom Navigation - Redesigned */}
       <AdminBottomNav />
