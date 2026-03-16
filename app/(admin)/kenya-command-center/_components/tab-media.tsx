@@ -121,7 +121,7 @@ export function TabMedia({
               </p>
               <div className="flex flex-wrap gap-2">
                 <a
-                  href="https://drive.google.com/drive/folders/REPLACE_WITH_FOLDER_ID"
+                  href="https://drive.google.com/drive/folders/1L1-XFFcbx8OwD2aYaDusUYduuzAXs5jO?usp=drive_link"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-pink-300 text-pink-800 rounded-lg hover:bg-pink-100 transition-colors"
@@ -138,7 +138,7 @@ export function TabMedia({
                 </a>
               </div>
               <p className="text-[11px] text-pink-600 mt-2">
-                Update the links above in the code once you create the shared folder + WhatsApp group.
+                Delegates can add files but cannot delete. WhatsApp link — update when group is created.
               </p>
             </div>
           </div>
