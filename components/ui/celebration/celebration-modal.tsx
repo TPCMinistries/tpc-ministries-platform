@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import confetti from "canvas-confetti"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import {
   Dialog,
   DialogContent,
@@ -119,36 +118,39 @@ export function CelebrationModal({
   const title = customTitle || config.title
   const description = customDescription || config.description
   const emoji = customEmoji || config.emoji
+  const shouldReduceMotion = useReducedMotion()
 
   React.useEffect(() => {
-    if (open && config.confetti) {
-      // Fire confetti
-      const duration = 2000
-      const end = Date.now() + duration
+    if (open && config.confetti && !shouldReduceMotion) {
+      // Dynamically import canvas-confetti to reduce bundle size
+      import("canvas-confetti").then(({ default: confetti }) => {
+        const duration = 2000
+        const end = Date.now() + duration
 
-      const frame = () => {
-        confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ["#d4b883", "#1e3a61", "#c9a961"],
-        })
-        confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ["#d4b883", "#1e3a61", "#c9a961"],
-        })
+        const frame = () => {
+          confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ["#d4b883", "#1e3a61", "#c9a961"],
+          })
+          confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ["#d4b883", "#1e3a61", "#c9a961"],
+          })
 
-        if (Date.now() < end) {
-          requestAnimationFrame(frame)
+          if (Date.now() < end) {
+            requestAnimationFrame(frame)
+          }
         }
-      }
-      frame()
+        frame()
+      })
     }
-  }, [open, config.confetti])
+  }, [open, config.confetti, shouldReduceMotion])
 
   const handlePrimaryAction = () => {
     if (onPrimaryAction) {
@@ -174,9 +176,9 @@ export function CelebrationModal({
         <AnimatePresence>
           {open && (
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", duration: 0.6 }}
+              initial={shouldReduceMotion ? undefined : { scale: 0, rotate: -180 }}
+              animate={shouldReduceMotion ? undefined : { scale: 1, rotate: 0 }}
+              transition={shouldReduceMotion ? undefined : { type: "spring", duration: 0.6 }}
               className="text-6xl mb-4 mx-auto"
             >
               {emoji}
@@ -195,10 +197,10 @@ export function CelebrationModal({
 
         {metadata?.streakDays && (
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-4xl font-bold text-tpc-gold py-4"
+            initial={shouldReduceMotion ? undefined : { scale: 0 }}
+            animate={shouldReduceMotion ? undefined : { scale: 1 }}
+            transition={shouldReduceMotion ? undefined : { delay: 0.3 }}
+            className="text-4xl font-bold text-gold-700 py-4"
           >
             {metadata.streakDays} Days! 🔥
           </motion.div>

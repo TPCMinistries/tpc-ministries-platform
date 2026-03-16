@@ -300,7 +300,7 @@ export default function AnalyticsPage() {
               </Button>
 
               {showDatePicker && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border p-4 z-50">
+                <div className="absolute right-0 mt-2 w-72 bg-card rounded-lg shadow-lg border p-4 z-50">
                   <div className="space-y-2 mb-4">
                     {DATE_PRESETS.map(preset => (
                       <button

@@ -52,26 +52,26 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <AdminCollapsibleShell
         sidebar={
           <>
             {/* Logo */}
-            <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-700">
+            <div className="flex items-center gap-2 px-6 py-6 border-b border-navy-800">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold">
-                <span className="text-lg font-bold text-navy">✝</span>
+                <span className="text-lg font-bold text-navy">&#x271D;</span>
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">TPC Ministries</h1>
-                <p className="text-xs text-gray-400">Admin Portal</p>
+                <p className="text-xs text-navy-300">Admin Portal</p>
               </div>
             </div>
 
             {/* Portal Switcher */}
-            <div className="px-3 py-3 border-b border-gray-700">
+            <div className="px-3 py-3 border-b border-navy-800">
               <Link
                 href="/dashboard"
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-gold to-amber-500 hover:from-gold/90 hover:to-amber-400 text-navy font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-gold to-gold-500 hover:from-gold/90 hover:to-gold-500/90 text-navy font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
               >
                 <ArrowLeftRight className="h-4 w-4" />
                 Switch to Member Portal
@@ -82,14 +82,14 @@ export default async function AdminLayout({
             <AdminSimplifiedNav />
 
             {/* User Info */}
-            <div className="border-t border-gray-700 px-3 py-4">
+            <div className="border-t border-navy-800 px-3 py-4">
               <div className="flex items-center gap-3 px-3 py-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold text-navy font-semibold text-sm">
                   {user.email?.[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">Admin</p>
-                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                  <p className="text-xs text-navy-300 truncate">{user.email}</p>
                 </div>
               </div>
             </div>

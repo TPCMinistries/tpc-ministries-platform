@@ -1,44 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   Home,
-  BookOpen,
-  Heart as HeartIcon,
-  DollarSign,
   User,
-  Settings,
   Menu,
   X,
   Sparkles,
   MessageSquare,
   ClipboardList,
-  Calendar,
   Leaf,
   PenLine,
-  Sun,
-  ScrollText,
-  HandHeart,
   Library,
   CalendarDays,
   Gift,
   Bot,
   Users,
-  Trophy,
-  Bell,
   Radio,
-  Star,
-  Utensils,
   UserCheck,
   Sunrise,
-  Cake,
-  Home as HomeIcon,
   Shield,
   Plane,
+  ChevronsLeft,
+  ChevronsRight,
+  type LucideIcon,
 } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
@@ -57,14 +47,32 @@ interface MemberSidebarProps {
   }
 }
 
+interface NavItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  badge?: number
+  highlight?: boolean
+  external?: boolean
+}
+
+interface NavSection {
+  title: string | null
+  items: NavItem[]
+}
+
+const COLLAPSED_KEY = 'tpc-sidebar-collapsed'
+
 export default function MemberSidebar({ member }: MemberSidebarProps) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
-  const navigationSections = [
+  const navigationSections: NavSection[] = [
     {
-      title: null, // No header for primary actions
+      title: null,
       items: [
         { name: 'Dashboard', href: '/dashboard', icon: Home },
         { name: 'Kenya 2026', href: '/kenya-trip', icon: Plane, highlight: true },
@@ -106,6 +114,30 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     },
   ]
 
+  // Restore collapsed state from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(COLLAPSED_KEY)
+      if (saved !== null) {
+        setIsCollapsed(saved === 'true')
+      }
+    } catch {
+      // localStorage not available
+    }
+  }, [])
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed(prev => {
+      const next = !prev
+      try {
+        localStorage.setItem(COLLAPSED_KEY, String(next))
+      } catch {
+        // localStorage not available
+      }
+      return next
+    })
+  }, [])
+
   useEffect(() => {
     fetchUnreadCount()
 
@@ -121,15 +153,15 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('messages')
         .select('id', { count: 'exact', head: true })
         .eq('recipient_id', user.id)
         .eq('recipient_type', 'member')
         .eq('is_read', false)
 
-      if (!error && data !== null) {
-        setUnreadCount(data || 0)
+      if (!error && count !== null) {
+        setUnreadCount(count)
       }
     } catch (error) {
       console.error('Error fetching unread count:', error)
@@ -143,14 +175,14 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       case 'admin':
         return 'bg-gold/20 text-gold border-gold/30'
       case 'staff':
-        return 'bg-purple-100 text-purple-700 border-purple-200'
+        return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800'
       case 'partner':
       case 'covenant':
-        return 'bg-blue-100 text-blue-700 border-blue-200'
+        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
       case 'member':
-        return 'bg-green-100 text-green-700 border-green-200'
+        return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
       default:
-        return 'bg-gray-100 text-gray-600 border-gray-200'
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -171,10 +203,36 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
     }
   }
 
+  // Avatar ring style based on tier
+  const getAvatarRingClass = (role?: string, tier?: string) => {
+    const effectiveRole = role || tier || 'free'
+    switch (effectiveRole) {
+      case 'partner':
+      case 'covenant':
+      case 'admin':
+      case 'staff':
+        return 'ring-2 ring-gold ring-offset-2 ring-offset-card'
+      default:
+        return 'ring-2 ring-navy ring-offset-2 ring-offset-card'
+    }
+  }
+
   // Check if user can access admin portal (staff or above)
   const canAccessAdmin = () => {
     const role = member.role || (member.is_admin ? 'admin' : 'free')
     return ['admin', 'staff'].includes(role)
+  }
+
+  const sidebarWidth = isCollapsed ? 64 : 256
+
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  }
+
+  const mobileSlideVariants = {
+    hidden: { x: '-100%' },
+    visible: { x: 0 },
   }
 
   return (
@@ -185,7 +243,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
           variant="outline"
           size="icon"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="bg-white shadow-lg"
+          className="bg-card shadow-lg border-border"
           aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileOpen}
         >
@@ -193,87 +251,253 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
         </Button>
       </div>
 
-      {/* Overlay for mobile */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+      {/* Mobile overlay + sidebar with AnimatePresence */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {shouldReduceMotion ? (
+              <div
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                onClick={() => setIsMobileOpen(false)}
+              />
+            ) : (
+              <motion.div
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                onClick={() => setIsMobileOpen(false)}
+                variants={overlayVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                transition={{ duration: 0.2 }}
+              />
+            )}
+            {shouldReduceMotion ? (
+              <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border lg:hidden">
+                <SidebarContent
+                  member={member}
+                  pathname={pathname}
+                  navigationSections={navigationSections}
+                  unreadCount={unreadCount}
+                  isCollapsed={false}
+                  onToggleCollapse={toggleCollapsed}
+                  onLinkClick={() => setIsMobileOpen(false)}
+                  canAccessAdmin={canAccessAdmin}
+                  getRoleColor={getRoleColor}
+                  getRoleLabel={getRoleLabel}
+                  getAvatarRingClass={getAvatarRingClass}
+                  shouldReduceMotion={!!shouldReduceMotion}
+                />
+              </aside>
+            ) : (
+              <motion.aside
+                className="fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border lg:hidden"
+                variants={mobileSlideVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <SidebarContent
+                  member={member}
+                  pathname={pathname}
+                  navigationSections={navigationSections}
+                  unreadCount={unreadCount}
+                  isCollapsed={false}
+                  onToggleCollapse={toggleCollapsed}
+                  onLinkClick={() => setIsMobileOpen(false)}
+                  canAccessAdmin={canAccessAdmin}
+                  getRoleColor={getRoleColor}
+                  getRoleLabel={getRoleLabel}
+                  getAvatarRingClass={getAvatarRingClass}
+                  shouldReduceMotion={!!shouldReduceMotion}
+                />
+              </motion.aside>
+            )}
+          </>
         )}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-navy-800">
-              <Sparkles className="h-6 w-6 text-gold" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-navy dark:text-white">TPC Ministries</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Member Portal</p>
-            </div>
+      </AnimatePresence>
+
+      {/* Desktop Sidebar */}
+      {shouldReduceMotion ? (
+        <aside
+          className={cn(
+            'hidden lg:block relative inset-y-0 left-0 z-30 bg-card border-r border-border h-screen',
+            isCollapsed ? 'w-16' : 'w-64'
+          )}
+        >
+          <SidebarContent
+            member={member}
+            pathname={pathname}
+            navigationSections={navigationSections}
+            unreadCount={unreadCount}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={toggleCollapsed}
+            onLinkClick={() => {}}
+            canAccessAdmin={canAccessAdmin}
+            getRoleColor={getRoleColor}
+            getRoleLabel={getRoleLabel}
+            getAvatarRingClass={getAvatarRingClass}
+            shouldReduceMotion={true}
+          />
+        </aside>
+      ) : (
+        <motion.aside
+          className="hidden lg:block relative inset-y-0 left-0 z-30 bg-card border-r border-border h-screen"
+          animate={{ width: sidebarWidth }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        >
+          <SidebarContent
+            member={member}
+            pathname={pathname}
+            navigationSections={navigationSections}
+            unreadCount={unreadCount}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={toggleCollapsed}
+            onLinkClick={() => {}}
+            canAccessAdmin={canAccessAdmin}
+            getRoleColor={getRoleColor}
+            getRoleLabel={getRoleLabel}
+            getAvatarRingClass={getAvatarRingClass}
+            shouldReduceMotion={false}
+          />
+        </motion.aside>
+      )}
+    </>
+  )
+}
+
+// --- Inner sidebar content ---
+
+interface SidebarContentProps {
+  member: MemberSidebarProps['member']
+  pathname: string
+  navigationSections: NavSection[]
+  unreadCount: number
+  isCollapsed: boolean
+  onToggleCollapse: () => void
+  onLinkClick: () => void
+  canAccessAdmin: () => boolean
+  getRoleColor: (role?: string, tier?: string) => string
+  getRoleLabel: (role?: string, tier?: string) => string
+  getAvatarRingClass: (role?: string, tier?: string) => string
+  shouldReduceMotion: boolean
+}
+
+function SidebarContent({
+  member,
+  pathname,
+  navigationSections,
+  unreadCount,
+  isCollapsed,
+  onToggleCollapse,
+  onLinkClick,
+  canAccessAdmin,
+  getRoleColor,
+  getRoleLabel,
+  getAvatarRingClass,
+  shouldReduceMotion,
+}: SidebarContentProps) {
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Logo */}
+      <div className={cn(
+        'flex items-center gap-2 py-6 border-b border-border',
+        isCollapsed ? 'px-3 justify-center' : 'px-6'
+      )}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-navy-800 flex-shrink-0">
+          <Sparkles className="h-6 w-6 text-gold" />
+        </div>
+        {!isCollapsed && (
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-navy dark:text-foreground font-display">TPC Ministries</h1>
+            <p className="text-xs text-muted-foreground">Member Portal</p>
           </div>
+        )}
+      </div>
 
-          {/* Member Info */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy text-white font-semibold">
-                {member.first_name?.[0]}{member.last_name?.[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                  {member.first_name} {member.last_name}
-                </p>
-                <Badge variant="outline" className={cn('text-xs mt-1', getRoleColor(member.role, member.tier))}>
-                  {getRoleLabel(member.role, member.tier)}
-                </Badge>
-              </div>
-            </div>
+      {/* Member Info */}
+      <div className={cn(
+        'py-4 border-b border-border',
+        isCollapsed ? 'px-3 flex justify-center' : 'px-6'
+      )}>
+        <div className={cn('flex items-center', isCollapsed ? 'justify-center' : 'gap-3')}>
+          <div
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-full bg-navy text-white font-semibold flex-shrink-0',
+              getAvatarRingClass(member.role, member.tier)
+            )}
+            title={isCollapsed ? `${member.first_name} ${member.last_name}` : undefined}
+          >
+            {member.first_name?.[0]}{member.last_name?.[0]}
           </div>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {member.first_name} {member.last_name}
+              </p>
+              <Badge variant="outline" className={cn('text-xs mt-1', getRoleColor(member.role, member.tier))}>
+                {getRoleLabel(member.role, member.tier)}
+              </Badge>
+            </div>
+          )}
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 overflow-y-auto">
-            <div className="space-y-6">
-              {navigationSections.map((section, sectionIndex) => (
-                <div key={sectionIndex}>
-                  {section.title && (
-                    <h3 className="px-3 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                      {section.title}
-                    </h3>
-                  )}
-                  <ul className="space-y-1">
-                    {section.items.map((item: any) => {
-                      const Icon = item.icon
-                      const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'))
-                      const LinkComponent = item.external ? 'a' : Link
-                      const linkProps = item.external
-                        ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' }
-                        : { href: item.href }
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto" aria-label="Main navigation">
+        <div className="space-y-6">
+          {navigationSections.map((section, sectionIndex) => (
+            <div key={sectionIndex}>
+              {section.title && !isCollapsed && (
+                <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {section.title}
+                </h3>
+              )}
+              {section.title && isCollapsed && (
+                <div className="h-px bg-border mx-2 mb-2" />
+              )}
+              <ul className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon
+                  const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'))
+                  const LinkComponent = item.external ? 'a' : Link
+                  const linkProps = item.external
+                    ? { href: item.href, target: '_blank' as const, rel: 'noopener noreferrer' }
+                    : { href: item.href }
 
-                      return (
-                        <li key={item.name}>
-                          <LinkComponent
-                            {...linkProps}
-                            onClick={() => setIsMobileOpen(false)}
-                            className={cn(
-                              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                              isActive
-                                ? 'bg-navy text-white'
-                                : item.highlight
-                                ? 'bg-gradient-to-r from-gold/20 to-amber-100 dark:from-gold/30 dark:to-amber-900/30 text-amber-800 dark:text-amber-200 border border-gold/30 hover:from-gold/30 hover:to-amber-200 dark:hover:from-gold/40 dark:hover:to-amber-800/40'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-navy dark:hover:text-white'
-                            )}
-                          >
-                            <Icon className={cn(
-                              "h-5 w-5 flex-shrink-0",
-                              item.highlight && !isActive && "text-gold"
-                            )} />
+                  return (
+                    <li key={item.name} className="relative">
+                      {/* Active indicator bar with layoutId for sliding animation */}
+                      {isActive && !shouldReduceMotion && (
+                        <motion.div
+                          layoutId="sidebar-active"
+                          className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-gold"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      {isActive && shouldReduceMotion && (
+                        <div className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-gold" />
+                      )}
+                      <LinkComponent
+                        {...linkProps}
+                        onClick={onLinkClick}
+                        title={isCollapsed ? item.name : undefined}
+                        className={cn(
+                          'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors',
+                          isCollapsed ? 'px-0 py-2 justify-center' : 'px-3 py-2',
+                          isActive
+                            ? 'bg-navy/10 dark:bg-navy-200/10 text-navy dark:text-gold'
+                            : item.highlight
+                            ? 'bg-gradient-to-r from-gold/10 to-amber-100/50 dark:from-gold/15 dark:to-amber-900/20 text-amber-800 dark:text-amber-200 border border-gold/20 hover:from-gold/20 hover:to-amber-200/50 dark:hover:from-gold/25 dark:hover:to-amber-800/30'
+                            : 'text-foreground/70 hover:bg-secondary hover:text-foreground'
+                        )}
+                      >
+                        <Icon className={cn(
+                          "h-5 w-5 flex-shrink-0",
+                          item.highlight && !isActive && "text-gold"
+                        )} />
+                        {!isCollapsed && (
+                          <>
                             <span className="flex-1">{item.name}</span>
                             {item.badge !== undefined && item.badge > 0 && (
                               <Badge className="bg-red-600 text-white text-xs px-2 py-0.5">
@@ -286,51 +510,83 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
                             {item.highlight && !isActive && !item.external && (
                               <Badge className="bg-gold text-white text-xs px-1.5 py-0">AI</Badge>
                             )}
-                          </LinkComponent>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              ))}
+                          </>
+                        )}
+                        {isCollapsed && item.badge !== undefined && item.badge > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white">
+                            {item.badge > 9 ? '9+' : item.badge}
+                          </span>
+                        )}
+                      </LinkComponent>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
-          </nav>
-
-          {/* Install App Button */}
-          <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-800">
-            <InstallButton variant="sidebar" />
-          </div>
-
-          {/* Admin Portal Link - visible to staff and admins */}
-          {canAccessAdmin() && (
-            <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800">
-              <Link href="/admin-dashboard">
-                <Button className="w-full bg-navy hover:bg-navy/90 text-white">
-                  <Shield className="mr-2 h-4 w-4" />
-                  Admin Portal
-                </Button>
-              </Link>
-            </div>
-          )}
-
-          {/* Upgrade CTA (for free and member roles - not partners/staff/admin) */}
-          {['free', 'member'].includes(member.role || member.tier || 'free') && (
-            <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800">
-              <div className="bg-gradient-to-br from-gold/10 to-navy/10 dark:from-gold/20 dark:to-navy/20 rounded-lg p-4 border border-gold/20">
-                <p className="text-sm font-semibold text-navy dark:text-white mb-2">Upgrade Your Journey</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                  Unlock exclusive content and prophetic words
-                </p>
-                <Link href="/partner">
-                  <Button size="sm" className="w-full bg-gold hover:bg-gold-dark text-white">
-                    Become a Partner
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
-      </aside>
-    </>
+      </nav>
+
+      {/* Install App Button */}
+      {!isCollapsed && (
+        <div className="px-3 py-2 border-t border-border">
+          <InstallButton variant="sidebar" />
+        </div>
+      )}
+
+      {/* Admin Portal Link - visible to staff and admins */}
+      {canAccessAdmin() && (
+        <div className={cn('py-4 border-t border-border', isCollapsed ? 'px-2' : 'px-3')}>
+          <Link href="/admin-dashboard" title={isCollapsed ? 'Admin Portal' : undefined}>
+            <Button className={cn(
+              'bg-navy hover:bg-navy/90 text-white',
+              isCollapsed ? 'w-10 h-10 p-0' : 'w-full'
+            )}>
+              <Shield className={cn('h-4 w-4', !isCollapsed && 'mr-2')} />
+              {!isCollapsed && 'Admin Portal'}
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Upgrade CTA (for free and member roles - not partners/staff/admin) */}
+      {['free', 'member'].includes(member.role || member.tier || 'free') && !isCollapsed && (
+        <div className="px-3 py-4 border-t border-border">
+          <div className="bg-gradient-to-br from-gold/10 to-navy/10 dark:from-gold/20 dark:to-navy/20 rounded-lg p-4 border border-gold/20 animate-glow-pulse">
+            <p className="text-sm font-semibold text-navy dark:text-foreground mb-2 font-display">Upgrade Your Journey</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Unlock exclusive content and prophetic words
+            </p>
+            <Link href="/partner">
+              <Button size="sm" variant="gold" className="w-full">
+                Become a Partner
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Collapse toggle (desktop only) */}
+      <div className="hidden lg:block px-3 py-3 border-t border-border">
+        <button
+          onClick={onToggleCollapse}
+          className={cn(
+            'flex items-center gap-2 w-full rounded-lg py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors',
+            isCollapsed ? 'justify-center px-0' : 'px-3'
+          )}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronsRight className="h-4 w-4" />
+          ) : (
+            <>
+              <ChevronsLeft className="h-4 w-4" />
+              <span>Collapse</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
   )
 }

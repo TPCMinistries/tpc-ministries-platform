@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { Bell, Check, X, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -64,6 +64,7 @@ export function NotificationBell({
 }: NotificationBellProps) {
   const [open, setOpen] = React.useState(false)
   const count = unreadCount ?? notifications.filter(n => !n.isRead).length
+  const shouldReduceMotion = useReducedMotion()
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -77,9 +78,9 @@ export function NotificationBell({
           <AnimatePresence>
             {count > 0 && (
               <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                initial={shouldReduceMotion ? undefined : { scale: 0 }}
+                animate={shouldReduceMotion ? undefined : { scale: 1 }}
+                exit={shouldReduceMotion ? undefined : { scale: 0 }}
                 className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full"
               >
                 {count > 99 ? "99+" : count}
@@ -159,6 +160,7 @@ export function NotificationBell({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Dismiss notification"
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
