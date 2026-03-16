@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Save, Check } from 'lucide-react'
+import { Users, Save, Check, Send } from 'lucide-react'
 import type { Trip, Participant, Lodging, Contact, WaitingListEntry } from './types'
 
 interface TabPeopleProps {
@@ -34,6 +34,7 @@ interface TabPeopleProps {
   promoteToDelegate: (entry: WaitingListEntry) => void
   addLodging: (city: string, checkIn: string, checkOut: string) => void
   saveStatus: 'idle' | 'saving' | 'saved' | 'error'
+  onOpenInviteModal?: () => void
 }
 
 // Exactly matching the HTML dashboard's column widths and emoji options
@@ -89,6 +90,7 @@ export function TabPeople({
   promoteToDelegate,
   addLodging,
   saveStatus,
+  onOpenInviteModal,
 }: TabPeopleProps) {
   // Add Delegate inline form state
   const [showAddDelegate, setShowAddDelegate] = useState(false)
@@ -181,13 +183,25 @@ export function TabPeople({
             <h3 className="text-base font-semibold text-navy">
               👥 US Delegation ({filteredParticipants.length})
             </h3>
-            <button
-              type="button"
-              onClick={() => setShowAddDelegate(true)}
-              className="px-3 py-1.5 text-[13px] font-medium bg-navy text-white rounded hover:bg-navy/90 transition-colors"
-            >
-              + Add Delegate
-            </button>
+            <div className="flex gap-2">
+              {onOpenInviteModal && (
+                <button
+                  type="button"
+                  onClick={onOpenInviteModal}
+                  className="px-3 py-1.5 text-[13px] font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Invite Delegate
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowAddDelegate(true)}
+                className="px-3 py-1.5 text-[13px] font-medium bg-navy text-white rounded hover:bg-navy/90 transition-colors"
+              >
+                + Add Delegate
+              </button>
+            </div>
           </div>
 
           {/* Add Delegate Inline Form */}

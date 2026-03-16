@@ -352,4 +352,24 @@ export interface SupportRole {
   updated_at: string
 }
 
+export interface KenyaInvite {
+  id: string
+  code: string
+  email: string | null
+  name: string | null
+  role: string
+  invite_type: string
+  trip_id: string | null
+  service_track: string | null
+  participant_id: string | null
+  is_active: boolean
+  use_count: number
+  max_uses: number | null
+  used_at: string | null
+  used_by: string | null
+  invited_by: string | null
+  expires_at: string | null
+  created_at: string
+}
+
 export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'

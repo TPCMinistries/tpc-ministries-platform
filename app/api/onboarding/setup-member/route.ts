@@ -78,11 +78,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check for Kenya trip invite and auto-link
+    let isKenyaDelegate = false
+    try {
+      const { data: kenyaInvite } = await adminClient
+        .from('invite_codes')
+        .select('id, role, participant_id, service_track')
+        .eq('email', user.email)
+        .eq('invite_type', 'kenya_trip')
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (kenyaInvite && kenyaInvite.participant_id) {
+        // Update member role if invite specifies staff/admin
+        if (kenyaInvite.role === 'staff' || kenyaInvite.role === 'admin') {
+          await adminClient
+            .from('members')
+            .update({ role: kenyaInvite.role })
+            .eq('id', newMember.id)
+        }
+
+        // Link member to Kenya participant record
+        await adminClient
+          .from('kenya_trip_participants')
+          .update({ member_id: newMember.id })
+          .eq('id', kenyaInvite.participant_id)
+
+        // Mark invite as used
+        await adminClient
+          .from('invite_codes')
+          .update({
+            use_count: 1,
+            used_at: new Date().toISOString(),
+            used_by: newMember.id,
+          })
+          .eq('id', kenyaInvite.id)
+
+        isKenyaDelegate = true
+      }
+    } catch (linkError) {
+      console.error('Kenya auto-link error (non-fatal):', linkError)
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Member record created successfully',
       is_admin: isAdmin,
       is_new_member: true,
+      is_kenya_delegate: isKenyaDelegate,
       member: newMember,
     })
   } catch (error: any) {

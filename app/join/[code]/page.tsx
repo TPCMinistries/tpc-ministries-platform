@@ -15,6 +15,9 @@ interface InviteData {
   name?: string
   email?: string
   role?: string
+  invite_type?: string
+  service_track?: string
+  participant_id?: string
 }
 
 export default function JoinPage() {
@@ -48,6 +51,13 @@ export default function JoinPage() {
           // Pre-fill fields if available
           if (data.invite.name) setFullName(data.invite.name)
           if (data.invite.email) setEmail(data.invite.email)
+          // Store Kenya invite data for onboarding linkage
+          if (data.invite.invite_type === 'kenya_trip') {
+            sessionStorage.setItem('kenya_invite', 'true')
+            if (data.invite.participant_id) {
+              sessionStorage.setItem('kenya_participant_id', data.invite.participant_id)
+            }
+          }
         } else {
           setInviteError(data.error || 'Invalid invite code')
         }
@@ -101,6 +111,11 @@ export default function JoinPage() {
       // Store invite code in session for welcome page
       sessionStorage.setItem('invite_code', code)
       sessionStorage.setItem('invite_name', fullName)
+      // Preserve Kenya invite data through the signup flow
+      if (inviteData?.invite_type === 'kenya_trip' && inviteData.participant_id) {
+        sessionStorage.setItem('kenya_invite', 'true')
+        sessionStorage.setItem('kenya_participant_id', inviteData.participant_id)
+      }
 
       setSuccess(true)
       setLoading(false)
@@ -189,16 +204,41 @@ export default function JoinPage() {
 
   // Signup form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy via-navy/95 to-navy/90 flex items-center justify-center p-4">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${
+      inviteData?.invite_type === 'kenya_trip'
+        ? 'bg-gradient-to-br from-green-900 via-green-800 to-green-900'
+        : 'bg-gradient-to-br from-navy via-navy/95 to-navy/90'
+    }`}>
       <Card className="w-full max-w-md bg-white/95 backdrop-blur">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-gold/20 flex items-center justify-center">
-            <Sparkles className="h-6 w-6 text-gold" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-navy">You're Invited!</CardTitle>
-          <CardDescription className="text-gray-600">
-            Join TPC Ministries and start your journey of faith
-          </CardDescription>
+          {inviteData?.invite_type === 'kenya_trip' ? (
+            <>
+              <div className="mx-auto mb-2 h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                <span className="text-2xl">🇰🇪</span>
+              </div>
+              <CardTitle className="text-2xl font-bold text-navy">Kenya Kingdom Impact Trip</CardTitle>
+              <CardDescription className="text-gray-600">
+                You've been invited to join the 2026 Kenya delegation
+              </CardDescription>
+              {inviteData.service_track && (
+                <div className="mt-2">
+                  <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
+                    {inviteData.service_track} Track
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-gold/20 flex items-center justify-center">
+                <Sparkles className="h-6 w-6 text-gold" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-navy">You're Invited!</CardTitle>
+              <CardDescription className="text-gray-600">
+                Join TPC Ministries and start your journey of faith
+              </CardDescription>
+            </>
+          )}
           {inviteData?.name && (
             <p className="text-sm text-navy font-medium mt-2">
               Welcome, {inviteData.name}!
@@ -288,7 +328,7 @@ export default function JoinPage() {
                   Creating your account...
                 </>
               ) : (
-                'Join TPC Ministries'
+                inviteData?.invite_type === 'kenya_trip' ? 'Join the Kenya Trip' : 'Join TPC Ministries'
               )}
             </Button>
 

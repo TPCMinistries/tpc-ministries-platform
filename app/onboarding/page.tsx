@@ -29,9 +29,11 @@ export default function OnboardingPage() {
           throw new Error(errorMsg)
         }
 
-        // Determine redirect path based on admin status and new member status
+        // Determine redirect path based on admin status, Kenya delegate status, and new member status
         let redirectPath = '/dashboard'
-        if (data.is_admin) {
+        if (data.is_kenya_delegate) {
+          redirectPath = '/kenya-trip'
+        } else if (data.is_admin) {
           redirectPath = '/admin-dashboard'
         } else if (data.is_new_member) {
           redirectPath = '/welcome'
