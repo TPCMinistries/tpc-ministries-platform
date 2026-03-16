@@ -2,20 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import {
   Clock,
   Video,
   ChevronDown,
-  ChevronUp,
   ArrowRight,
   Globe,
   Users,
   Heart,
   BookOpen,
   Headphones,
-  MessageCircle
 } from 'lucide-react'
 
 interface ServiceTime {
@@ -73,133 +70,136 @@ export default function VisitPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Join Our Community
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Connect With Us
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Join our global community of believers from Kenya, South Africa, Grenada, and beyond
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Ways to Connect */}
-      <section className="px-4 py-16 bg-white">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy mb-8 text-center">Ways to Connect</h2>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Get Involved
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              Ways to Connect
+            </h2>
+          </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-navy rounded-full p-3">
-                    <Video className="h-5 w-5 text-white" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                icon: Video,
+                title: 'Online Services',
+                desc: 'Join us for live worship and teaching online. Connect with believers from around the world.',
+                linkHref: '/auth/signup',
+                linkText: 'Join Live',
+                color: 'bg-navy',
+              },
+              {
+                icon: BookOpen,
+                title: 'Teachings Library',
+                desc: 'Access our library of prophetic teachings, sermons, and biblical studies anytime.',
+                linkHref: '/teachings',
+                linkText: 'Browse Teachings',
+                color: 'bg-gold',
+              },
+              {
+                icon: Users,
+                title: 'Member Community',
+                desc: 'Become a member to access exclusive content, prayer groups, and discipleship resources.',
+                linkHref: '/auth/signup',
+                linkText: 'Become a Member',
+                color: 'bg-navy',
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-3xl border border-border bg-card p-8 transition-all duration-300 hover:border-gold/30 hover:shadow-xl"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.color}`}>
+                    <item.icon className="h-5 w-5 text-white" />
                   </div>
-                  <CardTitle className="text-navy">Online Services</CardTitle>
+                  <h3 className="font-display text-display-xs text-navy dark:text-white">{item.title}</h3>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Join us for live worship and teaching online. Connect with believers from around the world.
-                </p>
-                <Link href="/auth/signup">
+                <p className="mb-6 text-body-md text-muted-foreground">{item.desc}</p>
+                <Link href={item.linkHref}>
                   <Button variant="outline" className="w-full">
-                    Join Live
+                    {item.linkText}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-gold rounded-full p-3">
-                    <BookOpen className="h-5 w-5 text-white" />
-                  </div>
-                  <CardTitle className="text-navy">Teachings Library</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Access our library of prophetic teachings, sermons, and biblical studies anytime.
-                </p>
-                <Link href="/teachings">
-                  <Button variant="outline" className="w-full">
-                    Browse Teachings
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-navy rounded-full p-3">
-                    <Users className="h-5 w-5 text-white" />
-                  </div>
-                  <CardTitle className="text-navy">Member Community</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Become a member to access exclusive content, prayer groups, and discipleship resources.
-                </p>
-                <Link href="/auth/signup">
-                  <Button variant="outline" className="w-full">
-                    Become a Member
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Scheduled Services */}
       {!loading && serviceTimes.length > 0 && (
-        <section className="px-4 py-16 bg-gray-50">
+        <section className="bg-navy dark:bg-navy-950 px-4 py-section">
           <div className="container mx-auto max-w-6xl">
-            <h2 className="text-3xl font-bold text-navy mb-8 text-center">Service Schedule</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="mb-16 text-center">
+              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+                Schedule
+              </p>
+              <h2 className="font-display text-display-md md:text-display-lg text-white">
+                Service Schedule
+              </h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
               {serviceTimes.map(service => (
-                <Card key={service.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="bg-navy rounded-full p-3">
-                        <Clock className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-navy">{service.name}</CardTitle>
-                        <p className="text-gold font-medium">
-                          {service.day_of_week !== null && service.day_of_week !== undefined
-                            ? dayNames[service.day_of_week]
-                            : 'Special Event'}
-                        </p>
-                      </div>
+                <div
+                  key={service.id}
+                  className="rounded-3xl border border-white/10 bg-white/5 p-8 transition-all duration-300 hover:border-gold/30 hover:bg-white/10"
+                >
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/15">
+                      <Clock className="h-5 w-5 text-gold" />
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <p className="text-2xl font-bold text-navy">
-                        {formatTime(service.start_time)}
-                        {service.end_time && ` - ${formatTime(service.end_time)}`}
+                    <div>
+                      <h3 className="font-display text-body-lg font-semibold text-white">{service.name}</h3>
+                      <p className="text-body-sm font-medium text-gold">
+                        {service.day_of_week !== null && service.day_of_week !== undefined
+                          ? dayNames[service.day_of_week]
+                          : 'Special Event'}
                       </p>
-                      {service.description && (
-                        <p className="text-gray-600 text-sm">{service.description}</p>
-                      )}
-                      {service.location_type !== 'in_person' && (
-                        <div className="flex items-center gap-2 text-sm text-blue-600">
-                          <Video className="h-4 w-4" />
-                          {service.location_type === 'online' ? 'Online' : 'In-Person & Online'}
-                        </div>
-                      )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="font-display text-display-xs text-white">
+                      {formatTime(service.start_time)}
+                      {service.end_time && ` - ${formatTime(service.end_time)}`}
+                    </p>
+                    {service.description && (
+                      <p className="text-body-sm text-white/50">{service.description}</p>
+                    )}
+                    {service.location_type !== 'in_person' && (
+                      <div className="flex items-center gap-2 text-body-sm text-gold/70">
+                        <Video className="h-4 w-4" />
+                        {service.location_type === 'online' ? 'Online' : 'In-Person & Online'}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -207,93 +207,75 @@ export default function VisitPage() {
       )}
 
       {/* What We Offer */}
-      <section className="px-4 py-16 bg-gray-50">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy mb-8 text-center">What We Offer</h2>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Ministry
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              What We Offer
+            </h2>
+          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="bg-gold/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Headphones className="h-8 w-8 text-gold" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: Headphones, title: 'Prophetic Words', desc: 'Receive timely prophetic insights and guidance for your spiritual journey.' },
+              { icon: BookOpen, title: 'Biblical Teaching', desc: 'Deep, transformative teaching rooted in Scripture and the prophetic.' },
+              { icon: Heart, title: 'Prayer Support', desc: 'Submit prayer requests and join our community in intercession.' },
+              { icon: Globe, title: 'Global Missions', desc: 'Partner with our missions in Kenya, South Africa, and Grenada.' },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border bg-card p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-gold/30 hover:shadow-lg"
+              >
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-navy/10 dark:bg-navy/30">
+                  <item.icon className="h-6 w-6 text-navy dark:text-gold" />
                 </div>
-                <h3 className="font-semibold text-navy mb-2">Prophetic Words</h3>
-                <p className="text-gray-600 text-sm">
-                  Receive timely prophetic insights and guidance for your spiritual journey.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="bg-navy/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-8 w-8 text-navy" />
-                </div>
-                <h3 className="font-semibold text-navy mb-2">Biblical Teaching</h3>
-                <p className="text-gray-600 text-sm">
-                  Deep, transformative teaching rooted in Scripture and the prophetic.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="bg-gold/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Heart className="h-8 w-8 text-gold" />
-                </div>
-                <h3 className="font-semibold text-navy mb-2">Prayer Support</h3>
-                <p className="text-gray-600 text-sm">
-                  Submit prayer requests and join our community in intercession.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="bg-navy/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Globe className="h-8 w-8 text-navy" />
-                </div>
-                <h3 className="font-semibold text-navy mb-2">Global Missions</h3>
-                <p className="text-gray-600 text-sm">
-                  Partner with our missions in Kenya, South Africa, and Grenada.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="mb-2 font-display text-body-lg font-semibold text-navy dark:text-white">
+                  {item.title}
+                </h3>
+                <p className="text-body-sm text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
       {faqs.length > 0 && (
-        <section className="px-4 py-16 bg-white">
+        <section className="border-y border-border bg-secondary/50 px-4 py-section">
           <div className="container mx-auto max-w-3xl">
-            <h2 className="text-3xl font-bold text-navy mb-8 text-center">
-              Frequently Asked Questions
-            </h2>
+            <div className="mb-12 text-center">
+              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+                Questions
+              </p>
+              <h2 className="font-display text-display-md text-navy dark:text-white">
+                Frequently Asked Questions
+              </h2>
+            </div>
 
             <div className="space-y-4">
               {faqs.map(faq => (
-                <Card
+                <div
                   key={faq.id}
-                  className={`cursor-pointer transition-shadow ${expandedFaq === faq.id ? 'shadow-md' : ''}`}
+                  className={`cursor-pointer rounded-3xl border bg-card p-6 transition-all duration-300 ${
+                    expandedFaq === faq.id ? 'border-gold/30 shadow-lg' : 'border-border hover:border-gold/20'
+                  }`}
                   onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
                 >
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-semibold text-navy">{faq.question}</h3>
-                      {expandedFaq === faq.id ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      )}
-                    </div>
-                    {expandedFaq === faq.id && (
-                      <p className="mt-3 text-gray-600 text-sm leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-display text-body-lg font-semibold text-navy dark:text-white">{faq.question}</h3>
+                    <ChevronDown className={`h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform ${
+                      expandedFaq === faq.id ? 'rotate-180 text-gold' : ''
+                    }`} />
+                  </div>
+                  {expandedFaq === faq.id && (
+                    <p className="mt-4 border-t border-border pt-4 text-body-md leading-relaxed text-muted-foreground">
+                      {faq.answer}
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -301,23 +283,32 @@ export default function VisitPage() {
       )}
 
       {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-gold to-amber-500">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-navy mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Begin Today
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
             Ready to Start Your Journey?
           </h2>
-          <p className="text-xl text-navy/80 mb-8">
+          <p className="mb-10 text-body-xl text-white/50">
             Join thousands of believers discovering their purpose and walking in their calling.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/auth/signup">
-              <Button size="lg" className="bg-navy text-white hover:bg-navy/90">
+              <Button variant="glow" size="xl">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-navy text-navy hover:bg-navy/10">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
                 Contact Us
               </Button>
             </Link>

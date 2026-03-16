@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Gift,
   Compass,
@@ -9,7 +8,6 @@ import {
   Crown,
   TreePine,
   Clock,
-  Users,
   Sparkles,
   ArrowRight,
   CheckCircle,
@@ -23,12 +21,8 @@ export default function AssessmentsHubPage() {
       title: 'Spiritual Gifts Assessment',
       description: 'Discover your God-given abilities to serve the body of Christ and advance His kingdom',
       icon: Gift,
-      iconColor: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
       duration: '15 minutes',
       badge: 'Most Popular',
-      badgeColor: 'bg-gold text-white',
     },
     {
       id: '2',
@@ -36,12 +30,8 @@ export default function AssessmentsHubPage() {
       title: 'Seasonal Assessment',
       description: 'Understand your current spiritual season and receive tailored guidance for your journey',
       icon: Compass,
-      iconColor: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
       duration: '10 minutes',
       badge: 'Start Here',
-      badgeColor: 'bg-navy text-white',
     },
     {
       id: '3',
@@ -49,9 +39,6 @@ export default function AssessmentsHubPage() {
       title: 'Prophetic Expression Assessment',
       description: 'Discover how God uniquely speaks through you and learn to steward your prophetic expression',
       icon: Eye,
-      iconColor: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-      borderColor: 'border-indigo-200',
       duration: '12 minutes',
     },
     {
@@ -60,9 +47,6 @@ export default function AssessmentsHubPage() {
       title: 'Ministry Calling Assessment',
       description: 'Find your specific calling and get matched with ministry opportunities that fit your design',
       icon: Heart,
-      iconColor: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
       duration: '15 minutes',
     },
     {
@@ -71,9 +55,6 @@ export default function AssessmentsHubPage() {
       title: 'Redemptive Gifts Assessment',
       description: 'Discover how you process the world and relate to others based on Romans 12 framework',
       icon: Crown,
-      iconColor: 'text-gold',
-      bgColor: 'bg-gold/10',
-      borderColor: 'border-gold/30',
       duration: '18 minutes',
       note: 'Based on Romans 12:6-8 framework',
     },
@@ -83,230 +64,230 @@ export default function AssessmentsHubPage() {
       title: 'Spiritual Maturity Assessment',
       description: 'Evaluate your spiritual growth and receive a personalized development plan for your next steps',
       icon: TreePine,
-      iconColor: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
       duration: '12 minutes',
     },
   ]
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/20">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/15">
             <Sparkles className="h-10 w-10 text-gold" />
           </div>
-          <h1 className="mb-4 font-serif text-5xl font-bold text-white md:text-6xl">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Know Your Design
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Discover Your Spiritual Design
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-4">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Take free, biblically-based assessments to understand how God uniquely created you for His purposes
           </p>
-          <p className="text-lg text-gray-400 mb-8">
-            Discover your calling, spiritual gifts, and divine design
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center text-white/90 text-sm">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-gold" />
-              <span>100% Free</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-gold" />
-              <span>Biblically Grounded</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-gold" />
-              <span>Personalized Results</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-gold" />
-              <span>No Account Required</span>
-            </div>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+
+          <div className="mt-8 flex flex-wrap justify-center gap-4 text-body-sm text-white/90">
+            {['100% Free', 'Biblically Grounded', 'Personalized Results', 'No Account Required'].map((item) => (
+              <div key={item} className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-gold" />
+                <span>{item}</span>
+              </div>
+            ))}
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Why Take Assessments */}
-      <section className="px-4 py-12 bg-white border-y">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            Why Take These Assessments?
-          </h2>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Purpose
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              Why Take These Assessments?
+            </h2>
+          </div>
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
-                <Gift className="h-8 w-8 text-purple-600" />
+            {[
+              {
+                icon: Gift,
+                title: 'Know Your Design',
+                desc: 'God created you with unique gifts, abilities, and perspectives. Understanding these helps you walk confidently in your calling and serve effectively in His kingdom.',
+              },
+              {
+                icon: Compass,
+                title: 'Find Your Path',
+                desc: "Whether you're new in faith or seasoned in ministry, these assessments provide clarity on where you are and where God is leading you next in your spiritual journey.",
+              },
+              {
+                icon: Heart,
+                title: 'Serve with Purpose',
+                desc: "Discover where and how you're called to serve. Get matched with ministry opportunities that align with your God-given design and see greater fruit in your labor.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border bg-card p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-gold/30 hover:shadow-lg"
+              >
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-navy/10 dark:bg-navy/30">
+                  <item.icon className="h-8 w-8 text-navy dark:text-gold" />
+                </div>
+                <h3 className="mb-3 font-display text-display-xs text-navy dark:text-white">{item.title}</h3>
+                <p className="text-body-md text-muted-foreground">{item.desc}</p>
               </div>
-              <h3 className="text-xl font-semibold text-navy mb-3">Know Your Design</h3>
-              <p className="text-gray-600">
-                God created you with unique gifts, abilities, and perspectives. Understanding these helps you walk confidently in your calling and serve effectively in His kingdom.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                <Compass className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-navy mb-3">Find Your Path</h3>
-              <p className="text-gray-600">
-                Whether you're new in faith or seasoned in ministry, these assessments provide clarity on where you are and where God is leading you next in your spiritual journey.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/20">
-                <Heart className="h-8 w-8 text-gold" />
-              </div>
-              <h3 className="text-xl font-semibold text-navy mb-3">Serve with Purpose</h3>
-              <p className="text-gray-600">
-                Discover where and how you're called to serve. Get matched with ministry opportunities that align with your God-given design and see greater fruit in your labor.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Assessment Grid */}
-      <section className="px-4 py-16">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-navy mb-4">Choose Your Assessment</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Each assessment is designed to reveal different aspects of how God created you. Take one or take them all—they build on each other to give you a complete picture.
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Assessments
+            </p>
+            <h2 className="mb-4 font-display text-display-md md:text-display-lg text-white">
+              Choose Your Assessment
+            </h2>
+            <p className="mx-auto max-w-2xl text-body-lg text-white/50">
+              Each assessment is designed to reveal different aspects of how God created you. Take one or take them all.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {assessments.map((assessment) => {
               const Icon = assessment.icon
               return (
-                <Card
+                <div
                   key={assessment.id}
-                  className={`relative overflow-hidden border-2 ${assessment.borderColor} hover:shadow-xl transition-all duration-300 group`}
+                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 transition-all duration-300 hover:border-gold/30 hover:bg-white/10"
                 >
                   {assessment.badge && (
-                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-medium ${assessment.badgeColor}`}>
+                    <div className="absolute right-4 top-4 rounded-full bg-gold px-3 py-1 text-body-sm font-medium text-navy-950">
                       {assessment.badge}
                     </div>
                   )}
 
-                  <CardHeader className={`${assessment.bgColor} pb-4`}>
-                    <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${assessment.bgColor} border-2 ${assessment.borderColor}`}>
-                      <Icon className={`h-8 w-8 ${assessment.iconColor}`} />
-                    </div>
-                    <CardTitle className="text-xl text-navy text-center">
-                      {assessment.title}
-                    </CardTitle>
-                  </CardHeader>
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15">
+                    <Icon className="h-7 w-7 text-gold" />
+                  </div>
 
-                  <CardContent className="pt-6 space-y-4">
-                    <p className="text-gray-700 text-center min-h-[3rem]">
-                      {assessment.description}
+                  <h3 className="mb-3 font-display text-display-xs text-white">
+                    {assessment.title}
+                  </h3>
+                  <p className="mb-4 min-h-[3rem] text-body-md text-white/50">
+                    {assessment.description}
+                  </p>
+
+                  {assessment.note && (
+                    <p className="mb-4 text-body-sm italic text-white/30">
+                      {assessment.note}
                     </p>
+                  )}
 
-                    {assessment.note && (
-                      <p className="text-sm text-gray-600 text-center italic">
-                        {assessment.note}
-                      </p>
-                    )}
+                  <div className="mb-6 flex items-center gap-2 text-body-sm text-white/40">
+                    <Clock className="h-4 w-4" />
+                    <span>{assessment.duration}</span>
+                  </div>
 
-                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                      <Clock className="h-4 w-4" />
-                      <span>{assessment.duration}</span>
-                    </div>
-
-                    <Link href={`/assessments/${assessment.slug}`}>
-                      <Button className="w-full bg-navy hover:bg-navy/90 group-hover:bg-gold group-hover:text-white transition-colors">
-                        Start Assessment
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-
-          {/* CTA Section */}
-          <div className="mt-16 text-center max-w-3xl mx-auto">
-            <Card className="border-2 border-gold/20 bg-gold/5">
-              <CardContent className="pt-6">
-                <p className="text-lg text-gray-700 mb-4">
-                  All assessments are <span className="font-semibold text-navy">completely free</span>.
-                </p>
-                <p className="text-gray-600 mb-6">
-                  Create an account to save your results and get personalized recommendations tailored to your spiritual journey.
-                </p>
-                <div className="flex gap-4 justify-center flex-wrap">
-                  <Link href="/auth/signup">
-                    <Button size="lg" className="bg-gold hover:bg-gold-dark text-white">
-                      Create Free Account
-                    </Button>
-                  </Link>
-                  <Link href="/auth/login">
-                    <Button size="lg" variant="outline">
-                      Sign In
+                  <Link href={`/assessments/${assessment.slug}`}>
+                    <Button variant="glow" className="w-full">
+                      Start Assessment
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
-              </CardContent>
-            </Card>
+              )
+            })}
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="px-4 py-16 bg-white">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            How It Works
-          </h2>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Simple Process
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              How It Works
+            </h2>
+          </div>
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white text-xl font-bold">
-                1
+            {[
+              { step: '1', title: 'Choose an Assessment', desc: 'Select the assessment that resonates with where you are in your journey' },
+              { step: '2', title: 'Answer Honestly', desc: 'Take your time with each question. There are no wrong answers\u2014be authentic' },
+              { step: '3', title: 'Get Your Results', desc: 'Receive personalized insights, biblical foundation, and practical next steps' },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-navy font-display text-display-xs text-white dark:bg-gold dark:text-navy-950">
+                  {item.step}
+                </div>
+                <h3 className="mb-2 font-display text-display-xs text-navy dark:text-white">{item.title}</h3>
+                <p className="text-body-md text-muted-foreground">{item.desc}</p>
               </div>
-              <h3 className="text-xl font-semibold text-navy mb-2">Choose an Assessment</h3>
-              <p className="text-gray-600">
-                Select the assessment that resonates with where you are in your journey
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white text-xl font-bold">
-                2
-              </div>
-              <h3 className="text-xl font-semibold text-navy mb-2">Answer Honestly</h3>
-              <p className="text-gray-600">
-                Take your time with each question. There are no wrong answers—be authentic
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-navy text-white text-xl font-bold">
-                3
-              </div>
-              <h3 className="text-xl font-semibold text-navy mb-2">Get Your Results</h3>
-              <p className="text-gray-600">
-                Receive personalized insights, biblical foundation, and practical next steps
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Why These Assessments Matter */}
-      <section className="px-4 py-16 bg-gray-50">
-        <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-8">
+      {/* Biblical Foundation */}
+      <section className="border-y border-border bg-secondary/50 px-4 py-section">
+        <div className="container mx-auto max-w-4xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+            Scripture
+          </p>
+          <h2 className="mb-8 font-display text-display-md text-navy dark:text-white">
             Biblical Foundation
           </h2>
-          <div className="prose prose-lg max-w-none text-gray-700">
-            <p className="text-center italic text-gold mb-6">
-              "Now there are varieties of gifts, but the same Spirit; and there are varieties of service, but the same Lord" - 1 Corinthians 12:4-5
-            </p>
-            <p className="text-center">
-              These assessments are designed to help you understand how God has uniquely created and called you. Whether you're just beginning your spiritual journey or have been walking with God for years, understanding your design helps you serve more effectively and walk more confidently in your calling.
-            </p>
+          <p className="mb-6 text-body-xl italic text-gold">
+            &ldquo;Now there are varieties of gifts, but the same Spirit; and there are varieties of service, but the same Lord&rdquo; &mdash; 1 Corinthians 12:4-5
+          </p>
+          <p className="mx-auto max-w-3xl text-body-lg text-muted-foreground">
+            These assessments are designed to help you understand how God has uniquely created and called you. Whether you&apos;re just beginning your spiritual journey or have been walking with God for years, understanding your design helps you serve more effectively and walk more confidently in your calling.
+          </p>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Get Started
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
+            Save Your Results
+          </h2>
+          <p className="mb-10 text-body-xl text-white/50">
+            All assessments are completely free. Create an account to save your results and get personalized recommendations.
+          </p>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Link href="/auth/signup">
+              <Button variant="glow" size="xl">
+                Create Free Account
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/auth/login">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
+                Sign In
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

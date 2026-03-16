@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import {
   Book,
@@ -43,7 +42,7 @@ const beliefs: BeliefSection[] = [
     id: 'god',
     title: 'The Triune God',
     icon: <Sparkles className="h-8 w-8" />,
-    summary: 'We believe in one God, eternally existing in three persons: Father, Son, and Holy Spirit—equal in power and glory.',
+    summary: 'We believe in one God, eternally existing in three persons: Father, Son, and Holy Spirit\u2014equal in power and glory.',
     details: [
       'God is eternal, all-powerful, all-knowing, and ever-present',
       'The Father is the source of all creation and the one who sent the Son',
@@ -130,25 +129,34 @@ export default function BeliefsPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Our Foundation
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Statement of Faith
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             The foundational beliefs that guide our ministry and unite us as a community of faith.
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Introduction */}
-      <section className="px-4 py-12 bg-gradient-to-br from-gold/10 to-amber-50">
+      <section className="border-b border-border bg-secondary/50 px-4 py-section-sm">
         <div className="container mx-auto max-w-4xl text-center">
-          <Shield className="h-12 w-12 text-gold mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-navy mb-4">
+          <Shield className="mx-auto mb-4 h-12 w-12 text-gold" />
+          <h2 className="mb-4 font-display text-display-sm text-navy dark:text-white">
             Grounded in Scripture, United in Christ
           </h2>
-          <p className="text-gray-600 text-lg leading-relaxed">
+          <p className="text-body-lg leading-relaxed text-muted-foreground">
             At TPC Ministries, we hold firmly to the historic Christian faith as revealed in the Holy Scriptures.
             These beliefs are not mere traditions but living truths that shape how we worship,
             serve, and engage with the world around us. We invite you to explore what we believe and why it matters.
@@ -157,115 +165,123 @@ export default function BeliefsPage() {
       </section>
 
       {/* Beliefs Grid */}
-      <section className="px-4 py-16 bg-white">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-5xl">
           <div className="space-y-6">
             {beliefs.map((belief) => (
-              <Card
+              <div
                 key={belief.id}
-                className={`cursor-pointer transition-all ${
-                  expandedBelief === belief.id ? 'shadow-lg ring-2 ring-gold/30' : 'hover:shadow-md'
+                className={`cursor-pointer rounded-3xl border bg-card p-6 transition-all duration-300 ${
+                  expandedBelief === belief.id ? 'border-gold/30 shadow-xl' : 'border-border hover:border-gold/20 hover:shadow-md'
                 }`}
                 onClick={() => setExpandedBelief(expandedBelief === belief.id ? null : belief.id)}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-lg ${
-                      expandedBelief === belief.id ? 'bg-gold text-navy' : 'bg-navy/10 text-navy'
-                    } transition-colors`}>
-                      {belief.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-navy mb-2">{belief.title}</h3>
-                          <p className="text-gray-600">{belief.summary}</p>
-                        </div>
-                        <ChevronDown className={`h-5 w-5 text-gray-400 flex-shrink-0 transition-transform ${
-                          expandedBelief === belief.id ? 'rotate-180 text-gold' : ''
-                        }`} />
-                      </div>
-
-                      {expandedBelief === belief.id && (
-                        <div className="mt-6 pt-6 border-t border-gray-200">
-                          <h4 className="font-semibold text-navy mb-3">What We Believe:</h4>
-                          <ul className="space-y-2 mb-6">
-                            {belief.details.map((detail, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-gray-600">
-                                <span className="text-gold mt-1">•</span>
-                                {detail}
-                              </li>
-                            ))}
-                          </ul>
-
-                          <h4 className="font-semibold text-navy mb-3">Scripture References:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {belief.scriptures.map((scripture, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-navy/10 text-navy rounded-full text-sm"
-                              >
-                                {scripture}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className={`rounded-xl p-3 transition-colors ${
+                    expandedBelief === belief.id ? 'bg-gold text-navy-950' : 'bg-navy/10 text-navy dark:bg-white/5 dark:text-gold'
+                  }`}>
+                    {belief.icon}
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="mb-2 font-display text-display-xs text-navy dark:text-white">{belief.title}</h3>
+                        <p className="text-body-md text-muted-foreground">{belief.summary}</p>
+                      </div>
+                      <ChevronDown className={`h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform ${
+                        expandedBelief === belief.id ? 'rotate-180 text-gold' : ''
+                      }`} />
+                    </div>
+
+                    {expandedBelief === belief.id && (
+                      <div className="mt-6 border-t border-border pt-6">
+                        <h4 className="mb-3 font-display text-body-md font-semibold text-navy dark:text-white">What We Believe:</h4>
+                        <ul className="mb-6 space-y-2">
+                          {belief.details.map((detail, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-body-md text-muted-foreground">
+                              <span className="mt-1 text-gold">&bull;</span>
+                              {detail}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <h4 className="mb-3 font-display text-body-md font-semibold text-navy dark:text-white">Scripture References:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {belief.scriptures.map((scripture, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded-full bg-navy/10 px-3 py-1 text-body-sm text-navy dark:bg-white/10 dark:text-white"
+                            >
+                              {scripture}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Apostles Creed */}
-      <section className="px-4 py-16 bg-gray-50">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
         <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl font-bold text-navy mb-6">The Apostles' Creed</h2>
-          <p className="text-gray-500 mb-6 italic">
-            We affirm the historic Christian faith as expressed in the Apostles' Creed:
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Historic Faith
           </p>
-          <Card className="text-left">
-            <CardContent className="p-8">
-              <p className="text-gray-700 leading-relaxed text-lg">
-                I believe in God, the Father Almighty, Creator of heaven and earth.
-              </p>
-              <p className="text-gray-700 leading-relaxed text-lg mt-4">
-                I believe in Jesus Christ, His only Son, our Lord, who was conceived by the Holy Spirit,
-                born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died, and was buried;
-                He descended to the dead. On the third day He rose again; He ascended into heaven,
-                He is seated at the right hand of the Father, and He will come to judge the living and the dead.
-              </p>
-              <p className="text-gray-700 leading-relaxed text-lg mt-4">
-                I believe in the Holy Spirit, the holy catholic Church, the communion of saints,
-                the forgiveness of sins, the resurrection of the body, and the life everlasting.
-              </p>
-              <p className="text-navy font-semibold text-lg mt-4">Amen.</p>
-            </CardContent>
-          </Card>
+          <h2 className="mb-4 font-display text-display-md text-white">The Apostles&apos; Creed</h2>
+          <p className="mb-8 text-body-md italic text-white/40">
+            We affirm the historic Christian faith as expressed in the Apostles&apos; Creed:
+          </p>
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-left">
+            <p className="text-body-lg leading-relaxed text-white/70">
+              I believe in God, the Father Almighty, Creator of heaven and earth.
+            </p>
+            <p className="mt-4 text-body-lg leading-relaxed text-white/70">
+              I believe in Jesus Christ, His only Son, our Lord, who was conceived by the Holy Spirit,
+              born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died, and was buried;
+              He descended to the dead. On the third day He rose again; He ascended into heaven,
+              He is seated at the right hand of the Father, and He will come to judge the living and the dead.
+            </p>
+            <p className="mt-4 text-body-lg leading-relaxed text-white/70">
+              I believe in the Holy Spirit, the holy catholic Church, the communion of saints,
+              the forgiveness of sins, the resurrection of the body, and the life everlasting.
+            </p>
+            <p className="mt-4 font-display text-display-xs text-gold">Amen.</p>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-navy to-navy-800">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Questions?
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
             Questions About Our Beliefs?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            We'd love to discuss faith with you. Join us for a service or reach out directly.
+          <p className="mb-10 text-body-xl text-white/50">
+            We&apos;d love to discuss faith with you. Join us for a service or reach out directly.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/visit">
-              <Button size="lg" className="bg-gold text-navy hover:bg-gold/90">
+              <Button variant="glow" size="xl">
                 Plan Your Visit
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
                 Contact Us
               </Button>
             </Link>

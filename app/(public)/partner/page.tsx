@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Check, Sparkles, Crown, Heart, ChevronRight } from 'lucide-react'
+import { Check, Sparkles, Crown, Heart, ChevronRight, ChevronDown, ArrowRight } from 'lucide-react'
 
 export default function PartnerPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly')
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
 
   const tiers = [
     {
@@ -16,9 +16,6 @@ export default function PartnerPage() {
       price: { monthly: 0, annual: 0 },
       description: 'Start Your Journey',
       icon: Heart,
-      iconColor: 'text-navy',
-      bgColor: 'bg-gray-50',
-      borderColor: 'border-gray-200',
       buttonText: 'Get Started Free',
       buttonVariant: 'outline' as const,
       benefits: [
@@ -37,12 +34,8 @@ export default function PartnerPage() {
       description: 'Support the Mission',
       badge: 'Most Popular',
       icon: Sparkles,
-      iconColor: 'text-gold',
-      bgColor: 'bg-gold/5',
-      borderColor: 'border-gold',
       buttonText: 'Become a Partner',
-      buttonVariant: 'default' as const,
-      buttonClass: 'bg-gold hover:bg-gold-dark',
+      buttonVariant: 'glow' as const,
       benefits: [
         'All Free Member benefits',
         'Monthly partner-only teaching/Q&A',
@@ -60,12 +53,8 @@ export default function PartnerPage() {
       description: 'Deep Partnership',
       badge: 'Premium',
       icon: Crown,
-      iconColor: 'text-navy',
-      bgColor: 'bg-navy/5',
-      borderColor: 'border-navy',
       buttonText: 'Join Covenant',
       buttonVariant: 'default' as const,
-      buttonClass: 'bg-navy hover:bg-navy/90',
       benefits: [
         'All Partner benefits',
         'Quarterly 1-on-1 check-in (30 min)',
@@ -83,19 +72,16 @@ export default function PartnerPage() {
       name: 'Sarah Johnson',
       tier: 'Partner',
       text: "Partnering with TPC has transformed my spiritual journey. The monthly teachings have given me clarity and direction I've never had before.",
-      image: '/testimonial-1.jpg',
     },
     {
       name: 'Michael Chen',
       tier: 'Covenant Partner',
       text: 'The quarterly check-ins and personal prophetic word have been life-changing. This partnership is an investment in my destiny.',
-      image: '/testimonial-2.jpg',
     },
     {
       name: 'David Williams',
       tier: 'Partner',
       text: "Being part of the partner community has connected me with like-minded believers who are serious about kingdom impact.",
-      image: '/testimonial-3.jpg',
     },
   ]
 
@@ -123,92 +109,104 @@ export default function PartnerPage() {
   ]
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-4 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Join Us
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Partner With TPC Ministries
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Join us in transforming lives across the globe through ministry, missions, and kingdom innovation
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      {/* Billing Toggle */}
-      <section className="px-4 py-8">
+      {/* Billing Toggle + Tiers */}
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="mb-12 flex items-center justify-center gap-4">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2 rounded-full font-medium transition-colors ${
+              className={`rounded-full px-6 py-2 font-medium transition-colors ${
                 billingCycle === 'monthly'
-                  ? 'bg-navy text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-navy text-white dark:bg-gold dark:text-navy-950'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2 rounded-full font-medium transition-colors relative ${
+              className={`relative rounded-full px-6 py-2 font-medium transition-colors ${
                 billingCycle === 'annual'
-                  ? 'bg-navy text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-navy text-white dark:bg-gold dark:text-navy-950'
+                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
               }`}
             >
               Annual
-              <span className="absolute -top-2 -right-2 bg-gold text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="absolute -right-2 -top-2 rounded-full bg-gold px-2 py-0.5 text-xs text-navy-950">
                 Save 2 months
               </span>
             </button>
           </div>
 
           {/* Tier Cards */}
-          <div className="grid gap-8 md:grid-cols-3 mb-16">
+          <div className="mb-16 grid gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
-              <Card
+              <div
                 key={tier.id}
-                className={`relative overflow-hidden ${tier.bgColor} border-2 ${tier.borderColor} ${
-                  tier.badge ? 'scale-105 shadow-2xl' : ''
+                className={`relative overflow-hidden rounded-3xl border p-8 transition-all duration-300 ${
+                  tier.badge === 'Most Popular'
+                    ? 'scale-[1.02] border-gold/50 bg-card shadow-2xl md:scale-105'
+                    : 'border-border bg-card hover:border-gold/30 hover:shadow-xl'
                 }`}
               >
                 {tier.badge && (
-                  <div className="absolute top-0 right-0 bg-gold text-white px-4 py-1 text-sm font-medium">
+                  <div className="absolute right-0 top-0 rounded-bl-2xl bg-gold px-4 py-1 text-body-sm font-medium text-navy-950">
                     {tier.badge}
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-8 pt-12">
-                  <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${tier.bgColor}`}>
-                    <tier.icon className={`h-8 w-8 ${tier.iconColor}`} />
+                <div className="pb-8 pt-4 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-navy/10 dark:bg-white/5">
+                    <tier.icon className="h-8 w-8 text-navy dark:text-gold" />
                   </div>
-                  <CardTitle className="text-2xl text-navy mb-2">{tier.name}</CardTitle>
-                  <CardDescription className="text-gray-600">{tier.description}</CardDescription>
+                  <h3 className="mb-2 font-display text-display-xs text-navy dark:text-white">{tier.name}</h3>
+                  <p className="text-body-md text-muted-foreground">{tier.description}</p>
                   <div className="mt-4">
-                    <div className="text-4xl font-bold text-navy">
+                    <div className="font-display text-display-md text-navy dark:text-white">
                       ${tier.price[billingCycle]}
                       {tier.id !== 'free' && (
-                        <span className="text-lg font-normal text-gray-600">
+                        <span className="text-body-lg font-normal text-muted-foreground">
                           /{billingCycle === 'monthly' ? 'mo' : 'yr'}
                         </span>
                       )}
                     </div>
                     {tier.id !== 'free' && billingCycle === 'annual' && (
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="mt-1 text-body-sm text-muted-foreground">
                         ${(tier.price.annual / 12).toFixed(0)}/month
                       </p>
                     )}
                   </div>
-                </CardHeader>
+                </div>
 
-                <CardContent className="space-y-6">
+                <div className="space-y-6">
                   <ul className="space-y-3">
                     {tier.benefits.map((benefit, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{benefit}</span>
+                        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                        <span className="text-body-md text-muted-foreground">{benefit}</span>
                       </li>
                     ))}
                   </ul>
@@ -216,88 +214,119 @@ export default function PartnerPage() {
                   <Link href={tier.id === 'free' ? '/auth/signup' : `/partner/upgrade?tier=${tier.id}`}>
                     <Button
                       variant={tier.buttonVariant}
-                      className={`w-full ${tier.buttonClass || ''}`}
+                      className="w-full"
                       size="lg"
                     >
                       {tier.buttonText}
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 py-16 bg-white">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            What Our Partners Say
-          </h2>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Testimonials
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-white">
+              What Our Partners Say
+            </h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((testimonial, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="mb-4">
-                    <div className="h-16 w-16 rounded-full bg-navy/10 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-navy">
-                        {testimonial.name.charAt(0)}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 italic mb-4">&ldquo;{testimonial.text}&rdquo;</p>
+              <div
+                key={index}
+                className="rounded-3xl border border-white/10 bg-white/5 p-8 transition-all duration-300 hover:border-gold/30 hover:bg-white/10"
+              >
+                <div className="mb-4">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
+                    <span className="font-display text-display-xs text-gold">
+                      {testimonial.name.charAt(0)}
+                    </span>
                   </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-navy">{testimonial.name}</p>
-                    <p className="text-sm text-gold">{testimonial.tier}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p className="mb-4 text-body-md italic text-white/70">&ldquo;{testimonial.text}&rdquo;</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display text-body-lg font-semibold text-white">{testimonial.name}</p>
+                  <p className="text-body-sm text-gold">{testimonial.tier}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="px-4 py-16 bg-gray-50">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-6">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Common Questions
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              Frequently Asked Questions
+            </h2>
+          </div>
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle className="text-lg text-navy">{faq.question}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{faq.answer}</p>
-                </CardContent>
-              </Card>
+              <div
+                key={index}
+                className={`cursor-pointer rounded-3xl border bg-card p-6 transition-all duration-300 ${
+                  expandedFaq === index ? 'border-gold/30 shadow-lg' : 'border-border hover:border-gold/20'
+                }`}
+                onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-body-lg font-semibold text-navy dark:text-white">{faq.question}</h3>
+                  <ChevronDown className={`h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform ${
+                    expandedFaq === index ? 'rotate-180 text-gold' : ''
+                  }`} />
+                </div>
+                {expandedFaq === index && (
+                  <p className="mt-4 border-t border-border pt-4 text-body-md text-muted-foreground">
+                    {faq.answer}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-navy to-navy-800">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Ready?
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
             Ready to Partner With Us?
           </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="mb-10 text-body-xl text-white/50">
             Join a community of believers committed to kingdom impact and global transformation
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/partner/upgrade?tier=partner">
-              <Button size="lg" className="bg-gold hover:bg-gold-dark text-white">
+              <Button variant="glow" size="xl">
                 Become a Partner
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/auth/signup">
-              <Button size="lg" variant="outline" className="bg-white text-navy hover:bg-gray-100">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
                 Start Free
               </Button>
             </Link>
