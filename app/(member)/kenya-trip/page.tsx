@@ -985,6 +985,9 @@ export default function KenyaTripPage() {
   const [conferenceSessions, setConferenceSessions] = useState<any[]>([])
   const [lodging, setLodging] = useState<any[]>([])
   const [contacts, setContacts] = useState<any[]>([])
+  const [allParticipants, setAllParticipants] = useState<any[]>([])
+  const [feedPosts, setFeedPosts] = useState<any[]>([])
+  const [selectedTrack, setSelectedTrack] = useState('')
   const [activeTab, setActiveTab] = useState('overview')
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
 
@@ -1013,6 +1016,13 @@ export default function KenyaTripPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (participant?.service_track && !selectedTrack) {
+      const trackMap: Record<string, string> = { 'Ministry': 'ministry', 'Medical': 'medical', 'Healthcare': 'medical', 'Education': 'education', 'Business': 'business', 'Media': 'media' }
+      setSelectedTrack(trackMap[participant.service_track] || participant.service_track.toLowerCase() || 'ministry')
+    }
+  }, [participant?.service_track])
 
   const fetchData = async () => {
     setLoading(true)
@@ -1108,6 +1118,16 @@ export default function KenyaTripPage() {
         setConferenceSessions(confRes.data || [])
         setLodging(lodgRes.data || [])
         setContacts(contRes.data || [])
+      } catch { /* tables may not exist yet */ }
+
+      // Fetch all approved participants for directory + feed
+      try {
+        const [participantsRes, feedRes] = await Promise.all([
+          supabase.from('kenya_trip_participants').select('id, first_name, last_name, service_track, ministry_role, instagram_handle, tiktok_handle, twitter_handle').eq('trip_id', tripData.id).eq('application_status', 'approved').order('last_name'),
+          supabase.from('kenya_trip_feed').select('*, kenya_trip_participants(first_name, last_name, service_track)').eq('trip_id', tripData.id).order('created_at', { ascending: false }).limit(50),
+        ])
+        setAllParticipants(participantsRes.data || [])
+        setFeedPosts(feedRes.data || [])
       } catch { /* tables may not exist yet */ }
     }
 
@@ -1467,7 +1487,7 @@ export default function KenyaTripPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 mb-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="apply">{participant ? 'My Status' : 'Apply'}</TabsTrigger>
             <TabsTrigger value="docs">Documents</TabsTrigger>
@@ -1477,7 +1497,8 @@ export default function KenyaTripPage() {
               <>
                 <TabsTrigger value="packing">Packing</TabsTrigger>
                 <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
-                <TabsTrigger value="mytrack">My Track</TabsTrigger>
+                <TabsTrigger value="mytrack">Tracks</TabsTrigger>
+                <TabsTrigger value="community">Community</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
               </>
             )}
@@ -2556,39 +2577,38 @@ export default function KenyaTripPage() {
             </div>
           </TabsContent>
 
-          {/* MY TRACK TAB */}
+          {/* TRACKS TAB */}
           <TabsContent value="mytrack">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="h-5 w-5" />
-                    {participant?.service_track || 'My'} Track &mdash; Day-by-Day Schedule
+                    Track Schedules
                   </CardTitle>
                   <p className="text-sm text-gray-500">
-                    Your track schedule filtered from the master itinerary. Items marked ALL apply to everyone.
+                    Browse all service tracks. Your track is highlighted.
                   </p>
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const trackKey = (participant?.service_track || '').toLowerCase()
-                    // Map service_track values to itinerary category keys
-                    const categoryMap: Record<string, string> = {
-                      'ministry': 'ministry',
-                      'medical': 'healthcare',
-                      'healthcare': 'healthcare',
-                      'education': 'education',
-                      'business': 'business',
-                      'media': 'media',
-                    }
-                    const itineraryCategory = categoryMap[trackKey] || trackKey
+                    const trackOptions = [
+                      { value: 'ministry', label: 'Ministry', itinKey: 'ministry', bg: 'bg-purple-500', bgLight: 'bg-purple-100 text-purple-800' },
+                      { value: 'medical', label: 'Medical', itinKey: 'healthcare', bg: 'bg-green-500', bgLight: 'bg-green-100 text-green-800' },
+                      { value: 'education', label: 'Education', itinKey: 'education', bg: 'bg-blue-500', bgLight: 'bg-blue-100 text-blue-800' },
+                      { value: 'business', label: 'Business', itinKey: 'business', bg: 'bg-yellow-500', bgLight: 'bg-yellow-100 text-yellow-800' },
+                      { value: 'media', label: 'Media', itinKey: 'media', bg: 'bg-pink-500', bgLight: 'bg-pink-100 text-pink-800' },
+                    ]
+
+                    const myTrack = (participant?.service_track || '').toLowerCase()
+                    const activeTrack = selectedTrack || trackOptions.find(t => t.value === myTrack || t.itinKey === myTrack)?.value || 'ministry'
+                    const activeDef = trackOptions.find(t => t.value === activeTrack) || trackOptions[0]
 
                     const trackItems = itinerary.filter((item: any) => {
                       const cat = (item.category || '').toLowerCase()
-                      return cat === 'all' || cat === itineraryCategory
+                      return cat === 'all' || cat === activeDef.itinKey
                     })
 
-                    // Group by date
                     const grouped: Record<string, any[]> = {}
                     for (const item of trackItems) {
                       if (!grouped[item.date]) grouped[item.date] = []
@@ -2596,10 +2616,9 @@ export default function KenyaTripPage() {
                     }
                     const sortedDates = Object.keys(grouped).sort()
 
-                    // Also get conference sessions for this track
                     const trackSessions = conferenceSessions.filter((s: any) => {
                       const st = (s.track || '').toLowerCase()
-                      return !st || st === 'all' || st === itineraryCategory || st === trackKey
+                      return !st || st === 'all' || st === activeDef.itinKey || st === activeTrack
                     })
                     const sessionsByDate: Record<string, any[]> = {}
                     for (const s of trackSessions) {
@@ -2607,73 +2626,115 @@ export default function KenyaTripPage() {
                       sessionsByDate[s.conference_date].push(s)
                     }
 
-                    if (sortedDates.length === 0 && trackSessions.length === 0) {
-                      return <p className="text-gray-500 text-center py-8">Schedule coming soon. Check back as the itinerary is finalized.</p>
-                    }
+                    // Team roster for selected track
+                    const trackRoster = allParticipants.filter((p: any) => {
+                      const st = (p.service_track || '').toLowerCase()
+                      return st === activeTrack || st === activeDef.itinKey
+                    })
 
                     return (
                       <div className="space-y-6">
-                        {sortedDates.map(date => {
-                          const items = grouped[date]
-                          const dateObj = new Date(date + 'T00:00:00')
-                          const dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                          const city = items[0]?.location?.toUpperCase() || ''
-                          const dayNum = items[0]?.day_number
-                          const daySessions = sessionsByDate[date] || []
+                        {/* Track pills */}
+                        <div className="flex flex-wrap gap-2">
+                          {trackOptions.map(track => (
+                            <button
+                              key={track.value}
+                              onClick={() => setSelectedTrack(track.value)}
+                              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                                activeTrack === track.value
+                                  ? `${track.bg} text-white`
+                                  : track.bgLight
+                              } ${track.value === myTrack ? 'ring-2 ring-offset-1 ring-navy' : ''}`}
+                            >
+                              {track.label}
+                              {track.value === myTrack && ' (You)'}
+                            </button>
+                          ))}
+                        </div>
 
-                          return (
-                            <div key={date}>
-                              <div className="flex items-center gap-2 mb-2 pb-1.5 border-b">
-                                <span className="text-xs font-bold bg-navy text-white px-2 py-0.5 rounded">
-                                  DAY {dayNum}
+                        {/* Team roster for this track */}
+                        {trackRoster.length > 0 && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                              {activeDef.label} Team ({trackRoster.length})
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {trackRoster.map((p: any) => (
+                                <span key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border rounded-full text-xs">
+                                  <span className="w-5 h-5 bg-navy text-white rounded-full flex items-center justify-center text-[10px] font-medium">
+                                    {p.first_name?.[0]}{p.last_name?.[0]}
+                                  </span>
+                                  {p.first_name} {p.last_name}
+                                  {p.ministry_role && <span className="text-gray-400">&middot; {p.ministry_role}</span>}
                                 </span>
-                                <span className="text-sm font-semibold text-navy">{dayLabel}</span>
-                                {city && <span className="text-xs text-gray-500">&mdash; {city}</span>}
-                              </div>
-                              <div className="space-y-1 ml-2">
-                                {items.map((item: any) => (
-                                  <div key={item.id} className="flex items-start gap-3 py-1">
-                                    <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
-                                      {item.start_time ? (() => {
-                                        const [h, m] = item.start_time.split(':').map(Number)
-                                        const ampm = h >= 12 ? 'PM' : 'AM'
-                                        const hour = h === 0 ? 12 : h > 12 ? h - 12 : h
-                                        return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
-                                      })() : ''}
-                                    </span>
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium text-navy">{item.title}</p>
-                                      {item.description && item.description !== item.title && (
-                                        <p className="text-xs text-gray-500">{item.description}</p>
-                                      )}
-                                    </div>
-                                    {item.category !== 'all' && (
-                                      <Badge variant="secondary" className="text-[10px] shrink-0">{item.category}</Badge>
-                                    )}
-                                  </div>
-                                ))}
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                                {daySessions.length > 0 && (
-                                  <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
-                                    <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Conference Sessions</p>
-                                    {daySessions.map((s: any) => (
-                                      <div key={s.id} className="flex items-start gap-3 py-1">
+                        {/* Day-by-day schedule */}
+                        {sortedDates.length === 0 && trackSessions.length === 0 ? (
+                          <p className="text-gray-500 text-center py-8">Schedule coming soon.</p>
+                        ) : (
+                          <div className="space-y-5">
+                            {sortedDates.map(date => {
+                              const items = grouped[date]
+                              const dateObj = new Date(date + 'T00:00:00')
+                              const dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                              const city = items[0]?.location?.toUpperCase() || ''
+                              const dayNum = items[0]?.day_number
+                              const daySessions = sessionsByDate[date] || []
+
+                              return (
+                                <div key={date}>
+                                  <div className="flex items-center gap-2 mb-2 pb-1.5 border-b">
+                                    <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${activeDef.bg}`}>
+                                      DAY {dayNum}
+                                    </span>
+                                    <span className="text-sm font-semibold text-navy">{dayLabel}</span>
+                                    {city && <span className="text-xs text-gray-500">&mdash; {city}</span>}
+                                  </div>
+                                  <div className="space-y-1 ml-2">
+                                    {items.map((item: any) => (
+                                      <div key={item.id} className="flex items-start gap-3 py-1">
                                         <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
-                                          {s.start_time?.slice(0, 5)}
+                                          {item.start_time ? (() => {
+                                            const [h, m] = item.start_time.split(':').map(Number)
+                                            const ampm = h >= 12 ? 'PM' : 'AM'
+                                            const hour = h === 0 ? 12 : h > 12 ? h - 12 : h
+                                            return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
+                                          })() : ''}
                                         </span>
                                         <div className="flex-1">
-                                          <p className="text-sm font-medium text-navy">{s.title}</p>
-                                          {s.speaker && <p className="text-xs text-gray-500">{s.speaker}</p>}
+                                          <p className="text-sm font-medium text-navy">{item.title}</p>
+                                          {item.description && item.description !== item.title && (
+                                            <p className="text-xs text-gray-500">{item.description}</p>
+                                          )}
                                         </div>
-                                        <Badge variant="secondary" className="text-[10px] shrink-0">{s.session_type}</Badge>
                                       </div>
                                     ))}
+                                    {daySessions.length > 0 && (
+                                      <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+                                        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Conference</p>
+                                        {daySessions.map((s: any) => (
+                                          <div key={s.id} className="flex items-start gap-3 py-1">
+                                            <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
+                                              {s.start_time?.slice(0, 5)}
+                                            </span>
+                                            <div className="flex-1">
+                                              <p className="text-sm font-medium text-navy">{s.title}</p>
+                                              {s.speaker && <p className="text-xs text-gray-500">{s.speaker}</p>}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     )
                   })()}
@@ -2775,6 +2836,165 @@ export default function KenyaTripPage() {
                   >
                     View Campaign →
                   </a>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* COMMUNITY TAB */}
+          <TabsContent value="community">
+            <div className="space-y-6">
+              {/* WhatsApp Groups */}
+              <Card className="border-green-200 bg-green-50/50">
+                <CardContent className="p-4">
+                  <h3 className="text-base font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    💬 Team Communication
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <a
+                      href="https://chat.whatsapp.com/REPLACE_WITH_MAIN_GROUP"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-white border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                    >
+                      <span className="text-xl">💬</span>
+                      <div>
+                        <p className="text-sm font-semibold text-green-900">General Chat</p>
+                        <p className="text-xs text-green-600">Updates, coordination, fellowship</p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-green-400 ml-auto" />
+                    </a>
+                    <a
+                      href="https://chat.whatsapp.com/REPLACE_WITH_MEDIA_GROUP"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-white border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                    >
+                      <span className="text-xl">📸</span>
+                      <div>
+                        <p className="text-sm font-semibold text-green-900">Media Sharing</p>
+                        <p className="text-xs text-green-600">Photos, videos, content drops</p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-green-400 ml-auto" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Trip Feed */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Trip Feed</CardTitle>
+                  <p className="text-sm text-gray-500">Share updates, highlights, and prayer points with the team.</p>
+                </CardHeader>
+                <CardContent>
+                  {/* Post form */}
+                  {participant && (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        const form = e.target as HTMLFormElement
+                        const content = (form.elements.namedItem('post_content') as HTMLTextAreaElement).value.trim()
+                        if (!content || !trip) return
+                        const supabase = createClient()
+                        const { error } = await supabase.from('kenya_trip_feed').insert({
+                          trip_id: trip.id,
+                          participant_id: participant.id,
+                          content,
+                        })
+                        if (!error) {
+                          form.reset()
+                          // Refresh feed
+                          const { data } = await supabase
+                            .from('kenya_trip_feed')
+                            .select('*, kenya_trip_participants(first_name, last_name, service_track)')
+                            .eq('trip_id', trip.id)
+                            .order('created_at', { ascending: false })
+                            .limit(50)
+                          setFeedPosts(data || [])
+                        }
+                      }}
+                      className="mb-6"
+                    >
+                      <Textarea
+                        name="post_content"
+                        placeholder="Share an update, prayer point, or highlight..."
+                        rows={3}
+                        className="mb-2"
+                      />
+                      <Button type="submit" size="sm">Post Update</Button>
+                    </form>
+                  )}
+
+                  {/* Feed posts */}
+                  {feedPosts.length === 0 ? (
+                    <p className="text-gray-500 text-center py-6">No posts yet. Be the first to share!</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {feedPosts.map((post: any) => {
+                        const author = post.kenya_trip_participants
+                        return (
+                          <div key={post.id} className="p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-7 h-7 bg-navy text-white rounded-full flex items-center justify-center text-[11px] font-medium">
+                                {author?.first_name?.[0]}{author?.last_name?.[0]}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{author?.first_name} {author?.last_name}</p>
+                                <p className="text-[11px] text-gray-400">
+                                  {author?.service_track} &middot; {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.content}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Delegate Directory */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Delegation Directory ({allParticipants.length})
+                  </CardTitle>
+                  <p className="text-sm text-gray-500">Your fellow delegates. Connect on social!</p>
+                </CardHeader>
+                <CardContent>
+                  {allParticipants.length === 0 ? (
+                    <p className="text-gray-500 text-center py-6">Directory will be available once delegates are confirmed.</p>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {allParticipants.map((p: any) => (
+                        <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center text-sm font-medium shrink-0">
+                            {p.first_name?.[0]}{p.last_name?.[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{p.first_name} {p.last_name}</p>
+                            <p className="text-xs text-gray-500">{p.service_track || 'Flex'}{p.ministry_role ? ` \u00b7 ${p.ministry_role}` : ''}</p>
+                            {(p.instagram_handle || p.tiktok_handle || p.twitter_handle) && (
+                              <div className="flex gap-2 mt-1">
+                                {p.instagram_handle && (
+                                  <a href={`https://instagram.com/${p.instagram_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-pink-600 hover:underline">@{p.instagram_handle.replace('@', '')}</a>
+                                )}
+                                {p.tiktok_handle && (
+                                  <a href={`https://tiktok.com/@${p.tiktok_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-gray-600 hover:underline">TikTok</a>
+                                )}
+                                {p.twitter_handle && (
+                                  <a href={`https://x.com/${p.twitter_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-500 hover:underline">X</a>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
