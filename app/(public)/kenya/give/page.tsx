@@ -155,34 +155,35 @@ export default function KenyaGivingPage() {
   const progressPercent = Math.min((currentRaised / fundraisingGoal) * 100, 100)
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-navy-dark via-navy to-navy-light px-4 py-16 md:py-20">
-        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5" />
-        <div className="container relative mx-auto max-w-6xl">
+      <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32">
           <Link
             href="/kenya"
-            className="inline-flex items-center gap-2 text-gold-light hover:text-gold mb-6 transition-colors"
+            className="mb-6 inline-flex items-center gap-2 text-body-sm text-gold transition-colors hover:text-gold-300"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Kenya Trip
           </Link>
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <div className="inline-flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-body-sm font-medium text-gold">
                 <Globe2 className="h-4 w-4" />
                 Kenya Kingdom Impact Trip 2026
               </div>
-              <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
+              <h1 className="mb-4 font-display text-display-xl text-white md:text-display-2xl">
                 Your Gift Changes Lives
               </h1>
-              <p className="text-xl text-white/70 mb-8">
+              <p className="mb-8 text-body-xl text-white/50">
                 Every dollar you give sends teams, equips communities, and creates lasting Kingdom impact in Kenya.
               </p>
 
               {/* Fundraising Progress */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div className="flex items-center justify-between mb-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+                <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-gold" />
                     <span className="font-semibold text-white">2026 Mission Goal</span>
@@ -192,45 +193,48 @@ export default function KenyaGivingPage() {
                     <span className="text-white/40"> / ${fundraisingGoal.toLocaleString()}</span>
                   </span>
                 </div>
-                <div className="h-4 bg-navy-dark rounded-full overflow-hidden">
+                <div className="h-4 overflow-hidden rounded-full bg-navy-950">
                   <div
-                    className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r from-gold to-gold-300 transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <p className="text-sm text-white/40 mt-2">
-                  {Math.round(progressPercent)}% raised • Help us reach our goal
+                <p className="mt-2 text-body-sm text-white/40">
+                  {Math.round(progressPercent)}% raised - Help us reach our goal
                 </p>
               </div>
             </div>
 
             {/* Impact Stats */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
+            <div className="hidden grid-cols-2 gap-4 lg:grid">
               {impactStats.map((stat) => (
-                <div key={stat.label} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
-                  <div className="text-3xl font-bold text-gold mb-1">{stat.value}</div>
-                  <div className="text-white/60 text-sm">{stat.label}</div>
+                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm">
+                  <div className="mb-1 font-display text-display-sm text-gold">{stat.value}</div>
+                  <div className="text-body-sm text-white/50">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Main Giving Section */}
-      <section className="px-4 py-12 md:py-16 bg-cream">
+      <section className="bg-secondary px-4 py-section">
         <div className="container mx-auto max-w-5xl">
           {/* Giving Type Selection */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-navy mb-3">
+          <div className="mb-10 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Make an Impact</p>
+            <h2 className="mb-3 font-display text-display-md text-foreground">
               Choose How to Give
             </h2>
-            <p className="text-navy/60">
+            <p className="text-body-md text-muted-foreground">
               Select where you want your gift to make the biggest impact
             </p>
+            <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4 mb-10">
+          <div className="mb-10 grid gap-4 md:grid-cols-3">
             {(Object.entries(givingOptions) as [GivingType, typeof givingOptions.team][]).map(([key, option]) => {
               const Icon = option.icon
               const isSelected = selectedType === key
@@ -242,21 +246,21 @@ export default function KenyaGivingPage() {
                     setSelectedAmount(option.suggestedAmounts[2] || '100')
                     setCustomAmount('')
                   }}
-                  className={`p-6 rounded-2xl border-2 transition-all text-left ${
+                  className={`rounded-2xl border-2 p-6 text-left transition-all ${
                     isSelected
                       ? 'border-gold bg-gold/5 shadow-lg'
-                      : 'bg-white border-navy/10 hover:border-gold hover:shadow-md'
+                      : 'border-border bg-card hover:border-gold hover:shadow-md'
                   }`}
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${
-                    isSelected ? 'bg-gold' : 'bg-navy/5'
+                  <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl ${
+                    isSelected ? 'bg-gold' : 'bg-muted'
                   }`}>
-                    <Icon className={`h-7 w-7 ${isSelected ? 'text-navy' : 'text-navy/40'}`} />
+                    <Icon className={`h-7 w-7 ${isSelected ? 'text-navy' : 'text-muted-foreground'}`} />
                   </div>
-                  <h3 className={`text-lg font-bold mb-2 ${isSelected ? 'text-gold-dark' : 'text-navy'}`}>
+                  <h3 className={`mb-2 text-body-lg font-bold ${isSelected ? 'text-gold-600' : 'text-foreground'}`}>
                     {option.title}
                   </h3>
-                  <p className="text-sm text-navy/60 leading-relaxed">
+                  <p className="text-body-sm text-muted-foreground">
                     {option.description}
                   </p>
                 </button>
@@ -265,30 +269,30 @@ export default function KenyaGivingPage() {
           </div>
 
           {/* Giving Form Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-navy/10 overflow-hidden">
+          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
             <div className="grid lg:grid-cols-5">
               {/* Left Side - Form */}
-              <div className="lg:col-span-3 p-8 md:p-10">
+              <div className="p-8 md:p-10 lg:col-span-3">
                 {/* Frequency Toggle */}
                 <div className="mb-8">
-                  <Label className="text-sm font-semibold text-navy/70 mb-3 block">Giving Frequency</Label>
+                  <Label className="mb-3 block text-body-sm font-semibold text-muted-foreground">Giving Frequency</Label>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setFrequency('once')}
-                      className={`flex-1 py-3 px-6 rounded-xl border-2 font-semibold transition-all ${
+                      className={`flex-1 rounded-xl border-2 px-6 py-3 font-semibold transition-all ${
                         frequency === 'once'
                           ? 'border-gold bg-gold text-navy'
-                          : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
+                          : 'border-border bg-card text-muted-foreground hover:border-gold'
                       }`}
                     >
                       One-Time
                     </button>
                     <button
                       onClick={() => setFrequency('monthly')}
-                      className={`flex-1 py-3 px-6 rounded-xl border-2 font-semibold transition-all ${
+                      className={`flex-1 rounded-xl border-2 px-6 py-3 font-semibold transition-all ${
                         frequency === 'monthly'
                           ? 'border-gold bg-gold text-navy'
-                          : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
+                          : 'border-border bg-card text-muted-foreground hover:border-gold'
                       }`}
                     >
                       Monthly
@@ -298,16 +302,16 @@ export default function KenyaGivingPage() {
 
                 {/* Amount Selection */}
                 <div className="mb-8">
-                  <Label className="text-sm font-semibold text-navy/70 mb-3 block">Select Amount</Label>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
+                  <Label className="mb-3 block text-body-sm font-semibold text-muted-foreground">Select Amount</Label>
+                  <div className="mb-4 grid grid-cols-3 gap-3">
                     {currentOption.suggestedAmounts.map((amount) => (
                       <button
                         key={amount}
                         onClick={() => handleAmountClick(amount)}
-                        className={`py-4 px-4 rounded-xl border-2 font-bold text-lg transition-all ${
+                        className={`rounded-xl border-2 px-4 py-4 text-body-lg font-bold transition-all ${
                           selectedAmount === amount && !customAmount
                             ? 'border-gold bg-gold text-navy'
-                            : 'bg-white border-navy/10 text-navy/70 hover:border-gold'
+                            : 'border-border bg-card text-muted-foreground hover:border-gold'
                         }`}
                       >
                         ${amount}
@@ -315,20 +319,20 @@ export default function KenyaGivingPage() {
                     ))}
                   </div>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-navy/40" />
+                    <DollarSign className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="number"
                       placeholder="Other amount"
                       value={customAmount}
                       onChange={(e) => handleCustomAmountChange(e.target.value)}
-                      className="pl-11 h-14 text-lg bg-white border-navy/10 focus:border-gold focus:ring-gold rounded-xl"
+                      className="h-14 rounded-xl border-border bg-card pl-11 text-body-lg focus:border-gold focus:ring-gold"
                     />
                   </div>
                 </div>
 
                 {/* Error Message */}
                 {error && (
-                  <div className="mb-6 p-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-body-sm text-red-700">
                     {error}
                   </div>
                 )}
@@ -336,7 +340,7 @@ export default function KenyaGivingPage() {
                 {/* Submit Button */}
                 <Button
                   size="lg"
-                  className="w-full bg-gold hover:bg-gold-light text-navy font-bold h-16 text-xl rounded-xl shadow-lg shadow-gold/25"
+                  className="h-16 w-full rounded-xl bg-gold text-display-xs font-bold text-navy shadow-lg shadow-gold/25 hover:bg-gold-300"
                   disabled={!getCurrentAmount() || loading}
                   onClick={handleSubmit}
                 >
@@ -353,37 +357,37 @@ export default function KenyaGivingPage() {
                   )}
                 </Button>
 
-                <div className="flex items-center justify-center gap-2 text-sm text-navy/50 mt-4">
+                <div className="mt-4 flex items-center justify-center gap-2 text-body-sm text-muted-foreground">
                   <Shield className="h-4 w-4" />
-                  Secure • Tax-deductible • 100% goes to Kenya mission
+                  Secure - Tax-deductible - 100% goes to Kenya mission
                 </div>
               </div>
 
               {/* Right Side - Impact */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-gold/5 to-cream p-8 md:p-10 border-l border-navy/10">
-                <div className="flex items-center gap-2 mb-6">
-                  <Sparkles className="h-5 w-5 text-gold-dark" />
-                  <h3 className="font-bold text-navy">Your Impact</h3>
+              <div className="border-l border-border bg-gradient-to-br from-gold/5 to-secondary p-8 md:p-10 lg:col-span-2">
+                <div className="mb-6 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-gold-600" />
+                  <h3 className="font-bold text-foreground">Your Impact</h3>
                 </div>
                 <div className="space-y-4">
                   {currentOption.impact.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-16 flex-shrink-0">
-                        <span className="text-gold-dark font-bold text-sm">{item.amount}</span>
+                        <span className="text-body-sm font-bold text-gold-600">{item.amount}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start gap-2">
-                          <CheckCircle className="h-4 w-4 text-gold mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-navy/70">{item.description}</p>
+                          <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-gold" />
+                          <p className="text-body-sm text-muted-foreground">{item.description}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-navy/10">
-                  <p className="text-sm text-navy/60 leading-relaxed">
-                    <strong className="text-navy">TPC Ministries</strong> is a registered 501(c)(3). Your donation is tax-deductible and you will receive a receipt via email.
+                <div className="mt-8 border-t border-border pt-6">
+                  <p className="text-body-sm leading-relaxed text-muted-foreground">
+                    <strong className="text-foreground">TPC Ministries</strong> is a registered 501(c)(3). Your donation is tax-deductible and you will receive a receipt via email.
                   </p>
                 </div>
               </div>
@@ -393,17 +397,18 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Trip Info Section */}
-      <section className="px-4 py-16 bg-white border-t border-navy/10">
+      <section className="border-t border-border bg-background px-4 py-section">
         <div className="container mx-auto max-w-5xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-navy mb-4">
+              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">About the Trip</p>
+              <h2 className="mb-4 font-display text-display-md text-foreground">
                 About the Kenya Trip
               </h2>
-              <p className="text-navy/60 mb-6 leading-relaxed">
+              <p className="mb-6 text-body-md leading-relaxed text-muted-foreground">
                 The Kenya Global Impact Delegation brings together leaders, professionals, and ministry partners for a 14-day multi-sector initiative in Nairobi, Kakamega, and Mombasa. Teams serve across four tracks: ministry, health and wellness, education and technology, and business and economic empowerment.
               </p>
-              <div className="space-y-3 mb-8">
+              <div className="mb-8 space-y-3">
                 {[
                   'April 23 – May 6, 2026',
                   'Four service tracks based on your skills',
@@ -411,14 +416,14 @@ export default function KenyaGivingPage() {
                   'Scholarships available for qualified applicants',
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                    <span className="text-navy/70">{item}</span>
+                    <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />
+                    <span className="text-body-md text-muted-foreground">{item}</span>
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row">
                 <Link href="/kenya#apply">
-                  <Button className="bg-navy hover:bg-navy-dark text-white font-semibold px-6 h-12 rounded-xl">
+                  <Button className="h-12 rounded-xl bg-navy px-6 font-semibold text-white hover:bg-navy-800">
                     Apply for the Trip
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -426,7 +431,7 @@ export default function KenyaGivingPage() {
                 <a
                   href="/images/kenya/Kenya-Kingdom-Impact-Trip-2026.pdf"
                   download
-                  className="inline-flex items-center justify-center gap-2 px-6 h-12 rounded-xl border-2 border-navy/10 text-navy/70 font-semibold hover:border-gold hover:bg-gold/5 transition-colors"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-border px-6 font-semibold text-muted-foreground transition-colors hover:border-gold hover:bg-gold/5"
                 >
                   <Download className="h-4 w-4" />
                   Download Trip Guide
@@ -436,19 +441,19 @@ export default function KenyaGivingPage() {
 
             {/* Trip Flier */}
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-gold/10 to-transparent rounded-3xl blur-xl"></div>
-              <div className="relative bg-cream rounded-2xl p-4 border border-navy/10">
+              <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-gold/10 to-transparent blur-xl" />
+              <div className="relative rounded-2xl border border-border bg-secondary p-4">
                 <Image
                   src="/images/kenya/kenya-flier.png"
                   alt="Kenya Kingdom Impact Trip 2026"
                   width={400}
                   height={500}
-                  className="rounded-xl shadow-lg w-full"
+                  className="w-full rounded-xl shadow-lg"
                 />
                 <a
                   href="/images/kenya/kenya-flier.png"
                   download="Kenya-Trip-2026-Flier.png"
-                  className="mt-4 flex items-center justify-center gap-2 text-gold-dark hover:text-gold-dark transition-colors text-sm font-medium"
+                  className="mt-4 flex items-center justify-center gap-2 text-body-sm font-medium text-gold-600 transition-colors hover:text-gold-500"
                 >
                   <Download className="h-4 w-4" />
                   Download Flier
@@ -460,15 +465,15 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Other Ways to Give */}
-      <section className="px-4 py-12 bg-cream border-t border-navy/10">
+      <section className="border-t border-border bg-secondary px-4 py-section-sm">
         <div className="container mx-auto max-w-3xl text-center">
-          <h3 className="text-xl font-bold text-navy mb-4">Other Ways to Give</h3>
-          <p className="text-navy/60 mb-6">
+          <h3 className="mb-4 font-display text-display-xs text-foreground">Other Ways to Give</h3>
+          <p className="mb-6 text-body-md text-muted-foreground">
             For check, wire transfer, or stock donations, or to sponsor a specific team member, contact us:
           </p>
           <a
             href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving"
-            className="inline-flex items-center gap-2 text-gold-dark hover:text-gold-dark font-semibold text-lg"
+            className="inline-flex items-center gap-2 text-body-lg font-semibold text-gold-600 hover:text-gold-500"
           >
             info@tpcmin.org
             <ArrowRight className="h-4 w-4" />
@@ -477,16 +482,19 @@ export default function KenyaGivingPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="px-4 py-12 bg-gradient-to-r from-gold to-gold-light">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-navy mb-3">
+      <section className="relative bg-navy-950 px-4 py-section-sm">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Give Generously</p>
+          <h2 className="mb-3 font-display text-display-md text-white">
             Every Gift Makes a Difference
           </h2>
-          <p className="text-lg text-navy/70 mb-6 max-w-2xl mx-auto">
+          <p className="mx-auto mb-6 max-w-2xl text-body-lg text-white/50">
             Whether you give $25 or $2,500, your generosity sends teams, equips communities, and transforms lives in Kenya.
           </p>
-          <p className="text-navy/70 italic">
-            "Truly I tell you, whatever you did for one of the least of these brothers and sisters of mine, you did for me." — Matthew 25:40
+          <div className="mx-auto mb-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <p className="font-serif italic text-white/40">
+            &ldquo;Truly I tell you, whatever you did for one of the least of these brothers and sisters of mine, you did for me.&rdquo; — Matthew 25:40
           </p>
         </div>
       </section>
