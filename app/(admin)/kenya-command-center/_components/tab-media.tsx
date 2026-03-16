@@ -108,6 +108,43 @@ export function TabMedia({
 
   return (
     <div className="space-y-8">
+      {/* Daily Content Drop Zone */}
+      <Card className="border-pink-200 bg-pink-50/50">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">📸</span>
+            <div className="flex-1">
+              <h3 className="text-base font-semibold text-pink-900 mb-1">Daily Content Drop</h3>
+              <p className="text-sm text-pink-800 mb-3">
+                Delegates: upload your photos, videos, and reels daily so the media team can curate and post.
+                Use the shared folder or WhatsApp group below.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="https://drive.google.com/drive/folders/REPLACE_WITH_FOLDER_ID"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-pink-300 text-pink-800 rounded-lg hover:bg-pink-100 transition-colors"
+                >
+                  📁 Google Drive Folder
+                </a>
+                <a
+                  href="https://chat.whatsapp.com/REPLACE_WITH_GROUP_LINK"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-green-300 text-green-800 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  💬 WhatsApp Media Group
+                </a>
+              </div>
+              <p className="text-[11px] text-pink-600 mt-2">
+                Update the links above in the code once you create the shared folder + WhatsApp group.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Content Calendar */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

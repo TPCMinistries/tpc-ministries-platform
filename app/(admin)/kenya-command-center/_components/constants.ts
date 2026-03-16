@@ -23,10 +23,9 @@ export const tabs: { key: TabType; label: string; icon: any }[] = [
   { key: 'logistics', label: 'Logistics', icon: Truck },
   { key: 'tracks', label: 'Tracks', icon: Layers },
   { key: 'budget', label: 'Budget', icon: DollarSign },
-  { key: 'packing', label: 'Packing', icon: Package },
+  { key: 'supplies', label: 'Supplies', icon: Package },
   { key: 'comms', label: 'Comms', icon: MessageSquare },
   { key: 'media', label: 'Media', icon: Camera },
-  { key: 'pipeline', label: 'Pipeline', icon: UserPlus },
   { key: 'prayer', label: 'Prayer', icon: Heart },
   { key: 'notes', label: 'Notes', icon: StickyNote },
 ]
