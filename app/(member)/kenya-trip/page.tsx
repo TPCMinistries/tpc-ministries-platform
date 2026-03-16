@@ -981,6 +981,10 @@ export default function KenyaTripPage() {
   const [dailyFocus, setDailyFocus] = useState<DailyFocus[]>([])
   const [packingItems, setPackingItems] = useState<PackingItem[]>([])
   const [packingStatus, setPackingStatus] = useState<PackingStatus[]>([])
+  const [itinerary, setItinerary] = useState<any[]>([])
+  const [conferenceSessions, setConferenceSessions] = useState<any[]>([])
+  const [lodging, setLodging] = useState<any[]>([])
+  const [contacts, setContacts] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
 
@@ -1091,6 +1095,20 @@ export default function KenyaTripPage() {
       setFaqs(faqsRes.data || [])
       setDailyFocus(dailyFocusRes.data || [])
       setPackingItems(packingRes.data || [])
+
+      // Fetch itinerary + conference + lodging + contacts for delegate view
+      try {
+        const [itinRes, confRes, lodgRes, contRes] = await Promise.all([
+          supabase.from('kenya_trip_itinerary').select('*').eq('trip_id', tripData.id).order('date').order('start_time'),
+          supabase.from('kenya_trip_conference_sessions').select('*').eq('trip_id', tripData.id).order('conference_date').order('start_time'),
+          supabase.from('kenya_trip_lodging').select('*').eq('trip_id', tripData.id).order('check_in_date'),
+          supabase.from('kenya_trip_contacts').select('*').eq('trip_id', tripData.id).order('name'),
+        ])
+        setItinerary(itinRes.data || [])
+        setConferenceSessions(confRes.data || [])
+        setLodging(lodgRes.data || [])
+        setContacts(contRes.data || [])
+      } catch { /* tables may not exist yet */ }
     }
 
     setLoading(false)
@@ -1449,14 +1467,19 @@ export default function KenyaTripPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="apply">{participant ? 'My Status' : 'Apply'}</TabsTrigger>
             <TabsTrigger value="docs">Documents</TabsTrigger>
             <TabsTrigger value="updates">Updates</TabsTrigger>
             <TabsTrigger value="prayer">Prayer</TabsTrigger>
             {participant?.application_status === 'approved' && (
-              <TabsTrigger value="packing">Packing</TabsTrigger>
+              <>
+                <TabsTrigger value="packing">Packing</TabsTrigger>
+                <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
+                <TabsTrigger value="mytrack">My Track</TabsTrigger>
+                <TabsTrigger value="media">Media</TabsTrigger>
+              </>
             )}
           </TabsList>
 
@@ -2408,6 +2431,355 @@ export default function KenyaTripPage() {
               </Card>
             </TabsContent>
           )}
+
+          {/* ITINERARY TAB */}
+          <TabsContent value="itinerary">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Master Itinerary
+                  </CardTitle>
+                  <p className="text-sm text-gray-500">Your 16-day journey across Kenya</p>
+                </CardHeader>
+                <CardContent>
+                  {/* Group itinerary by date */}
+                  {(() => {
+                    const grouped: Record<string, any[]> = {}
+                    for (const item of itinerary) {
+                      if (!grouped[item.date]) grouped[item.date] = []
+                      grouped[item.date].push(item)
+                    }
+                    const sortedDates = Object.keys(grouped).sort()
+
+                    return sortedDates.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">Itinerary will be available soon.</p>
+                    ) : (
+                      <div className="space-y-6">
+                        {sortedDates.map(date => {
+                          const items = grouped[date]
+                          const dateObj = new Date(date + 'T00:00:00')
+                          const dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                          const city = items[0]?.location?.toUpperCase() || ''
+                          const dayNum = items[0]?.day_number
+
+                          return (
+                            <div key={date}>
+                              <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                                <span className="text-xs font-bold bg-navy text-white px-2 py-0.5 rounded">
+                                  DAY {dayNum}
+                                </span>
+                                <span className="text-sm font-semibold text-navy">{dayLabel}</span>
+                                {city && <span className="text-xs text-gray-500">&mdash; {city}</span>}
+                              </div>
+                              <div className="space-y-2 ml-2">
+                                {items.map((item: any) => (
+                                  <div key={item.id} className="flex items-start gap-3 py-1">
+                                    <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
+                                      {item.start_time ? (() => {
+                                        const [h, m] = item.start_time.split(':').map(Number)
+                                        const ampm = h >= 12 ? 'PM' : 'AM'
+                                        const hour = h === 0 ? 12 : h > 12 ? h - 12 : h
+                                        return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
+                                      })() : ''}
+                                    </span>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-navy">{item.title}</p>
+                                      {item.description && item.description !== item.title && (
+                                        <p className="text-xs text-gray-500">{item.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* Lodging Summary */}
+              {lodging.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Home className="h-5 w-5" />
+                      Accommodations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {lodging.map((l: any) => (
+                        <div key={l.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-navy">{l.city}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(l.check_in_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &mdash; {new Date(l.check_out_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                          <p className="text-sm text-gray-600">{l.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Emergency Contacts */}
+              {contacts.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Key Contacts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {contacts.map((c: any) => (
+                        <div key={c.id} className="flex items-center justify-between p-2 rounded hover:bg-gray-50">
+                          <div>
+                            <p className="text-sm font-medium">{c.name}</p>
+                            <p className="text-xs text-gray-500">{c.role} &mdash; {c.city}</p>
+                          </div>
+                          {c.phone && <p className="text-xs text-gray-400">{c.phone}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* MY TRACK TAB */}
+          <TabsContent value="mytrack">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="h-5 w-5" />
+                    {participant?.service_track || 'My'} Track &mdash; Day-by-Day Schedule
+                  </CardTitle>
+                  <p className="text-sm text-gray-500">
+                    Your track schedule filtered from the master itinerary. Items marked ALL apply to everyone.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const trackKey = (participant?.service_track || '').toLowerCase()
+                    // Map service_track values to itinerary category keys
+                    const categoryMap: Record<string, string> = {
+                      'ministry': 'ministry',
+                      'medical': 'healthcare',
+                      'healthcare': 'healthcare',
+                      'education': 'education',
+                      'business': 'business',
+                      'media': 'media',
+                    }
+                    const itineraryCategory = categoryMap[trackKey] || trackKey
+
+                    const trackItems = itinerary.filter((item: any) => {
+                      const cat = (item.category || '').toLowerCase()
+                      return cat === 'all' || cat === itineraryCategory
+                    })
+
+                    // Group by date
+                    const grouped: Record<string, any[]> = {}
+                    for (const item of trackItems) {
+                      if (!grouped[item.date]) grouped[item.date] = []
+                      grouped[item.date].push(item)
+                    }
+                    const sortedDates = Object.keys(grouped).sort()
+
+                    // Also get conference sessions for this track
+                    const trackSessions = conferenceSessions.filter((s: any) => {
+                      const st = (s.track || '').toLowerCase()
+                      return !st || st === 'all' || st === itineraryCategory || st === trackKey
+                    })
+                    const sessionsByDate: Record<string, any[]> = {}
+                    for (const s of trackSessions) {
+                      if (!sessionsByDate[s.conference_date]) sessionsByDate[s.conference_date] = []
+                      sessionsByDate[s.conference_date].push(s)
+                    }
+
+                    if (sortedDates.length === 0 && trackSessions.length === 0) {
+                      return <p className="text-gray-500 text-center py-8">Schedule coming soon. Check back as the itinerary is finalized.</p>
+                    }
+
+                    return (
+                      <div className="space-y-6">
+                        {sortedDates.map(date => {
+                          const items = grouped[date]
+                          const dateObj = new Date(date + 'T00:00:00')
+                          const dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                          const city = items[0]?.location?.toUpperCase() || ''
+                          const dayNum = items[0]?.day_number
+                          const daySessions = sessionsByDate[date] || []
+
+                          return (
+                            <div key={date}>
+                              <div className="flex items-center gap-2 mb-2 pb-1.5 border-b">
+                                <span className="text-xs font-bold bg-navy text-white px-2 py-0.5 rounded">
+                                  DAY {dayNum}
+                                </span>
+                                <span className="text-sm font-semibold text-navy">{dayLabel}</span>
+                                {city && <span className="text-xs text-gray-500">&mdash; {city}</span>}
+                              </div>
+                              <div className="space-y-1 ml-2">
+                                {items.map((item: any) => (
+                                  <div key={item.id} className="flex items-start gap-3 py-1">
+                                    <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
+                                      {item.start_time ? (() => {
+                                        const [h, m] = item.start_time.split(':').map(Number)
+                                        const ampm = h >= 12 ? 'PM' : 'AM'
+                                        const hour = h === 0 ? 12 : h > 12 ? h - 12 : h
+                                        return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
+                                      })() : ''}
+                                    </span>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-navy">{item.title}</p>
+                                      {item.description && item.description !== item.title && (
+                                        <p className="text-xs text-gray-500">{item.description}</p>
+                                      )}
+                                    </div>
+                                    {item.category !== 'all' && (
+                                      <Badge variant="secondary" className="text-[10px] shrink-0">{item.category}</Badge>
+                                    )}
+                                  </div>
+                                ))}
+
+                                {daySessions.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+                                    <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Conference Sessions</p>
+                                    {daySessions.map((s: any) => (
+                                      <div key={s.id} className="flex items-start gap-3 py-1">
+                                        <span className="text-xs text-gray-400 font-mono w-[60px] text-right flex-shrink-0 pt-0.5">
+                                          {s.start_time?.slice(0, 5)}
+                                        </span>
+                                        <div className="flex-1">
+                                          <p className="text-sm font-medium text-navy">{s.title}</p>
+                                          {s.speaker && <p className="text-xs text-gray-500">{s.speaker}</p>}
+                                        </div>
+                                        <Badge variant="secondary" className="text-[10px] shrink-0">{s.session_type}</Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* MEDIA TAB */}
+          <TabsContent value="media">
+            <div className="space-y-6">
+              {/* Content Drop Zone */}
+              <Card className="border-pink-200 bg-gradient-to-br from-pink-50 to-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="h-5 w-5 text-pink-600" />
+                    Daily Content Drop
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Upload your photos, videos, and reels daily so the media team can curate and share.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <a
+                      href="https://drive.google.com/drive/folders/1L1-XFFcbx8OwD2aYaDusUYduuzAXs5jO?usp=drive_link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 bg-white border border-pink-200 rounded-lg hover:bg-pink-50 transition-colors"
+                    >
+                      <span className="text-2xl">📁</span>
+                      <div>
+                        <p className="text-sm font-semibold text-pink-900">Google Drive Folder</p>
+                        <p className="text-xs text-pink-600">Upload photos & videos here</p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-pink-400 ml-auto" />
+                    </a>
+                    <a
+                      href="https://chat.whatsapp.com/REPLACE_WITH_GROUP_LINK"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 bg-white border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                    >
+                      <span className="text-2xl">💬</span>
+                      <div>
+                        <p className="text-sm font-semibold text-green-900">WhatsApp Media Group</p>
+                        <p className="text-xs text-green-600">Quick shares & coordination</p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-green-400 ml-auto" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Tips */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Content Guidelines</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm text-gray-600">
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">📸</span>
+                      <p><strong>Photos:</strong> Capture moments of impact — ministry, medical camps, conferences, team life. Landscape orientation preferred for social media.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">🎥</span>
+                      <p><strong>Video:</strong> Short clips (15-60 sec) of key moments. Vertical for reels/stories, horizontal for YouTube.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">📝</span>
+                      <p><strong>Captions:</strong> Include who, what, where in the filename or a quick text message in WhatsApp.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">⏰</span>
+                      <p><strong>Timing:</strong> Upload daily before dinner so the media team can post while it&#39;s fresh.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">🙏</span>
+                      <p><strong>Consent:</strong> Get verbal permission before photographing locals, especially children. No medical patient photos without consent.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pack the Mission Link */}
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <span className="text-2xl">📦</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-amber-900">Pack the Mission — Supply Drive</p>
+                    <p className="text-xs text-amber-700">Pledge items, fund supplies, or sponsor categories for the team.</p>
+                  </div>
+                  <a
+                    href="/kenya/pack-the-mission"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+                  >
+                    View Campaign →
+                  </a>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
         </Tabs>
       </div>
     </div>
