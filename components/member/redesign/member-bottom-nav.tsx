@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   Sun, BookOpen, Users, User, 
   Home, Heart, Sparkles, Calendar,
@@ -48,6 +48,7 @@ const navItems: NavItem[] = [
 
 export function MemberBottomNav() {
   const pathname = usePathname()
+  const shouldReduceMotion = useReducedMotion()
 
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true
@@ -56,7 +57,7 @@ export function MemberBottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border lg:hidden">
       <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item)
@@ -76,15 +77,15 @@ export function MemberBottomNav() {
             >
               {active && (
                 <motion.div
-                  layoutId="bottomNavIndicator"
+                  layoutId={shouldReduceMotion ? undefined : "bottomNavIndicator"}
                   className="absolute -top-0.5 w-12 h-1 bg-tpc-gold rounded-full"
-                  transition={{ type: "spring", duration: 0.5 }}
+                  transition={shouldReduceMotion ? undefined : { type: "spring", duration: 0.5 }}
                 />
               )}
-              
+
               <motion.div
-                animate={active ? { scale: 1.1 } : { scale: 1 }}
-                transition={{ type: "spring", stiffness: 500 }}
+                animate={shouldReduceMotion ? undefined : (active ? { scale: 1.1 } : { scale: 1 })}
+                transition={shouldReduceMotion ? undefined : { type: "spring", stiffness: 500 }}
               >
                 <Icon className={cn(
                   "h-5 w-5 mb-1",
@@ -104,7 +105,7 @@ export function MemberBottomNav() {
       </div>
       
       {/* Safe area padding for devices with home indicator */}
-      <div className="h-safe-area-inset-bottom bg-white dark:bg-gray-900" />
+      <div className="h-safe-area-inset-bottom bg-background" />
     </nav>
   )
 }

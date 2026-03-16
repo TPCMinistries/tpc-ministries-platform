@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { Flame, Trophy, Star, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -46,6 +46,7 @@ export function StreakDisplay({
   const Icon = getMilestoneIcon(count)
   const color = getStreakColor(count)
   const bg = getStreakBg(count)
+  const shouldReduceMotion = useReducedMotion()
   
   const nextMilestone = milestones.find(m => m > count) || milestones[milestones.length - 1]
   const prevMilestone = milestones.filter(m => m <= count).pop() || 0
@@ -58,8 +59,8 @@ export function StreakDisplay({
   if (variant === "badge") {
     return (
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
+        initial={shouldReduceMotion ? undefined : { scale: 0 }}
+        animate={shouldReduceMotion ? undefined : { scale: 1 }}
         className={cn(
           "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
           bg, color,
@@ -76,10 +77,10 @@ export function StreakDisplay({
     return (
       <div className={cn("flex items-center gap-1", color, className)}>
         <motion.div
-          animate={{ 
+          animate={shouldReduceMotion ? undefined : {
             scale: [1, 1.2, 1],
           }}
-          transition={{ 
+          transition={shouldReduceMotion ? undefined : {
             duration: 0.5,
             repeat: Infinity,
             repeatDelay: 2
@@ -95,9 +96,9 @@ export function StreakDisplay({
   if (variant === "celebration") {
     return (
       <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", duration: 0.6 }}
+        initial={shouldReduceMotion ? undefined : { scale: 0, rotate: -180 }}
+        animate={shouldReduceMotion ? undefined : { scale: 1, rotate: 0 }}
+        transition={shouldReduceMotion ? undefined : { type: "spring", duration: 0.6 }}
         className={cn(
           "flex flex-col items-center justify-center p-6 rounded-2xl",
           bg,
@@ -105,11 +106,11 @@ export function StreakDisplay({
         )}
       >
         <motion.div
-          animate={{ 
+          animate={shouldReduceMotion ? undefined : {
             y: [0, -8, 0],
             rotate: [0, 5, -5, 0]
           }}
-          transition={{ 
+          transition={shouldReduceMotion ? undefined : {
             duration: 1,
             repeat: Infinity,
             repeatDelay: 1
@@ -119,17 +120,17 @@ export function StreakDisplay({
           <Icon className="h-12 w-12" />
         </motion.div>
         <motion.span
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={shouldReduceMotion ? undefined : { delay: 0.2 }}
           className={cn("text-4xl font-bold", color)}
         >
           {count}
         </motion.span>
         <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+          transition={shouldReduceMotion ? undefined : { delay: 0.3 }}
           className="text-sm text-muted-foreground mt-1"
         >
           {label}
@@ -137,9 +138,9 @@ export function StreakDisplay({
         
         {showMilestones && count < nextMilestone && (
           <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "100%" }}
-            transition={{ delay: 0.4 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, width: 0 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1, width: "100%" }}
+            transition={shouldReduceMotion ? undefined : { delay: 0.4 }}
             className="mt-4 w-full max-w-[200px]"
           >
             <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -148,9 +149,9 @@ export function StreakDisplay({
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: progressToNext + "%" }}
-                transition={{ delay: 0.5, duration: 0.5 }}
+                initial={shouldReduceMotion ? undefined : { width: 0 }}
+                animate={shouldReduceMotion ? undefined : { width: progressToNext + "%" }}
+                transition={shouldReduceMotion ? undefined : { delay: 0.5, duration: 0.5 }}
                 className={cn("h-full rounded-full", color.replace("text-", "bg-"))}
               />
             </div>
@@ -164,10 +165,10 @@ export function StreakDisplay({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <motion.div
-        animate={{ 
+        animate={shouldReduceMotion ? undefined : {
           scale: [1, 1.15, 1],
         }}
-        transition={{ 
+        transition={shouldReduceMotion ? undefined : {
           duration: 0.6,
           repeat: Infinity,
           repeatDelay: 2.5
@@ -184,8 +185,8 @@ export function StreakDisplay({
         {showMilestones && count < nextMilestone && (
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden mt-1">
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: progressToNext + "%" }}
+              initial={shouldReduceMotion ? undefined : { width: 0 }}
+              animate={shouldReduceMotion ? { width: progressToNext + "%" } : { width: progressToNext + "%" }}
               className={cn("h-full rounded-full", color.replace("text-", "bg-"))}
             />
           </div>
