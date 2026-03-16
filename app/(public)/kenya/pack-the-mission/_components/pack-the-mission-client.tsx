@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft,
@@ -186,10 +187,17 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       )}
 
       {/* ===== HERO — Compact + Urgent ===== */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-navy-dark via-navy to-navy-dark">
+      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+        <Image
+          src="/images/kenya/hero-landscape.png"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/80 via-navy/70 to-navy-dark/90" />
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.15),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(212,175,55,0.1),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
         </div>
 
         <div className="relative z-10 text-center max-w-3xl px-4 py-12">
@@ -422,8 +430,15 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       <SponsorshipSection />
 
       {/* ===== FUND THE MISSION ===== */}
-      <section id="fund" className="px-4 py-16 bg-navy-dark text-white">
-        <div className="container mx-auto max-w-5xl">
+      <section id="fund" className="relative px-4 py-16 text-white overflow-hidden">
+        <Image
+          src="/images/kenya/donate-bg.png"
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-navy-dark/85" />
+        <div className="relative z-10 container mx-auto max-w-5xl">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <p className="text-xs font-bold tracking-widest uppercase text-gold-light mb-3">Fund the Mission</p>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-white mb-3">
