@@ -154,6 +154,7 @@ export default function KenyaCommandCenter() {
             updateWaitingListEntry={data.updateWaitingListEntry}
             deleteWaitingListEntry={data.deleteWaitingListEntry}
             promoteToDelegate={data.promoteToDelegate}
+            addLodging={data.addLodging}
             saveStatus={data.saveStatus}
           />
         )}
@@ -202,10 +203,14 @@ export default function KenyaCommandCenter() {
             conferenceSessions={data.conferenceSessions}
             trackDetails={data.trackDetails}
             trackMaterials={data.trackMaterials}
+            supportRoles={data.supportRoles}
             updateTrackDetailField={data.updateTrackDetailField}
             addTrackMaterial={data.addTrackMaterial}
             toggleTrackMaterial={data.toggleTrackMaterial}
             deleteTrackMaterial={data.deleteTrackMaterial}
+            addSupportRole={data.addSupportRole}
+            updateSupportRoleField={data.updateSupportRoleField}
+            deleteSupportRole={data.deleteSupportRole}
             saveStatus={data.saveStatus}
           />
         )}

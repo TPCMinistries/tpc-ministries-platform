@@ -32,6 +32,7 @@ interface TabPeopleProps {
   updateWaitingListEntry: (id: string, updates: any) => void
   deleteWaitingListEntry: (id: string) => void
   promoteToDelegate: (entry: WaitingListEntry) => void
+  addLodging: (city: string, checkIn: string, checkOut: string) => void
   saveStatus: 'idle' | 'saving' | 'saved' | 'error'
 }
 
@@ -86,6 +87,7 @@ export function TabPeople({
   updateWaitingListEntry,
   deleteWaitingListEntry,
   promoteToDelegate,
+  addLodging,
   saveStatus,
 }: TabPeopleProps) {
   // Add Delegate inline form state
@@ -100,6 +102,12 @@ export function TabPeople({
   // Add Waiting List inline form state
   const [showAddWaiting, setShowAddWaiting] = useState(false)
   const [newWaitingName, setNewWaitingName] = useState('')
+
+  // Add Hotel Block inline form state
+  const [showAddHotel, setShowAddHotel] = useState(false)
+  const [newHotelCity, setNewHotelCity] = useState('')
+  const [newHotelCheckIn, setNewHotelCheckIn] = useState('')
+  const [newHotelCheckOut, setNewHotelCheckOut] = useState('')
 
   const handleAddDelegate = () => {
     if (newDelegateFirst.trim() && newDelegateLast.trim()) {
@@ -134,6 +142,16 @@ export function TabPeople({
       })
       setNewWaitingName('')
       setShowAddWaiting(false)
+    }
+  }
+
+  const handleAddHotel = () => {
+    if (newHotelCity.trim() && newHotelCheckIn && newHotelCheckOut) {
+      addLodging(newHotelCity.trim(), newHotelCheckIn, newHotelCheckOut)
+      setNewHotelCity('')
+      setNewHotelCheckIn('')
+      setNewHotelCheckOut('')
+      setShowAddHotel(false)
     }
   }
 
@@ -680,15 +698,67 @@ export function TabPeople({
       {/* ====== HOTEL BLOCKS ====== */}
       <Card>
         <CardContent className="p-4">
-          <h3 className="text-base font-semibold text-navy mb-4">
-            🏨 Hotel Blocks
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-navy">
+              🏨 Hotel Blocks ({lodging.length})
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowAddHotel(true)}
+              className="px-3 py-1.5 text-[13px] font-medium bg-navy text-white rounded hover:bg-navy/90 transition-colors"
+            >
+              + Add Hotel Block
+            </button>
+          </div>
+
+          {/* Add Hotel Block Inline Form */}
+          {showAddHotel && (
+            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded border border-gray-200">
+              <input
+                type="text"
+                placeholder="City"
+                value={newHotelCity}
+                onChange={(e) => setNewHotelCity(e.target.value)}
+                className={`w-[120px] ${inputClasses}`}
+                autoFocus
+              />
+              <input
+                type="date"
+                placeholder="Check-in"
+                value={newHotelCheckIn}
+                onChange={(e) => setNewHotelCheckIn(e.target.value)}
+                className={`w-[140px] ${inputClasses}`}
+              />
+              <input
+                type="date"
+                placeholder="Check-out"
+                value={newHotelCheckOut}
+                onChange={(e) => setNewHotelCheckOut(e.target.value)}
+                className={`w-[140px] ${inputClasses}`}
+              />
+              <button
+                type="button"
+                onClick={handleAddHotel}
+                className="px-3 py-1.5 text-[13px] font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAddHotel(false); setNewHotelCity(''); setNewHotelCheckIn(''); setNewHotelCheckOut('') }}
+                className="px-3 py-1.5 text-[13px] font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse" style={{ fontSize: '13px' }}>
               <thead>
                 <tr className="border-b-2 border-gray-200">
                   <th className={thClasses}>City</th>
-                  <th className={thClasses}>Dates</th>
+                  <th className={thClasses}>Check-in</th>
+                  <th className={thClasses}>Check-out</th>
                   <th className={thClasses}>Nights</th>
                   <th className={thClasses}>Property</th>
                   <th className={thClasses}>Rooms</th>
@@ -700,7 +770,6 @@ export function TabPeople({
               <tbody>
                 {lodging.map((l) => {
                   const nights = computeNights(l.check_in_date, l.check_out_date)
-                  const dateRange = formatDateRange(l.check_in_date, l.check_out_date)
                   return (
                     <tr key={l.id} className="border-b border-gray-100 hover:bg-gray-50/50">
                       <td className="p-2.5">
@@ -714,7 +783,22 @@ export function TabPeople({
                           className={`w-[100px] ${inputClasses}`}
                         />
                       </td>
-                      <td className="p-2.5 text-gray-600 whitespace-nowrap">{dateRange}</td>
+                      <td className="p-2.5">
+                        <input
+                          type="date"
+                          defaultValue={l.check_in_date || ''}
+                          onChange={(e) => updateLodgingField(l.id, 'check_in_date', e.target.value)}
+                          className={`w-[130px] ${inputClasses}`}
+                        />
+                      </td>
+                      <td className="p-2.5">
+                        <input
+                          type="date"
+                          defaultValue={l.check_out_date || ''}
+                          onChange={(e) => updateLodgingField(l.id, 'check_out_date', e.target.value)}
+                          className={`w-[130px] ${inputClasses}`}
+                        />
+                      </td>
                       <td className="p-2.5 text-gray-600 text-center">{nights}</td>
                       <td className="p-2.5">
                         <input
@@ -778,7 +862,7 @@ export function TabPeople({
                 })}
                 {lodging.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-6 text-center text-gray-400">No hotel blocks added yet</td>
+                    <td colSpan={9} className="p-6 text-center text-gray-400">No hotel blocks added yet</td>
                   </tr>
                 )}
               </tbody>
