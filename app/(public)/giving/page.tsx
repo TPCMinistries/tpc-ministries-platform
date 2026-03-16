@@ -77,16 +77,16 @@ export default function GivingPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+      <section className="relative flex min-h-[50vh] md:min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
-        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+        <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32 text-center">
           <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Partner With Us
           </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+          <h1 className="mb-6 font-display text-display-md sm:text-display-lg md:text-display-xl lg:text-display-2xl text-white">
             Give with Purpose
           </h1>
           <p className="mx-auto max-w-2xl text-body-xl text-white/50">
@@ -103,10 +103,10 @@ export default function GivingPage() {
       </section>
 
       {/* Mission Fields */}
-      <section className="border-y border-border bg-secondary/50 px-4 py-section-sm">
+      <section className="border-y border-border bg-secondary/50 px-4 py-10 md:py-section-sm">
         <div className="container mx-auto max-w-4xl">
           <p className="mb-6 text-center text-body-md font-medium text-navy dark:text-white">Your giving reaches</p>
-          <div className="grid grid-cols-3 gap-4 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8">
             {[
               { flag: '\u{1F1F0}\u{1F1EA}', country: 'Kenya', region: 'East Africa' },
               { flag: '\u{1F1FF}\u{1F1E6}', country: 'South Africa', region: 'Southern Africa' },
@@ -126,7 +126,7 @@ export default function GivingPage() {
       </section>
 
       {/* Main Giving Section */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Giving Options */}
@@ -136,7 +136,7 @@ export default function GivingPage() {
                 <p className="mb-8 text-body-md text-muted-foreground">Select where you&apos;d like to direct your gift</p>
 
                 {/* Giving Type Selection */}
-                <div className="mb-8 grid gap-4 md:grid-cols-3">
+                <div className="mb-8 grid gap-4 sm:grid-cols-3">
                   <button
                     onClick={() => setGivingType('ministry')}
                     className={`rounded-2xl border-2 p-6 transition-all duration-200 ${
@@ -207,7 +207,7 @@ export default function GivingPage() {
                 {/* Amount Selection */}
                 <div className="mb-8">
                   <Label className="mb-3 block font-display text-body-md font-medium text-navy dark:text-white">Select Amount</Label>
-                  <div className="mb-4 grid grid-cols-3 gap-3 md:grid-cols-6">
+                  <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-6">
                     {quickAmounts.map((amount) => (
                       <button
                         key={amount}
@@ -348,9 +348,9 @@ export default function GivingPage() {
       </section>
 
       {/* Scripture Section */}
-      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
               Scripture
             </p>
@@ -376,7 +376,7 @@ export default function GivingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-16 md:py-section-lg">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
 
         <div className="container relative mx-auto max-w-3xl text-center">

@@ -13,7 +13,7 @@ export function ConnectSection() {
       <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-gold/5 blur-3xl" />
 
       <div className="relative mx-auto max-w-4xl">
-        <div className="grid items-center gap-12 md:grid-cols-2">
+        <div className="grid items-center gap-8 md:gap-12 md:grid-cols-2">
           {/* Left — content */}
           <ScrollReveal variant="fade-left">
             <p className="mb-3 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">

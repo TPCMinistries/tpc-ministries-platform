@@ -18,16 +18,16 @@ export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section — Cinematic */}
-      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-navy-950">
+      <section className="relative flex min-h-[60vh] md:min-h-[70vh] items-center justify-center overflow-hidden bg-navy-950">
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
-        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+        <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32 text-center">
           <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Our Story
           </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+          <h1 className="mb-6 font-display text-display-md sm:text-display-lg md:text-display-xl lg:text-display-2xl text-white">
             About TPC Ministries
           </h1>
           <p className="mx-auto max-w-2xl text-body-xl text-white/50">
@@ -42,17 +42,17 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section — Editorial */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
           {/* Big statement */}
-          <div className="mb-20 text-center">
+          <div className="mb-12 md:mb-20 text-center">
             <h2 className="mx-auto max-w-4xl font-display text-display-md md:text-display-lg text-navy dark:text-white">
               Empowering believers to discover their God-given purpose
             </h2>
           </div>
 
           {/* Two-column layout */}
-          <div className="grid items-start gap-16 lg:grid-cols-2">
+          <div className="grid items-start gap-8 lg:gap-16 lg:grid-cols-2">
             <div>
               <p className="mb-6 text-body-xl leading-relaxed text-muted-foreground">
                 TPC Ministries exists to awaken purpose and ignite vision in every believer
@@ -89,9 +89,9 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section — Full-width cards on dark bg */}
-      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
               What We Stand For
             </p>
@@ -138,9 +138,9 @@ export default function AboutPage() {
       </section>
 
       {/* Leadership Section — Premium */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
               Who We Are
             </p>
@@ -149,10 +149,10 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:gap-8 md:grid-cols-2">
             {/* Lorenzo */}
-            <div className="group overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
-              <div className="relative h-48 bg-gradient-to-br from-navy via-navy-800 to-navy-700">
+            <div className="group overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+              <div className="relative h-36 sm:h-48 bg-gradient-to-br from-navy via-navy-800 to-navy-700">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.15),transparent_60%)]" />
                 <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
                   <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-navy to-navy-800 text-3xl font-bold text-gold ring-2 ring-gold/20">
@@ -175,8 +175,8 @@ export default function AboutPage() {
             </div>
 
             {/* Sarah */}
-            <div className="group overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
-              <div className="relative h-48 bg-gradient-to-br from-gold-600 via-gold-500 to-gold-400">
+            <div className="group overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+              <div className="relative h-36 sm:h-48 bg-gradient-to-br from-gold-600 via-gold-500 to-gold-400">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(30,58,97,0.15),transparent_60%)]" />
                 <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
                   <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-gold-500 to-gold-600 text-3xl font-bold text-white ring-2 ring-gold/30">
@@ -202,9 +202,9 @@ export default function AboutPage() {
       </section>
 
       {/* Global Reach — Stats bar */}
-      <section className="border-y border-border bg-secondary/50 px-4 py-section-sm">
+      <section className="border-y border-border bg-secondary/50 px-4 py-10 md:py-section-sm">
         <div className="container mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
             {[
               { label: 'Countries', value: '3' },
               { label: 'Lives Impacted', value: '1,000+' },
@@ -223,9 +223,9 @@ export default function AboutPage() {
       </section>
 
       {/* What We Offer */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
               How We Serve
             </p>
@@ -259,7 +259,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section — Cinematic */}
-      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-16 md:py-section-lg">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
 
         <div className="container relative mx-auto max-w-3xl text-center">

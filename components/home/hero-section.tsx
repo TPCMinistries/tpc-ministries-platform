@@ -46,7 +46,7 @@ export function HeroSection() {
   ]
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-950">
+    <section className="relative flex min-h-[85vh] md:min-h-screen items-center justify-center overflow-hidden bg-navy-950">
       {/* Layered gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.15),transparent_60%)]" />
@@ -59,7 +59,7 @@ export function HeroSection() {
       {!shouldReduceMotion && particles.map((p, i) => <FloatingParticle key={i} {...p} />)}
 
       {/* Content */}
-      <div className="container relative mx-auto px-4 py-32">
+      <div className="container relative mx-auto px-4 py-20 md:py-32">
         <div className="mx-auto max-w-5xl">
           {/* Eyebrow */}
           <motion.div
@@ -78,7 +78,7 @@ export function HeroSection() {
 
           {/* Main title — staggered word reveal */}
           <motion.h1
-            className="mb-6 text-center font-display text-[3.5rem] leading-[1.05] tracking-tight text-white sm:text-[4.5rem] md:text-[5.5rem] lg:text-[6.5rem]"
+            className="mb-6 text-center font-display text-[2.5rem] leading-[1.05] tracking-tight text-white sm:text-[3.5rem] md:text-[5rem] lg:text-[6.5rem]"
             variants={shouldReduceMotion ? undefined : staggerContainer}
             initial={shouldReduceMotion ? undefined : 'hidden'}
             animate={shouldReduceMotion ? undefined : 'visible'}
@@ -100,7 +100,7 @@ export function HeroSection() {
 
           {/* Subtitle */}
           <motion.p
-            className="mx-auto mb-4 max-w-2xl text-center font-serif text-2xl italic text-gold-300/80 md:text-3xl"
+            className="mx-auto mb-4 max-w-2xl text-center font-serif text-xl italic text-gold-300/80 sm:text-2xl md:text-3xl"
             initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
             animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
@@ -118,7 +118,7 @@ export function HeroSection() {
 
           {/* Body text */}
           <motion.p
-            className="mx-auto mb-12 max-w-xl text-center text-body-lg text-navy-200/70"
+            className="mx-auto mb-8 md:mb-12 max-w-xl text-center text-body-md sm:text-body-lg text-navy-200/70"
             initial={shouldReduceMotion ? undefined : { opacity: 0 }}
             animate={shouldReduceMotion ? undefined : { opacity: 1 }}
             transition={{ duration: 0.6, delay: 1.1 }}

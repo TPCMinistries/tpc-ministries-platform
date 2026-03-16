@@ -17,9 +17,9 @@ export function Section({
   return (
     <Comp
       className={cn(
-        size === "sm" && "py-section-sm",
-        size === "default" && "py-section",
-        size === "lg" && "py-section-lg",
+        size === "sm" && "py-10 md:py-section-sm",
+        size === "default" && "py-12 md:py-section",
+        size === "lg" && "py-16 md:py-section-lg",
         className
       )}
       {...props}

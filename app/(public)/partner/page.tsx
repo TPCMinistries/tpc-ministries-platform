@@ -111,16 +111,16 @@ export default function PartnerPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+      <section className="relative flex min-h-[50vh] md:min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
-        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+        <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32 text-center">
           <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Join Us
           </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+          <h1 className="mb-6 font-display text-display-md sm:text-display-lg md:text-display-xl lg:text-display-2xl text-white">
             Partner With TPC Ministries
           </h1>
           <p className="mx-auto max-w-2xl text-body-xl text-white/50">
@@ -133,9 +133,9 @@ export default function PartnerPage() {
       </section>
 
       {/* Billing Toggle + Tiers */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-7xl">
-          <div className="mb-12 flex items-center justify-center gap-4">
+          <div className="mb-8 md:mb-12 flex items-center justify-center gap-4">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`rounded-full px-6 py-2 font-medium transition-colors ${
@@ -162,13 +162,13 @@ export default function PartnerPage() {
           </div>
 
           {/* Tier Cards */}
-          <div className="mb-16 grid gap-8 md:grid-cols-3">
+          <div className="mb-10 md:mb-16 grid gap-6 md:gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
               <div
                 key={tier.id}
                 className={`relative overflow-hidden rounded-3xl border p-8 transition-all duration-300 ${
                   tier.badge === 'Most Popular'
-                    ? 'scale-[1.02] border-gold/50 bg-card shadow-2xl md:scale-105'
+                    ? 'border-gold/50 bg-card shadow-2xl md:scale-105'
                     : 'border-border bg-card hover:border-gold/30 hover:shadow-xl'
                 }`}
               >
@@ -229,9 +229,9 @@ export default function PartnerPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
               Testimonials
             </p>
@@ -264,9 +264,9 @@ export default function PartnerPage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-4 py-section">
+      <section className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-4xl">
-          <div className="mb-16 text-center">
+          <div className="mb-10 md:mb-16 text-center">
             <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
               Common Questions
             </p>
@@ -301,7 +301,7 @@ export default function PartnerPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-16 md:py-section-lg">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
 
         <div className="container relative mx-auto max-w-3xl text-center">
