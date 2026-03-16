@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, Globe, Heart, Cross, Activity, BookOpen, Laptop } from 'lucide-react'
 
 export default function MissionsPage() {
@@ -43,127 +42,134 @@ export default function MissionsPage() {
       description: 'Planting churches, training leaders, and strengthening faith communities',
       icon: Cross,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
     },
     {
       title: 'Medical Initiatives',
       description: 'Providing healthcare access, medical missions, and health education',
       icon: Activity,
       color: 'text-red-600',
-      bgColor: 'bg-red-50',
     },
     {
       title: 'Educational Initiatives',
       description: 'Building schools, training programs, and educational resources',
       icon: BookOpen,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
     },
     {
       title: 'Business/Tech/AI Initiatives',
       description: 'Empowering communities through technology, entrepreneurship, and AI solutions',
       icon: Laptop,
       color: 'text-green-600',
-      bgColor: 'bg-green-50',
     },
   ]
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-navy via-navy/95 to-navy/90 px-4 py-24 md:py-32">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="container relative mx-auto">
-          <div className="mx-auto max-w-4xl text-center">
-            <h1 className="mb-6 font-serif text-5xl font-bold tracking-tight text-white md:text-7xl">
-              Global Impact
-            </h1>
-            <p className="mx-auto mb-8 max-w-2xl text-xl text-gold md:text-2xl">
-              Transforming communities across nations through strategic partnerships
-            </p>
-          </div>
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Worldwide Kingdom Work</p>
+          <h1 className="mb-6 font-display text-display-xl text-white md:text-display-2xl">
+            Global Impact
+          </h1>
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
+            Transforming communities across nations through strategic partnerships
+          </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Our Partnership Model */}
-      <section className="bg-white px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="mb-6 text-center font-serif text-4xl font-bold text-navy md:text-5xl">
-            Our Partnership Model
-          </h2>
-          <div className="mb-12 text-center max-w-4xl mx-auto">
-            <p className="text-lg text-slate-700 mb-6">
-              TPC Ministries is proud to partner with <span className="font-semibold text-navy">The Global Development Institute and Enterprise (GDI)</span> - a leading organization dedicated to sustainable community development and transformation across nations.
-            </p>
-            <p className="text-lg text-slate-700">
-              Together, we create lasting impact through four key initiatives:
-            </p>
+      <section className="bg-background px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">How We Work</p>
+            <h2 className="mb-6 font-display text-display-lg text-foreground md:text-display-xl">
+              Our Partnership Model
+            </h2>
+            <div className="mx-auto max-w-4xl">
+              <p className="mb-6 text-body-lg text-muted-foreground">
+                TPC Ministries is proud to partner with <span className="font-semibold text-foreground">The Global Development Institute and Enterprise (GDI)</span> - a leading organization dedicated to sustainable community development and transformation across nations.
+              </p>
+              <p className="text-body-lg text-muted-foreground">
+                Together, we create lasting impact through four key initiatives:
+              </p>
+            </div>
+            <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {initiatives.map((initiative) => (
-              <Card key={initiative.title} className="border-gray-200 hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className={`mx-auto mb-4 rounded-lg p-4 w-16 h-16 flex items-center justify-center ${initiative.bgColor}`}>
-                    <initiative.icon className={`h-8 w-8 ${initiative.color}`} />
-                  </div>
-                  <CardTitle className="text-xl text-navy mb-3">{initiative.title}</CardTitle>
-                  <CardDescription className="text-base text-gray-600">
-                    {initiative.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <div key={initiative.title} className="rounded-2xl border border-border bg-card p-6 text-center transition-shadow hover:shadow-lg">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/10">
+                  <initiative.icon className={`h-8 w-8 ${initiative.color}`} />
+                </div>
+                <h3 className="mb-3 font-display text-display-xs text-foreground">{initiative.title}</h3>
+                <p className="text-body-md text-muted-foreground">
+                  {initiative.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Where We Serve */}
-      <section className="bg-gray-50 px-4 py-16 md:py-24">
-        <div className="container mx-auto">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-navy md:text-5xl">
-            Our Mission Fields
-          </h2>
+      <section className="bg-secondary px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Where We Serve</p>
+            <h2 className="mb-6 font-display text-display-lg text-foreground md:text-display-xl">
+              Our Mission Fields
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 lg:grid-cols-3">
             {missions.map((mission) => (
-              <Card key={mission.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div key={mission.id} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
                 <div className={`bg-gradient-to-br ${mission.color} p-8 text-center`}>
                   <div className="mb-4 text-7xl">{mission.flag}</div>
-                  <h3 className="font-serif text-3xl font-bold text-white mb-2">
+                  <h3 className="mb-2 font-display text-display-sm text-white">
                     {mission.country}
                   </h3>
-                  <p className="text-white/90 text-lg font-semibold">{mission.tagline}</p>
+                  <p className="text-body-lg font-semibold text-white/90">{mission.tagline}</p>
                 </div>
 
-                <CardContent className="p-6">
-                  <p className="mb-6 text-gray-700">{mission.description}</p>
+                <div className="p-6">
+                  <p className="mb-6 text-body-md text-muted-foreground">{mission.description}</p>
 
                   <Link href={mission.href} className="block">
-                    <Button className="w-full bg-navy text-white hover:bg-navy/90">
+                    <Button className="w-full bg-navy text-white hover:bg-navy-800">
                       Learn More
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="bg-gradient-to-r from-gold to-gold-dark px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="mb-6 font-serif text-4xl font-bold text-white md:text-5xl">
+      <section className="relative bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Partner With Us</p>
+          <h2 className="mb-6 font-display text-display-lg text-white md:text-display-xl">
             Support Our Missions
           </h2>
-          <p className="mb-8 text-lg text-white/90 md:text-xl">
+          <p className="mb-8 text-body-xl text-white/50">
             Your partnership makes it possible to transform lives across nations. Join us in making a lasting impact.
           </p>
+          <div className="mx-auto mb-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/missions/support">
-              <Button size="lg" className="w-full bg-navy text-lg text-white hover:bg-navy/90 sm:w-auto">
+              <Button size="lg" className="h-14 w-full bg-gold px-8 text-body-lg font-bold text-navy hover:bg-gold-300 sm:w-auto">
                 Support Missions
                 <Heart className="ml-2 h-5 w-5" />
               </Button>
@@ -171,8 +177,7 @@ export default function MissionsPage() {
             <Link href="/auth/signup">
               <Button
                 size="lg"
-                variant="outline"
-                className="w-full border-2 border-white bg-transparent text-lg text-white hover:bg-white/10 sm:w-auto"
+                className="h-14 w-full border-2 border-white/30 bg-white/10 px-8 text-body-lg font-bold text-white hover:bg-white hover:text-navy sm:w-auto"
               >
                 Partner With Us
                 <ArrowRight className="ml-2 h-5 w-5" />

@@ -138,9 +138,9 @@ const partners: Array<{ name: string; image?: string }> = [
 
 export default function KenyaTripPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* ===== HERO — Full photo background ===== */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+      <section className="relative flex min-h-[85vh] items-center overflow-hidden">
         <Image
           src="/images/kenya/hero-landscape.png"
           alt="Kenya savanna sunset"
@@ -148,64 +148,65 @@ export default function KenyaTripPage() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/50 to-navy-950/90" />
 
-        <div className="relative z-10 container mx-auto max-w-6xl px-4 py-20">
-          <p className="text-gold-light tracking-[0.3em] uppercase text-sm mb-4">
+        <div className="container relative z-10 mx-auto max-w-5xl px-4 py-20">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.3em] text-gold">
             Global Impact Delegation
           </p>
-          <h1 className="text-6xl md:text-8xl font-bold mb-2">
+          <h1 className="mb-2 font-display text-display-2xl md:text-[7rem]">
             <span className="text-gold">KENYA</span>{' '}
             <span className="text-white">2026</span>
           </h1>
-          <div className="w-64 h-1 bg-gold my-6" />
-          <h2 className="text-3xl md:text-4xl text-white font-serif mb-6">
+          <div className="mx-auto my-6 h-1 w-64 bg-gradient-to-r from-gold via-gold to-gold/50" />
+          <h2 className="mb-6 font-display text-display-lg text-white">
             Join the Delegation
           </h2>
-          <p className="text-xl text-gold-light/90 max-w-lg mb-4">
+          <p className="mb-4 max-w-lg text-body-xl text-gold-200/90">
             14 days of leadership, ministry, and impact across Kenya with a global delegation.
           </p>
 
           {/* Track pills */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            <span className="bg-purple-600 text-white text-sm font-bold px-4 py-1.5 rounded-full">MINISTRY</span>
-            <span className="bg-red-700 text-white text-sm font-bold px-4 py-1.5 rounded-full">HEALTH</span>
-            <span className="bg-teal-700 text-white text-sm font-bold px-4 py-1.5 rounded-full">EDUCATION</span>
-            <span className="bg-green-700 text-white text-sm font-bold px-4 py-1.5 rounded-full">BUSINESS</span>
+          <div className="mb-8 flex flex-wrap gap-3">
+            <span className="rounded-full bg-purple-600 px-4 py-1.5 text-body-sm font-bold text-white">MINISTRY</span>
+            <span className="rounded-full bg-red-700 px-4 py-1.5 text-body-sm font-bold text-white">HEALTH</span>
+            <span className="rounded-full bg-teal-700 px-4 py-1.5 text-body-sm font-bold text-white">EDUCATION</span>
+            <span className="rounded-full bg-green-700 px-4 py-1.5 text-body-sm font-bold text-white">BUSINESS</span>
           </div>
 
-          <p className="text-white/70 mb-2 flex items-center gap-2">
+          <p className="mb-2 flex items-center gap-2 text-white/70">
             <MapPin className="h-4 w-4" />
             Nairobi &bull; Kakamega &bull; Mombasa
           </p>
-          <p className="text-white font-bold text-lg mb-1">APRIL 23 – MAY 6, 2026</p>
-          <p className="text-gold text-4xl font-bold mb-8">$3,500</p>
+          <p className="mb-1 text-body-lg font-bold text-white">APRIL 23 – MAY 6, 2026</p>
+          <p className="mb-8 font-display text-display-md text-gold">$3,500</p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <a href="#apply">
-              <Button size="lg" className="w-full sm:w-auto bg-gold hover:bg-gold-light text-navy font-bold text-lg px-8 h-14">
+              <Button size="lg" className="h-14 w-full bg-gold px-8 text-body-lg font-bold text-navy hover:bg-gold-300 sm:w-auto">
                 Apply Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </a>
             <Link href="/kenya/give">
-              <Button size="lg" className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-white hover:text-navy font-bold text-lg px-8 h-14">
+              <Button size="lg" className="h-14 w-full border-2 border-white/30 bg-white/10 px-8 text-body-lg font-bold text-white backdrop-blur-sm hover:bg-white hover:text-navy sm:w-auto">
                 <Heart className="mr-2 h-5 w-5" />
                 Support the Mission
               </Button>
             </Link>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-navy-950 to-transparent" />
       </section>
 
       {/* ===== STATS BAR ===== */}
-      <section className="bg-navy text-white py-8 border-y border-gold/20">
-        <div className="container mx-auto max-w-6xl px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="border-y border-gold/20 bg-navy-950 py-8 text-white">
+        <div className="container mx-auto max-w-5xl px-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-gold mb-1">{stat.value}</div>
-                <div className="text-white/60 text-sm uppercase tracking-wider">{stat.label}</div>
+                <div className="mb-1 font-display text-display-md text-gold">{stat.value}</div>
+                <div className="text-body-sm uppercase tracking-wider text-white/50">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -213,16 +214,16 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== PARTNER LOGOS ===== */}
-      <section className="bg-navy-dark py-10 border-t border-gold/20">
-        <div className="container mx-auto max-w-6xl px-4 text-center">
-          <p className="text-white/40 text-sm tracking-widest uppercase mb-6">
+      <section className="border-t border-gold/10 bg-navy-950 py-10">
+        <div className="container mx-auto max-w-5xl px-4 text-center">
+          <p className="mb-6 text-body-sm uppercase tracking-[0.2em] text-white/40">
             In Partnership With
           </p>
-          <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             {partners.map((partner) => (
-              <div key={partner.name} className="hover:scale-105 transition-transform">
+              <div key={partner.name} className="transition-transform hover:scale-105">
                 {partner.image ? (
-                  <div className="relative h-[48px] w-[140px] bg-white/15 rounded-lg px-3 py-1.5">
+                  <div className="relative h-[48px] w-[140px] rounded-xl border border-white/10 bg-white/5 px-3 py-1.5">
                     <Image
                       src={partner.image}
                       alt={partner.name}
@@ -231,7 +232,7 @@ export default function KenyaTripPage() {
                     />
                   </div>
                 ) : (
-                  <span className="text-white/80 font-serif text-sm md:text-base font-medium tracking-wide bg-white/10 rounded-lg px-4 py-2">
+                  <span className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-body-sm font-medium tracking-wide text-white/80 md:text-body-md">
                     {partner.name}
                   </span>
                 )}
@@ -242,48 +243,49 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== THE OPPORTUNITY ===== */}
-      <section id="details" className="px-4 py-20 md:py-28 bg-cream">
-        <div className="container mx-auto max-w-6xl">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <p className="text-gold-dark font-semibold tracking-wider uppercase mb-3">The Opportunity</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy mb-6">
+      <section id="details" className="bg-background px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">The Opportunity</p>
+            <h2 className="mb-6 font-display text-display-lg md:text-display-xl text-foreground">
               Transform Lives. Be Transformed.
             </h2>
-            <p className="text-xl text-navy/70 leading-relaxed">
+            <p className="text-body-xl text-muted-foreground">
               Join a carefully curated delegation of purpose-driven professionals, ministers, and
               servant-leaders for 14 days of meaningful partnership with Kenyan churches and communities.
             </p>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="mb-16 grid gap-8 md:grid-cols-3">
             {[
               { icon: Globe2, title: 'Cultural Immersion', desc: 'Experience authentic Kenyan culture, cuisine, and community. Includes safari adventures and meaningful local connections.' },
               { icon: Users, title: 'Lasting Partnership', desc: 'Build relationships that extend beyond the trip. Connect with local leaders and contribute to sustainable, long-term impact.' },
               { icon: Heart, title: 'Personal Growth', desc: 'Return home with a renewed sense of purpose, expanded worldview, and deeper understanding of your calling.' },
             ].map((item) => (
-              <div key={item.title} className="bg-white rounded-2xl p-8 shadow-sm border border-navy/10 text-center">
-                <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <item.icon className="h-8 w-8 text-gold-dark" />
+              <div key={item.title} className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm transition-shadow hover:shadow-md">
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/10">
+                  <item.icon className="h-8 w-8 text-gold-600" />
                 </div>
-                <h3 className="text-xl font-bold text-navy mb-3">{item.title}</h3>
-                <p className="text-navy/60">{item.desc}</p>
+                <h3 className="mb-3 font-display text-display-xs text-foreground">{item.title}</h3>
+                <p className="text-body-md text-muted-foreground">{item.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Timeline */}
-          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-navy/10">
-            <h3 className="text-2xl font-bold text-navy text-center mb-10">Your Journey</h3>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="rounded-3xl border border-border bg-card p-8 shadow-sm md:p-12">
+            <h3 className="mb-10 text-center font-display text-display-sm text-foreground">Your Journey</h3>
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
               {timeline.map((item, index) => (
                 <div key={item.phase} className="relative">
                   <div className="relative z-10 text-center">
-                    <div className="w-14 h-14 bg-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-gold/25">
-                      <span className="text-navy font-bold text-lg">{index + 1}</span>
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gold shadow-lg shadow-gold/25">
+                      <span className="font-display text-body-lg font-bold text-navy">{index + 1}</span>
                     </div>
-                    <h4 className="font-bold text-navy mb-1 text-sm">{item.phase}</h4>
-                    <p className="text-gold-dark text-xs font-medium mb-2">{item.dates}</p>
-                    <p className="text-navy/50 text-xs leading-relaxed">{item.description}</p>
+                    <h4 className="mb-1 text-body-sm font-bold text-foreground">{item.phase}</h4>
+                    <p className="mb-2 text-body-xs font-medium text-gold-600">{item.dates}</p>
+                    <p className="text-body-xs text-muted-foreground">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -293,37 +295,38 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== SERVICE TRACKS — Photo Cards ===== */}
-      <section className="px-4 py-20 md:py-28 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <p className="text-gold-dark font-semibold tracking-wider uppercase mb-3">Your Impact</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy mb-6">
+      <section className="bg-card px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Your Impact</p>
+            <h2 className="mb-6 font-display text-display-lg md:text-display-xl text-foreground">
               Serve According to Your Gifts
             </h2>
-            <p className="text-xl text-navy/60">
+            <p className="text-body-xl text-muted-foreground">
               Choose from four service tracks based on your skills, experience, and calling.
             </p>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             {tracks.map((track) => (
-              <div key={track.name} className="relative rounded-2xl overflow-hidden group h-80">
+              <div key={track.name} className="group relative h-80 overflow-hidden rounded-3xl">
                 <Image
                   src={track.image}
                   alt={track.name}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/50 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className={`${track.bgClass} text-white text-xs font-bold px-3 py-1 rounded-full`}>
+                  <span className={`${track.bgClass} rounded-full px-3 py-1 text-body-xs font-bold text-white`}>
                     {track.name.toUpperCase()}
                   </span>
-                  <h3 className="text-xl font-bold text-white mt-3">{track.headline}</h3>
+                  <h3 className="mt-3 font-display text-display-xs text-white">{track.headline}</h3>
                   <ul className="mt-3 space-y-1">
                     {track.items.map((item) => (
-                      <li key={item} className="text-white/70 text-sm flex items-center gap-2">
-                        <CheckCircle className="h-3 w-3 text-gold flex-shrink-0" />
+                      <li key={item} className="flex items-center gap-2 text-body-sm text-white/70">
+                        <CheckCircle className="h-3 w-3 flex-shrink-0 text-gold" />
                         {item}
                       </li>
                     ))}
@@ -336,17 +339,17 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== CITIES ===== */}
-      <section className="px-4 py-20 md:py-28 bg-navy">
-        <div className="container mx-auto max-w-6xl">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <p className="text-gold font-semibold tracking-wider uppercase mb-3">Where We Serve</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Where We Serve</p>
+            <h2 className="mb-6 font-display text-display-lg md:text-display-xl text-white">
               Three Cities, One Mission
             </h2>
-            <p className="text-xl text-white/60 mb-4">
+            <p className="mb-4 text-body-xl text-white/50">
               Experience the diversity of Kenya across urban, coastal, and rural communities.
             </p>
-            <p className="text-white/40 text-sm">Click any city to explore</p>
+            <p className="text-body-sm text-white/30">Click any city to explore</p>
           </div>
 
           <ExpandableCities />
@@ -354,37 +357,38 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== WHAT'S INCLUDED ===== */}
-      <section className="px-4 py-20 md:py-28 bg-gradient-to-br from-navy via-navy to-navy-dark text-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="bg-navy-950 px-4 py-section text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.08),transparent_60%)]" />
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <p className="text-gold font-semibold tracking-wider uppercase mb-3">All-Inclusive Experience</p>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">All-Inclusive Experience</p>
+              <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
                 Everything You Need for $3,500
               </h2>
-              <p className="text-white/60 text-lg mb-8">
+              <p className="mb-8 text-body-lg text-white/50">
                 We handle all the logistics so you can focus on what matters most—serving,
                 connecting, and growing.
               </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {included.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                    <span className="text-white/80">{item}</span>
+                    <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />
+                    <span className="text-body-md text-white/80">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
               <div className="text-center">
-                <Shield className="h-12 w-12 text-gold mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4">Scholarships Available</h3>
-                <p className="text-white/60 mb-6">
+                <Shield className="mx-auto mb-4 h-12 w-12 text-gold" />
+                <h3 className="mb-4 font-display text-display-xs text-white">Scholarships Available</h3>
+                <p className="mb-6 text-body-md text-white/50">
                   Don&apos;t let finances hold you back. Limited partial scholarships are available
                   for qualified applicants who demonstrate need and alignment with our mission.
                 </p>
                 <a href="#apply">
-                  <Button className="bg-gold hover:bg-gold-light text-navy font-bold px-8 h-12">
+                  <Button className="h-12 bg-gold px-8 font-bold text-navy hover:bg-gold-300">
                     Apply for Scholarship
                   </Button>
                 </a>
@@ -395,28 +399,28 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== WHO SHOULD APPLY ===== */}
-      <section className="px-4 py-20 md:py-28 bg-cream">
+      <section className="bg-secondary px-4 py-section">
         <div className="container mx-auto max-w-4xl text-center">
-          <p className="text-gold-dark font-semibold tracking-wider uppercase mb-3">Ideal Candidates</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-navy mb-6">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Ideal Candidates</p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-foreground">
             Is This Trip For You?
           </h2>
-          <p className="text-xl text-navy/60 mb-12">
+          <p className="mb-12 text-body-xl text-muted-foreground">
             We&apos;re looking for individuals who embody these qualities:
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <div className="mb-12 flex flex-wrap justify-center gap-4">
             {['Servant Heart', 'Team Player', 'Spiritually Mature', 'Purpose-Driven', 'Adaptable', 'Committed'].map((quality) => (
               <span
                 key={quality}
-                className="bg-white px-6 py-3 rounded-full text-navy font-medium shadow-sm border border-navy/10"
+                className="rounded-full border border-border bg-card px-6 py-3 font-medium text-foreground shadow-sm"
               >
                 {quality}
               </span>
             ))}
           </div>
 
-          <p className="text-navy/60 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-md text-muted-foreground">
             Whether you&apos;re a minister, healthcare professional, educator, business leader, or
             simply someone with a heart for service—there&apos;s a place for you on this team.
           </p>
@@ -424,25 +428,25 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== SCHOLARSHIP ===== */}
-      <section id="scholarship" className="px-4 py-20 md:py-28 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section id="scholarship" className="bg-background px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-4 py-2 mb-6">
-                <GraduationCap className="h-4 w-4 text-gold-dark" />
-                <span className="text-gold-dark text-sm font-medium">Financial Assistance</span>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-gold/10 px-4 py-2">
+                <GraduationCap className="h-4 w-4 text-gold-600" />
+                <span className="text-body-sm font-medium text-gold-600">Financial Assistance</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-navy mb-6">
+              <h2 className="mb-6 font-display text-display-md md:text-display-lg text-foreground">
                 Scholarship Opportunities
               </h2>
-              <p className="text-lg text-navy/60 mb-6">
+              <p className="mb-6 text-body-lg text-muted-foreground">
                 We believe finances should not be a barrier to answering God&apos;s call. Limited partial
                 scholarships are available for qualified applicants who demonstrate both financial
                 need and strong alignment with our mission values.
               </p>
 
-              <div className="space-y-4 mb-8">
-                <h3 className="font-semibold text-navy">Priority given to:</h3>
+              <div className="mb-8 space-y-4">
+                <h3 className="font-semibold text-foreground">Priority given to:</h3>
                 <ul className="space-y-3">
                   {[
                     'Students and young adults with clear calling',
@@ -452,27 +456,27 @@ export default function KenyaTripPage() {
                     'Those filling strategic ministry roles',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                      <span className="text-navy/60">{item}</span>
+                      <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />
+                      <span className="text-body-md text-muted-foreground">{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <a href="#apply">
-                <Button className="bg-gold hover:bg-gold-light text-navy font-semibold px-8 h-12">
+                <Button className="h-12 bg-gold px-8 font-semibold text-navy hover:bg-gold-300">
                   Apply with Scholarship Request
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </a>
             </div>
 
-            <div className="bg-cream rounded-3xl p-8 shadow-lg border border-navy/10">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <HandHeart className="h-10 w-10 text-gold-dark" />
+            <div className="rounded-3xl border border-border bg-secondary p-8 shadow-lg">
+              <div className="mb-6 text-center">
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gold/10">
+                  <HandHeart className="h-10 w-10 text-gold-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-navy mb-2">How It Works</h3>
+                <h3 className="font-display text-display-xs text-foreground">How It Works</h3>
               </div>
 
               <div className="space-y-6">
@@ -482,18 +486,18 @@ export default function KenyaTripPage() {
                   { step: '3', title: 'Prayerful Review', desc: 'Our team reviews applications and awards based on need and fit' },
                 ].map((item) => (
                   <div key={item.step} className="flex gap-4">
-                    <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center flex-shrink-0 text-navy font-bold text-sm">{item.step}</div>
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gold text-body-sm font-bold text-navy">{item.step}</div>
                     <div>
-                      <h4 className="font-semibold text-navy">{item.title}</h4>
-                      <p className="text-navy/50 text-sm">{item.desc}</p>
+                      <h4 className="font-semibold text-foreground">{item.title}</h4>
+                      <p className="text-body-sm text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8 p-4 bg-gold/10 rounded-xl border border-gold/20">
-                <p className="text-sm text-navy/70">
-                  <strong className="text-gold-dark">Note:</strong> Scholarships are partial, not full coverage.
+              <div className="mt-8 rounded-xl border border-gold/20 bg-gold/10 p-4">
+                <p className="text-body-sm text-muted-foreground">
+                  <strong className="text-gold-600">Note:</strong> Scholarships are partial, not full coverage.
                   All team members contribute financially to demonstrate commitment and shared ownership.
                 </p>
               </div>
@@ -503,16 +507,17 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== APPLICATION FORM ===== */}
-      <section id="apply" className="px-4 py-20 md:py-28 bg-cream">
+      <section id="apply" className="bg-secondary px-4 py-section">
         <div className="container mx-auto max-w-2xl">
-          <div className="text-center mb-12">
-            <p className="text-gold-dark font-semibold tracking-wider uppercase mb-3">Take the First Step</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy mb-4">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Take the First Step</p>
+            <h2 className="mb-4 font-display text-display-md md:text-display-lg text-foreground">
               Apply for the Kenya Trip
             </h2>
-            <p className="text-lg text-navy/60">
+            <p className="text-body-lg text-muted-foreground">
               Complete this interest form and our team will contact you within 48 hours.
             </p>
+            <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
           <KenyaTripForm />
@@ -520,65 +525,65 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== GIVE / DONATE — Photo Background ===== */}
-      <section id="give" className="relative px-4 py-20 md:py-28 text-white overflow-hidden">
+      <section id="give" className="relative overflow-hidden px-4 py-section text-white">
         <Image
           src="/images/kenya/donate-bg.png"
           alt=""
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/70 to-navy-950/90" />
 
-        <div className="relative z-10 container mx-auto max-w-6xl">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+        <div className="container relative z-10 mx-auto max-w-5xl">
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
               <Heart className="h-4 w-4 text-gold" />
-              <span className="text-gold-light text-sm font-medium">Partner With Us</span>
+              <span className="text-body-sm font-medium text-gold">Partner With Us</span>
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="mb-6 font-display text-display-lg md:text-display-xl text-white">
               Support the Kenya Mission
             </h2>
-            <p className="text-xl text-white/70">
+            <p className="text-body-xl text-white/50">
               Your generosity makes Kingdom impact possible. Help send teams, fund scholarships,
               and resource communities in Kenya.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="mb-12 grid gap-8 md:grid-cols-3">
             {[
               { icon: Plane, title: 'Sponsor a Participant', desc: 'Help cover travel, lodging, and ministry costs for a team member called to serve.', range: '$500 - $2,500' },
               { icon: Gift, title: 'Fund Ministry Supplies', desc: 'Provide medical supplies, school materials, business resources, or farming equipment.', range: '$50 - $500' },
               { icon: GraduationCap, title: 'Scholarship Fund', desc: 'Contribute to the scholarship fund to help qualified participants who need financial assistance.', range: 'Any Amount' },
             ].map((item) => (
-              <div key={item.title} className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 text-center">
-                <div className="w-16 h-16 bg-gold/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/20">
                   <item.icon className="h-8 w-8 text-gold" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                <p className="text-white/60 text-sm mb-4">{item.desc}</p>
-                <p className="text-gold font-semibold">{item.range}</p>
+                <h3 className="mb-3 font-display text-display-xs text-white">{item.title}</h3>
+                <p className="mb-4 text-body-sm text-white/50">{item.desc}</p>
+                <p className="font-semibold text-gold">{item.range}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/10 max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm md:p-12">
+            <div className="grid items-center gap-8 md:grid-cols-2">
               <div>
-                <h3 className="text-2xl font-bold mb-4">Give Today</h3>
-                <p className="text-white/60 mb-6">
+                <h3 className="mb-4 font-display text-display-xs text-white">Give Today</h3>
+                <p className="mb-6 text-body-md text-white/50">
                   100% of your gift designated for Kenya missions goes directly to supporting the trip,
                   team members, and on-ground ministry. TPC Ministries is a registered 501(c)(3)
                   nonprofit—your donation is tax-deductible.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
                   <Link href="/kenya/give">
-                    <Button size="lg" className="w-full sm:w-auto bg-gold hover:bg-gold-light text-navy font-bold px-8 h-14">
+                    <Button size="lg" className="h-14 w-full bg-gold px-8 font-bold text-navy hover:bg-gold-300 sm:w-auto">
                       <CircleDollarSign className="mr-2 h-5 w-5" />
                       Give to Kenya Mission
                     </Button>
                   </Link>
                   <a href="mailto:info@tpcmin.org?subject=Kenya%20Mission%20Giving">
-                    <Button size="lg" className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border-2 border-white text-white hover:bg-white hover:text-navy font-bold px-8 h-14">
+                    <Button size="lg" className="h-14 w-full border-2 border-white/30 bg-white/10 px-8 font-bold text-white backdrop-blur-sm hover:bg-white hover:text-navy sm:w-auto">
                       <Mail className="mr-2 h-5 w-5" />
                       Contact Us
                     </Button>
@@ -587,32 +592,32 @@ export default function KenyaTripPage() {
 
                 <Link
                   href="/kenya/pack-the-mission"
-                  className="mt-6 block bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-gold/30 hover:border-gold hover:bg-gold/10 transition-all group"
+                  className="group mt-6 block rounded-2xl border border-gold/30 bg-white/5 p-5 backdrop-blur-sm transition-all hover:border-gold hover:bg-gold/10"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gold/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gold/20">
                       <Gift className="h-6 w-6 text-gold" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-white group-hover:text-gold transition-colors">Pack the Mission</h4>
-                      <p className="text-white/50 text-sm">Help us fill the suitcases with supplies for Kenya — pledge items or contribute funds</p>
+                      <h4 className="font-bold text-white transition-colors group-hover:text-gold">Pack the Mission</h4>
+                      <p className="text-body-sm text-white/40">Help us fill the suitcases with supplies for Kenya — pledge items or contribute funds</p>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-white/30 group-hover:text-gold transition-colors flex-shrink-0" />
+                    <ArrowRight className="h-5 w-5 flex-shrink-0 text-white/30 transition-colors group-hover:text-gold" />
                   </div>
                 </Link>
               </div>
               <div className="text-center">
-                <div className="inline-block bg-white/10 rounded-2xl p-6 border border-white/20">
-                  <p className="text-white/40 text-sm uppercase tracking-wider mb-2">2026 Missions Goal</p>
-                  <p className="text-5xl font-bold text-gold mb-2">$50,000</p>
-                  <p className="text-white/60 text-sm">For team support, supplies & scholarships</p>
+                <div className="inline-block rounded-2xl border border-white/10 bg-white/5 p-6">
+                  <p className="mb-2 text-body-sm uppercase tracking-wider text-white/40">2026 Missions Goal</p>
+                  <p className="mb-2 font-display text-display-lg text-gold">$50,000</p>
+                  <p className="text-body-sm text-white/50">For team support, supplies & scholarships</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-white/40 text-sm">
+            <p className="text-body-sm text-white/30">
               Prefer to give by check? Mail to: TPC Ministries, [Address] &bull; Memo: Kenya Mission 2026
             </p>
           </div>
@@ -620,41 +625,41 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== PRESS & MEDIA ===== */}
-      <section id="press" className="px-4 py-20 md:py-28 bg-white border-t border-navy/10">
-        <div className="container mx-auto max-w-6xl">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-navy/5 rounded-full px-4 py-2 mb-4">
-              <Newspaper className="h-4 w-4 text-navy" />
-              <span className="text-navy text-sm font-medium">Press & Media</span>
+      <section id="press" className="border-t border-border bg-background px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2">
+              <Newspaper className="h-4 w-4 text-foreground" />
+              <span className="text-body-sm font-medium text-foreground">Press & Media</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy mb-4">
+            <h2 className="mb-4 font-display text-display-md md:text-display-lg text-foreground">
               Download Trip Resources
             </h2>
-            <p className="text-lg text-navy/60">
+            <p className="text-body-lg text-muted-foreground">
               Access our official trip documentation, promotional materials, and press kit.
             </p>
           </div>
 
           {/* Overview + Flier */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-8">
+          <div className="mx-auto mb-8 grid max-w-5xl gap-6 md:grid-cols-2">
             <a
               href="/documents/kenya/overview.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-cream rounded-2xl p-8 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300"
+              className="group rounded-2xl border border-border bg-secondary p-8 transition-all duration-300 hover:border-gold hover:shadow-lg"
             >
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-gold rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gold transition-transform group-hover:scale-105">
                   <FileText className="h-7 w-7 text-navy" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-navy mb-1 group-hover:text-gold-dark transition-colors">
+                  <h3 className="mb-1 text-body-lg font-bold text-foreground transition-colors group-hover:text-gold-600">
                     Trip Overview
                   </h3>
-                  <p className="text-navy/50 text-sm mb-3">
+                  <p className="mb-3 text-body-sm text-muted-foreground">
                     Full overview — 16 days, 4 tracks, 3 cities, 5 partner organizations, timeline, and vision.
                   </p>
-                  <div className="flex items-center gap-2 text-gold-dark font-semibold text-sm">
+                  <div className="flex items-center gap-2 text-body-sm font-semibold text-gold-600">
                     <Download className="h-4 w-4" />
                     View PDF
                   </div>
@@ -665,20 +670,20 @@ export default function KenyaTripPage() {
             <a
               href="/images/kenya/kenya-flier-2026.png"
               download="Kenya-Trip-2026-Flier.png"
-              className="group bg-cream rounded-2xl p-8 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300"
+              className="group rounded-2xl border border-border bg-secondary p-8 transition-all duration-300 hover:border-gold hover:shadow-lg"
             >
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-navy rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-navy transition-transform group-hover:scale-105">
                   <ImageIcon className="h-7 w-7 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-navy mb-1 group-hover:text-gold-dark transition-colors">
+                  <h3 className="mb-1 text-body-lg font-bold text-foreground transition-colors group-hover:text-gold-600">
                     Promotional Flier
                   </h3>
-                  <p className="text-navy/50 text-sm mb-3">
+                  <p className="mb-3 text-body-sm text-muted-foreground">
                     High-resolution flier for sharing on social media, printing, or distributing.
                   </p>
-                  <div className="flex items-center gap-2 text-gold-dark font-semibold text-sm">
+                  <div className="flex items-center gap-2 text-body-sm font-semibold text-gold-600">
                     <Download className="h-4 w-4" />
                     Download Image
                   </div>
@@ -688,9 +693,9 @@ export default function KenyaTripPage() {
           </div>
 
           {/* Track Decks */}
-          <div className="max-w-5xl mx-auto">
-            <h3 className="text-xl font-bold text-navy text-center mb-6">Service Track Details</h3>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mx-auto max-w-5xl">
+            <h3 className="mb-6 text-center font-display text-display-xs text-foreground">Service Track Details</h3>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { name: 'Ministry', color: 'bg-purple-600', file: 'ministry-track.pdf', desc: 'Pastors conferences, revivals, crusades, and prophetic ministry' },
                 { name: 'Health & Wellness', color: 'bg-red-700', file: 'health-wellness-track.pdf', desc: 'Medical camps, telemedicine, doctor training — led by Dr. Michele Griffith' },
@@ -702,13 +707,13 @@ export default function KenyaTripPage() {
                   href={`/documents/kenya/${track.file}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group bg-white rounded-xl p-5 border border-navy/10 hover:border-gold hover:shadow-lg transition-all duration-300 text-center"
+                  className="group rounded-2xl border border-border bg-card p-5 text-center transition-all duration-300 hover:border-gold hover:shadow-lg"
                 >
-                  <div className={`${track.color} text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3`}>
+                  <div className={`${track.color} mb-3 inline-block rounded-full px-3 py-1 text-body-xs font-bold text-white`}>
                     {track.name.toUpperCase()}
                   </div>
-                  <p className="text-navy/50 text-xs mb-4 leading-relaxed">{track.desc}</p>
-                  <div className="flex items-center justify-center gap-2 text-gold-dark font-semibold text-sm">
+                  <p className="mb-4 text-body-xs leading-relaxed text-muted-foreground">{track.desc}</p>
+                  <div className="flex items-center justify-center gap-2 text-body-sm font-semibold text-gold-600">
                     <Download className="h-3.5 w-3.5" />
                     View Deck
                   </div>
@@ -718,9 +723,9 @@ export default function KenyaTripPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-navy/40 text-sm">
+            <p className="text-body-sm text-muted-foreground">
               For media inquiries or additional resources, contact{' '}
-              <a href="mailto:info@tpcmin.org" className="text-gold-dark hover:underline font-medium">
+              <a href="mailto:info@tpcmin.org" className="font-medium text-gold-600 hover:underline">
                 info@tpcmin.org
               </a>
             </p>
@@ -729,21 +734,21 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== FAQ / CONTACT ===== */}
-      <section className="px-4 py-16 bg-cream border-t border-navy/10">
+      <section className="border-t border-border bg-secondary px-4 py-section-sm">
         <div className="container mx-auto max-w-4xl text-center">
-          <h3 className="text-2xl font-bold text-navy mb-4">Questions?</h3>
-          <p className="text-navy/60 mb-6">
+          <h3 className="mb-4 font-display text-display-sm text-foreground">Questions?</h3>
+          <p className="mb-6 text-body-md text-muted-foreground">
             We&apos;re here to help you discern if this trip is right for you.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <a href="mailto:info@tpcmin.org">
-              <Button className="bg-navy text-white hover:bg-navy-dark font-semibold px-6">
-                <Mail className="h-4 w-4 mr-2" />
+              <Button className="bg-navy px-6 font-semibold text-white hover:bg-navy-800">
+                <Mail className="mr-2 h-4 w-4" />
                 info@tpcmin.org
               </Button>
             </a>
             <Link href="/contact">
-              <Button className="bg-white border-2 border-navy text-navy hover:bg-navy hover:text-white font-semibold px-6">
+              <Button variant="outline" className="border-2 border-border px-6 font-semibold text-foreground hover:bg-navy hover:text-white">
                 Contact Us
               </Button>
             </Link>
@@ -752,17 +757,20 @@ export default function KenyaTripPage() {
       </section>
 
       {/* ===== FINAL CTA ===== */}
-      <section className="px-4 py-20 bg-gold">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-navy mb-4">
+      <section className="relative bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Answer the Call</p>
+          <h2 className="mb-4 font-display text-display-lg md:text-display-xl text-white">
             Say Yes to the Call
           </h2>
-          <p className="text-xl text-navy/70 mb-8 max-w-2xl mx-auto">
+          <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
             Don&apos;t miss this opportunity to be part of something greater than yourself.
             Spaces are limited.
           </p>
+          <div className="mx-auto mb-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           <a href="#apply">
-            <Button size="lg" className="bg-navy hover:bg-navy-dark text-white font-bold text-lg px-10 h-14 shadow-lg">
+            <Button size="lg" className="h-14 bg-gold px-10 text-body-lg font-bold text-navy shadow-lg hover:bg-gold-300">
               Apply Now
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Heart, Cross, Activity, BookOpen, Laptop, ChevronRight, Calendar, Send } from 'lucide-react'
 import { ImagePlaceholder } from '@/components/ui/image-placeholder'
 
@@ -11,28 +10,24 @@ export default function SouthAfricaMissionPage() {
       description: 'Planting churches throughout urban and rural areas, developing strong pastoral leadership, and building sustainable ministries.',
       icon: Cross,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
     },
     {
       title: 'Medical Initiatives in South Africa',
       description: 'Partnering with local health workers to provide medical care, HIV/AIDS awareness, and community health programs.',
       icon: Activity,
       color: 'text-red-600',
-      bgColor: 'bg-red-50',
     },
     {
       title: 'Educational Initiatives in South Africa',
       description: 'Supporting Bible schools, leadership training programs, and educational opportunities for pastors and church leaders.',
       icon: BookOpen,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
     },
     {
       title: 'Business/Tech/AI Initiatives in South Africa',
       description: 'Creating economic opportunities, entrepreneurship training, and business development in underserved communities.',
       icon: Laptop,
       color: 'text-green-600',
-      bgColor: 'bg-green-50',
     },
   ]
 
@@ -62,43 +57,49 @@ export default function SouthAfricaMissionPage() {
   ]
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 px-4 py-20 md:py-32">
-        <div className="container relative mx-auto">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32">
           {/* Breadcrumb */}
-          <div className="mb-8 flex items-center gap-2 text-white/80 text-sm">
-            <Link href="/" className="hover:text-white">Home</Link>
+          <div className="mb-8 flex items-center gap-2 text-body-sm text-white/50">
+            <Link href="/" className="transition-colors hover:text-white">Home</Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href="/missions" className="hover:text-white">Missions</Link>
+            <Link href="/missions" className="transition-colors hover:text-white">Missions</Link>
             <ChevronRight className="h-4 w-4" />
-            <span className="text-white">South Africa</span>
+            <span className="text-gold">South Africa</span>
           </div>
 
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 text-8xl md:text-9xl">🇿🇦</div>
-            <h1 className="mb-6 font-serif text-5xl font-bold tracking-tight text-white md:text-7xl">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Southern Africa</p>
+            <h1 className="mb-6 font-display text-display-xl text-white md:text-display-2xl">
               South Africa
             </h1>
-            <p className="mb-8 text-xl text-white/90 md:text-2xl">
+            <p className="mx-auto max-w-2xl text-body-xl text-white/50">
               Building Churches and Training Leaders
             </p>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
           {/* Hero Image Placeholder */}
-          <div className="mx-auto max-w-5xl mt-12">
-            <ImagePlaceholder aspectRatio="21/9" className="rounded-lg shadow-2xl" />
+          <div className="mx-auto mt-12 max-w-5xl">
+            <ImagePlaceholder aspectRatio="21/9" className="rounded-2xl shadow-2xl" />
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Our Story Section */}
-      <section className="bg-white px-4 py-16 md:py-24">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="mb-6 font-serif text-4xl font-bold text-navy">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Our Story</p>
+          <h2 className="mb-6 font-display text-display-md text-foreground md:text-display-lg">
             Our Work in South Africa
           </h2>
-          <div className="space-y-4 text-lg leading-relaxed text-gray-700">
+          <div className="space-y-4 text-body-lg leading-relaxed text-muted-foreground">
             <p>
               TPC Ministries has been actively serving communities across South Africa, focusing on church planting,
               leadership development, and building strong, sustainable faith communities that transform entire regions.
@@ -109,96 +110,101 @@ export default function SouthAfricaMissionPage() {
               multiplication—training leaders who will train others, planting churches that will plant more churches.
             </p>
             <p>
-              Through strategic partnerships and a commitment to excellence in ministry, we're seeing the Gospel take
+              Through strategic partnerships and a commitment to excellence in ministry, we&apos;re seeing the Gospel take
               root and flourish across South Africa, with growing congregations and emerging leaders ready to advance
-              God's kingdom.
+              God&apos;s kingdom.
             </p>
           </div>
         </div>
       </section>
 
       {/* Four Initiatives Grid */}
-      <section className="bg-gray-50 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-navy">
-            Our Initiatives in South Africa
-          </h2>
+      <section className="bg-secondary px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">What We Do</p>
+            <h2 className="mb-6 font-display text-display-md text-foreground md:text-display-lg">
+              Our Initiatives in South Africa
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             {initiatives.map((initiative) => (
-              <Card key={initiative.title} className="border-gray-200 hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className={`mb-4 rounded-lg p-3 w-14 h-14 flex items-center justify-center ${initiative.bgColor}`}>
-                    <initiative.icon className={`h-7 w-7 ${initiative.color}`} />
-                  </div>
-                  <CardTitle className="text-xl text-navy mb-3">{initiative.title}</CardTitle>
-                  <CardDescription className="text-base text-gray-600">
-                    {initiative.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <div key={initiative.title} className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-lg">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/10">
+                  <initiative.icon className={`h-7 w-7 ${initiative.color}`} />
+                </div>
+                <h3 className="mb-3 font-display text-display-xs text-foreground">{initiative.title}</h3>
+                <p className="text-body-md text-muted-foreground">
+                  {initiative.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Impact Dashboard */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-white">
-            Lives Changed
-          </h2>
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">By the Numbers</p>
+            <h2 className="mb-6 font-display text-display-md text-white md:text-display-lg">
+              Lives Changed
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="text-center">
-              <div className="mb-3 font-serif text-6xl font-bold text-gold">15</div>
-              <div className="text-lg text-white">Churches Planted</div>
-            </div>
-            <div className="text-center">
-              <div className="mb-3 font-serif text-6xl font-bold text-gold">45</div>
-              <div className="text-lg text-white">Leaders Trained</div>
-            </div>
-            <div className="text-center">
-              <div className="mb-3 font-serif text-6xl font-bold text-gold">300+</div>
-              <div className="text-lg text-white">Families Served</div>
-            </div>
-            <div className="text-center">
-              <div className="mb-3 font-serif text-6xl font-bold text-gold">10+</div>
-              <div className="text-lg text-white">Years of Service</div>
-            </div>
+            {[
+              { value: '15', label: 'Churches Planted' },
+              { value: '45', label: 'Leaders Trained' },
+              { value: '300+', label: 'Families Served' },
+              { value: '10+', label: 'Years of Service' },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="mb-3 font-display text-display-xl text-gold">{stat.value}</div>
+                <div className="text-body-lg text-white/60">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Recent Updates Section */}
-      <section className="bg-white px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-navy">
-            Latest Updates from South Africa
-          </h2>
+      <section className="bg-background px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Stay Informed</p>
+            <h2 className="mb-6 font-display text-display-md text-foreground md:text-display-lg">
+              Latest Updates from South Africa
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
-          <div className="grid gap-8 md:grid-cols-3 mb-8">
+          <div className="mb-8 grid gap-8 md:grid-cols-3">
             {updates.map((update) => (
-              <Card key={update.title} className="border-gray-200">
+              <div key={update.title} className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="aspect-video w-full">
                   <ImagePlaceholder aspectRatio="16/9" />
                 </div>
-                <CardHeader>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <div className="p-6">
+                  <div className="mb-2 flex items-center gap-2 text-body-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
                     {update.date}
                   </div>
-                  <CardTitle className="text-xl text-navy mb-2">{update.title}</CardTitle>
-                  <CardDescription className="text-base text-gray-600">
+                  <h3 className="mb-2 font-display text-display-xs text-foreground">{update.title}</h3>
+                  <p className="text-body-md text-muted-foreground">
                     {update.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
 
           <div className="text-center">
-            <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white">
+            <Button variant="outline" className="border-2 border-border text-foreground hover:bg-navy hover:text-white">
               View All Updates
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
@@ -207,96 +213,100 @@ export default function SouthAfricaMissionPage() {
       </section>
 
       {/* Prayer Requests Section */}
-      <section className="bg-gold/10 px-4 py-16 md:py-24">
+      <section className="bg-secondary px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="mb-8 text-center font-serif text-4xl font-bold text-navy">
-            Pray for South Africa
-          </h2>
+          <div className="mb-8 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Intercession</p>
+            <h2 className="mb-6 font-display text-display-md text-foreground">
+              Pray for South Africa
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
-          <Card className="border-gold">
-            <CardContent className="pt-6">
-              <ul className="space-y-4">
-                {prayerRequests.map((request, index) => (
-                  <li key={index} className="flex gap-3">
-                    <span className="text-gold font-bold">•</span>
-                    <span className="text-gray-700">{request}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="rounded-3xl border border-gold/20 bg-card p-8">
+            <ul className="space-y-4">
+              {prayerRequests.map((request, index) => (
+                <li key={index} className="flex gap-3">
+                  <span className="mt-0.5 text-gold">&#x2022;</span>
+                  <span className="text-body-md text-muted-foreground">{request}</span>
+                </li>
+              ))}
+            </ul>
 
-              <div className="mt-8 text-center">
-                <Button className="bg-navy hover:bg-navy/90 text-white">
-                  Submit Your Prayer
-                  <Send className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="mt-8 text-center">
+              <Button className="bg-navy text-white hover:bg-navy-800">
+                Submit Your Prayer
+                <Send className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Ways to Help Section */}
-      <section className="bg-white px-4 py-16 md:py-24">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-navy">
-            Ways to Help
-          </h2>
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Get Involved</p>
+            <h2 className="mb-6 font-display text-display-md text-foreground">
+              Ways to Help
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="text-center border-gray-200 hover:border-gold transition-colors">
-              <CardHeader>
-                <div className="mx-auto mb-4 rounded-full bg-gold/10 p-4 w-16 h-16 flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-gold" />
-                </div>
-                <CardTitle className="text-xl text-navy mb-4">Give to South Africa Missions</CardTitle>
-                <Link href="/missions/support?region=south-africa">
-                  <Button className="w-full bg-navy hover:bg-navy/90 text-white">
-                    Give Now
-                  </Button>
-                </Link>
-              </CardHeader>
-            </Card>
-
-            <Card className="text-center border-gray-200 hover:border-gold transition-colors">
-              <CardHeader>
-                <div className="mx-auto mb-4 rounded-full bg-gold/10 p-4 w-16 h-16 flex items-center justify-center">
-                  <Calendar className="h-8 w-8 text-gold" />
-                </div>
-                <CardTitle className="text-xl text-navy mb-4">Volunteer/Visit</CardTitle>
-                <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
-                  Learn More
+            <div className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-gold">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+                <Heart className="h-8 w-8 text-gold" />
+              </div>
+              <h3 className="mb-4 font-display text-display-xs text-foreground">Give to South Africa Missions</h3>
+              <Link href="/missions/support?region=south-africa">
+                <Button className="w-full bg-navy text-white hover:bg-navy-800">
+                  Give Now
                 </Button>
-              </CardHeader>
-            </Card>
+              </Link>
+            </div>
 
-            <Card className="text-center border-gray-200 hover:border-gold transition-colors">
-              <CardHeader>
-                <div className="mx-auto mb-4 rounded-full bg-gold/10 p-4 w-16 h-16 flex items-center justify-center">
-                  <Send className="h-8 w-8 text-gold" />
-                </div>
-                <CardTitle className="text-xl text-navy mb-4">Partner with Us</CardTitle>
-                <Link href="/auth/signup">
-                  <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
-                    Become a Partner
-                  </Button>
-                </Link>
-              </CardHeader>
-            </Card>
+            <div className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-gold">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+                <Calendar className="h-8 w-8 text-gold" />
+              </div>
+              <h3 className="mb-4 font-display text-display-xs text-foreground">Volunteer/Visit</h3>
+              <Button variant="outline" className="w-full border-2 border-border text-foreground hover:bg-navy hover:text-white">
+                Learn More
+              </Button>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-gold">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+                <Send className="h-8 w-8 text-gold" />
+              </div>
+              <h3 className="mb-4 font-display text-display-xs text-foreground">Partner with Us</h3>
+              <Link href="/auth/signup">
+                <Button variant="outline" className="w-full border-2 border-border text-foreground hover:bg-navy hover:text-white">
+                  Become a Partner
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Photo Gallery */}
-      <section className="bg-gray-50 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center font-serif text-4xl font-bold text-navy">
-            See Our Impact
-          </h2>
+      <section className="bg-secondary px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Gallery</p>
+            <h2 className="mb-6 font-display text-display-md text-foreground">
+              See Our Impact
+            </h2>
+            <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="aspect-square">
-                <ImagePlaceholder aspectRatio="1/1" className="rounded-lg" />
+                <ImagePlaceholder aspectRatio="1/1" className="rounded-2xl" />
               </div>
             ))}
           </div>
@@ -304,18 +314,21 @@ export default function SouthAfricaMissionPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="mb-6 font-serif text-4xl font-bold text-white md:text-5xl">
+      <section className="relative bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Join the Mission</p>
+          <h2 className="mb-6 font-display text-display-lg text-white md:text-display-xl">
             Join Us in Building the Church in South Africa
           </h2>
-          <p className="mb-8 text-lg text-white/90 md:text-xl">
+          <p className="mb-8 text-body-xl text-white/50">
             Your support enables us to plant more churches, train more leaders, and reach more communities
             with the Gospel across South Africa. Partner with us today.
           </p>
+          <div className="mx-auto mb-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/missions/support?region=south-africa">
-              <Button size="lg" className="w-full bg-white text-blue-700 hover:bg-gray-100 text-lg sm:w-auto">
+              <Button size="lg" className="h-14 w-full bg-gold px-8 text-body-lg font-bold text-navy hover:bg-gold-300 sm:w-auto">
                 Support South Africa Missions
                 <Heart className="ml-2 h-5 w-5" />
               </Button>
@@ -323,8 +336,7 @@ export default function SouthAfricaMissionPage() {
             <Link href="/auth/signup">
               <Button
                 size="lg"
-                variant="outline"
-                className="w-full border-2 border-white bg-transparent text-lg text-white hover:bg-white/10 sm:w-auto"
+                className="h-14 w-full border-2 border-white/30 bg-white/10 px-8 text-body-lg font-bold text-white hover:bg-white hover:text-navy sm:w-auto"
               >
                 Become a Partner
               </Button>
