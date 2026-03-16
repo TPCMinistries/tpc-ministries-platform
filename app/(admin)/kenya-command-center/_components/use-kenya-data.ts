@@ -663,55 +663,31 @@ export function useKenyaData() {
   const addParticipantDirect = async (firstName: string, lastName: string) => {
     if (!trip || !firstName.trim()) return
     setSaveStatus('saving')
-    const supabase = createClient()
-    const { data, error } = await supabase.from('kenya_trip_participants').insert({
-      trip_id: trip.id,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      email: '',
-      phone: '',
-      application_status: 'approved',
-      payment_status: 'pending',
-      passport_status: '❓ Unknown',
-      visa_status: '❓ Unknown',
-      flight_status: '⬜ Not booked',
-      hotel_status: '⬜ Not booked',
-      booking_type: 'TBD',
-      fundraising_goal: 3500,
-      amount_raised: 0,
-      team_leader: false,
-    }).select()
-    if (error) {
-      console.error('Add delegate error:', error)
-      flashSave(false)
-      // Fallback: try via Kenya invite API (uses admin client)
-      try {
-        const res = await fetch('/api/admin/kenya-invites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'create',
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            email: '',
-            track: 'Flex',
-            role: 'member',
-            sendEmail: false,
-          }),
-        })
-        const result = await res.json()
-        if (result.success) {
-          flashSave(true)
-          fetchData()
-        } else {
-          flashSave(false)
-        }
-      } catch {
+
+    // Use admin API endpoint (bypasses RLS)
+    try {
+      const res = await fetch('/api/admin/kenya-add-participant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: (lastName || '').trim(),
+          track: 'Flex',
+          tripId: trip.id,
+        }),
+      })
+      const result = await res.json()
+      if (result.success) {
+        flashSave(true)
+        fetchData()
+      } else {
+        console.error('Add delegate error:', result.error)
         flashSave(false)
       }
-    } else {
-      flashSave(true)
-      fetchData()
+    } catch (err) {
+      console.error('Add delegate error:', err)
+      flashSave(false)
     }
   }
 
