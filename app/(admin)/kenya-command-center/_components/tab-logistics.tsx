@@ -80,6 +80,17 @@ export function TabLogistics({
     setShowSessionForm(false)
   }
 
+  // Derive city label for each day from itinerary data
+  const getCityLabel = (dayDate: string): string => {
+    const dayItems = itinerary.filter(i => i.date === dayDate)
+    if (dayItems.length === 0) return ''
+    const cities = [...new Set(dayItems.map(i => i.location).filter(Boolean))]
+    if (cities.length === 0) return ''
+    if (cities.length === 1) return cities[0].toUpperCase()
+    // Travel day: show origin -> destination
+    return cities.map(c => c.toUpperCase()).join(' → ')
+  }
+
   const sessionTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
       keynote: 'bg-purple-100 text-purple-800',
@@ -89,6 +100,12 @@ export function TabLogistics({
       break: 'bg-gray-100 text-gray-800',
       worship: 'bg-pink-100 text-pink-800',
       meal: 'bg-orange-100 text-orange-800',
+      setup: 'bg-slate-100 text-slate-800',
+      registration: 'bg-cyan-100 text-cyan-800',
+      reception: 'bg-amber-100 text-amber-800',
+      showcase: 'bg-indigo-100 text-indigo-800',
+      commitment: 'bg-rose-100 text-rose-800',
+      debrief: 'bg-teal-100 text-teal-800',
     }
     return colors[type] || 'bg-gray-100 text-gray-800'
   }
@@ -112,6 +129,7 @@ export function TabLogistics({
           <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
             {tripDays.map((day, idx) => {
               const date = new Date(day)
+              const cityLabel = getCityLabel(day)
               return (
                 <button
                   key={day}
@@ -122,9 +140,15 @@ export function TabLogistics({
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                   }`}
                 >
-                  Day {idx + 1}
-                  <br />
                   {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {cityLabel && (
+                    <>
+                      <br />
+                      <span className={`text-[10px] ${selectedDay === day ? 'text-white/80' : 'text-gray-500'}`}>
+                        {cityLabel}
+                      </span>
+                    </>
+                  )}
                 </button>
               )
             })}
@@ -276,6 +300,12 @@ export function TabLogistics({
                     <option value="break">Break</option>
                     <option value="worship">Worship</option>
                     <option value="meal">Meal</option>
+                    <option value="setup">Setup</option>
+                    <option value="registration">Registration</option>
+                    <option value="reception">Reception</option>
+                    <option value="showcase">Showcase</option>
+                    <option value="commitment">Commitment</option>
+                    <option value="debrief">Debrief</option>
                   </select>
                 </div>
                 <div>

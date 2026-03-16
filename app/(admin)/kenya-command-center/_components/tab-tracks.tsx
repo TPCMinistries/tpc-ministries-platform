@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Plus, X, Users, FileText, Phone, Save, Check } from 'lucide-react'
-import type { Participant, Contact, ConferenceSession, TrackDetail, TrackMaterial } from './types'
+import type { Participant, Contact, ConferenceSession, TrackDetail, TrackMaterial, SupportRole } from './types'
 
 interface TabTracksProps {
   participants: Participant[]
@@ -14,10 +14,14 @@ interface TabTracksProps {
   conferenceSessions: ConferenceSession[]
   trackDetails: TrackDetail[]
   trackMaterials: TrackMaterial[]
+  supportRoles: SupportRole[]
   updateTrackDetailField: (id: string, field: string, value: string) => void
   addTrackMaterial: (trackDetailId: string, itemName: string) => void
   toggleTrackMaterial: (id: string, currentlyChecked: boolean) => void
   deleteTrackMaterial: (id: string) => void
+  addSupportRole: (roleName: string) => void
+  updateSupportRoleField: (id: string, field: string, value: string) => void
+  deleteSupportRole: (id: string) => void
   saveStatus: 'idle' | 'saving' | 'saved' | 'error'
 }
 
@@ -53,20 +57,35 @@ function getInitials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
 }
 
+const ROLE_STATUS_OPTIONS = ['unassigned', 'assigned', 'confirmed'] as const
+const roleStatusBadge: Record<string, string> = {
+  unassigned: 'bg-gray-100 text-gray-800',
+  assigned: 'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-green-100 text-green-800',
+}
+
+const roleInputClasses = "bg-transparent border border-gray-200 rounded px-2 py-1 text-[13px] focus:border-navy focus:ring-1 focus:ring-navy focus:outline-none"
+
 export function TabTracks({
   participants,
   contacts,
   conferenceSessions,
   trackDetails,
   trackMaterials,
+  supportRoles,
   updateTrackDetailField,
   addTrackMaterial,
   toggleTrackMaterial,
   deleteTrackMaterial,
+  addSupportRole,
+  updateSupportRoleField,
+  deleteSupportRole,
   saveStatus,
 }: TabTracksProps) {
   const [activeTrack, setActiveTrack] = useState('ministry')
   const [newMaterialItem, setNewMaterialItem] = useState('')
+  const [showAddRole, setShowAddRole] = useState(false)
+  const [newRoleName, setNewRoleName] = useState('')
 
   const detail = trackDetails.find(t => t.track === activeTrack)
   const filteredSessions = conferenceSessions.filter(
@@ -83,6 +102,13 @@ export function TabTracks({
     if (!newMaterialItem.trim() || !detail) return
     addTrackMaterial(detail.id, newMaterialItem.trim())
     setNewMaterialItem('')
+  }
+
+  const handleAddRole = () => {
+    if (!newRoleName.trim()) return
+    addSupportRole(newRoleName.trim())
+    setNewRoleName('')
+    setShowAddRole(false)
   }
 
   return (
@@ -383,6 +409,112 @@ export function TabTracks({
           </Card>
         </div>
       </div>
+
+      {/* ====== SUPPORT ROLES NEEDED ====== */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Support Roles Needed ({supportRoles.length})</CardTitle>
+          <Button size="sm" onClick={() => setShowAddRole(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Add Role
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {showAddRole && (
+            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded border border-gray-200">
+              <Input
+                placeholder="Role name"
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddRole()}
+                className="w-[250px] h-8 text-sm"
+                autoFocus
+              />
+              <Button size="sm" className="h-8" onClick={handleAddRole}>Add</Button>
+              <Button size="sm" variant="outline" className="h-8" onClick={() => { setShowAddRole(false); setNewRoleName('') }}>Cancel</Button>
+            </div>
+          )}
+
+          {supportRoles.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-6">No support roles added yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse" style={{ fontSize: '13px' }}>
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide">Role</th>
+                    <th className="text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide">When / Where</th>
+                    <th className="text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide">Assigned To</th>
+                    <th className="text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide">Status</th>
+                    <th className="text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide">Notes</th>
+                    <th className="p-2.5"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {supportRoles.map((role) => (
+                    <tr key={role.id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                      <td className="p-2.5 font-medium">{role.role_name}</td>
+                      <td className="p-2.5">
+                        <input
+                          type="text"
+                          defaultValue={role.when_where || ''}
+                          onBlur={(e) => {
+                            if (e.target.value !== (role.when_where || ''))
+                              updateSupportRoleField(role.id, 'when_where', e.target.value)
+                          }}
+                          className={`w-[180px] ${roleInputClasses}`}
+                        />
+                      </td>
+                      <td className="p-2.5">
+                        <input
+                          type="text"
+                          defaultValue={role.assigned_to || ''}
+                          onBlur={(e) => {
+                            if (e.target.value !== (role.assigned_to || ''))
+                              updateSupportRoleField(role.id, 'assigned_to', e.target.value)
+                          }}
+                          placeholder="Unassigned"
+                          className={`w-[140px] ${roleInputClasses}`}
+                        />
+                      </td>
+                      <td className="p-2.5">
+                        <select
+                          defaultValue={role.status || 'unassigned'}
+                          onChange={(e) => updateSupportRoleField(role.id, 'status', e.target.value)}
+                          className={`${roleInputClasses} cursor-pointer`}
+                        >
+                          {ROLE_STATUS_OPTIONS.map((o) => (
+                            <option key={o} value={o}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="p-2.5">
+                        <input
+                          type="text"
+                          defaultValue={role.notes || ''}
+                          onBlur={(e) => {
+                            if (e.target.value !== (role.notes || ''))
+                              updateSupportRoleField(role.id, 'notes', e.target.value)
+                          }}
+                          className={`w-[200px] ${roleInputClasses}`}
+                        />
+                      </td>
+                      <td className="p-2.5">
+                        <button
+                          onClick={() => deleteSupportRole(role.id)}
+                          className="text-red-400 hover:text-red-600 text-lg leading-none transition-colors"
+                          title="Remove role"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
