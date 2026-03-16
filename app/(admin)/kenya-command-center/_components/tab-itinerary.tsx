@@ -305,17 +305,26 @@ export function TabItinerary({
                             key={item.id}
                             className="group flex items-start gap-2.5 py-1.5 px-2 rounded hover:bg-gray-50 transition-colors"
                           >
-                            {/* Time */}
-                            <span className="text-[12px] text-gray-400 font-mono w-[62px] flex-shrink-0 pt-0.5 text-right">
-                              {item.start_time ? formatTime12(item.start_time) : ''}
-                            </span>
+                            {/* Editable Time */}
+                            <input
+                              type="time"
+                              defaultValue={item.start_time || ''}
+                              onChange={e => updateItineraryField(item.id, 'start_time', e.target.value)}
+                              className="text-[12px] text-gray-400 font-mono w-[72px] flex-shrink-0 bg-transparent border border-transparent hover:border-gray-200 focus:border-navy/30 rounded px-1 py-0.5 outline-none transition-colors"
+                            />
 
-                            {/* Track badge */}
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider flex-shrink-0 ${track.bg} ${track.text}`}>
-                              {track.label}
-                            </span>
+                            {/* Editable Track badge */}
+                            <select
+                              defaultValue={item.category || 'all'}
+                              onChange={e => updateItineraryField(item.id, 'category', e.target.value)}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider flex-shrink-0 cursor-pointer border-0 outline-none ${track.bg} ${track.text}`}
+                            >
+                              {CATEGORIES.map(c => (
+                                <option key={c} value={c}>{(TRACK_COLORS[c]?.label || c).toUpperCase()}</option>
+                              ))}
+                            </select>
 
-                            {/* Editable title/description */}
+                            {/* Editable title/description/location */}
                             <div className="flex-1 min-w-0">
                               <input
                                 type="text"
@@ -328,19 +337,50 @@ export function TabItinerary({
                                 className="w-full bg-transparent text-[13px] text-navy font-medium outline-none focus:bg-white focus:border focus:border-navy/30 focus:rounded focus:px-1.5 focus:py-0.5 transition-all truncate"
                                 title={item.title}
                               />
-                              {item.description && item.description !== item.title && (
+                              <input
+                                type="text"
+                                defaultValue={item.description || ''}
+                                onBlur={e => {
+                                  if (e.target.value !== (item.description || '')) {
+                                    updateItineraryField(item.id, 'description', e.target.value)
+                                  }
+                                }}
+                                placeholder="Description..."
+                                className="w-full bg-transparent text-[12px] text-gray-500 outline-none focus:bg-white focus:border focus:border-navy/30 focus:rounded focus:px-1.5 focus:py-0.5 transition-all mt-0.5"
+                                title={item.description || ''}
+                              />
+                              {/* Editable location + date (move to different day) */}
+                              <div className="flex items-center gap-2 mt-0.5">
                                 <input
                                   type="text"
-                                  defaultValue={item.description}
+                                  defaultValue={item.location || ''}
                                   onBlur={e => {
-                                    if (e.target.value !== item.description) {
-                                      updateItineraryField(item.id, 'description', e.target.value)
+                                    if (e.target.value !== (item.location || '')) {
+                                      updateItineraryField(item.id, 'location', e.target.value)
                                     }
                                   }}
-                                  className="w-full bg-transparent text-[12px] text-gray-500 outline-none focus:bg-white focus:border focus:border-navy/30 focus:rounded focus:px-1.5 focus:py-0.5 transition-all mt-0.5"
-                                  title={item.description}
+                                  placeholder="Location..."
+                                  className="bg-transparent text-[11px] text-gray-400 outline-none focus:bg-white focus:border focus:border-navy/30 focus:rounded focus:px-1.5 focus:py-0.5 transition-all w-[100px]"
                                 />
-                              )}
+                                <select
+                                  defaultValue={item.date}
+                                  onChange={e => {
+                                    const newDate = e.target.value
+                                    if (newDate !== item.date) {
+                                      const startDate = new Date(trip.start_date + 'T00:00:00')
+                                      const itemDate = new Date(newDate + 'T00:00:00')
+                                      const newDayNum = Math.floor((itemDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                                      updateItineraryField(item.id, 'date', newDate)
+                                      updateItineraryField(item.id, 'day_number', String(newDayNum))
+                                    }
+                                  }}
+                                  className="bg-transparent text-[11px] text-gray-400 outline-none focus:bg-white focus:border focus:border-navy/30 focus:rounded focus:px-1 focus:py-0.5 transition-all cursor-pointer border border-transparent hover:border-gray-200"
+                                >
+                                  {dateOptions.map(d => (
+                                    <option key={d.value} value={d.value}>{d.label}</option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
 
                             {/* Delete button (visible on hover) */}
