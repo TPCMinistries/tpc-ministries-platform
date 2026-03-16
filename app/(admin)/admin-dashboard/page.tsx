@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { PageLoader } from '@/components/ui/loading-spinner'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
+import { StaggerChildren, StaggerItem } from '@/components/motion/stagger-children'
 import {
   Users,
   TrendingUp,
@@ -212,7 +215,7 @@ export default function AdminDashboardPage() {
       const activityItems: ActivityItem[] = []
 
       recentDonations.data?.forEach(d => {
-        const member = d.members as any
+        const member = d.members as Record<string, string> | null
         activityItems.push({
           id: `donation-${d.id}`,
           type: 'donation',
@@ -326,13 +329,13 @@ export default function AdminDashboardPage() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'donation':
-        return <DollarSign className="h-4 w-4 text-gold" />
+        return <DollarSign className="h-4 w-4 text-gold-700" />
       case 'prayer':
-        return <Heart className="h-4 w-4 text-red-500" />
+        return <Heart className="h-4 w-4 text-spiritual" />
       case 'member':
-        return <UserPlus className="h-4 w-4 text-green-600" />
+        return <UserPlus className="h-4 w-4 text-success" />
       case 'event':
-        return <Calendar className="h-4 w-4 text-purple-600" />
+        return <Calendar className="h-4 w-4 text-spiritual" />
       default:
         return <CheckCircle className="h-4 w-4 text-navy" />
     }
@@ -356,11 +359,11 @@ export default function AdminDashboardPage() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-50 border-red-200 text-red-700'
+        return 'bg-destructive/5 border-destructive/20 text-destructive dark:bg-destructive/10 dark:border-destructive/30'
       case 'medium':
-        return 'bg-amber-50 border-amber-200 text-amber-700'
+        return 'bg-warning/5 border-warning/20 text-warning dark:bg-warning/10 dark:border-warning/30'
       default:
-        return 'bg-blue-50 border-blue-200 text-blue-700'
+        return 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400'
     }
   }
 
@@ -389,9 +392,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex-1 p-8">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-navy" />
-        </div>
+        <PageLoader message="Loading dashboard..." />
       </div>
     )
   }
@@ -402,8 +403,8 @@ export default function AdminDashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-navy">{greeting}!</h1>
-            <p className="text-gray-600">Here's what's happening with your ministry today.</p>
+            <h1 className="text-3xl font-bold text-navy font-display">{greeting}!</h1>
+            <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your ministry today.</p>
           </div>
           <div className="flex items-center gap-3">
             <SearchTrigger className="hidden md:flex" />
@@ -416,31 +417,33 @@ export default function AdminDashboardPage() {
 
         {/* Needs Attention Banner */}
         {needsAttention.length > 0 && (
-          <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-                <CardTitle className="text-lg text-amber-800">Needs Your Attention</CardTitle>
-                <Badge className="bg-amber-600 text-white ml-auto">{needsAttention.length} items</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                {needsAttention.map((item) => (
-                  <Link key={item.id} href={item.href}>
-                    <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${getPriorityColor(item.priority)}`}>
-                      {getAttentionIcon(item.type)}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{item.title}</p>
-                        <p className="text-xs opacity-75">{item.description}</p>
+          <ScrollReveal variant="fade-up">
+            <Card className="border-warning/30 bg-gradient-to-r from-warning/5 to-warning/10 dark:from-warning/5 dark:to-warning/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
+                  <CardTitle className="text-lg text-foreground">Needs Your Attention</CardTitle>
+                  <Badge className="bg-warning text-warning-foreground ml-auto">{needsAttention.length} items</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                  {needsAttention.map((item) => (
+                    <Link key={item.id} href={item.href}>
+                      <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${getPriorityColor(item.priority)}`}>
+                        {getAttentionIcon(item.type)}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{item.title}</p>
+                          <p className="text-xs opacity-75">{item.description}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 opacity-50" />
                       </div>
-                      <ChevronRight className="h-4 w-4 opacity-50" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </ScrollReveal>
         )}
 
         {/* Stats Cards - Redesigned */}
@@ -484,37 +487,38 @@ export default function AdminDashboardPage() {
                   <CardTitle className="text-lg text-navy">Recent Activity</CardTitle>
                   <CardDescription>Live updates from your ministry</CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse" />
+                <Badge variant="outline" className="text-xs bg-success/5 text-success border-success/20 dark:bg-success/10">
+                  <span className="w-1.5 h-1.5 bg-success rounded-full mr-1.5 animate-pulse" />
                   Live
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               {activity.length > 0 ? (
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                <StaggerChildren className="space-y-3 max-h-80 overflow-y-auto pr-2">
                   {activity.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="mt-0.5 p-1.5 rounded-full bg-white shadow-sm">
-                        {getActivityIcon(item.type)}
+                    <StaggerItem key={item.id}>
+                      <div
+                        className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <div className="mt-0.5 p-1.5 rounded-full bg-card shadow-sm">
+                          {getActivityIcon(item.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-navy dark:text-foreground">{item.title}</p>
+                          {item.subtitle && (
+                            <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatTimeAgo(item.timestamp)}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-navy">{item.title}</p>
-                        {item.subtitle && (
-                          <p className="text-xs text-gray-600 truncate">{item.subtitle}</p>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {formatTimeAgo(item.timestamp)}
-                      </span>
-                    </div>
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerChildren>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No recent activity</p>
                 </div>
@@ -525,9 +529,9 @@ export default function AdminDashboardPage() {
           {/* Quick Actions & Upcoming */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card>
+            <Card variant="interactive">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-navy flex items-center gap-2">
+                <CardTitle className="text-lg text-navy dark:text-foreground flex items-center gap-2">
                   <Zap className="h-4 w-4 text-gold" />
                   Quick Actions
                 </CardTitle>
@@ -564,7 +568,7 @@ export default function AdminDashboardPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-navy">Upcoming</CardTitle>
+                  <CardTitle className="text-lg text-navy dark:text-foreground">Upcoming</CardTitle>
                   <Link href="/admin-events">
                     <Button variant="ghost" size="sm" className="text-xs">
                       View all
@@ -578,18 +582,18 @@ export default function AdminDashboardPage() {
                   <div className="space-y-3">
                     {upcoming.slice(0, 4).map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                          <Calendar className="h-5 w-5 text-purple-600" />
+                        <div className="w-10 h-10 rounded-lg bg-spiritual/10 dark:bg-spiritual/20 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-spiritual" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-navy truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500">{item.date}</p>
+                          <p className="text-sm font-medium text-navy dark:text-foreground truncate">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.date}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No upcoming events</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No upcoming events</p>
                 )}
               </CardContent>
             </Card>
@@ -603,7 +607,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg text-navy">Top Content</CardTitle>
+                  <CardTitle className="text-lg text-navy dark:text-foreground">Top Content</CardTitle>
                   <CardDescription>Most viewed teachings</CardDescription>
                 </div>
                 <Link href="/admin-content">
@@ -616,27 +620,33 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               {topContent.length > 0 ? (
-                <div className="space-y-3">
+                <StaggerChildren className="space-y-3">
                   {topContent.map((content, index) => (
-                    <div key={content.id} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center text-sm font-bold text-navy">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-navy truncate">{content.title}</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Eye className="h-3 w-3" />
-                          {content.views.toLocaleString()} views
+                    <StaggerItem key={content.id}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          index === 0
+                            ? 'bg-gold/20 text-gold-700 dark:bg-gold/30 dark:text-gold-300 ring-2 ring-gold/30'
+                            : 'bg-navy/10 dark:bg-navy/20 text-navy dark:text-navy-300'
+                        }`}>
+                          {index + 1}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-navy dark:text-foreground truncate">{content.title}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Eye className="h-3 w-3" />
+                            {content.views.toLocaleString()} views
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {content.type}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {content.type}
-                      </Badge>
-                    </div>
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerChildren>
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No content yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">No content yet</p>
               )}
             </CardContent>
           </Card>
@@ -646,7 +656,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg text-navy">Quick Reports</CardTitle>
+                  <CardTitle className="text-lg text-navy dark:text-foreground">Quick Reports</CardTitle>
                   <CardDescription>Generate common reports</CardDescription>
                 </div>
                 <Link href="/admin-reports">
@@ -660,26 +670,26 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
                 <Link href="/admin-reports?type=membership">
-                  <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center">
-                    <Users className="h-6 w-6 text-navy mx-auto mb-2" />
+                  <div className="p-4 border rounded-lg hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all text-center">
+                    <Users className="h-6 w-6 text-navy dark:text-navy-300 mx-auto mb-2" />
                     <p className="text-sm font-medium">Membership</p>
                   </div>
                 </Link>
                 <Link href="/admin-reports?type=financial">
-                  <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center">
-                    <DollarSign className="h-6 w-6 text-gold mx-auto mb-2" />
+                  <div className="p-4 border rounded-lg hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all text-center">
+                    <DollarSign className="h-6 w-6 text-gold-700 dark:text-gold-300 mx-auto mb-2" />
                     <p className="text-sm font-medium">Financial</p>
                   </div>
                 </Link>
                 <Link href="/admin-reports?type=engagement">
-                  <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center">
-                    <Activity className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                  <div className="p-4 border rounded-lg hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all text-center">
+                    <Activity className="h-6 w-6 text-success mx-auto mb-2" />
                     <p className="text-sm font-medium">Engagement</p>
                   </div>
                 </Link>
                 <Link href="/analytics">
-                  <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center">
-                    <BarChart3 className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+                  <div className="p-4 border rounded-lg hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all text-center">
+                    <BarChart3 className="h-6 w-6 text-spiritual mx-auto mb-2" />
                     <p className="text-sm font-medium">Analytics</p>
                   </div>
                 </Link>

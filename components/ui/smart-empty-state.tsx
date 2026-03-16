@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { LucideIcon, Heart, Sparkles, BookOpen, Users, Calendar, PenLine, MessageSquare, Gift, FileText, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -138,6 +138,7 @@ export function SmartEmptyState({
   const title = customTitle || config.title
   const description = customDescription || config.description
   const action = customAction || config.action
+  const shouldReduceMotion = useReducedMotion()
 
   const sizes = {
     sm: { icon: "w-12 h-12", iconInner: "h-5 w-5", title: "text-base", desc: "text-sm", padding: "p-6" },
@@ -149,14 +150,14 @@ export function SmartEmptyState({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+      animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
       className={cn("flex flex-col items-center justify-center text-center", s.padding, className)}
     >
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", delay: 0.1 }}
+        initial={shouldReduceMotion ? undefined : { scale: 0 }}
+        animate={shouldReduceMotion ? undefined : { scale: 1 }}
+        transition={shouldReduceMotion ? undefined : { type: "spring", delay: 0.1 }}
         className={cn("rounded-full flex items-center justify-center mb-4", s.icon, config.iconBg)}
       >
         <Icon className={cn(s.iconInner, config.iconColor)} />
@@ -172,9 +173,9 @@ export function SmartEmptyState({
 
       {action && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+          transition={shouldReduceMotion ? undefined : { delay: 0.2 }}
         >
           {action.href ? (
             <Button asChild>

@@ -15,6 +15,20 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        gold:
+          "border-transparent bg-gold/20 text-gold-700 dark:text-gold-300 dark:bg-gold/10",
+        navy:
+          "border-transparent bg-navy/10 text-navy dark:text-navy-200 dark:bg-navy-200/10",
+        prayer:
+          "border-transparent bg-spiritual/15 text-purple-700 dark:text-purple-300 dark:bg-spiritual/10",
+        prophecy:
+          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+        giving:
+          "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300",
+        success:
+          "border-transparent bg-success/15 text-emerald-700 dark:text-emerald-300",
+        warning:
+          "border-transparent bg-warning/15 text-amber-700 dark:text-amber-300",
       },
     },
     defaultVariants: {

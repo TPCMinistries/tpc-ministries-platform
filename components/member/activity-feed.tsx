@@ -150,7 +150,7 @@ export default function ActivityFeed({ limit = 10, showHeader = true, className 
               <Sparkles className="h-5 w-5 text-gold" />
               Community Activity
             </CardTitle>
-            <Button onClick={fetchActivities} variant="ghost" size="icon" className="h-8 w-8">
+            <Button onClick={fetchActivities} variant="ghost" size="icon" className="h-8 w-8" aria-label="Refresh activity feed">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>

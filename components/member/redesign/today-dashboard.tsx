@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   Sun, Moon, CloudSun, PenLine, Heart, Gift, 
   Sparkles, Calendar, ChevronRight, Play, 
@@ -77,6 +77,7 @@ export function TodayDashboard({
   const greeting = getGreeting()
   const GreetingIcon = greeting.icon
   const dayOfYear = getDayOfYear()
+  const shouldReduceMotion = useReducedMotion()
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -92,11 +93,11 @@ export function TodayDashboard({
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6 pb-24 lg:pb-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      variants={shouldReduceMotion ? undefined : containerVariants}
+      initial={shouldReduceMotion ? undefined : "hidden"}
+      animate={shouldReduceMotion ? undefined : "visible"}
     >
       {/* Hero Greeting */}
       <motion.div 

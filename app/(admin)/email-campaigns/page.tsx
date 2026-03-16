@@ -674,8 +674,8 @@ function EmailCampaignsContent() {
             onClick={() => setActiveTab(tab.key as any)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
               activeTab === tab.key
-                ? 'bg-white shadow-sm text-navy font-medium'
-                : 'text-gray-600 hover:text-navy'
+                ? 'bg-card shadow-sm text-navy dark:text-foreground font-medium'
+                : 'text-muted-foreground hover:text-navy dark:hover:text-foreground'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -1101,7 +1101,7 @@ function EmailCampaignsContent() {
                   {aiSuggestions.map((suggestion, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-2 bg-white rounded cursor-pointer hover:bg-purple-100"
+                      className="flex items-center justify-between p-2 bg-card rounded cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30"
                       onClick={() => useAiSuggestion(suggestion)}
                     >
                       <span className="text-sm">{suggestion}</span>

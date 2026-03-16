@@ -296,8 +296,8 @@ export default function PredictiveAnalyticsPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {data?.recommendations?.map((rec, index) => (
-              <div key={index} className="bg-white rounded-lg p-4 shadow-sm">
-                <h4 className="font-semibold text-gray-900 mb-2">{rec.title}</h4>
+              <div key={index} className="bg-card rounded-lg p-4 shadow-sm">
+                <h4 className="font-semibold text-foreground mb-2">{rec.title}</h4>
                 <p className="text-sm text-gray-600">{rec.description}</p>
               </div>
             ))}
