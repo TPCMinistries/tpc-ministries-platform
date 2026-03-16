@@ -662,8 +662,9 @@ export function useKenyaData() {
 
   const addParticipantDirect = async (firstName: string, lastName: string) => {
     if (!trip || !firstName.trim()) return
+    setSaveStatus('saving')
     const supabase = createClient()
-    const { error } = await supabase.from('kenya_trip_participants').insert({
+    const { data, error } = await supabase.from('kenya_trip_participants').insert({
       trip_id: trip.id,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
@@ -679,8 +680,39 @@ export function useKenyaData() {
       fundraising_goal: 3500,
       amount_raised: 0,
       team_leader: false,
-    })
-    if (!error) fetchData()
+    }).select()
+    if (error) {
+      console.error('Add delegate error:', error)
+      flashSave(false)
+      // Fallback: try via Kenya invite API (uses admin client)
+      try {
+        const res = await fetch('/api/admin/kenya-invites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: '',
+            track: 'Flex',
+            role: 'member',
+            sendEmail: false,
+          }),
+        })
+        const result = await res.json()
+        if (result.success) {
+          flashSave(true)
+          fetchData()
+        } else {
+          flashSave(false)
+        }
+      } catch {
+        flashSave(false)
+      }
+    } else {
+      flashSave(true)
+      fetchData()
+    }
   }
 
   const addContact = async (name: string) => {

@@ -85,23 +85,28 @@ export default function FAQPage() {
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">We&apos;re Here to Help</p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Frequently Asked Questions
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Find answers to common questions about our ministry, beliefs, and how to get involved.
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Search and Filter */}
-      <section className="px-4 py-8 bg-gray-50 border-b">
+      <section className="border-b border-border bg-secondary px-4 py-8">
         <div className="container mx-auto max-w-4xl">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search questions..."
@@ -115,7 +120,6 @@ export default function FAQPage() {
                 variant={selectedCategory === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedCategory('all')}
-                className={selectedCategory === 'all' ? 'bg-navy' : ''}
               >
                 All Topics
               </Button>
@@ -125,7 +129,6 @@ export default function FAQPage() {
                   variant={selectedCategory === cat ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedCategory(cat)}
-                  className={selectedCategory === cat ? 'bg-navy' : ''}
                 >
                   {categoryIcons[cat]} {categoryLabels[cat] || cat}
                 </Button>
@@ -136,26 +139,26 @@ export default function FAQPage() {
       </section>
 
       {/* FAQs */}
-      <section className="px-4 py-16 bg-white">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-4xl">
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-navy"></div>
             </div>
           ) : filteredFaqs.length === 0 ? (
-            <Card className="text-center py-16">
+            <Card className="rounded-2xl py-16 text-center">
               <CardContent>
-                <HelpCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                <HelpCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 font-display text-display-xs text-foreground">
                   No Questions Found
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p className="mb-6 text-muted-foreground">
                   {searchQuery
                     ? 'Try adjusting your search terms'
                     : 'Check back soon for more FAQs'}
                 </p>
                 <Link href="/contact">
-                  <Button className="bg-navy hover:bg-navy/90">
+                  <Button>
                     Ask Us a Question
                   </Button>
                 </Link>
@@ -166,7 +169,7 @@ export default function FAQPage() {
               {Object.entries(displayGrouped).map(([category, categoryFaqs]) => (
                 <div key={category}>
                   {selectedCategory === 'all' && !searchQuery && (
-                    <h2 className="text-2xl font-bold text-navy mb-4 flex items-center gap-2">
+                    <h2 className="mb-4 flex items-center gap-2 font-display text-display-xs text-foreground">
                       <span>{categoryIcons[category]}</span>
                       {categoryLabels[category] || category}
                     </h2>
@@ -176,8 +179,8 @@ export default function FAQPage() {
                     {categoryFaqs.map((faq: FAQ) => (
                       <Card
                         key={faq.id}
-                        className={`cursor-pointer transition-all ${
-                          expandedFaq === faq.id ? 'shadow-md ring-2 ring-gold/20' : 'hover:shadow-md'
+                        className={`cursor-pointer rounded-2xl transition-all ${
+                          expandedFaq === faq.id ? 'border-gold/30 shadow-md' : 'border-border hover:border-gold/20 hover:shadow-md'
                         }`}
                         onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
                       >
@@ -185,18 +188,18 @@ export default function FAQPage() {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
                               <div className="mt-1">
-                                <HelpCircle className={`h-5 w-5 ${expandedFaq === faq.id ? 'text-gold' : 'text-navy/50'}`} />
+                                <HelpCircle className={`h-5 w-5 ${expandedFaq === faq.id ? 'text-gold' : 'text-muted-foreground'}`} />
                               </div>
-                              <h3 className="font-semibold text-navy">{faq.question}</h3>
+                              <h3 className="font-semibold text-foreground">{faq.question}</h3>
                             </div>
                             {expandedFaq === faq.id ? (
-                              <ChevronUp className="h-5 w-5 text-gold flex-shrink-0" />
+                              <ChevronUp className="h-5 w-5 flex-shrink-0 text-gold" />
                             ) : (
-                              <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                              <ChevronDown className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                             )}
                           </div>
                           {expandedFaq === faq.id && (
-                            <div className="mt-4 pl-8 text-gray-600 leading-relaxed">
+                            <div className="mt-4 pl-8 leading-relaxed text-muted-foreground">
                               {faq.answer}
                             </div>
                           )}
@@ -212,24 +215,25 @@ export default function FAQPage() {
       </section>
 
       {/* Still Have Questions CTA */}
-      <section className="px-4 py-16 bg-gradient-to-br from-gold/10 to-amber-50">
-        <div className="container mx-auto max-w-4xl text-center">
-          <MessageSquare className="h-12 w-12 text-gold mx-auto mb-4" />
-          <h2 className="text-3xl font-bold text-navy mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <MessageSquare className="mx-auto mb-6 h-12 w-12 text-gold" />
+          <h2 className="mb-4 font-display text-display-md text-white">
             Still Have Questions?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            We'd love to hear from you. Reach out and we'll get back to you as soon as possible.
+          <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
+            We&apos;d love to hear from you. Reach out and we&apos;ll get back to you as soon as possible.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link href="/contact">
-              <Button size="lg" className="bg-navy hover:bg-navy/90">
+              <Button variant="glow" size="lg">
                 Contact Us
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/visit">
-              <Button size="lg" variant="outline">
+              <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
                 Plan Your Visit
               </Button>
             </Link>

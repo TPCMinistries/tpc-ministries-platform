@@ -173,19 +173,19 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy"></div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-navy"></div>
       </div>
     )
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4">
-        <h1 className="text-2xl font-bold text-navy mb-4">Post Not Found</h1>
-        <p className="text-gray-600 mb-6">The article you're looking for doesn't exist or has been removed.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+        <h1 className="mb-4 font-display text-display-sm text-foreground">Post Not Found</h1>
+        <p className="mb-6 text-muted-foreground">The article you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         <Link href="/blog">
-          <Button className="bg-navy hover:bg-navy/90">
+          <Button>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Blog
           </Button>
@@ -207,28 +207,30 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       />
 
       {/* Hero/Header */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-12 md:py-20">
-        <div className="container mx-auto max-w-4xl">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-12 md:py-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-4xl">
           <Link
             href="/blog"
-            className="inline-flex items-center text-gray-300 hover:text-white mb-6 transition-colors"
+            className="mb-6 inline-flex items-center text-white/50 transition-colors hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Blog
           </Link>
 
-          <Badge className={categoryColors[post.category] || 'bg-gray-100 text-gray-800'}>
+          <Badge className={categoryColors[post.category] || 'bg-secondary text-secondary-foreground'}>
             {post.category.replace('-', ' ')}
           </Badge>
 
-          <h1 className="text-3xl md:text-5xl font-bold text-white mt-4 mb-6">
+          <h1 className="mb-6 mt-4 font-display text-display-md md:text-display-lg text-white">
             {post.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-4 text-gray-300">
+          <div className="flex flex-wrap items-center gap-4 text-white/50">
             {post.author_name && (
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center overflow-hidden relative">
+                <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gold/20">
                   {post.author_image_url ? (
                     <Image
                       src={post.author_image_url}
@@ -263,7 +265,7 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       {/* Featured Image */}
       {post.featured_image_url && (
         <div className="container mx-auto max-w-4xl px-4 -mt-8">
-          <div className="relative w-full h-64 md:h-96 rounded-lg shadow-lg overflow-hidden">
+          <div className="relative h-64 w-full overflow-hidden rounded-2xl shadow-lg md:h-96">
             <Image
               src={post.featured_image_url}
               alt={post.title}
@@ -277,36 +279,36 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       )}
 
       {/* Content */}
-      <article className="px-4 py-12">
+      <article className="bg-background px-4 py-12">
         <div className="container mx-auto max-w-4xl">
-          <div className="grid md:grid-cols-12 gap-8">
+          <div className="grid gap-8 md:grid-cols-12">
             {/* Share Sidebar */}
             <div className="md:col-span-1">
-              <div className="sticky top-24 flex md:flex-col gap-3">
+              <div className="sticky top-24 flex gap-3 md:flex-col">
                 <button
                   onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank')}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                  className="rounded-full bg-muted p-2 transition-colors hover:bg-blue-100 hover:text-blue-600"
                   title="Share on Facebook"
                 >
                   <Facebook className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=${post.title}`, '_blank')}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-sky-100 hover:text-sky-600 transition-colors"
+                  className="rounded-full bg-muted p-2 transition-colors hover:bg-sky-100 hover:text-sky-600"
                   title="Share on Twitter"
                 >
                   <Twitter className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}`, '_blank')}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                  className="rounded-full bg-muted p-2 transition-colors hover:bg-blue-100 hover:text-blue-700"
                   title="Share on LinkedIn"
                 >
                   <Linkedin className="h-5 w-5" />
                 </button>
                 <button
                   onClick={copyLink}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                  className="rounded-full bg-muted p-2 transition-colors hover:bg-secondary"
                   title="Copy link"
                 >
                   <LinkIcon className="h-5 w-5" />
@@ -317,7 +319,7 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
             {/* Main Content */}
             <div className="md:col-span-11">
               <div
-                className="prose prose-lg max-w-none prose-headings:text-navy prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
+                className="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
                 dangerouslySetInnerHTML={{
                   __html: post.content
                     .replace(/\n\n/g, '</p><p>')
@@ -335,8 +337,8 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
-                <div className="mt-8 pt-8 border-t">
-                  <h3 className="text-sm font-semibold text-gray-500 mb-3">Tags</h3>
+                <div className="mt-8 border-t border-border pt-8">
+                  <h3 className="mb-3 text-body-sm font-semibold text-muted-foreground">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {post.tags.map(tag => (
                       <Badge key={tag} variant="outline">
@@ -353,18 +355,18 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
 
       {/* Comments Section */}
       {post.comments_enabled && (
-        <section className="px-4 py-12 bg-gray-50">
+        <section className="bg-secondary px-4 py-12">
           <div className="container mx-auto max-w-3xl">
-            <h2 className="text-2xl font-bold text-navy mb-8 flex items-center gap-2">
+            <h2 className="mb-8 flex items-center gap-2 font-display text-display-xs text-foreground">
               <MessageSquare className="h-6 w-6" />
               Comments ({comments.length})
             </h2>
 
             {/* Comment Form */}
-            <Card className="mb-8">
+            <Card className="mb-8 rounded-2xl">
               <CardContent className="pt-6">
                 <form onSubmit={handleCommentSubmit} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="guest_name">Name</Label>
                       <Input
@@ -398,13 +400,12 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
                   </div>
 
                   {commentSuccess && (
-                    <p className="text-green-600 text-sm">{commentSuccess}</p>
+                    <p className="text-body-sm text-green-600">{commentSuccess}</p>
                   )}
 
                   <Button
                     type="submit"
                     disabled={submittingComment}
-                    className="bg-navy hover:bg-navy/90"
                   >
                     <Send className="mr-2 h-4 w-4" />
                     {submittingComment ? 'Submitting...' : 'Post Comment'}
@@ -417,22 +418,22 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
             {comments.length > 0 ? (
               <div className="space-y-4">
                 {comments.map(comment => (
-                  <Card key={comment.id}>
+                  <Card key={comment.id} className="rounded-2xl">
                     <CardContent className="pt-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-navy/10 rounded-full flex items-center justify-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy/10">
                           <User className="h-5 w-5 text-navy" />
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-navy">
+                          <div className="mb-1 flex items-center gap-2">
+                            <span className="font-medium text-foreground">
                               {comment.guest_name || 'Member'}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-body-xs text-muted-foreground">
                               {formatDate(comment.created_at)}
                             </span>
                           </div>
-                          <p className="text-gray-600">{comment.content}</p>
+                          <p className="text-muted-foreground">{comment.content}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -440,7 +441,7 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
+              <p className="py-8 text-center text-muted-foreground">
                 No comments yet. Be the first to share your thoughts!
               </p>
             )}
@@ -450,12 +451,12 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (
-        <section className="px-4 py-12 bg-white">
+        <section className="bg-background px-4 py-section-sm">
           <div className="container mx-auto max-w-6xl">
-            <h2 className="text-2xl font-bold text-navy mb-8">Related Articles</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <h2 className="mb-8 font-display text-display-xs text-foreground">Related Articles</h2>
+            <div className="grid gap-6 md:grid-cols-3">
               {relatedPosts.map(related => (
-                <Card key={related.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={related.id} className="overflow-hidden rounded-2xl transition-all hover:border-gold/30 hover:shadow-lg">
                   <Link href={`/blog/${related.slug}`}>
                     {related.featured_image_url ? (
                       <div
@@ -468,11 +469,11 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
                   </Link>
                   <CardContent className="p-4">
                     <Link href={`/blog/${related.slug}`}>
-                      <h3 className="font-semibold text-navy hover:text-gold transition-colors line-clamp-2">
+                      <h3 className="line-clamp-2 font-semibold text-foreground transition-colors hover:text-gold">
                         {related.title}
                       </h3>
                     </Link>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="mt-2 text-body-sm text-muted-foreground">
                       {formatDate(related.published_at)}
                     </p>
                   </CardContent>
@@ -484,16 +485,17 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       )}
 
       {/* CTA */}
-      <section className="px-4 py-12 bg-gradient-to-br from-gold to-amber-500">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-2xl font-bold text-navy mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-sm">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <h2 className="mb-4 font-display text-display-sm text-white">
             Want More Content Like This?
           </h2>
-          <p className="text-navy/80 mb-6">
+          <p className="mb-6 text-body-lg text-white/50">
             Subscribe to receive our latest articles and devotionals.
           </p>
           <Link href="/#newsletter">
-            <Button size="lg" className="bg-navy text-white hover:bg-navy/90">
+            <Button variant="glow" size="lg">
               Subscribe Now
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

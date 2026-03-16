@@ -95,30 +95,34 @@ export default function EventsPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Join Us</p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Upcoming Events
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Join us for worship, learning, and fellowship. Find an event that speaks to your heart.
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Events Section */}
-      <section className="px-4 py-16 bg-white">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-6xl">
           {/* Filter */}
           {eventTypes.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-8 justify-center">
+            <div className="mb-8 flex flex-wrap justify-center gap-2">
               <Button
                 variant={filter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilter('all')}
-                className={filter === 'all' ? 'bg-navy' : ''}
               >
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="mr-2 h-4 w-4" />
                 All Events
               </Button>
               {eventTypes.map(type => (
@@ -127,7 +131,6 @@ export default function EventsPage() {
                   variant={filter === type ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setFilter(type)}
-                  className={filter === type ? 'bg-navy' : ''}
                 >
                   {eventTypeLabels[type] || type}
                 </Button>
@@ -137,20 +140,20 @@ export default function EventsPage() {
 
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-navy"></div>
             </div>
           ) : filteredEvents.length === 0 ? (
-            <Card className="text-center py-16">
+            <Card className="rounded-2xl py-16 text-center">
               <CardContent>
-                <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                <Calendar className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 font-display text-display-xs text-foreground">
                   No Upcoming Events
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p className="mb-6 text-muted-foreground">
                   Check back soon for new events, or subscribe to our newsletter to stay updated.
                 </p>
                 <Link href="/#newsletter">
-                  <Button className="bg-navy hover:bg-navy/90">
+                  <Button>
                     Subscribe for Updates
                   </Button>
                 </Link>
@@ -159,26 +162,26 @@ export default function EventsPage() {
           ) : (
             <div className="space-y-6">
               {filteredEvents.map(event => (
-                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={event.id} className="overflow-hidden rounded-2xl border-border transition-all hover:border-gold/30 hover:shadow-lg">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
                       {/* Date sidebar */}
-                      <div className="bg-navy text-white p-6 md:w-48 flex flex-col items-center justify-center">
-                        <span className="text-4xl font-bold">
+                      <div className="flex flex-col items-center justify-center bg-navy p-6 text-white md:w-48 dark:bg-navy-950">
+                        <span className="text-display-md font-bold">
                           {new Date(event.start_date).getDate()}
                         </span>
-                        <span className="text-gold uppercase tracking-wide">
+                        <span className="text-body-sm font-semibold uppercase tracking-wide text-gold">
                           {new Date(event.start_date).toLocaleDateString('en-US', { month: 'short' })}
                         </span>
-                        <span className="text-sm text-gray-300">
+                        <span className="text-body-sm text-white/50">
                           {new Date(event.start_date).getFullYear()}
                         </span>
                       </div>
 
                       {/* Event details */}
                       <div className="flex-1 p-6">
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <Badge className={eventTypeColors[event.event_type] || 'bg-gray-100 text-gray-800'}>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <Badge className={eventTypeColors[event.event_type] || 'bg-secondary text-secondary-foreground'}>
                             {eventTypeLabels[event.event_type] || event.event_type}
                           </Badge>
                           {event.is_virtual && (
@@ -192,13 +195,13 @@ export default function EventsPage() {
                           )}
                         </div>
 
-                        <h3 className="text-2xl font-bold text-navy mb-2">{event.title}</h3>
+                        <h3 className="mb-2 font-display text-display-xs text-foreground">{event.title}</h3>
 
                         {event.description && (
-                          <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+                          <p className="mb-4 line-clamp-2 text-muted-foreground">{event.description}</p>
                         )}
 
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+                        <div className="mb-4 flex flex-wrap gap-4 text-body-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
                             {formatTime(event.start_date)}
@@ -220,7 +223,7 @@ export default function EventsPage() {
 
                         <div className="flex gap-3">
                           <Link href={`/events/${event.id}`}>
-                            <Button className="bg-gold hover:bg-gold/90 text-navy">
+                            <Button variant="glow">
                               Learn More
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -243,16 +246,17 @@ export default function EventsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-gold to-amber-500">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-navy mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <h2 className="mb-4 font-display text-display-md text-white">
             Want to Host an Event?
           </h2>
-          <p className="text-xl text-navy/80 mb-8">
+          <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
             Partner with us to bring transformative experiences to your community
           </p>
           <Link href="/contact">
-            <Button size="lg" className="bg-navy text-white hover:bg-navy/90">
+            <Button variant="glow" size="lg">
               Contact Us
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
