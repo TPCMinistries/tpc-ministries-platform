@@ -8,53 +8,51 @@ import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import { NumberCounter } from '@/components/motion/number-counter'
 
 const impactStats = [
-  { amount: 50, description: 'provides meals for a family of 4 in Kenya' },
-  { amount: 100, description: 'sponsors a child for a month of school' },
-  { amount: 250, description: 'funds a community ministry event' },
+  { amount: 50, description: 'Provides meals for a family of 4' },
+  { amount: 100, description: 'Sponsors a child for a month' },
+  { amount: 250, description: 'Funds a community outreach' },
 ]
 
 export function GivingCtaSection() {
   return (
-    <Section className="bg-gradient-to-r from-gold-500 via-gold-400 to-gold-300">
-      <div className="mx-auto max-w-4xl text-center">
-        <ScrollReveal>
-          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-navy-950">
-            Be the Change -- Your Kindness Makes a Difference
+    <Section size="lg" className="relative overflow-hidden bg-navy-950" container={false}>
+      {/* Radial gold glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.12),transparent_70%)]" />
+
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <ScrollReveal className="text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Make an Impact
+          </p>
+          <h2 className="mx-auto mb-6 max-w-3xl font-display text-display-md md:text-display-lg lg:text-display-xl text-white">
+            Your Generosity Changes Lives
           </h2>
-          <p className="mb-10 text-body-xl text-navy-800/80 md:text-body-xl">
-            Your generous support enables us to transform lives, spread the Gospel, and make an
-            eternal impact across Kenya, South Africa, and Grenada.
+          <p className="mx-auto mb-12 max-w-2xl text-body-lg text-white/50">
+            Every gift transforms lives across Kenya, South Africa, and Grenada —
+            spreading the Gospel and building lasting impact.
           </p>
         </ScrollReveal>
 
-        {/* Impact stats */}
+        {/* Impact tiers */}
         <ScrollReveal delay={0.15}>
-          <div className="mb-10 grid gap-4 sm:grid-cols-3">
+          <div className="mb-14 grid gap-4 sm:grid-cols-3">
             {impactStats.map((stat) => (
               <div
                 key={stat.amount}
-                className="rounded-xl bg-white/30 p-5 backdrop-blur-sm"
+                className="group rounded-2xl border border-gold/10 bg-white/5 p-6 text-center backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:bg-white/10"
               >
-                <div className="mb-2 font-display text-display-sm text-navy-950">
-                  <NumberCounter
-                    value={stat.amount}
-                    prefix="$"
-                    duration={1.2}
-                  />
+                <div className="mb-2 font-display text-display-md text-gold">
+                  <NumberCounter value={stat.amount} prefix="$" duration={1.2} />
                 </div>
-                <p className="text-body-sm text-navy-800/80">{stat.description}</p>
+                <p className="text-body-sm text-white/50">{stat.description}</p>
               </div>
             ))}
           </div>
         </ScrollReveal>
 
-        <ScrollReveal delay={0.3}>
+        <ScrollReveal delay={0.3} className="text-center">
           <Link href="/giving">
-            <Button
-              variant="default"
-              size="xl"
-              className="bg-navy text-lg text-white shadow-xl hover:bg-navy-800"
-            >
+            <Button variant="glow" size="xl" className="text-lg animate-glow-pulse">
               Donate Now
               <Heart className="ml-2 h-5 w-5" />
             </Button>

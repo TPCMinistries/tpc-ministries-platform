@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { BookOpen, Video, Laptop, ArrowRight } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Section } from '@/components/ui/section'
 import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import { StaggerChildren, StaggerItem } from '@/components/motion/stagger-children'
@@ -15,81 +14,90 @@ const ministryCards = [
     description:
       'Access comprehensive biblical teachings, interactive courses, and mentorship programs designed to deepen your faith journey from anywhere in the world.',
     cta: 'Explore Teachings',
-    gradient: 'from-navy via-navy-800 to-navy-700',
-    large: true,
   },
   {
     href: '/auth/signup',
     icon: Video,
     title: 'Online Engagement',
     description:
-      'Join live worship services, prayer meetings, and community gatherings. Connect with believers globally.',
+      'Join live worship services, prayer meetings, and community gatherings. Connect with believers globally and build meaningful relationships.',
     cta: 'Join Community',
-    gradient: 'from-gold-600 via-gold-500 to-gold-400',
-    large: false,
   },
   {
     href: '/auth/signup',
     icon: Laptop,
     title: 'Digital Empowerment',
     description:
-      'Access tools, resources, and training to grow spiritually and develop leadership skills.',
+      'Access tools, resources, and training to grow spiritually, develop leadership skills, and fulfill your divine calling in the digital age.',
     cta: 'Get Empowered',
-    gradient: 'from-navy-800 via-navy-600 to-navy-500',
-    large: false,
   },
 ]
 
 export function MinistryCardsSection() {
   return (
-    <Section className="bg-secondary">
-      <ScrollReveal className="mb-12 text-center">
-        <h2 className="mb-4 font-display text-display-md md:text-display-lg text-navy">
-          Reaching the World for Christ
-        </h2>
-        <p className="text-body-xl text-muted-foreground">Through Digital Ministry</p>
-      </ScrollReveal>
+    <Section className="bg-navy dark:bg-navy-950">
+      <div className="mx-auto max-w-6xl">
+        <ScrollReveal className="mb-16 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Digital Ministry
+          </p>
+          <h2 className="font-display text-display-md md:text-display-lg text-white">
+            Reaching the World for Christ
+          </h2>
+        </ScrollReveal>
 
-      <StaggerChildren className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {ministryCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <StaggerItem
-              key={card.title}
-              className={card.large ? 'md:col-span-2 lg:col-span-1 lg:row-span-2' : ''}
-            >
-              <Link href={card.href} className="block h-full">
-                <Card
-                  variant="interactive"
-                  className={`group h-full overflow-hidden backdrop-blur-sm ${
-                    card.large ? 'min-h-[320px]' : ''
-                  }`}
-                >
-                  <CardHeader className={card.large ? 'pb-8' : ''}>
-                    <div
-                      className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${card.gradient}`}
-                    >
-                      <Icon className="h-7 w-7 text-white" />
+        {/* Bento grid: 1 large left + 2 stacked right */}
+        <StaggerChildren className="grid gap-6 lg:grid-cols-5">
+          {/* Large card — spans 3 cols */}
+          <StaggerItem className="lg:col-span-3 lg:row-span-2">
+            <Link href={ministryCards[0].href} className="group block h-full">
+              <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:shadow-2xl hover:shadow-gold/5 md:p-12">
+                <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/20">
+                  <BookOpen className="h-8 w-8 text-gold" />
+                </div>
+                <h3 className="mb-4 font-display text-display-sm md:text-display-md text-white">
+                  {ministryCards[0].title}
+                </h3>
+                <p className="mb-8 max-w-md text-body-lg leading-relaxed text-white/60">
+                  {ministryCards[0].description}
+                </p>
+                <div className="flex items-center gap-2 text-gold transition-transform duration-300 group-hover:translate-x-2">
+                  <span className="text-body-md font-semibold">{ministryCards[0].cta}</span>
+                  <ArrowRight className="h-5 w-5" />
+                </div>
+                {/* Decorative gradient */}
+                <div className="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-gold/5 blur-3xl" />
+              </div>
+            </Link>
+          </StaggerItem>
+
+          {/* Two stacked cards — each 2 cols */}
+          {ministryCards.slice(1).map((card) => {
+            const Icon = card.icon
+            return (
+              <StaggerItem key={card.title} className="lg:col-span-2">
+                <Link href={card.href} className="group block h-full">
+                  <div className="h-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:bg-white/10">
+                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gold/15">
+                      <Icon className="h-6 w-6 text-gold" />
                     </div>
-                    <CardTitle className="font-display text-display-xs text-navy">
+                    <h3 className="mb-3 font-display text-display-xs text-white">
                       {card.title}
-                    </CardTitle>
-                    <CardDescription className="text-body-md">
+                    </h3>
+                    <p className="mb-5 text-body-md leading-relaxed text-white/50">
                       {card.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center text-gold-600 transition-transform group-hover:translate-x-2">
-                      <span className="font-medium">{card.cta}</span>
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </p>
+                    <div className="flex items-center gap-2 text-gold transition-transform duration-300 group-hover:translate-x-2">
+                      <span className="text-body-sm font-semibold">{card.cta}</span>
+                      <ArrowRight className="h-4 w-4" />
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </StaggerItem>
-          )
-        })}
-      </StaggerChildren>
+                  </div>
+                </Link>
+              </StaggerItem>
+            )
+          })}
+        </StaggerChildren>
+      </div>
     </Section>
   )
 }
