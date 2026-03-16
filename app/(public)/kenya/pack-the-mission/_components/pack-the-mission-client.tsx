@@ -174,7 +174,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* ===== SUCCESS BANNER ===== */}
       {successBanner && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-green-600 text-white py-4 px-6 flex items-center justify-center gap-3 shadow-lg">
@@ -186,8 +186,8 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
         </div>
       )}
 
-      {/* ===== HERO — Compact + Urgent ===== */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+      {/* ===== HERO — Heavy overlay for readability ===== */}
+      <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
         <Image
           src="/images/kenya/hero-landscape.png"
           alt=""
@@ -195,63 +195,63 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/80 via-navy/70 to-navy-dark/90" />
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
-        </div>
+        {/* HEAVY overlay — 3 layers for guaranteed text readability */}
+        <div className="absolute inset-0 bg-navy-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/60 via-transparent to-navy-950/80" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.1),transparent_60%)]" />
 
-        <div className="relative z-10 text-center max-w-3xl px-4 py-12">
+        <div className="relative z-10 text-center max-w-3xl px-5 py-16 md:py-12">
           <Link
             href="/kenya"
-            className="inline-flex items-center gap-2 text-gold-light/60 hover:text-gold mb-6 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-gold/60 hover:text-gold mb-6 transition-colors text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Kenya Trip
           </Link>
 
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="bg-gold text-navy text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 flex-wrap">
+            <span className="bg-gold text-navy-950 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full">
               Kenya 2026
             </span>
-            <span className="bg-red-500/20 text-red-300 text-xs font-bold px-4 py-1.5 rounded-full border border-red-500/30 flex items-center gap-1.5">
+            <span className="bg-red-500/20 text-red-300 text-xs font-bold px-3 sm:px-4 py-1.5 rounded-full border border-red-500/30 flex items-center gap-1.5">
               <Clock className="h-3 w-3" />
-              Items due by {ITEM_DEADLINE}
+              Due {ITEM_DEADLINE}
             </span>
           </div>
 
-          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
-            Pack <em className="text-gold-light italic">the</em> Mission
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
+            Pack <em className="text-gold italic">the</em> Mission
           </h1>
 
-          <p className="text-white/60 text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+          <p className="text-white/70 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
             We&apos;re heading to Kenya with supplies for communities across 3 cities.
             You don&apos;t have to be on the plane — help us pack what matters.
           </p>
 
           {/* Stats row */}
-          <div className="flex justify-center gap-6 md:gap-10 mb-8 flex-wrap">
+          <div className="grid grid-cols-4 gap-3 sm:gap-6 md:gap-10 mb-8 max-w-md mx-auto">
             {[
               { num: '3', label: 'Cities' },
               { num: '14', label: 'Days' },
-              { num: `${totalItems}`, label: 'Items Needed' },
+              { num: `${totalItems}`, label: 'Needed' },
               { num: `${totalPledgedItems}`, label: 'Pledged' },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="font-serif text-3xl md:text-4xl font-bold text-gold">{stat.num}</div>
-                <div className="text-white/40 text-xs tracking-widest uppercase mt-1">{stat.label}</div>
+                <div className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gold">{stat.num}</div>
+                <div className="text-white/50 text-[10px] sm:text-xs tracking-widest uppercase mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
 
           {/* Overall progress bar */}
           <div className="max-w-md mx-auto mb-8">
-            <div className="flex items-center justify-between text-xs text-white/40 mb-2">
+            <div className="flex items-center justify-between text-xs text-white/50 mb-2">
               <span>{totalPledgedItems} of {totalItems} items covered</span>
-              <span>{overallProgress}%</span>
+              <span className="font-semibold text-gold">{overallProgress}%</span>
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full transition-all duration-1000"
+                className="h-full bg-gradient-to-r from-gold to-gold-300 rounded-full transition-all duration-1000"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
@@ -260,14 +260,14 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-gold hover:bg-gold-light text-navy font-bold text-sm tracking-wide px-8 py-4 rounded-full transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30 flex items-center gap-2"
+              className="w-full sm:w-auto bg-gold hover:bg-gold-300 text-navy-950 font-bold text-sm tracking-wide px-8 py-4 rounded-full transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30 flex items-center justify-center gap-2"
             >
               <ArrowDown className="h-4 w-4" />
-              Browse & Pledge Items
+              Browse &amp; Pledge Items
             </button>
             <button
               onClick={() => document.getElementById('fund')?.scrollIntoView({ behavior: 'smooth' })}
-              className="border-2 border-white/20 hover:border-gold text-white hover:text-gold font-semibold text-sm px-8 py-4 rounded-full transition-all flex items-center gap-2"
+              className="w-full sm:w-auto border-2 border-white/30 hover:border-gold text-white hover:text-gold font-semibold text-sm px-8 py-4 rounded-full transition-all flex items-center justify-center gap-2"
             >
               <DollarSign className="h-4 w-4" />
               Give Funds Instead
@@ -277,21 +277,21 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       </section>
 
       {/* ===== HOW IT WORKS — Compact strip ===== */}
-      <section className="px-4 py-12 bg-white border-b border-navy/5">
+      <section className="px-4 py-12 bg-card border-b border-border">
         <div className="container mx-auto max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-6">
             {[
               { num: '1', title: 'Bring or Ship It', desc: 'Have the item? Drop it off or ship it to us before April 15.' },
               { num: '2', title: 'Fund It', desc: 'Pay for any item — we\'ll buy it here or source it in Kenya, whichever is smarter.' },
               { num: '3', title: 'Sponsor a Life', desc: 'Go deeper — sponsor a student, orphan, classroom, or school lunch program.' },
             ].map((step) => (
               <div key={step.num} className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-gold text-navy font-serif text-lg font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gold text-navy-950 font-display text-lg font-bold rounded-full flex items-center justify-center flex-shrink-0">
                   {step.num}
                 </div>
                 <div>
-                  <h3 className="font-bold text-navy text-sm mb-1">{step.title}</h3>
-                  <p className="text-xs text-navy/50 leading-relaxed">{step.desc}</p>
+                  <h3 className="font-display font-bold text-foreground text-sm mb-1">{step.title}</h3>
+                  <p className="text-body-xs text-muted-foreground leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -300,11 +300,12 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       </section>
 
       {/* ===== SUPPLY CATEGORIES ===== */}
-      <section id="categories" className="px-4 py-16 bg-cream">
+      <section id="categories" className="px-4 py-section bg-background">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-3">What We Need</h2>
-            <p className="text-navy/60">
+            <p className="mb-3 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Supply Drive</p>
+            <h2 className="font-display text-display-sm md:text-display-md text-foreground mb-3">What We Need</h2>
+            <p className="text-body-md text-muted-foreground">
               Tap any item to pledge, ship, or fund it. Kenya-sourced items are flagged — we&apos;ll buy those on the ground.
             </p>
           </div>
@@ -321,36 +322,36 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
               return (
                 <div
                   key={cat.id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-navy/5"
+                  className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-border"
                 >
                   {/* Header */}
                   <div className="p-5 pb-3 flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${colors?.icon || 'bg-gray-100'}`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${colors?.icon || 'bg-muted'}`}>
                       {cat.icon}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-navy">{cat.name}</h3>
-                        <span className="text-xs font-semibold text-navy/30">~${totalValue.toLocaleString()} total</span>
+                        <h3 className="font-display font-bold text-foreground">{cat.name}</h3>
+                        <span className="text-body-xs font-semibold text-muted-foreground">~${totalValue.toLocaleString()}</span>
                       </div>
-                      <p className="text-xs text-navy/50">{cat.desc}</p>
+                      <p className="text-body-xs text-muted-foreground">{cat.desc}</p>
                     </div>
                   </div>
 
                   {/* Progress bar */}
                   <div className="px-5 mb-1">
-                    <div className="h-1.5 bg-cream rounded-full overflow-hidden">
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-1000 ${colors?.fill || 'bg-gray-400'}`}
+                        className={`h-full rounded-full transition-all duration-1000 ${colors?.fill || 'bg-gold'}`}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
-                  <div className="flex justify-between px-5 mb-2">
-                    <span className="text-[11px] text-navy/40 font-medium">
+                  <div className="flex justify-between px-5 mb-3">
+                    <span className="text-body-xs text-muted-foreground font-medium">
                       {pledgedItemCount}/{cat.items.length} items pledged
                     </span>
-                    <span className="text-[11px] text-navy/40 font-medium">{progress}%</span>
+                    <span className="text-body-xs font-semibold text-gold-600">{progress}%</span>
                   </div>
 
                   {/* Items list */}
@@ -362,61 +363,60 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
                       return (
                         <div
                           key={item.name}
-                          className="flex items-center py-2 border-b border-navy/5 last:border-b-0 gap-2"
+                          className="flex items-center py-3 border-b border-border last:border-b-0 gap-3"
                         >
                           <div
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 text-[10px] ${
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                               isPledged
                                 ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-navy/15'
+                                : 'border-border'
                             }`}
                           >
-                            {isPledged && <Check className="h-2.5 w-2.5" />}
+                            {isPledged && <Check className="h-3 w-3" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-medium text-navy truncate">{item.name}</span>
+                              <span className="text-body-sm font-medium text-foreground truncate">{item.name}</span>
                               {isKenya && (
-                                <span title="Best sourced in Kenya"><MapPin className="h-3 w-3 text-gold-dark flex-shrink-0" /></span>
+                                <span title="Best sourced in Kenya"><MapPin className="h-3 w-3 text-gold-600 flex-shrink-0" /></span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[11px] text-gold-dark font-medium">{item.value}</span>
-                              <span className="text-[11px] text-navy/30">&middot; {item.qty}</span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-body-xs font-semibold text-gold-700">{item.value}</span>
+                              <span className="text-body-xs text-muted-foreground">&middot; {item.qty}</span>
                             </div>
                           </div>
                           <button
                             onClick={() => !isPledged && openPledgeModal(cat.id, item.name, item.value, item.fundAmount, item.sourcing)}
-                            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all flex-shrink-0 whitespace-nowrap ${
+                            className={`text-xs font-bold px-4 py-2 rounded-full border-2 transition-all flex-shrink-0 whitespace-nowrap min-h-[36px] ${
                               isPledged
                                 ? 'bg-green-500 border-green-500 text-white cursor-default'
-                                : isKenya
-                                  ? 'bg-gold/10 border-gold text-gold-dark hover:bg-gold hover:text-navy cursor-pointer'
-                                  : 'border-gold text-gold-dark hover:bg-gold hover:text-navy cursor-pointer'
+                                : 'border-gold bg-gold/10 text-navy hover:bg-gold hover:text-navy-950 hover:border-gold cursor-pointer'
                             }`}
                           >
                             {isPledged
                               ? `Pledged${count > 1 ? ` (${count})` : ''}`
                               : isKenya
                                 ? `Fund $${item.fundAmount}`
-                                : 'I Got This'}
+                                : `Pledge · $${item.fundAmount}`}
                           </button>
                         </div>
                       )
                     })}
                   </div>
 
-                  {/* Fund category button */}
+                  {/* Fund category button — more prominent */}
                   <div className="px-5 pb-5">
                     <button
                       onClick={() => {
-                        setSelectedFundAmount(100)
+                        setSelectedFundAmount(totalValue)
                         setCustomFundAmount('')
                         document.getElementById('fund')?.scrollIntoView({ behavior: 'smooth' })
                       }}
-                      className="w-full py-2.5 bg-cream border-2 border-dashed border-gold/60 rounded-xl text-gold-dark font-semibold text-xs hover:bg-gold/10 hover:border-solid transition-all"
+                      className="w-full py-3.5 bg-navy text-white font-bold text-sm rounded-xl hover:bg-navy-800 transition-all flex items-center justify-center gap-2"
                     >
-                      Fund this entire category
+                      <DollarSign className="h-4 w-4" />
+                      Fund Entire Category · ${totalValue.toLocaleString()}
                     </button>
                   </div>
                 </div>
@@ -430,39 +430,40 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       <SponsorshipSection />
 
       {/* ===== FUND THE MISSION ===== */}
-      <section id="fund" className="relative px-4 py-16 text-white overflow-hidden">
+      <section id="fund" className="relative px-4 py-section text-white overflow-hidden">
         <Image
           src="/images/kenya/donate-bg.png"
           alt=""
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-navy-dark/85" />
+        <div className="absolute inset-0 bg-navy-950/92" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.08),transparent_70%)]" />
         <div className="relative z-10 container mx-auto max-w-5xl">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase text-gold-light mb-3">Fund the Mission</p>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-white mb-3">
+            <p className="text-body-sm font-semibold uppercase tracking-[0.2em] text-gold mb-4">Fund the Mission</p>
+            <h2 className="font-display text-display-sm md:text-display-md font-bold text-white mb-3">
               Let Us Do the Shopping
             </h2>
-            <p className="text-white/50">
+            <p className="text-body-md text-white/60">
               Pick an amount — we&apos;ll buy supplies here or source them in Kenya, whichever stretches your dollar further.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
             {fundTiers.map((tier) => (
               <button
                 key={tier.amount}
                 onClick={() => handleFundSelect(tier.amount)}
-                className={`rounded-2xl p-5 text-left transition-all border-2 ${
+                className={`rounded-2xl p-4 sm:p-5 text-left transition-all border-2 ${
                   selectedFundAmount === tier.amount && !customFundAmount
-                    ? 'border-gold bg-gold/10 scale-[1.02]'
-                    : 'border-white/10 bg-white/5 hover:border-gold/50'
+                    ? 'border-gold bg-gold/15 scale-[1.02]'
+                    : 'border-white/15 bg-white/5 hover:border-gold/50'
                 }`}
               >
-                <div className="font-serif text-2xl md:text-3xl font-bold text-gold mb-1">${tier.amount.toLocaleString()}</div>
-                <div className="text-xs text-white/60 leading-snug mb-1">{tier.desc}</div>
-                <div className="text-[11px] text-gold-light/50 font-medium">{tier.impact}</div>
+                <div className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-gold mb-1">${tier.amount.toLocaleString()}</div>
+                <div className="text-body-xs text-white/70 leading-snug mb-1">{tier.desc}</div>
+                <div className="text-body-xs text-gold/50 font-medium hidden sm:block">{tier.impact}</div>
               </button>
             ))}
           </div>
@@ -510,31 +511,31 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
         </div>
       </section>
 
-      {/* ===== SHARE SECTION — Light bg to break dark monotony ===== */}
-      <section className="px-4 py-16 bg-cream border-t border-navy/5">
+      {/* ===== SHARE SECTION ===== */}
+      <section className="px-4 py-section-sm bg-secondary border-t border-border">
         <div className="container mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-2xl md:text-3xl font-bold text-navy mb-3">One Share = One More Suitcase Filled</h2>
-          <p className="text-navy/50 mb-8 max-w-lg mx-auto">
+          <h2 className="font-display text-display-xs md:text-display-sm text-foreground mb-3">One Share = One More Suitcase Filled</h2>
+          <p className="text-body-md text-muted-foreground mb-8 max-w-lg mx-auto">
             Send this to someone who might help. One text could be the thing that gets a laptop into a student&apos;s hands.
           </p>
           <div className="flex justify-center gap-3 flex-wrap">
             <button
               onClick={copyLink}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-navy/10 text-navy text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 border-border text-foreground text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all min-h-[44px]"
             >
               {linkCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
               {linkCopied ? 'Copied!' : 'Copy Link'}
             </button>
             <button
               onClick={shareText}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-navy/10 text-navy text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 border-border text-foreground text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all min-h-[44px]"
             >
               <MessageCircle className="h-4 w-4" />
               Text a Friend
             </button>
             <button
               onClick={shareEmail}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-navy/10 text-navy text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 border-border text-foreground text-sm font-semibold hover:border-gold hover:bg-gold/5 transition-all min-h-[44px]"
             >
               <Mail className="h-4 w-4" />
               Email
@@ -544,7 +545,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-navy-dark px-4 py-8">
+      <footer className="bg-navy-950 px-4 py-8">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="flex justify-center gap-6 mb-4 flex-wrap text-xs text-white/30 tracking-widest uppercase">
             <span>TPC Ministries</span>
