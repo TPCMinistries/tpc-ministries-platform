@@ -7,12 +7,12 @@ import {
 import type { TabType } from './types'
 
 export const serviceTracks = [
-  { value: 'medical', label: 'Medical', icon: Stethoscope },
-  { value: 'education', label: 'Education', icon: BookOpen },
-  { value: 'construction', label: 'Construction', icon: Building },
-  { value: 'evangelism', label: 'Evangelism', icon: Heart },
-  { value: 'worship', label: 'Worship', icon: Star },
-  { value: 'admin', label: 'Administration', icon: Briefcase },
+  { value: 'Ministry', label: 'Ministry', icon: Heart },
+  { value: 'Medical', label: 'Medical', icon: Stethoscope },
+  { value: 'Education', label: 'Education', icon: BookOpen },
+  { value: 'Business', label: 'Business', icon: Building },
+  { value: 'Media', label: 'Media', icon: Star },
+  { value: 'Flex', label: 'Flex', icon: Briefcase },
 ] as const
 
 export const tabs: { key: TabType; label: string; icon: any }[] = [
@@ -98,10 +98,10 @@ export const emojiStatuses = {
 } as const
 
 export const delegationTracks = [
-  { value: 'ministry', label: 'Ministry', color: 'bg-purple-500' },
-  { value: 'healthcare', label: 'Healthcare', color: 'bg-green-500' },
-  { value: 'business', label: 'Business', color: 'bg-yellow-500' },
-  { value: 'education', label: 'Education', color: 'bg-blue-500' },
-  { value: 'media', label: 'Media', color: 'bg-pink-500' },
-  { value: 'flex', label: 'Flex', color: 'bg-gray-500' },
+  { value: 'Ministry', label: 'Ministry', color: 'bg-purple-500' },
+  { value: 'Medical', label: 'Medical', color: 'bg-green-500' },
+  { value: 'Education', label: 'Education', color: 'bg-blue-500' },
+  { value: 'Business', label: 'Business', color: 'bg-yellow-500' },
+  { value: 'Media', label: 'Media', color: 'bg-pink-500' },
+  { value: 'Flex', label: 'Flex', color: 'bg-gray-500' },
 ] as const

@@ -204,6 +204,7 @@ export default function KenyaCommandCenter() {
             trackDetails={data.trackDetails}
             trackMaterials={data.trackMaterials}
             supportRoles={data.supportRoles}
+            itinerary={data.itinerary}
             updateTrackDetailField={data.updateTrackDetailField}
             addTrackMaterial={data.addTrackMaterial}
             toggleTrackMaterial={data.toggleTrackMaterial}
