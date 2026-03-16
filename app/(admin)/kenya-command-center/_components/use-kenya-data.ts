@@ -7,7 +7,7 @@ import type {
   BudgetCategory, Expense, Announcement, Document, FAQ, DailyFocus, Stats,
   PackingItem, PackingStatus, ConferenceSession, LogisticsMatrix,
   MediaCalendarItem, MediaAssignment, ShotListItem, WaitingListEntry,
-  ActionItem, TrackDetail, TrackMaterial, AdminNote
+  ActionItem, TrackDetail, TrackMaterial, AdminNote, SupportRole
 } from './types'
 
 export function useKenyaData() {
@@ -43,6 +43,9 @@ export function useKenyaData() {
   const [trackDetails, setTrackDetails] = useState<TrackDetail[]>([])
   const [trackMaterials, setTrackMaterials] = useState<TrackMaterial[]>([])
   const [adminNotes, setAdminNotes] = useState<AdminNote[]>([])
+
+  // Phase 5 data state (migration 047)
+  const [supportRoles, setSupportRoles] = useState<SupportRole[]>([])
 
   // Save indicator
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -206,6 +209,16 @@ export function useKenyaData() {
         setTrackMaterials(materialRes.data || [])
         setAdminNotes(notesRes.data || [])
       } catch { /* tables may not exist yet */ }
+
+      // Fetch phase 5 tables (migration 047)
+      try {
+        const supportRes = await supabase
+          .from('kenya_trip_support_roles')
+          .select('*')
+          .eq('trip_id', tripData.id)
+          .order('sort_order')
+        setSupportRoles(supportRes.data || [])
+      } catch { /* table may not exist yet */ }
 
       // Calculate stats
       const p = participantsRes.data || []
@@ -852,6 +865,63 @@ export function useKenyaData() {
     await supabase.from('kenya_trip_admin_notes').delete().eq('id', id)
   }
 
+  // ============ LODGING ADD HANDLER ============
+
+  const addLodging = async (city: string, checkIn: string, checkOut: string) => {
+    if (!trip || !city.trim() || !checkIn || !checkOut) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_lodging').insert({
+      trip_id: trip.id,
+      name: 'TBD',
+      city: city.trim(),
+      check_in_date: checkIn,
+      check_out_date: checkOut,
+      total_rooms: 0,
+      booking_status: '⬜ Not started',
+      notes: '',
+    })
+    if (!error) fetchData()
+  }
+
+  // ============ SUPPORT ROLES HANDLERS ============
+
+  const addSupportRole = async (roleName: string) => {
+    if (!trip || !roleName.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_support_roles').insert({
+      trip_id: trip.id,
+      role_name: roleName.trim(),
+      sort_order: supportRoles.length,
+    })
+    if (!error) fetchData()
+  }
+
+  const updateSupportRoleField = useCallback(async (id: string, field: string, value: string) => {
+    setSupportRoles(prev => prev.map(r =>
+      r.id === id ? { ...r, [field]: value } : r
+    ))
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_support_roles')
+      .update({ [field]: value })
+      .eq('id', id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteSupportRole = async (id: string) => {
+    setSupportRoles(prev => prev.filter(r => r.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_support_roles').delete().eq('id', id)
+  }
+
   return {
     // Core
     loading, trip, fetchData,
@@ -862,6 +932,8 @@ export function useKenyaData() {
     mediaCalendar, mediaAssignments, shotList, waitingList,
     // Phase 4 data
     actionItems, trackDetails, trackMaterials, adminNotes,
+    // Phase 5 data
+    supportRoles,
     // Save status
     saveStatus,
     // Stats
@@ -905,5 +977,9 @@ export function useKenyaData() {
     updateTrackDetailField, addTrackMaterial, toggleTrackMaterial, deleteTrackMaterial,
     // Admin notes handlers
     addAdminNote, updateAdminNoteField, deleteAdminNote,
+    // Lodging add handler
+    addLodging,
+    // Support roles handlers
+    addSupportRole, updateSupportRoleField, deleteSupportRole,
   }
 }

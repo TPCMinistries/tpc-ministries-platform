@@ -339,4 +339,17 @@ export interface AdminNote {
   updated_at: string
 }
 
+export interface SupportRole {
+  id: string
+  trip_id: string
+  role_name: string
+  when_where: string | null
+  assigned_to: string | null
+  status: string
+  notes: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
 export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'packing' | 'comms' | 'media' | 'pipeline' | 'prayer' | 'notes'

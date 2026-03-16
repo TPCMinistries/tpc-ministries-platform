@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
@@ -33,9 +34,13 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        // Check if this is an ebook purchase or donation
+        // Route by metadata type
         if (session.metadata?.type === 'ebook') {
           await recordEbookPurchase(session)
+        } else if (session.metadata?.type === 'pack-fund') {
+          await handlePackFundCompleted(session)
+        } else if (session.metadata?.type === 'pack-sponsorship') {
+          await handlePackSponsorshipCompleted(session)
         } else {
           await recordDonation(session)
         }
@@ -259,4 +264,59 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
   }
 
   console.log('Subscription canceled:', subscription.id)
+}
+
+// ── Pack the Mission: Supply Fund ──
+async function handlePackFundCompleted(session: Stripe.Checkout.Session) {
+  const supabase = createAdminClient()
+  const fundRecordId = session.metadata?.fund_record_id
+
+  if (!fundRecordId) {
+    console.error('Pack fund webhook: missing fund_record_id in metadata')
+    return
+  }
+
+  const { error } = await supabase
+    .from('kenya_supply_funds')
+    .update({
+      status: 'completed',
+      stripe_payment_intent: session.payment_intent as string,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', fundRecordId)
+
+  if (error) {
+    console.error('Error updating pack fund record:', error)
+    throw error
+  }
+
+  console.log('Pack fund completed:', fundRecordId)
+}
+
+// ── Pack the Mission: Sponsorship ──
+async function handlePackSponsorshipCompleted(session: Stripe.Checkout.Session) {
+  const supabase = createAdminClient()
+  const sponsorshipId = session.metadata?.sponsorship_record_id
+
+  if (!sponsorshipId) {
+    console.error('Pack sponsorship webhook: missing sponsorship_record_id in metadata')
+    return
+  }
+
+  const { error } = await supabase
+    .from('kenya_sponsorships')
+    .update({
+      status: 'active',
+      stripe_payment_intent: session.payment_intent as string,
+      stripe_subscription_id: session.subscription as string | null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', sponsorshipId)
+
+  if (error) {
+    console.error('Error updating sponsorship record:', error)
+    throw error
+  }
+
+  console.log('Pack sponsorship activated:', sponsorshipId)
 }
