@@ -15,7 +15,7 @@ export function DevotionalSection() {
   return (
     <Section className="bg-gradient-to-br from-gold-50 to-gold-100/50">
       <div className="mx-auto max-w-5xl">
-        <div className="grid items-center gap-12 md:grid-cols-2">
+        <div className="grid items-center gap-8 md:gap-12 md:grid-cols-2">
           {/* Content */}
           <ScrollReveal variant="fade-left" className="text-center md:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-gold/20 px-4 py-2">

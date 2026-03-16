@@ -27,7 +27,7 @@ export function GivingCtaSection() {
           <h2 className="mx-auto mb-6 max-w-3xl font-display text-display-md md:text-display-lg lg:text-display-xl text-white">
             Your Generosity Changes Lives
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-body-lg text-white/50">
+          <p className="mx-auto mb-8 md:mb-12 max-w-2xl text-body-lg text-white/50">
             Every gift transforms lives across Kenya, South Africa, and Grenada —
             spreading the Gospel and building lasting impact.
           </p>
@@ -35,7 +35,7 @@ export function GivingCtaSection() {
 
         {/* Impact tiers */}
         <ScrollReveal delay={0.15}>
-          <div className="mb-14 grid gap-4 sm:grid-cols-3">
+          <div className="mb-10 md:mb-14 grid gap-4 sm:grid-cols-3">
             {impactStats.map((stat) => (
               <div
                 key={stat.amount}

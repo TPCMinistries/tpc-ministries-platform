@@ -37,7 +37,7 @@ export function MinistryCardsSection() {
   return (
     <Section className="bg-navy dark:bg-navy-950">
       <div className="mx-auto max-w-6xl">
-        <ScrollReveal className="mb-16 text-center">
+        <ScrollReveal className="mb-10 md:mb-16 text-center">
           <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Digital Ministry
           </p>
@@ -51,7 +51,7 @@ export function MinistryCardsSection() {
           {/* Large card — spans 3 cols */}
           <StaggerItem className="lg:col-span-3 lg:row-span-2">
             <Link href={ministryCards[0].href} className="group block h-full">
-              <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:shadow-2xl hover:shadow-gold/5 md:p-12">
+              <div className="relative h-full overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:shadow-2xl hover:shadow-gold/5 sm:p-8 md:p-12">
                 <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/20">
                   <BookOpen className="h-8 w-8 text-gold" />
                 </div>

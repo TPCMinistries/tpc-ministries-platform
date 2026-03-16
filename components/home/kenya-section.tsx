@@ -70,7 +70,7 @@ export function KenyaSection() {
         />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="grid items-center gap-8 lg:gap-12 md:grid-cols-2">
           {/* Content */}
           <div className="text-white">
             <ScrollReveal variant="fade-left">
@@ -149,7 +149,7 @@ export function KenyaSection() {
           </div>
 
           {/* Trip Flier */}
-          <ScrollReveal variant="fade-right" className="hidden lg:block">
+          <ScrollReveal variant="fade-right" className="hidden md:block">
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-amber-500/20 to-transparent blur-2xl" />
               <Link href="/kenya" className="relative block">

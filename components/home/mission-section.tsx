@@ -18,7 +18,7 @@ export function MissionSection() {
       {/* Full-width editorial layout */}
       <div className="mx-auto max-w-6xl">
         {/* Big quote / mission statement */}
-        <ScrollReveal className="mb-16 text-center">
+        <ScrollReveal className="mb-10 md:mb-16 text-center">
           <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
             Our Mission
           </p>
@@ -28,7 +28,7 @@ export function MissionSection() {
         </ScrollReveal>
 
         {/* Two-column: Image + Text */}
-        <div className="grid items-center gap-16 lg:grid-cols-2">
+        <div className="grid items-center gap-8 lg:gap-16 lg:grid-cols-2">
           {/* Left — Image with overlay badge */}
           <ScrollReveal variant="fade-left">
             <div className="relative">
@@ -67,7 +67,7 @@ export function MissionSection() {
         </div>
 
         {/* Stats bar — full width */}
-        <ScrollReveal delay={0.2} className="mt-20">
+        <ScrollReveal delay={0.2} className="mt-12 md:mt-20">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
             {stats.map((stat) => (
               <div key={stat.label} className="px-6 py-4 text-center md:py-6">
