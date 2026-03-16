@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   BookOpen, Play, Sparkles, ClipboardList, 
   ChevronRight, Clock, CheckCircle, Award
@@ -63,6 +63,8 @@ export function GrowTab({
   continueWatching,
   overallProgress = 0,
 }: GrowTabProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -76,9 +78,9 @@ export function GrowTab({
   return (
     <motion.div
       className="space-y-6 pb-24 lg:pb-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      variants={shouldReduceMotion ? undefined : containerVariants}
+      initial={shouldReduceMotion ? undefined : "hidden"}
+      animate={shouldReduceMotion ? undefined : "visible"}
     >
       {/* Progress Header */}
       <motion.div variants={itemVariants}>

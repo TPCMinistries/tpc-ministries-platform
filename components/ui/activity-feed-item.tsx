@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   Heart, BookOpen, Gift, Users, Calendar, 
   Sparkles, MessageSquare, Award, CheckCircle
@@ -116,19 +116,20 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ items, maxItems = 10, className }: ActivityFeedProps) {
   const displayItems = items.slice(0, maxItems)
+  const shouldReduceMotion = useReducedMotion()
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+      animate={shouldReduceMotion ? undefined : { opacity: 1 }}
       className={cn("space-y-1", className)}
     >
       {displayItems.map((item, index) => (
         <motion.div
           key={index}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.05 }}
+          initial={shouldReduceMotion ? undefined : { opacity: 0, x: -10 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+          transition={shouldReduceMotion ? undefined : { delay: index * 0.05 }}
         >
           <ActivityFeedItem {...item} />
         </motion.div>

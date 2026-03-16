@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { BookOpen, Share2, Heart, RefreshCw } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,7 @@ export function VerseCard({
   className,
 }: VerseCardProps) {
   const [isSaved, setIsSaved] = React.useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   const handleSave = () => {
     setIsSaved(!isSaved)
@@ -36,8 +37,8 @@ export function VerseCard({
   if (variant === "hero") {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
+        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
         className={cn(
           "relative overflow-hidden rounded-2xl bg-gradient-to-br from-tpc-navy via-tpc-navy/95 to-tpc-navy/90 text-white p-8",
           className

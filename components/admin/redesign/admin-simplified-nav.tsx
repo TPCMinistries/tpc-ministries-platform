@@ -268,12 +268,13 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
         <button
           onClick={() => setIsMobileOpen(true)}
           className="text-white p-2 -ml-2"
+          aria-label="Open navigation menu"
         >
           <Menu className="h-6 w-6" />
         </button>
         <span className="ml-3 font-semibold text-white">TPC Admin</span>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-white">
+          <Button variant="ghost" size="icon" className="text-white" aria-label="Notifications">
             <Bell className="h-5 w-5" />
             {unreadMessages > 0 && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
@@ -303,6 +304,7 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
               <button
                 onClick={() => setIsMobileOpen(false)}
                 className="absolute top-4 right-4 text-white/70 hover:text-white"
+                aria-label="Close navigation menu"
               >
                 <X className="h-6 w-6" />
               </button>

@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
-import { 
-  AlertTriangle, MessageSquare, UserPlus, Heart, 
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+import {
+  AlertTriangle, MessageSquare, UserPlus, Heart,
   ChevronRight, CheckCircle, Clock, Bell
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,18 +34,24 @@ interface NeedsAttentionPanelProps {
 }
 
 const typeConfig: Record<AttentionItemType, { icon: React.ElementType; color: string; bg: string }> = {
-  message: { icon: MessageSquare, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30" },
-  lead: { icon: UserPlus, color: "text-green-600", bg: "bg-green-100 dark:bg-green-900/30" },
-  prayer: { icon: Heart, color: "text-pink-600", bg: "bg-pink-100 dark:bg-pink-900/30" },
-  member: { icon: UserPlus, color: "text-purple-600", bg: "bg-purple-100 dark:bg-purple-900/30" },
-  event: { icon: Bell, color: "text-orange-600", bg: "bg-orange-100 dark:bg-orange-900/30" },
-  custom: { icon: AlertTriangle, color: "text-yellow-600", bg: "bg-yellow-100 dark:bg-yellow-900/30" },
+  message: { icon: MessageSquare, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
+  lead: { icon: UserPlus, color: "text-success dark:text-success-foreground", bg: "bg-success/10 dark:bg-success/20" },
+  prayer: { icon: Heart, color: "text-spiritual dark:text-spiritual-foreground", bg: "bg-spiritual/10 dark:bg-spiritual/20" },
+  member: { icon: UserPlus, color: "text-navy dark:text-navy-300", bg: "bg-navy-100 dark:bg-navy-900/30" },
+  event: { icon: Bell, color: "text-warning dark:text-warning-foreground", bg: "bg-warning/10 dark:bg-warning/20" },
+  custom: { icon: AlertTriangle, color: "text-gold-700 dark:text-gold-300", bg: "bg-gold-100 dark:bg-gold-900/30" },
 }
 
 const urgencyConfig = {
-  high: { border: "border-l-red-500", badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  medium: { border: "border-l-yellow-500", badge: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-  low: { border: "border-l-blue-500", badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+  high: { border: "border-l-destructive", badge: "bg-destructive/10 text-destructive dark:bg-destructive/20" },
+  medium: { border: "border-l-warning", badge: "bg-warning/10 text-warning dark:bg-warning/20" },
+  low: { border: "border-l-blue-500 dark:border-l-blue-400", badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+}
+
+const itemVariants = {
+  initial: { opacity: 0, x: -20, height: "auto" as const },
+  animate: { opacity: 1, x: 0, height: "auto" as const },
+  exit: { opacity: 0, x: 60, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 },
 }
 
 export function NeedsAttentionPanel({
@@ -56,6 +62,7 @@ export function NeedsAttentionPanel({
   className,
 }: NeedsAttentionPanelProps) {
   const [dismissedIds, setDismissedIds] = React.useState<Set<string>>(new Set())
+  const shouldReduceMotion = useReducedMotion()
 
   const visibleItems = items
     .filter(item => !dismissedIds.has(item.id))
@@ -66,27 +73,31 @@ export function NeedsAttentionPanel({
     onDismiss?.(id)
   }
 
+  const transition = shouldReduceMotion
+    ? { duration: 0 }
+    : { type: "spring" as const, stiffness: 300, damping: 25 }
+
   if (visibleItems.length === 0) {
     return (
-      <Card className={cn("border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/10", className)}>
+      <Card className={cn("border-success/30 bg-success/5 dark:border-success/20 dark:bg-success/5", className)}>
         <CardContent className="p-6 text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3">
-            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+          <div className="w-12 h-12 rounded-full bg-success/10 dark:bg-success/20 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle className="h-6 w-6 text-success" />
           </div>
-          <h3 className="font-semibold text-green-800 dark:text-green-300 mb-1">All Caught Up!</h3>
-          <p className="text-sm text-green-600 dark:text-green-400">No items need your attention right now.</p>
+          <h3 className="font-semibold text-success mb-1">All Caught Up!</h3>
+          <p className="text-sm text-muted-foreground">No items need your attention right now.</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className={cn("border-orange-200 dark:border-orange-800", className)}>
+    <Card className={cn("border-warning/30 dark:border-warning/20", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            <div className="w-8 h-8 rounded-full bg-warning/10 dark:bg-warning/20 flex items-center justify-center">
+              <AlertTriangle className="h-4 w-4 text-warning" />
             </div>
             Needs Attention
             <Badge variant="secondary" className="ml-1">
@@ -101,71 +112,89 @@ export function NeedsAttentionPanel({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="space-y-2">
-          {visibleItems.map((item, index) => {
-            const config = typeConfig[item.type]
-            const urgency = urgencyConfig[item.urgency]
-            const Icon = config.icon
+        <AnimatePresence mode="popLayout" initial={false}>
+          <div className="space-y-2">
+            {visibleItems.map((item, index) => {
+              const config = typeConfig[item.type]
+              const urgency = urgencyConfig[item.urgency]
+              const Icon = config.icon
 
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: index * 0.05 }}
-                className={cn(
-                  "group flex items-start gap-3 p-3 rounded-lg border-l-4 bg-muted/30 hover:bg-muted/50 transition-colors",
-                  urgency.border
-                )}
-              >
-                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", config.bg)}>
-                  <Icon className={cn("h-4 w-4", config.color)} />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium text-sm line-clamp-1">{item.title}</span>
-                    {item.urgency === "high" && (
-                      <Badge className={urgency.badge} variant="secondary">
-                        Urgent
-                      </Badge>
+              const content = (
+                <div
+                  className={cn(
+                    "group flex items-start gap-3 p-3 rounded-lg border-l-4 bg-muted/30 hover:bg-muted/50 transition-colors",
+                    urgency.border
+                  )}
+                >
+                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", config.bg)}>
+                    <Icon className={cn("h-4 w-4", config.color)} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-medium text-sm line-clamp-1">{item.title}</span>
+                      {item.urgency === "high" && (
+                        <Badge className={urgency.badge} variant="secondary">
+                          Urgent
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{item.description}</p>
+                    {item.timestamp && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {item.timestamp}
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-1">{item.description}</p>
-                  {item.timestamp && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {item.timestamp}
-                    </div>
-                  )}
-                </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleDismiss(item.id)}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="h-8"
-                    asChild
-                  >
-                    <Link href={item.href}>
-                      {item.actionLabel || "Handle"}
-                      <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => handleDismiss(item.id)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8"
+                      asChild
+                    >
+                      <Link href={item.href}>
+                        {item.actionLabel || "Handle"}
+                        <ChevronRight className="h-3 w-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </motion.div>
-            )
-          })}
-        </div>
+              )
+
+              if (shouldReduceMotion) {
+                return <div key={item.id}>{content}</div>
+              }
+
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  variants={itemVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{
+                    ...transition,
+                    delay: index * 0.05,
+                  }}
+                >
+                  {content}
+                </motion.div>
+              )
+            })}
+          </div>
+        </AnimatePresence>
       </CardContent>
     </Card>
   )

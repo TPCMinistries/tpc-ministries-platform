@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   LayoutDashboard, MessageSquare, FileText, Users, BarChart3
 } from "lucide-react"
@@ -24,6 +24,7 @@ interface AdminBottomNavProps {
 
 export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
   const pathname = usePathname()
+  const shouldReduceMotion = useReducedMotion()
 
   const navItems: NavItem[] = [
     {
@@ -85,16 +86,16 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
             >
               {active && (
                 <motion.div
-                  layoutId="adminBottomNavIndicator"
+                  layoutId={shouldReduceMotion ? undefined : "adminBottomNavIndicator"}
                   className="absolute -top-0.5 w-12 h-1 bg-tpc-gold rounded-full"
-                  transition={{ type: "spring", duration: 0.5 }}
+                  transition={shouldReduceMotion ? undefined : { type: "spring", duration: 0.5 }}
                 />
               )}
-              
+
               <div className="relative">
                 <motion.div
-                  animate={active ? { scale: 1.1 } : { scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500 }}
+                  animate={shouldReduceMotion ? undefined : (active ? { scale: 1.1 } : { scale: 1 })}
+                  transition={shouldReduceMotion ? undefined : { type: "spring", stiffness: 500 }}
                 >
                   <Icon className="h-5 w-5 mb-1" />
                 </motion.div>

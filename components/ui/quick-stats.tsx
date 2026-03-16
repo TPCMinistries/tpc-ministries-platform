@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   TrendingUp, TrendingDown, Minus,
   Users, DollarSign, Heart, BookOpen,
@@ -49,6 +49,8 @@ export function QuickStats({
   variant = "default",
   className,
 }: QuickStatsProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   const gridCols = {
     2: "grid-cols-2",
     3: "grid-cols-3",
@@ -67,9 +69,9 @@ export function QuickStats({
           return (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
+              animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={shouldReduceMotion ? undefined : { delay: index * 0.05 }}
             >
               <Card className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
@@ -112,9 +114,9 @@ export function QuickStats({
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.03 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.9 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+            transition={shouldReduceMotion ? undefined : { delay: index * 0.03 }}
             className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg"
           >
             <span className="text-lg font-bold">{stat.value}</span>
@@ -145,9 +147,9 @@ export function QuickStats({
         return (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+            animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={shouldReduceMotion ? undefined : { delay: index * 0.05 }}
             className="p-4 bg-muted/30 rounded-xl border"
           >
             <div className="flex items-center gap-3">

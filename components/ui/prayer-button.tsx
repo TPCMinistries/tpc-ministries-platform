@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,7 @@ export function PrayerButton({
   const [isAnimating, setIsAnimating] = React.useState(false)
   const [localPrayed, setLocalPrayed] = React.useState(hasPrayed)
   const [localCount, setLocalCount] = React.useState(prayerCount)
+  const shouldReduceMotion = useReducedMotion()
 
   const handleClick = async () => {
     if (localPrayed) return
@@ -83,7 +84,7 @@ export function PrayerButton({
     >
       {/* Ripple effect on click */}
       <AnimatePresence>
-        {isAnimating && (
+        {isAnimating && !shouldReduceMotion && (
           <motion.span
             initial={{ scale: 0, opacity: 0.5 }}
             animate={{ scale: 4, opacity: 0 }}
@@ -97,11 +98,11 @@ export function PrayerButton({
 
       {/* Heart icon with animation */}
       <motion.span
-        animate={isAnimating ? { 
+        animate={isAnimating && !shouldReduceMotion ? {
           scale: [1, 1.4, 1],
           rotate: [0, -15, 15, 0]
         } : {}}
-        transition={{ duration: 0.4 }}
+        transition={shouldReduceMotion ? undefined : { duration: 0.4 }}
         className="relative z-10"
       >
         <Heart 
@@ -119,10 +120,10 @@ export function PrayerButton({
           <AnimatePresence mode="popLayout">
             <motion.span
               key={localCount}
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 10, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              initial={shouldReduceMotion ? undefined : { y: -10, opacity: 0 }}
+              animate={shouldReduceMotion ? undefined : { y: 0, opacity: 1 }}
+              exit={shouldReduceMotion ? undefined : { y: 10, opacity: 0 }}
+              transition={shouldReduceMotion ? undefined : { duration: 0.2 }}
               className="tabular-nums"
             >
               {localCount > 0 && `(${localCount})`}
@@ -133,12 +134,12 @@ export function PrayerButton({
 
       {/* Floating hearts on pray */}
       <AnimatePresence>
-        {isAnimating && (
+        {isAnimating && !shouldReduceMotion && (
           <>
             {[...Array(3)].map((_, i) => (
               <motion.span
                 key={i}
-                initial={{ 
+                initial={{
                   y: 0, 
                   x: 0, 
                   opacity: 1, 

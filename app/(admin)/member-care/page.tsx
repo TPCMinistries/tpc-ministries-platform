@@ -1169,7 +1169,7 @@ export default function MemberCarePage() {
         {/* Message Modal */}
         {showMessageModal && selectedCelebration && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4">
+            <div className="bg-card rounded-xl p-6 max-w-lg w-full mx-4">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-navy">Send Message</h2>
                 <button onClick={() => setShowMessageModal(false)}><X className="h-5 w-5" /></button>

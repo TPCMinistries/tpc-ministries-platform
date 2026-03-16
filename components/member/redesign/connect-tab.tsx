@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { 
   Heart, Users, Calendar, MessageSquare,
   ChevronRight, Plus, Sparkles, PartyPopper
@@ -57,6 +57,8 @@ export function ConnectTab({
   upcomingEvents = [],
   onPray,
 }: ConnectTabProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -70,9 +72,9 @@ export function ConnectTab({
   return (
     <motion.div
       className="space-y-6 pb-24 lg:pb-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      variants={shouldReduceMotion ? undefined : containerVariants}
+      initial={shouldReduceMotion ? undefined : "hidden"}
+      animate={shouldReduceMotion ? undefined : "visible"}
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
