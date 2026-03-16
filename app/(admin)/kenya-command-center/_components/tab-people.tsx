@@ -112,7 +112,7 @@ export function TabPeople({
   const [newHotelCheckOut, setNewHotelCheckOut] = useState('')
 
   const handleAddDelegate = () => {
-    if (newDelegateFirst.trim() && newDelegateLast.trim()) {
+    if (newDelegateFirst.trim()) {
       addParticipantDirect(newDelegateFirst.trim(), newDelegateLast.trim())
       setNewDelegateFirst('')
       setNewDelegateLast('')
