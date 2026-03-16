@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
   Search,
@@ -18,7 +17,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Video
+  Video,
+  ArrowRight
 } from 'lucide-react'
 
 interface Teaching {
@@ -107,13 +107,13 @@ export default function TeachingsPage() {
 
   const getTypeBadgeColor = (contentType: string) => {
     const colors: Record<string, string> = {
-      video: 'bg-red-100 text-red-700',
-      article: 'bg-blue-100 text-blue-700',
-      book: 'bg-purple-100 text-purple-700',
-      audio: 'bg-green-100 text-green-700',
-      podcast: 'bg-green-100 text-green-700',
+      video: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300',
+      article: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+      book: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+      audio: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300',
+      podcast: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300',
     }
-    return colors[contentType] || 'bg-gray-100 text-gray-700'
+    return colors[contentType] || 'bg-secondary text-muted-foreground'
   }
 
   const formatDate = (dateStr: string) => {
@@ -145,78 +145,81 @@ export default function TeachingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-8">
-            <h1 className="mb-4 font-serif text-5xl font-bold text-white md:text-6xl">
-              Teachings & Resources
-            </h1>
-            <p className="text-xl text-gray-300">
-              Transformative content for your spiritual growth
-            </p>
-          </div>
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Learn &amp; Grow
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+            Teachings &amp; Resources
+          </h1>
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
+            Transformative content for your spiritual growth
+          </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+          <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-2xl">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search teachings, topics, speakers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 text-lg border-0 shadow-lg"
+                className="h-14 border-white/10 bg-white/10 pl-12 text-lg text-white placeholder:text-white/40 backdrop-blur-sm focus:border-gold/50 focus:bg-white/15"
               />
             </div>
           </form>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Main Content */}
-      <section className="px-4 py-12">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-7xl">
           <div className="flex gap-8">
             {/* Desktop Filter Sidebar */}
-            <aside className="hidden lg:block w-64 flex-shrink-0">
+            <aside className="hidden w-64 flex-shrink-0 lg:block">
               <div className="sticky top-4 space-y-6">
                 {/* Content Type Filter */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm text-navy">Content Type</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
+                <div className="rounded-2xl border border-border bg-card p-6">
+                  <h3 className="mb-4 font-display text-body-md font-semibold text-navy dark:text-white">Content Type</h3>
+                  <div className="space-y-2">
                     {contentTypes.map((type) => (
                       <button
                         key={type.value}
                         onClick={() => { setSelectedType(type.value); setPage(1) }}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                        className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors ${
                           selectedType === type.value
-                            ? 'bg-navy text-white'
-                            : 'hover:bg-gray-100 text-gray-700'
+                            ? 'bg-navy text-white dark:bg-gold dark:text-navy-950'
+                            : 'text-muted-foreground hover:bg-secondary'
                         }`}
                       >
                         <type.icon className="h-4 w-4" />
                         {type.label}
                       </button>
                     ))}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Topics Filter */}
                 {topics.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm text-navy">Topics</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-1">
+                  <div className="rounded-2xl border border-border bg-card p-6">
+                    <h3 className="mb-4 font-display text-body-md font-semibold text-navy dark:text-white">Topics</h3>
+                    <div className="space-y-1">
                       <button
                         onClick={() => { setSelectedTopic('all'); setPage(1) }}
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        className={`w-full rounded-xl px-3 py-2 text-left text-body-sm transition-colors ${
                           selectedTopic === 'all'
-                            ? 'bg-gold text-white'
-                            : 'hover:bg-gray-100 text-gray-700'
+                            ? 'bg-gold text-navy-950'
+                            : 'text-muted-foreground hover:bg-secondary'
                         }`}
                       >
                         All Topics
@@ -225,17 +228,17 @@ export default function TeachingsPage() {
                         <button
                           key={topic}
                           onClick={() => { setSelectedTopic(topic); setPage(1) }}
-                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                          className={`w-full rounded-xl px-3 py-2 text-left text-body-sm transition-colors ${
                             selectedTopic === topic
-                              ? 'bg-gold text-white'
-                              : 'hover:bg-gray-100 text-gray-700'
+                              ? 'bg-gold text-navy-950'
+                              : 'text-muted-foreground hover:bg-secondary'
                           }`}
                         >
                           {topicLabels[topic] || topic}
                         </button>
                       ))}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
               </div>
             </aside>
@@ -244,9 +247,9 @@ export default function TeachingsPage() {
             {showFilters && (
               <div className="fixed inset-0 z-50 lg:hidden">
                 <div className="absolute inset-0 bg-black/50" onClick={() => setShowFilters(false)} />
-                <div className="absolute right-0 top-0 bottom-0 w-80 bg-white p-6 overflow-y-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-navy">Filters</h3>
+                <div className="absolute bottom-0 right-0 top-0 w-80 overflow-y-auto bg-background p-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <h3 className="font-display text-display-xs text-navy dark:text-white">Filters</h3>
                     <button onClick={() => setShowFilters(false)}>
                       <X className="h-5 w-5" />
                     </button>
@@ -254,16 +257,16 @@ export default function TeachingsPage() {
 
                   <div className="space-y-6">
                     <div>
-                      <h4 className="font-semibold text-navy mb-3">Content Type</h4>
+                      <h4 className="mb-3 font-display text-body-md font-semibold text-navy dark:text-white">Content Type</h4>
                       <div className="space-y-2">
                         {contentTypes.map((type) => (
                           <button
                             key={type.value}
                             onClick={() => { setSelectedType(type.value); setPage(1) }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                            className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors ${
                               selectedType === type.value
-                                ? 'bg-navy text-white'
-                                : 'hover:bg-gray-100 text-gray-700'
+                                ? 'bg-navy text-white dark:bg-gold dark:text-navy-950'
+                                : 'text-muted-foreground hover:bg-secondary'
                             }`}
                           >
                             <type.icon className="h-4 w-4" />
@@ -275,14 +278,14 @@ export default function TeachingsPage() {
 
                     {topics.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-navy mb-3">Topics</h4>
+                        <h4 className="mb-3 font-display text-body-md font-semibold text-navy dark:text-white">Topics</h4>
                         <div className="space-y-1">
                           <button
                             onClick={() => { setSelectedTopic('all'); setPage(1) }}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                            className={`w-full rounded-xl px-3 py-2 text-left text-body-sm transition-colors ${
                               selectedTopic === 'all'
-                                ? 'bg-gold text-white'
-                                : 'hover:bg-gray-100 text-gray-700'
+                                ? 'bg-gold text-navy-950'
+                                : 'text-muted-foreground hover:bg-secondary'
                             }`}
                           >
                             All Topics
@@ -291,10 +294,10 @@ export default function TeachingsPage() {
                             <button
                               key={topic}
                               onClick={() => { setSelectedTopic(topic); setPage(1) }}
-                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                              className={`w-full rounded-xl px-3 py-2 text-left text-body-sm transition-colors ${
                                 selectedTopic === topic
-                                  ? 'bg-gold text-white'
-                                  : 'hover:bg-gray-100 text-gray-700'
+                                  ? 'bg-gold text-navy-950'
+                                  : 'text-muted-foreground hover:bg-secondary'
                               }`}
                             >
                               {topicLabels[topic] || topic}
@@ -307,7 +310,8 @@ export default function TeachingsPage() {
 
                   <Button
                     onClick={() => setShowFilters(false)}
-                    className="w-full mt-6 bg-navy hover:bg-navy/90"
+                    variant="glow"
+                    className="mt-6 w-full"
                   >
                     Apply Filters
                   </Button>
@@ -316,10 +320,11 @@ export default function TeachingsPage() {
             )}
 
             {/* Mobile Filter Button */}
-            <div className="lg:hidden fixed bottom-4 right-4 z-40">
+            <div className="fixed bottom-4 right-4 z-40 lg:hidden">
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="rounded-full h-14 w-14 bg-navy hover:bg-navy/90 shadow-lg"
+                variant="glow"
+                className="h-14 w-14 rounded-full shadow-lg"
               >
                 <Filter className="h-6 w-6" />
               </Button>
@@ -328,13 +333,13 @@ export default function TeachingsPage() {
             {/* Main Content Grid */}
             <div className="flex-1">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-navy">
+                <h2 className="font-display text-display-xs text-navy dark:text-white">
                   {loading ? 'Loading...' : `${total} ${total === 1 ? 'Result' : 'Results'}`}
                 </h2>
                 <select
                   value={sortBy}
                   onChange={(e) => { setSortBy(e.target.value); setPage(1) }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm"
+                  className="rounded-xl border border-border bg-background px-4 py-2 text-body-sm text-foreground"
                 >
                   <option value="newest">Newest First</option>
                   <option value="popular">Most Popular</option>
@@ -343,43 +348,41 @@ export default function TeachingsPage() {
               </div>
 
               {loading ? (
-                <div className="flex justify-center py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy"></div>
+                <div className="flex justify-center py-section">
+                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-navy dark:border-gold"></div>
                 </div>
               ) : teachings.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                    <Video className="h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 text-lg mb-2">No teachings found</p>
-                    <p className="text-gray-500 text-sm mb-6">Try adjusting your filters or search query</p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedType('all')
-                        setSelectedTopic('all')
-                        setSearchQuery('')
-                        setPage(1)
-                      }}
-                    >
-                      Clear Filters
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="rounded-3xl border border-dashed border-border bg-card p-16 text-center">
+                  <Video className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="mb-2 text-body-lg text-foreground">No teachings found</p>
+                  <p className="mb-6 text-body-sm text-muted-foreground">Try adjusting your filters or search query</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedType('all')
+                      setSelectedTopic('all')
+                      setSearchQuery('')
+                      setPage(1)
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
               ) : (
                 <>
                   <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {teachings.map((teaching) => (
                       <Link key={teaching.id} href={`/teachings/${teaching.id}`}>
-                        <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full cursor-pointer">
-                          <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-navy/80 to-navy">
+                        <div className="group h-full cursor-pointer overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+                          <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-navy/80 to-navy">
                             {teaching.thumbnail_url ? (
                               <img
                                 src={teaching.thumbnail_url}
                                 alt={teaching.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center">
+                              <div className="flex h-full w-full items-center justify-center">
                                 {teaching.content_type === 'video' && <Play className="h-12 w-12 text-gold/50" />}
                                 {teaching.content_type === 'audio' && <Headphones className="h-12 w-12 text-gold/50" />}
                                 {teaching.content_type === 'podcast' && <Headphones className="h-12 w-12 text-gold/50" />}
@@ -388,49 +391,47 @@ export default function TeachingsPage() {
                                 {!['video', 'audio', 'podcast', 'article', 'book'].includes(teaching.content_type) && <Play className="h-12 w-12 text-gold/50" />}
                               </div>
                             )}
-                            <div className="absolute top-3 right-3">
+                            <div className="absolute right-3 top-3">
                               <button
                                 onClick={(e) => {
                                   e.preventDefault()
                                   // Handle bookmark
                                 }}
-                                className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
+                                className="rounded-full bg-white/90 p-2 shadow-lg transition-colors hover:bg-white"
                               >
                                 <Bookmark className="h-4 w-4 text-navy" />
                               </button>
                             </div>
                             <div className="absolute bottom-3 left-3">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getTypeBadgeColor(teaching.content_type)}`}>
+                              <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getTypeBadgeColor(teaching.content_type)}`}>
                                 {getTypeIcon(teaching.content_type)}
                                 {teaching.content_type.charAt(0).toUpperCase() + teaching.content_type.slice(1)}
                               </span>
                             </div>
                             {teaching.is_premium && (
-                              <div className="absolute top-3 left-3">
-                                <span className="px-2 py-1 bg-gold text-navy text-xs font-bold rounded">
+                              <div className="absolute left-3 top-3">
+                                <span className="rounded bg-gold px-2 py-1 text-xs font-bold text-navy">
                                   PREMIUM
                                 </span>
                               </div>
                             )}
                           </div>
 
-                          <CardHeader>
-                            <CardTitle className="text-lg text-navy group-hover:text-gold transition-colors line-clamp-2">
+                          <div className="p-6">
+                            <h3 className="mb-1 font-display text-body-lg font-semibold text-navy transition-colors group-hover:text-gold dark:text-white dark:group-hover:text-gold">
                               {teaching.title}
-                            </CardTitle>
-                            <CardDescription className="text-sm text-gray-600">
+                            </h3>
+                            <p className="mb-3 text-body-sm text-muted-foreground">
                               By {teaching.author || 'TPC Ministries'}
-                            </CardDescription>
-                          </CardHeader>
+                            </p>
 
-                          <CardContent>
                             {teaching.description && (
-                              <p className="text-gray-700 text-sm line-clamp-2 mb-4">
+                              <p className="mb-4 line-clamp-2 text-body-sm text-muted-foreground">
                                 {teaching.description}
                               </p>
                             )}
 
-                            <div className="flex items-center justify-between text-xs text-gray-500">
+                            <div className="flex items-center justify-between text-body-sm text-muted-foreground">
                               {teaching.duration_minutes && (
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
@@ -445,24 +446,24 @@ export default function TeachingsPage() {
                                 <span>{formatDate(teaching.published_at)}</span>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       </Link>
                     ))}
                   </div>
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 mt-8">
+                    <div className="mt-8 flex justify-center gap-2">
                       <Button
                         variant="outline"
                         disabled={page === 1}
                         onClick={() => setPage(p => p - 1)}
                       >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="mr-1 h-4 w-4" />
                         Previous
                       </Button>
-                      <span className="flex items-center px-4 text-sm text-gray-600">
+                      <span className="flex items-center px-4 text-body-sm text-muted-foreground">
                         Page {page} of {totalPages}
                       </span>
                       <Button
@@ -471,7 +472,7 @@ export default function TeachingsPage() {
                         onClick={() => setPage(p => p + 1)}
                       >
                         Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
+                        <ChevronRight className="ml-1 h-4 w-4" />
                       </Button>
                     </div>
                   )}
@@ -483,22 +484,32 @@ export default function TeachingsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-gold/10 to-amber-50">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-navy mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Go Deeper
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
             Want Access to Premium Content?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="mb-10 text-body-xl text-white/50">
             Join our community to unlock exclusive teachings, courses, and resources.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/auth/signup">
-              <Button size="lg" className="bg-navy hover:bg-navy/90">
+              <Button variant="glow" size="xl">
                 Create Free Account
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/partner">
-              <Button size="lg" variant="outline">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
                 Become a Partner
               </Button>
             </Link>
