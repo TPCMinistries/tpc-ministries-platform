@@ -1,10 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  AlertTriangle, CheckCircle, XCircle, Receipt, Plus, Star
+  AlertTriangle, CheckCircle, XCircle, Receipt, Plus, Star, Pencil, Save
 } from 'lucide-react'
 import type { Trip, Participant, Expense, Announcement, Stats } from './types'
 import { serviceTracks } from './constants'
@@ -23,12 +24,13 @@ interface TabOverviewProps {
   todayCheckins: CheckinData[]
   setActiveTab: (tab: string) => void
   setShowAnnouncementModal: (show: boolean) => void
+  updateTripField?: (field: string, value: string | number) => void
 }
 
 export function TabOverview({
   trip, participants, expenses, announcements, stats,
   todayCheckins,
-  setActiveTab, setShowAnnouncementModal,
+  setActiveTab, setShowAnnouncementModal, updateTripField,
 }: TabOverviewProps) {
   const approvedParticipants = participants.filter(p => p.application_status === 'approved')
   const checkedInIds = new Set(todayCheckins.map(c => c.participant_id))
@@ -115,37 +117,11 @@ export function TabOverview({
       </Card>
 
       {/* Fundraising Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Fundraising Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center mb-4">
-            <p className="text-4xl font-bold text-navy">${stats.totalRaised.toLocaleString()}</p>
-            <p className="text-gray-600">of ${stats.fundraisingGoal.toLocaleString()} goal</p>
-          </div>
-          <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-4">
-            <div
-              className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full"
-              style={{ width: `${Math.min((stats.totalRaised / stats.fundraisingGoal) * 100, 100)}%` }}
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="font-bold text-navy">{stats.fullyPaid}</p>
-              <p className="text-gray-600">Fully Paid</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="font-bold text-yellow-600">{participants.filter(p => p.payment_status === 'partial').length}</p>
-              <p className="text-gray-600">Partial</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="font-bold text-red-600">{participants.filter(p => p.payment_status === 'pending').length}</p>
-              <p className="text-gray-600">Pending</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <FundraisingCard
+        stats={stats}
+        participants={participants}
+        updateTripField={updateTripField}
+      />
 
       {/* Service Tracks */}
       <Card>
@@ -178,9 +154,7 @@ export function TabOverview({
             <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
               <span className="flex-1 text-sm">{stats.pendingApplications} applications need review</span>
-              <a href="/kenya-command-center/applications">
-                <Button size="sm" variant="outline">Review</Button>
-              </a>
+              <Button size="sm" variant="outline" onClick={() => setActiveTab('people')}>Review</Button>
             </div>
           )}
           {participants.filter(p => {
@@ -246,5 +220,105 @@ export function TabOverview({
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Editable fundraising card
+function FundraisingCard({
+  stats, participants, updateTripField,
+}: {
+  stats: Stats
+  participants: Participant[]
+  updateTripField?: (field: string, value: string | number) => void
+}) {
+  const [editingGoal, setEditingGoal] = useState(false)
+  const [goalValue, setGoalValue] = useState(String(stats.fundraisingGoal))
+
+  const handleSaveGoal = () => {
+    const parsed = parseInt(goalValue.replace(/[^0-9]/g, ''))
+    if (!isNaN(parsed) && parsed > 0 && updateTripField) {
+      updateTripField('fundraising_goal', parsed)
+    }
+    setEditingGoal(false)
+  }
+
+  const progressPercent = stats.fundraisingGoal > 0
+    ? Math.min((stats.totalRaised / stats.fundraisingGoal) * 100, 100)
+    : 0
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Fundraising Progress</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-center mb-4">
+          <p className="text-4xl font-bold text-navy">${stats.totalRaised.toLocaleString()}</p>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            {editingGoal ? (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">of $</span>
+                <input
+                  type="text"
+                  value={goalValue}
+                  onChange={(e) => setGoalValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
+                  className="w-[100px] border border-gray-300 rounded px-2 py-1 text-center text-sm font-medium focus:border-navy focus:ring-1 focus:ring-navy focus:outline-none"
+                  autoFocus
+                />
+                <span className="text-gray-600">goal</span>
+                <button
+                  onClick={handleSaveGoal}
+                  className="p-1 hover:bg-green-100 rounded text-green-600"
+                  title="Save"
+                >
+                  <Save className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => { setEditingGoal(false); setGoalValue(String(stats.fundraisingGoal)) }}
+                  className="p-1 hover:bg-gray-100 rounded text-gray-400"
+                  title="Cancel"
+                >
+                  <XCircle className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <p className="text-gray-600">of ${stats.fundraisingGoal.toLocaleString()} goal</p>
+                {updateTripField && (
+                  <button
+                    onClick={() => { setGoalValue(String(stats.fundraisingGoal)); setEditingGoal(true) }}
+                    className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-navy"
+                    title="Edit goal"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-gold to-gold-light rounded-full"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-4 text-center text-sm">
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="font-bold text-navy">{stats.fullyPaid}</p>
+            <p className="text-gray-600">Fully Paid</p>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="font-bold text-yellow-600">{participants.filter(p => p.payment_status === 'partial').length}</p>
+            <p className="text-gray-600">Partial</p>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="font-bold text-red-600">{participants.filter(p => p.payment_status === 'pending').length}</p>
+            <p className="text-gray-600">Pending</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
