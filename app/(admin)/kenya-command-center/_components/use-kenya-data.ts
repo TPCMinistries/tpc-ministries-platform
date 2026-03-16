@@ -950,6 +950,34 @@ export function useKenyaData() {
     await supabase.from('kenya_trip_support_roles').delete().eq('id', id)
   }
 
+  // ============ APPLICATION REVIEW HANDLERS ============
+
+  const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
+    // Call the approval API which updates status AND sends email
+    const response = await fetch('/api/admin/kenya-approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participantId: id, status, notes }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      // Optimistic update
+      setParticipants(prev => prev.map(p =>
+        p.id === id ? { ...p, application_status: status } : p
+      ))
+    }
+    return data
+  }
+
+  const requestMoreInfo = async (participantId: string, email: string, name: string, message: string) => {
+    const response = await fetch('/api/admin/kenya-request-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participantId, email, name, message }),
+    })
+    return response.json()
+  }
+
   // ============ KENYA INVITE HANDLERS ============
 
   const sendKenyaInvite = async (invite: {
@@ -1076,6 +1104,8 @@ export function useKenyaData() {
     addLodging,
     // Support roles handlers
     addSupportRole, updateSupportRoleField, deleteSupportRole,
+    // Application review handlers
+    updateApplicationStatus, requestMoreInfo,
     // Kenya invite handlers
     kenyaInvites, showInviteModal, setShowInviteModal,
     sendKenyaInvite, sendBulkKenyaInvites, resendKenyaInvite, deactivateKenyaInvite,
