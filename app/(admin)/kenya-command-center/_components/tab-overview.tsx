@@ -178,7 +178,9 @@ export function TabOverview({
             <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
               <span className="flex-1 text-sm">{stats.pendingApplications} applications need review</span>
-              <Button size="sm" variant="outline" onClick={() => setActiveTab('people')}>Review</Button>
+              <a href="/kenya-command-center/applications">
+                <Button size="sm" variant="outline">Review</Button>
+              </a>
             </div>
           )}
           {participants.filter(p => {
