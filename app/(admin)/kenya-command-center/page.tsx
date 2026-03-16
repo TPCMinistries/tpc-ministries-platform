@@ -18,7 +18,6 @@ import { TabBudget } from './_components/tab-budget'
 import { TabPacking } from './_components/tab-packing'
 import { TabComms } from './_components/tab-comms'
 import { TabMedia } from './_components/tab-media'
-import { TabPipeline } from './_components/tab-pipeline'
 import { TabPrayer } from './_components/tab-prayer'
 import { TabNotes } from './_components/tab-notes'
 import { ModalExpense } from './_components/modal-expense'
@@ -226,16 +225,33 @@ export default function KenyaCommandCenter() {
           />
         )}
 
-        {activeTab === 'packing' && (
-          <TabPacking
-            participants={data.participants}
-            packingItems={data.packingItems}
-            packingStatuses={data.packingStatuses}
-            addPackingItem={data.addPackingItem}
-            deletePackingItem={data.deletePackingItem}
-            togglePackingStatus={data.togglePackingStatus}
-            initializePackingForAll={data.initializePackingForAll}
-          />
+        {activeTab === 'supplies' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <span className="text-2xl">📦</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">Pack the Mission Campaign</p>
+                <p className="text-xs text-amber-700">Public supply drive page — delegates and supporters can pledge items, fund supplies, or sponsor categories.</p>
+              </div>
+              <a
+                href="/kenya/pack-the-mission"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+              >
+                Open Campaign Page →
+              </a>
+            </div>
+            <TabPacking
+              participants={data.participants}
+              packingItems={data.packingItems}
+              packingStatuses={data.packingStatuses}
+              addPackingItem={data.addPackingItem}
+              deletePackingItem={data.deletePackingItem}
+              togglePackingStatus={data.togglePackingStatus}
+              initializePackingForAll={data.initializePackingForAll}
+            />
+          </div>
         )}
 
         {activeTab === 'comms' && (
@@ -261,16 +277,6 @@ export default function KenyaCommandCenter() {
             addShotListItem={data.addShotListItem}
             toggleShotCaptured={data.toggleShotCaptured}
             deleteShotListItem={data.deleteShotListItem}
-          />
-        )}
-
-        {activeTab === 'pipeline' && (
-          <TabPipeline
-            waitingList={data.waitingList}
-            addWaitingListEntry={data.addWaitingListEntry}
-            updateWaitingListEntry={data.updateWaitingListEntry}
-            deleteWaitingListEntry={data.deleteWaitingListEntry}
-            promoteToDelegate={data.promoteToDelegate}
           />
         )}
 

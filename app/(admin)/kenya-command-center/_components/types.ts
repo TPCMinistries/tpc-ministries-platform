@@ -352,4 +352,4 @@ export interface SupportRole {
   updated_at: string
 }
 
-export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'packing' | 'comms' | 'media' | 'pipeline' | 'prayer' | 'notes'
+export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'
