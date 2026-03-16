@@ -47,6 +47,9 @@ export function useKenyaData() {
   // Phase 5 data state (migration 047)
   const [supportRoles, setSupportRoles] = useState<SupportRole[]>([])
 
+  // Check-in data
+  const [todayCheckins, setTodayCheckins] = useState<{ participant_id: string; checkin_date: string }[]>([])
+
   // Save indicator
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -218,6 +221,17 @@ export function useKenyaData() {
           .eq('trip_id', tripData.id)
           .order('sort_order')
         setSupportRoles(supportRes.data || [])
+      } catch { /* table may not exist yet */ }
+
+      // Fetch today's check-ins
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const checkinRes = await supabase
+          .from('kenya_trip_checkins')
+          .select('participant_id, checkin_date')
+          .eq('trip_id', tripData.id)
+          .eq('checkin_date', today)
+        setTodayCheckins(checkinRes.data || [])
       } catch { /* table may not exist yet */ }
 
       // Calculate stats
@@ -934,6 +948,8 @@ export function useKenyaData() {
     actionItems, trackDetails, trackMaterials, adminNotes,
     // Phase 5 data
     supportRoles,
+    // Check-in data
+    todayCheckins,
     // Save status
     saveStatus,
     // Stats

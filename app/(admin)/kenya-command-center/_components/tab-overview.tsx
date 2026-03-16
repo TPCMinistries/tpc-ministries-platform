@@ -9,22 +9,80 @@ import {
 import type { Trip, Participant, Expense, Announcement, Stats } from './types'
 import { serviceTracks } from './constants'
 
+interface CheckinData {
+  participant_id: string
+  checkin_date: string
+}
+
 interface TabOverviewProps {
   trip: Trip
   participants: Participant[]
   expenses: Expense[]
   announcements: Announcement[]
   stats: Stats
+  todayCheckins: CheckinData[]
   setActiveTab: (tab: string) => void
   setShowAnnouncementModal: (show: boolean) => void
 }
 
 export function TabOverview({
   trip, participants, expenses, announcements, stats,
+  todayCheckins,
   setActiveTab, setShowAnnouncementModal,
 }: TabOverviewProps) {
+  const approvedParticipants = participants.filter(p => p.application_status === 'approved')
+  const checkedInIds = new Set(todayCheckins.map(c => c.participant_id))
+  const checkedInCount = approvedParticipants.filter(p => checkedInIds.has(p.id)).length
+  const notCheckedIn = approvedParticipants.filter(p => !checkedInIds.has(p.id))
+
+  // Only show during/after trip start
+  const tripStarted = new Date(trip.start_date) <= new Date()
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
+      {/* Daily Check-In Dashboard */}
+      {tripStarted && approvedParticipants.length > 0 && (
+        <Card className="md:col-span-2 border-navy/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Daily Check-In — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </span>
+              <span className={`text-lg font-bold ${checkedInCount === approvedParticipants.length ? 'text-green-600' : 'text-amber-600'}`}>
+                {checkedInCount}/{approvedParticipants.length}
+              </span>
+            </CardTitle>
+            {/* Progress bar */}
+            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${checkedInCount === approvedParticipants.length ? 'bg-green-500' : 'bg-amber-500'}`}
+                style={{ width: `${approvedParticipants.length > 0 ? (checkedInCount / approvedParticipants.length * 100) : 0}%` }}
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {notCheckedIn.length === 0 ? (
+              <p className="text-sm text-green-600 font-medium">All delegates checked in today!</p>
+            ) : (
+              <div>
+                <p className="text-sm text-red-600 font-medium mb-2">
+                  Not yet checked in ({notCheckedIn.length}):
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {notCheckedIn.map(p => (
+                    <span key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-200 rounded-full text-xs text-red-800">
+                      <XCircle className="h-3 w-3" />
+                      {p.first_name} {p.last_name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Pipeline */}
       <Card>
         <CardHeader>

@@ -121,6 +121,7 @@ export default function KenyaCommandCenter() {
             expenses={data.expenses}
             announcements={data.announcements}
             stats={data.stats}
+            todayCheckins={data.todayCheckins}
             setActiveTab={(t) => setActiveTab(t as TabType)}
             setShowAnnouncementModal={data.setShowAnnouncementModal}
           />

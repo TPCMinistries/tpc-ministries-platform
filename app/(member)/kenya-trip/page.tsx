@@ -66,6 +66,12 @@ import {
   Type,
   Eye as EyeIcon,
 } from 'lucide-react'
+import { EmergencyCard } from './_components/emergency-card'
+import { DailyDevotional } from './_components/daily-devotional'
+import { DailyCheckin } from './_components/daily-checkin'
+import { ReadinessChecklist } from './_components/readiness-checklist'
+import { CulturalGuide } from './_components/cultural-guide'
+import { ImpactJournal } from './_components/impact-journal'
 
 interface Trip {
   id: string
@@ -1485,9 +1491,14 @@ export default function KenyaTripPage() {
           </Card>
         )}
 
+        {/* Emergency Card - always visible */}
+        {participant?.application_status === 'approved' && (
+          <EmergencyCard />
+        )}
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-10 mb-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-12 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="apply">{participant ? 'My Status' : 'Apply'}</TabsTrigger>
             <TabsTrigger value="docs">Documents</TabsTrigger>
@@ -1500,6 +1511,8 @@ export default function KenyaTripPage() {
                 <TabsTrigger value="mytrack">Tracks</TabsTrigger>
                 <TabsTrigger value="community">Community</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
+                <TabsTrigger value="guide">Guide</TabsTrigger>
+                <TabsTrigger value="journal">Journal</TabsTrigger>
               </>
             )}
           </TabsList>
@@ -1507,6 +1520,19 @@ export default function KenyaTripPage() {
           {/* OVERVIEW TAB */}
           <TabsContent value="overview">
             <div className="grid gap-6">
+              {/* Daily Devotional */}
+              {trip && <DailyDevotional tripId={trip.id} />}
+
+              {/* Daily Check-In */}
+              {trip && participant?.application_status === 'approved' && (
+                <DailyCheckin tripId={trip.id} participantId={participant.id} />
+              )}
+
+              {/* Pre-Trip Readiness */}
+              {participant?.application_status === 'approved' && (
+                <ReadinessChecklist participant={participant} />
+              )}
+
               {/* Personalized Message - Only show if not already applied */}
               {!participant && member && (
                 <Card className="border-gold bg-gradient-to-br from-gold/10 to-amber-50">
@@ -2999,6 +3025,18 @@ export default function KenyaTripPage() {
               </Card>
             </div>
           </TabsContent>
+
+          {participant?.application_status === 'approved' && (
+            <TabsContent value="guide">
+              <CulturalGuide />
+            </TabsContent>
+          )}
+
+          {participant?.application_status === 'approved' && trip && (
+            <TabsContent value="journal">
+              <ImpactJournal tripId={trip.id} participantId={participant.id} />
+            </TabsContent>
+          )}
 
         </Tabs>
       </div>
