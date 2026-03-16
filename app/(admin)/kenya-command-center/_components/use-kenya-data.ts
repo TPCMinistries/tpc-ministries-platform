@@ -950,6 +950,30 @@ export function useKenyaData() {
     await supabase.from('kenya_trip_support_roles').delete().eq('id', id)
   }
 
+  // ============ TRIP FIELD HANDLERS ============
+
+  const updateTripField = useCallback(async (field: string, value: string | number) => {
+    if (!trip) return
+    setTrip(prev => prev ? { ...prev, [field]: value } : prev)
+    if (field === 'fundraising_goal') {
+      setStats(prev => ({ ...prev, fundraisingGoal: Number(value) }))
+    }
+    setSaveStatus('saving')
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trips')
+      .update({ [field]: value })
+      .eq('id', trip.id)
+
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [trip, flashSave, fetchData])
+
   // ============ APPLICATION REVIEW HANDLERS ============
 
   const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
@@ -1102,6 +1126,8 @@ export function useKenyaData() {
     addAdminNote, updateAdminNoteField, deleteAdminNote,
     // Lodging add handler
     addLodging,
+    // Trip field handlers
+    updateTripField,
     // Support roles handlers
     addSupportRole, updateSupportRoleField, deleteSupportRole,
     // Application review handlers

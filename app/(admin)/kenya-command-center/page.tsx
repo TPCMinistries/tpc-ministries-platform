@@ -125,6 +125,7 @@ export default function KenyaCommandCenter() {
             todayCheckins={data.todayCheckins}
             setActiveTab={(t) => setActiveTab(t as TabType)}
             setShowAnnouncementModal={data.setShowAnnouncementModal}
+            updateTripField={data.updateTripField}
           />
         )}
 
