@@ -134,6 +134,7 @@ export default function KenyaCommandCenter() {
             participants={data.participants}
             lodging={data.lodging}
             contacts={data.contacts}
+            waitingList={data.waitingList}
             searchQuery={data.searchQuery}
             setSearchQuery={data.setSearchQuery}
             filterTrack={data.filterTrack}
@@ -144,6 +145,15 @@ export default function KenyaCommandCenter() {
             updateParticipantStatus={data.updateParticipantStatus}
             updateParticipantField={data.updateParticipantField}
             updateLodgingField={data.updateLodgingField}
+            updateContactField={data.updateContactField}
+            addParticipantDirect={data.addParticipantDirect}
+            deleteParticipant={data.deleteParticipant}
+            addContact={data.addContact}
+            deleteContact={data.deleteContact}
+            addWaitingListEntry={data.addWaitingListEntry}
+            updateWaitingListEntry={data.updateWaitingListEntry}
+            deleteWaitingListEntry={data.deleteWaitingListEntry}
+            promoteToDelegate={data.promoteToDelegate}
             saveStatus={data.saveStatus}
           />
         )}
@@ -160,11 +170,15 @@ export default function KenyaCommandCenter() {
 
         {activeTab === 'itinerary' && (
           <TabItinerary
+            trip={trip}
             itinerary={data.itinerary}
             flights={data.flights}
             lodging={data.lodging}
             contacts={data.contacts}
-            setShowItineraryModal={data.setShowItineraryModal}
+            addItineraryItem={data.addItineraryItem}
+            updateItineraryField={data.updateItineraryField}
+            deleteItineraryItem={data.deleteItineraryItem}
+            saveStatus={data.saveStatus}
           />
         )}
 
