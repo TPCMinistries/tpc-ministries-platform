@@ -195,15 +195,15 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
           className="object-cover"
           priority
         />
-        {/* HEAVY overlay — 3 layers for guaranteed text readability */}
-        <div className="absolute inset-0 bg-navy-950/90" />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/60 via-transparent to-navy-950/80" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.1),transparent_60%)]" />
+        {/* Overlay — visible image but readable text */}
+        <div className="absolute inset-0 bg-navy-950/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/40 via-transparent to-navy-950/60" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
 
-        <div className="relative z-10 text-center max-w-3xl px-5 py-16 md:py-12">
+        <div className="relative z-10 text-center max-w-3xl px-5 py-16 md:py-12 [text-shadow:0_2px_12px_rgba(0,0,0,0.5)]">
           <Link
             href="/kenya"
-            className="inline-flex items-center gap-2 text-gold/60 hover:text-gold mb-6 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-gold/70 hover:text-gold mb-6 transition-colors text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Kenya Trip
@@ -388,17 +388,17 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
                           </div>
                           <button
                             onClick={() => !isPledged && openPledgeModal(cat.id, item.name, item.value, item.fundAmount, item.sourcing)}
-                            className={`text-xs font-bold px-4 py-2 rounded-full border-2 transition-all flex-shrink-0 whitespace-nowrap min-h-[36px] ${
+                            className={`text-xs font-bold px-4 py-2.5 rounded-full transition-all flex-shrink-0 whitespace-nowrap min-h-[40px] ${
                               isPledged
-                                ? 'bg-green-500 border-green-500 text-white cursor-default'
-                                : 'border-gold bg-gold/10 text-navy hover:bg-gold hover:text-navy-950 hover:border-gold cursor-pointer'
+                                ? 'bg-green-500 text-white cursor-default'
+                                : 'bg-gold text-navy-950 hover:bg-gold-300 shadow-sm hover:shadow-md cursor-pointer'
                             }`}
                           >
                             {isPledged
                               ? `Pledged${count > 1 ? ` (${count})` : ''}`
                               : isKenya
                                 ? `Fund $${item.fundAmount}`
-                                : `Pledge · $${item.fundAmount}`}
+                                : `I Got This · $${item.fundAmount}`}
                           </button>
                         </div>
                       )
