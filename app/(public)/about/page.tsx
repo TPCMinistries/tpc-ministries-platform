@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
-import { Heart, Globe, Users, Award, ArrowRight } from 'lucide-react'
+import Image from 'next/image'
+import { Heart, Globe, Users, Award, ArrowRight, BookOpen, Sparkles, Cross } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'About Us',
@@ -17,168 +17,274 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+      {/* Hero Section — Cinematic */}
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
+
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Our Story
+          </p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             About TPC Ministries
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Transforming lives through Christ-centered teaching, discipleship, and global missions
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
+            A prophetic ministry transforming lives through Christ-centered
+            teaching, discipleship, and global missions
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        </div>
+
+        {/* Bottom gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      </section>
+
+      {/* Mission Section — Editorial */}
+      <section className="px-4 py-section">
+        <div className="container mx-auto max-w-6xl">
+          {/* Big statement */}
+          <div className="mb-20 text-center">
+            <h2 className="mx-auto max-w-4xl font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              Empowering believers to discover their God-given purpose
+            </h2>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="grid items-start gap-16 lg:grid-cols-2">
+            <div>
+              <p className="mb-6 text-body-xl leading-relaxed text-muted-foreground">
+                TPC Ministries exists to awaken purpose and ignite vision in every believer
+                through transformative biblical teaching, authentic community,
+                in-person gatherings, and practical discipleship.
+              </p>
+              <p className="text-body-lg leading-relaxed text-muted-foreground/80">
+                We believe that every person has a unique role in advancing God&apos;s kingdom,
+                and we&apos;re committed to providing the resources, online tools, in-person community,
+                and guidance needed to fulfill that calling.
+              </p>
+            </div>
+
+            {/* Pillars */}
+            <div className="space-y-6">
+              {[
+                { icon: Heart, title: 'Faith-Centered', desc: 'Rooted in biblical truth and powered by the Holy Spirit', color: 'bg-navy' },
+                { icon: Globe, title: 'Global Impact', desc: 'Reaching nations through missions and partnerships', color: 'bg-gold' },
+                { icon: Users, title: 'Community Driven', desc: 'Building authentic relationships and accountability', color: 'bg-navy' },
+              ].map((item) => (
+                <div key={item.title} className="group flex items-start gap-5 rounded-2xl border border-border bg-card p-6 transition-all duration-200 hover:border-gold/30 hover:shadow-lg">
+                  <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${item.color}`}>
+                    <item.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="mb-1 font-display text-display-xs text-navy dark:text-white">{item.title}</h3>
+                    <p className="text-body-md text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section className="px-4 py-16 bg-white">
+      {/* Values Section — Full-width cards on dark bg */}
+      <section className="bg-navy dark:bg-navy-950 px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-navy mb-4">Our Mission</h2>
-              <p className="text-gray-700 text-lg leading-relaxed mb-4">
-                TPC Ministries exists to empower believers to discover their God-given purpose and
-                walk in their calling through transformative biblical teaching, authentic community,
-                in-person gatherings, and practical discipleship.
-              </p>
-              <p className="text-gray-700 text-lg leading-relaxed">
-                We believe that every person has a unique role in advancing God's kingdom, and we're
-                committed to providing the resources, online tools, in-person community, and guidance needed to fulfill that calling.
-              </p>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              What We Stand For
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-white">
+              Our Core Values
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                icon: Award,
+                title: 'Excellence',
+                desc: 'We pursue excellence in all we do, honoring God through quality teaching, thoughtful content, and impactful ministry.',
+              },
+              {
+                icon: Users,
+                title: 'Community',
+                desc: 'We believe in the power of authentic community — both online and in-person — where believers can grow together and multiply impact.',
+              },
+              {
+                icon: Globe,
+                title: 'Global Vision',
+                desc: "We're committed to reaching nations and making disciples across cultures, breaking barriers through the love of Christ.",
+              },
+            ].map((value) => (
+              <div
+                key={value.title}
+                className="group rounded-3xl border border-white/10 bg-white/5 p-8 transition-all duration-300 hover:border-gold/30 hover:bg-white/10"
+              >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15">
+                  <value.icon className="h-7 w-7 text-gold" />
+                </div>
+                <h3 className="mb-3 font-display text-display-xs text-white">
+                  {value.title}
+                </h3>
+                <p className="text-body-md leading-relaxed text-white/50">
+                  {value.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leadership Section — Premium */}
+      <section className="px-4 py-section">
+        <div className="container mx-auto max-w-5xl">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              Who We Are
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              Our Leadership
+            </h2>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Lorenzo */}
+            <div className="group overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+              <div className="relative h-48 bg-gradient-to-br from-navy via-navy-800 to-navy-700">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.15),transparent_60%)]" />
+                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-navy to-navy-800 text-3xl font-bold text-gold ring-2 ring-gold/20">
+                    LD
+                  </div>
+                </div>
+              </div>
+              <div className="px-8 pb-8 pt-16 text-center">
+                <h3 className="mb-1 font-display text-display-xs text-navy dark:text-white">
+                  Prophet Lorenzo Daughtry-Chambers
+                </h3>
+                <p className="mb-4 text-body-sm font-medium text-gold-600">
+                  Founder & Lead Pastor
+                </p>
+                <p className="text-body-md text-muted-foreground">
+                  Passionate about equipping believers to discover and walk in their God-given
+                  purpose through prophetic insight and transformative teaching.
+                </p>
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-navy/5 to-gold/5 rounded-xl p-8">
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="bg-navy rounded-full p-3">
-                    <Heart className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-navy mb-1">Faith-Centered</h3>
-                    <p className="text-gray-600">Rooted in biblical truth and powered by the Holy Spirit</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="bg-gold rounded-full p-3">
-                    <Globe className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-navy mb-1">Global Impact</h3>
-                    <p className="text-gray-600">Reaching nations through missions and partnerships</p>
+
+            {/* Sarah */}
+            <div className="group overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+              <div className="relative h-48 bg-gradient-to-br from-gold-600 via-gold-500 to-gold-400">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(30,58,97,0.15),transparent_60%)]" />
+                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-gold-500 to-gold-600 text-3xl font-bold text-white ring-2 ring-gold/30">
+                    SD
                   </div>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="bg-navy rounded-full p-3">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-navy mb-1">Community Driven</h3>
-                    <p className="text-gray-600">Building authentic relationships and accountability</p>
-                  </div>
-                </div>
+              </div>
+              <div className="px-8 pb-8 pt-16 text-center">
+                <h3 className="mb-1 font-display text-display-xs text-navy dark:text-white">
+                  Prophetess Sarah Daughtry-Chambers
+                </h3>
+                <p className="mb-4 text-body-sm font-medium text-gold-600">
+                  Co-Founder & Minister
+                </p>
+                <p className="text-body-md text-muted-foreground">
+                  Leading spiritual formation and discipleship initiatives with prophetic wisdom
+                  and pastoral care across our community.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="px-4 py-16 bg-gray-50">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Our Core Values</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="bg-navy/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                  <Award className="h-6 w-6 text-navy" />
+      {/* Global Reach — Stats bar */}
+      <section className="border-y border-border bg-secondary/50 px-4 py-section-sm">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
+            {[
+              { label: 'Countries', value: '3' },
+              { label: 'Lives Impacted', value: '1,000+' },
+              { label: 'Active Members', value: '500+' },
+              { label: 'Mission Trips', value: '14-Day' },
+            ].map((stat) => (
+              <div key={stat.label} className="px-6 text-center">
+                <div className="font-display text-display-sm md:text-display-md text-navy dark:text-white">
+                  {stat.value}
                 </div>
-                <h3 className="text-xl font-semibold text-navy mb-3">Excellence</h3>
-                <p className="text-gray-600">
-                  We pursue excellence in all we do, honoring God through quality teaching,
-                  thoughtful content, and impactful ministry.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="bg-gold/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-gold" />
-                </div>
-                <h3 className="text-xl font-semibold text-navy mb-3">Community</h3>
-                <p className="text-gray-600">
-                  We believe in the power of authentic community—both online and in-person—where believers can grow
-                  together, support one another, and multiply impact.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="bg-navy/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                  <Globe className="h-6 w-6 text-navy" />
-                </div>
-                <h3 className="text-xl font-semibold text-navy mb-3">Global Vision</h3>
-                <p className="text-gray-600">
-                  We're committed to reaching nations and making disciples across cultures,
-                  breaking barriers through the love of Christ.
-                </p>
-              </CardContent>
-            </Card>
+                <div className="mt-1 text-body-sm font-medium text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Leadership Section */}
-      <section className="px-4 py-16 bg-white">
+      {/* What We Offer */}
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Our Leadership</h2>
-          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-32 h-32 bg-navy/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-navy">LD</span>
-                </div>
-                <h3 className="text-xl font-semibold text-navy mb-1">Prophet Lorenzo Daughtry-Chambers</h3>
-                <p className="text-gold font-medium mb-3">Founder & Lead Pastor</p>
-                <p className="text-gray-600 text-sm">
-                  Passionate about equipping believers to discover and walk in their God-given purpose through prophetic insight and transformative teaching.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">
+              How We Serve
+            </p>
+            <h2 className="font-display text-display-md md:text-display-lg text-navy dark:text-white">
+              What We Offer
+            </h2>
+          </div>
 
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-32 h-32 bg-gold/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-gold">SD</span>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: BookOpen, title: 'Biblical Teaching', desc: 'Deep, accessible content for every stage of faith' },
+              { icon: Sparkles, title: 'Prophetic Ministry', desc: 'Personal and corporate prophetic words' },
+              { icon: Globe, title: 'Global Missions', desc: 'Annual mission trips to Kenya and beyond' },
+              { icon: Heart, title: 'Community', desc: 'Groups, events, and connections with believers worldwide' },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border bg-card p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-gold/30 hover:shadow-lg"
+              >
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-navy/10 dark:bg-navy/30">
+                  <item.icon className="h-6 w-6 text-navy dark:text-gold" />
                 </div>
-                <h3 className="text-xl font-semibold text-navy mb-1">Prophetess Sarah Daughtry-Chambers</h3>
-                <p className="text-gold font-medium mb-3">Co-Founder & Minister</p>
-                <p className="text-gray-600 text-sm">
-                  Leading spiritual formation and discipleship initiatives with prophetic wisdom and pastoral care across our community.
-                </p>
-              </CardContent>
-            </Card>
+                <h3 className="mb-2 font-display text-body-lg font-semibold text-navy dark:text-white">
+                  {item.title}
+                </h3>
+                <p className="text-body-sm text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="px-4 py-16 bg-gradient-to-br from-navy to-navy-800">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      {/* CTA Section — Cinematic */}
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+
+        <div className="container relative mx-auto max-w-3xl text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+            Ready?
+          </p>
+          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
             Join Us on This Journey
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Be part of a community that's transforming lives and impacting nations
+          <p className="mb-10 text-body-xl text-white/50">
+            Be part of a community that&apos;s transforming lives and impacting nations
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/auth/signup">
-              <Button size="lg" className="bg-white text-navy hover:bg-gray-100">
+              <Button variant="glow" size="xl">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/partner">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+              <Button
+                variant="outline"
+                size="xl"
+                className="border-2 border-gold/30 text-white hover:bg-gold/10"
+              >
                 Become a Partner
               </Button>
             </Link>

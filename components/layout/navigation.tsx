@@ -123,9 +123,9 @@ export function Navigation() {
     return pathname.startsWith(href)
   }
 
-  // On homepage, nav overlays the dark hero — text should be white when not scrolled
-  const isHomepage = pathname === '/'
-  const isOverDarkBg = isHomepage && !isScrolled
+  // Public pages have dark hero sections — nav text should be white when not scrolled
+  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/account') && !pathname.startsWith('/auth')
+  const isOverDarkBg = isPublicPage && !isScrolled
 
   return (
     <>
