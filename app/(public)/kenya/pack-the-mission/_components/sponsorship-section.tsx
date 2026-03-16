@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, Heart, GraduationCap } from 'lucide-react'
+import Image from 'next/image'
 import { sponsorshipItems, type SponsorshipItem } from './category-data'
 import {
   Dialog,
@@ -77,8 +78,15 @@ export function SponsorshipSection() {
 
   return (
     <>
-      <section className="px-4 py-20 bg-gradient-to-br from-amber-50 via-orange-50/50 to-yellow-50/30">
-        <div className="container mx-auto max-w-6xl">
+      <section className="relative px-4 py-20 overflow-hidden">
+        <Image
+          src="/images/kenya/tracks/education.png"
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/95 via-orange-50/90 to-yellow-50/95" />
+        <div className="relative z-10 container mx-auto max-w-6xl">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 bg-gold/15 rounded-full px-4 py-2 mb-4">
               <Heart className="h-4 w-4 text-gold-dark" />
