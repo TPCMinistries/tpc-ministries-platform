@@ -11,7 +11,7 @@ import {
   UserPlus, Heart, Calendar, UsersRound,
   DollarSign, TrendingUp, Brain, Settings,
   ChevronDown, ChevronRight, ExternalLink, Bell,
-  Home, Menu, X
+  Home, Menu, X, Plane
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -139,7 +139,7 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
       </div>
 
       {/* Main Dashboard Link */}
-      <div className="p-2">
+      <div className="p-2 space-y-1">
         <Link
           href="/admin-dashboard"
           className={cn(
@@ -151,6 +151,18 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
         >
           <LayoutDashboard className="h-5 w-5" />
           <span className="font-medium">Dashboard</span>
+        </Link>
+        <Link
+          href="/kenya-command-center"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+            isActive("/kenya-command-center")
+              ? "bg-green-600/30 text-green-300"
+              : "text-white/70 hover:bg-green-600/10 hover:text-green-300"
+          )}
+        >
+          <Plane className="h-5 w-5" />
+          <span className="font-medium">Kenya 2026</span>
         </Link>
       </div>
 
