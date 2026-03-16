@@ -584,6 +584,22 @@ export default function KenyaTripPage() {
                     </Button>
                   </a>
                 </div>
+
+                <Link
+                  href="/kenya/pack-the-mission"
+                  className="mt-6 block bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-gold/30 hover:border-gold hover:bg-gold/10 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gold/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Gift className="h-6 w-6 text-gold" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-white group-hover:text-gold transition-colors">Pack the Mission</h4>
+                      <p className="text-white/50 text-sm">Help us fill the suitcases with supplies for Kenya — pledge items or contribute funds</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-white/30 group-hover:text-gold transition-colors flex-shrink-0" />
+                  </div>
+                </Link>
               </div>
               <div className="text-center">
                 <div className="inline-block bg-white/10 rounded-2xl p-6 border border-white/20">
