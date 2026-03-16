@@ -87,13 +87,13 @@ export default async function EbookDetailPage({ params }: Props) {
   const { isLoggedIn, isPartner } = await getUserAccess()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Back Navigation */}
-      <div className="bg-stone-50 border-b border-stone-200 px-4 py-4">
+      <div className="border-b border-border bg-card px-4 py-4">
         <div className="container mx-auto max-w-6xl">
           <Link
             href="/ebooks"
-            className="inline-flex items-center gap-2 text-stone-600 hover:text-tpc-navy transition-colors"
+            className="inline-flex items-center gap-2 text-body-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to All Ebooks
@@ -104,11 +104,11 @@ export default async function EbookDetailPage({ params }: Props) {
       {/* Main Content */}
       <section className="px-4 py-12 md:py-16">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid gap-12 lg:grid-cols-2">
             {/* Book Cover */}
             <div>
               <div className="sticky top-8">
-                <div className="relative aspect-[3/4] bg-gradient-to-br from-tpc-navy to-tpc-navy/80 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-navy-800 shadow-2xl">
                   {ebook.thumbnail_url ? (
                     <Image
                       src={ebook.thumbnail_url}
@@ -119,15 +119,15 @@ export default async function EbookDetailPage({ params }: Props) {
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center p-8">
                       <div className="text-center">
-                        <BookOpen className="h-24 w-24 text-tpc-gold/50 mx-auto mb-6" />
-                        <p className="text-white font-serif text-2xl">{ebook.title}</p>
+                        <BookOpen className="mx-auto mb-6 h-24 w-24 text-gold/50" />
+                        <p className="font-display text-display-xs text-white">{ebook.title}</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Download Stats */}
-                <div className="mt-6 text-center text-stone-500 text-sm">
+                <div className="mt-6 text-center text-body-sm text-muted-foreground">
                   {ebook.download_count || 0} downloads
                 </div>
               </div>
@@ -142,33 +142,33 @@ export default async function EbookDetailPage({ params }: Props) {
                 </Badge>
               )}
 
-              <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 mb-4">
+              <h1 className="mb-4 font-display text-display-md text-foreground">
                 {ebook.title}
               </h1>
 
               {/* Author */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-tpc-navy rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-tpc-gold" />
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy">
+                  <User className="h-5 w-5 text-gold" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-900">{ebook.author || 'TPC Ministries'}</p>
-                  <p className="text-sm text-stone-500">Author</p>
+                  <p className="font-medium text-foreground">{ebook.author || 'TPC Ministries'}</p>
+                  <p className="text-body-sm text-muted-foreground">Author</p>
                 </div>
               </div>
 
               {/* Price Section */}
-              <Card className="mb-8 border-2 border-tpc-gold/30">
+              <Card className="mb-8 rounded-2xl border-2 border-gold/30">
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="mb-6 flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-stone-500 mb-1">Price</p>
-                      <p className="text-3xl font-bold text-stone-900">$9.99</p>
+                      <p className="mb-1 text-body-sm text-muted-foreground">Price</p>
+                      <p className="font-display text-display-sm text-foreground">$9.99</p>
                     </div>
                     <div className="text-right">
-                      <div className="inline-flex items-center gap-2 bg-tpc-gold/10 text-tpc-gold px-4 py-2 rounded-full">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-gold/10 px-4 py-2 text-gold">
                         <Crown className="h-4 w-4" />
-                        <span className="font-medium text-sm">Included with Partnership</span>
+                        <span className="text-body-sm font-medium">Included with Partnership</span>
                       </div>
                     </div>
                   </div>
@@ -176,22 +176,22 @@ export default async function EbookDetailPage({ params }: Props) {
                   {isPartner ? (
                     // Partner - Free Download
                     <div>
-                      <div className="flex items-center gap-2 text-green-600 mb-2">
+                      <div className="mb-2 flex items-center gap-2 text-green-600">
                         <CheckCircle className="h-5 w-5" />
                         <span className="font-medium">Included with your Partnership</span>
                       </div>
-                      <p className="text-sm text-stone-500 mb-4">
+                      <p className="mb-4 text-body-sm text-muted-foreground">
                         This title is available in your member dashboard library.
                       </p>
                       {ebook.file_url ? (
                         <a href={ebook.file_url} download>
-                          <Button className="w-full bg-tpc-navy hover:bg-tpc-navy/90 text-white h-14 text-lg">
+                          <Button variant="glow" className="h-14 w-full text-body-lg">
                             <Download className="mr-2 h-5 w-5" />
                             Download Now
                           </Button>
                         </a>
                       ) : (
-                        <Button disabled className="w-full h-14 text-lg">
+                        <Button disabled className="h-14 w-full text-body-lg">
                           Download Coming Soon
                         </Button>
                       )}
@@ -200,17 +200,17 @@ export default async function EbookDetailPage({ params }: Props) {
                     // Logged in but not partner
                     <div className="space-y-4">
                       <Link href={`/api/stripe/create-checkout-session?type=ebook&id=${ebook.id}`}>
-                        <Button className="w-full bg-tpc-gold hover:bg-tpc-gold-accent text-tpc-navy h-14 text-lg font-bold">
+                        <Button variant="glow" className="h-14 w-full text-body-lg font-bold">
                           <ShoppingCart className="mr-2 h-5 w-5" />
                           Purchase for $9.99
                         </Button>
                       </Link>
-                      <div className="bg-stone-50 rounded-lg p-4 text-center">
-                        <p className="text-sm text-stone-600 mb-2">
+                      <div className="rounded-2xl bg-secondary p-4 text-center">
+                        <p className="mb-2 text-body-sm text-muted-foreground">
                           Ministry Partners enjoy complimentary access to all written works
                           through their member dashboard.
                         </p>
-                        <Link href="/partner" className="text-tpc-gold hover:underline text-sm font-medium">
+                        <Link href="/partner" className="text-body-sm font-medium text-gold hover:underline">
                           Explore Partnership Benefits
                         </Link>
                       </div>
@@ -219,24 +219,24 @@ export default async function EbookDetailPage({ params }: Props) {
                     // Not logged in
                     <div className="space-y-4">
                       <Link href={`/api/stripe/create-checkout-session?type=ebook&id=${ebook.id}`}>
-                        <Button className="w-full bg-tpc-gold hover:bg-tpc-gold-accent text-tpc-navy h-14 text-lg font-bold">
+                        <Button variant="glow" className="h-14 w-full text-body-lg font-bold">
                           <ShoppingCart className="mr-2 h-5 w-5" />
                           Purchase for $9.99
                         </Button>
                       </Link>
-                      <div className="bg-stone-50 rounded-lg p-4 text-center">
-                        <p className="text-sm text-stone-600 mb-3">
+                      <div className="rounded-2xl bg-secondary p-4 text-center">
+                        <p className="mb-3 text-body-sm text-muted-foreground">
                           Ministry Partners enjoy complimentary access to all written works
                           through their member dashboard.
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                           <Link href="/auth/login">
-                            <Button variant="outline" className="w-full text-sm">
+                            <Button variant="outline" className="w-full text-body-sm">
                               Sign In
                             </Button>
                           </Link>
                           <Link href="/partner">
-                            <Button variant="outline" className="w-full border-tpc-gold text-tpc-gold hover:bg-tpc-gold/10 text-sm">
+                            <Button variant="outline" className="w-full border-gold text-body-sm text-gold hover:bg-gold/10">
                               <Crown className="mr-2 h-4 w-4" />
                               Become a Partner
                             </Button>
@@ -250,15 +250,15 @@ export default async function EbookDetailPage({ params }: Props) {
 
               {/* Description */}
               <div className="mb-8">
-                <h2 className="text-xl font-bold text-stone-900 mb-4">About This Book</h2>
+                <h2 className="mb-4 font-display text-display-xs text-foreground">About This Book</h2>
                 {ebook.description ? (
-                  <div className="prose prose-stone max-w-none">
-                    <p className="text-stone-600 leading-relaxed whitespace-pre-wrap">
+                  <div className="prose prose-lg max-w-none">
+                    <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
                       {ebook.description}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-stone-500 italic">
+                  <p className="italic text-muted-foreground">
                     Discover transformative insights and practical wisdom for your spiritual journey.
                     This ebook provides biblical teachings and guidance to help you grow in faith and purpose.
                   </p>
@@ -267,7 +267,7 @@ export default async function EbookDetailPage({ params }: Props) {
 
               {/* What You'll Get */}
               <div className="mb-8">
-                <h2 className="text-xl font-bold text-stone-900 mb-4">What You'll Get</h2>
+                <h2 className="mb-4 font-display text-display-xs text-foreground">What You&apos;ll Get</h2>
                 <ul className="space-y-3">
                   {[
                     'Instant digital download (PDF format)',
@@ -276,8 +276,8 @@ export default async function EbookDetailPage({ params }: Props) {
                     'Biblical insights and practical application',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-stone-600">{item}</span>
+                      <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
+                      <span className="text-muted-foreground">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -286,10 +286,10 @@ export default async function EbookDetailPage({ params }: Props) {
               {/* Tags */}
               {ebook.tags && ebook.tags.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-stone-500 mb-2">Topics</h3>
+                  <h3 className="mb-2 text-body-sm font-medium text-muted-foreground">Topics</h3>
                   <div className="flex flex-wrap gap-2">
                     {ebook.tags.map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="bg-stone-100">
+                      <Badge key={tag} variant="secondary">
                         {tag}
                       </Badge>
                     ))}
@@ -302,23 +302,24 @@ export default async function EbookDetailPage({ params }: Props) {
       </section>
 
       {/* More Ebooks */}
-      <section className="px-4 py-16 bg-stone-50 border-t border-stone-200">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h2 className="text-2xl font-bold text-stone-900 mb-4">Explore More Written Works</h2>
-          <p className="text-stone-600 mb-4">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-6xl text-center">
+          <h2 className="mb-4 font-display text-display-sm text-white">Explore More Written Works</h2>
+          <p className="text-body-lg text-white/50">
             Discover more transformative teachings and resources.
           </p>
-          <p className="text-stone-500 text-sm mb-8">
+          <p className="mb-8 mt-2 text-body-sm text-white/30">
             Ministry Partners receive complimentary access to the entire library through their member dashboard.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link href="/ebooks">
-              <Button variant="outline" className="border-tpc-navy text-tpc-navy hover:bg-tpc-navy hover:text-white">
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
                 View All Ebooks
               </Button>
             </Link>
             <Link href="/partner">
-              <Button variant="outline" className="border-tpc-gold text-tpc-gold hover:bg-tpc-gold hover:text-tpc-navy">
+              <Button variant="glow">
                 <Crown className="mr-2 h-4 w-4" />
                 Explore Partnership
               </Button>

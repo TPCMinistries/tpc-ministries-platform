@@ -55,7 +55,7 @@ const categoryColors: Record<string, string> = {
   salvation: 'bg-pink-100 text-pink-800',
   deliverance: 'bg-orange-100 text-orange-800',
   answered_prayer: 'bg-yellow-100 text-yellow-800',
-  other: 'bg-gray-100 text-gray-800'
+  other: 'bg-secondary text-secondary-foreground'
 }
 
 export default function TestimoniesPage() {
@@ -119,64 +119,63 @@ export default function TestimoniesPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Hero Section with Background Image */}
-      <section className="relative bg-tpc-navy px-4 py-20 md:py-32 overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=2070"
             alt="People worshipping together"
             fill
-            className="object-cover opacity-30"
+            className="object-cover opacity-15"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-tpc-navy/80 via-tpc-navy/70 to-tpc-navy" />
         </div>
-
-        <div className="container mx-auto max-w-6xl text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-            <Heart className="h-4 w-4 text-tpc-gold" />
-            <span className="text-tpc-gold text-sm font-medium">Real Stories, Real Faith</span>
-          </div>
-          <h1 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl">
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Real Stories, Real Faith</p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Stories of Transformation
           </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Witness the power of God at work through the testimonies of our community.
             Every story is a testament to His faithfulness, healing, and breakthrough.
           </p>
-          <div className="flex flex-wrap justify-center gap-6 text-white/70">
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-white/40">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-tpc-gold" />
+              <Users className="h-5 w-5 text-gold" />
               <span>Community Stories</span>
             </div>
             <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-tpc-gold" />
+              <Star className="h-5 w-5 text-gold" />
               <span>Featured Testimonies</span>
             </div>
             <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-tpc-gold" />
+              <BookOpen className="h-5 w-5 text-gold" />
               <span>Life-Changing Encounters</span>
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Featured Testimony Carousel */}
       {featuredTestimonies.length > 0 && (
-        <section className="px-4 py-16 bg-gradient-to-br from-gold/10 to-amber-50">
+        <section className="bg-navy px-4 py-section dark:bg-navy-950">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="mb-8 flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5 text-gold" />
-              <h2 className="text-2xl font-bold text-navy">Featured Stories</h2>
+              <h2 className="font-display text-display-xs text-white">Featured Stories</h2>
             </div>
 
             <div className="relative">
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden rounded-3xl border-white/10 bg-white/5 backdrop-blur-sm">
                 <CardContent className="p-8 md:p-12">
-                  <Quote className="h-12 w-12 text-gold/30 mb-4" />
+                  <Quote className="mb-4 h-12 w-12 text-gold/30" />
 
-                  <p className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-6">
+                  <p className="mb-6 text-body-xl leading-relaxed text-white/70 md:text-display-xs md:font-normal">
                     {featuredTestimonies[featuredIndex]?.content.length > 300
                       ? `${featuredTestimonies[featuredIndex].content.substring(0, 300)}...`
                       : featuredTestimonies[featuredIndex]?.content}
@@ -184,19 +183,19 @@ export default function TestimoniesPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-navy/10 rounded-full flex items-center justify-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                         {featuredTestimonies[featuredIndex]?.member?.avatar_url ? (
                           <img
                             src={featuredTestimonies[featuredIndex].member?.avatar_url}
                             alt=""
-                            className="w-full h-full rounded-full object-cover"
+                            className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
-                          <User className="h-6 w-6 text-navy" />
+                          <User className="h-6 w-6 text-gold" />
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-navy">
+                        <p className="font-semibold text-white">
                           {featuredTestimonies[featuredIndex]?.is_anonymous
                             ? 'Anonymous'
                             : `${featuredTestimonies[featuredIndex]?.member?.first_name || ''} ${featuredTestimonies[featuredIndex]?.member?.last_name?.charAt(0) || ''}.`}
@@ -209,7 +208,7 @@ export default function TestimoniesPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-body-sm text-white/40">
                       <Heart className="h-4 w-4 text-red-400" />
                       {featuredTestimonies[featuredIndex]?.likes_count || 0}
                     </div>
@@ -221,24 +220,24 @@ export default function TestimoniesPage() {
                 <>
                   <button
                     onClick={prevFeatured}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50"
+                    className="absolute left-0 top-1/2 -translate-x-4 -translate-y-1/2 rounded-full border border-white/10 bg-navy-950 p-2 shadow-lg hover:border-gold/30"
                   >
-                    <ChevronLeft className="h-6 w-6 text-navy" />
+                    <ChevronLeft className="h-6 w-6 text-white" />
                   </button>
                   <button
                     onClick={nextFeatured}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 rounded-full border border-white/10 bg-navy-950 p-2 shadow-lg hover:border-gold/30"
                   >
-                    <ChevronRight className="h-6 w-6 text-navy" />
+                    <ChevronRight className="h-6 w-6 text-white" />
                   </button>
 
-                  <div className="flex justify-center gap-2 mt-4">
+                  <div className="mt-4 flex justify-center gap-2">
                     {featuredTestimonies.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setFeaturedIndex(i)}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          i === featuredIndex ? 'bg-navy' : 'bg-gray-300'
+                        className={`h-2 w-2 rounded-full transition-colors ${
+                          i === featuredIndex ? 'bg-gold' : 'bg-white/20'
                         }`}
                       />
                     ))}
@@ -251,15 +250,19 @@ export default function TestimoniesPage() {
       )}
 
       {/* All Testimonies */}
-      <section className="px-4 py-16 bg-white">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Community</p>
+            <h2 className="font-display text-display-md text-foreground">All Stories</h2>
+          </div>
+
           {/* Filter */}
-          <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          <div className="mb-8 flex flex-wrap justify-center gap-2">
             <Button
               variant={filter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => { setFilter('all'); setPage(1) }}
-              className={filter === 'all' ? 'bg-navy' : ''}
             >
               All Stories
             </Button>
@@ -269,7 +272,6 @@ export default function TestimoniesPage() {
                 variant={filter === cat ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => { setFilter(cat); setPage(1) }}
-                className={filter === cat ? 'bg-navy' : ''}
               >
                 {categoryLabels[cat]}
               </Button>
@@ -278,26 +280,26 @@ export default function TestimoniesPage() {
 
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tpc-navy"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-navy"></div>
             </div>
           ) : testimonies.length === 0 ? (
             <div className="space-y-12">
               {/* Inspiring Message */}
-              <div className="text-center max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold text-stone-900 mb-4">
+              <div className="mx-auto max-w-2xl text-center">
+                <h2 className="mb-4 font-display text-display-xs text-foreground">
                   Stories Coming Soon
                 </h2>
-                <p className="text-stone-600">
-                  We're collecting powerful testimonies from our community.
+                <p className="text-body-lg text-muted-foreground">
+                  We&apos;re collecting powerful testimonies from our community.
                   Soon this page will be filled with stories of healing, breakthrough, and transformation.
                 </p>
               </div>
 
               {/* Preview Cards with Placeholder Images */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Healing Story Preview */}
-                <Card className="overflow-hidden opacity-90">
-                  <div className="aspect-video relative">
+                <Card className="overflow-hidden rounded-2xl opacity-90">
+                  <div className="relative aspect-video">
                     <Image
                       src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65?q=80&w=800"
                       alt="Healing testimony"
@@ -306,20 +308,20 @@ export default function TestimoniesPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
-                      <Badge className="bg-green-100 text-green-800 mb-2">Healing</Badge>
-                      <p className="text-white font-semibold">Stories of Physical & Spiritual Healing</p>
+                      <Badge className="mb-2 bg-green-100 text-green-800">Healing</Badge>
+                      <p className="font-semibold text-white">Stories of Physical & Spiritual Healing</p>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-stone-500 text-sm italic">
-                      "He heals the brokenhearted and binds up their wounds." - Psalm 147:3
+                    <p className="text-body-sm italic text-muted-foreground">
+                      &ldquo;He heals the brokenhearted and binds up their wounds.&rdquo; - Psalm 147:3
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Breakthrough Story Preview */}
-                <Card className="overflow-hidden opacity-90">
-                  <div className="aspect-video relative">
+                <Card className="overflow-hidden rounded-2xl opacity-90">
+                  <div className="relative aspect-video">
                     <Image
                       src="https://images.unsplash.com/photo-1507692049790-de58290a4334?q=80&w=800"
                       alt="Breakthrough testimony"
@@ -328,20 +330,20 @@ export default function TestimoniesPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
-                      <Badge className="bg-purple-100 text-purple-800 mb-2">Breakthrough</Badge>
-                      <p className="text-white font-semibold">Testimonies of Divine Breakthrough</p>
+                      <Badge className="mb-2 bg-purple-100 text-purple-800">Breakthrough</Badge>
+                      <p className="font-semibold text-white">Testimonies of Divine Breakthrough</p>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-stone-500 text-sm italic">
-                      "With God all things are possible." - Matthew 19:26
+                    <p className="text-body-sm italic text-muted-foreground">
+                      &ldquo;With God all things are possible.&rdquo; - Matthew 19:26
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Provision Story Preview */}
-                <Card className="overflow-hidden opacity-90">
-                  <div className="aspect-video relative">
+                <Card className="overflow-hidden rounded-2xl opacity-90">
+                  <div className="relative aspect-video">
                     <Image
                       src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=800"
                       alt="Provision testimony"
@@ -350,13 +352,13 @@ export default function TestimoniesPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
-                      <Badge className="bg-blue-100 text-blue-800 mb-2">Provision</Badge>
-                      <p className="text-white font-semibold">Stories of God's Faithful Provision</p>
+                      <Badge className="mb-2 bg-blue-100 text-blue-800">Provision</Badge>
+                      <p className="font-semibold text-white">Stories of God&apos;s Faithful Provision</p>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-stone-500 text-sm italic">
-                      "My God shall supply all your need." - Philippians 4:19
+                    <p className="text-body-sm italic text-muted-foreground">
+                      &ldquo;My God shall supply all your need.&rdquo; - Philippians 4:19
                     </p>
                   </CardContent>
                 </Card>
@@ -364,9 +366,9 @@ export default function TestimoniesPage() {
 
               {/* CTA */}
               <div className="text-center">
-                <p className="text-stone-600 mb-4">Have a testimony to share?</p>
+                <p className="mb-4 text-muted-foreground">Have a testimony to share?</p>
                 <Link href="/auth/signup">
-                  <Button className="bg-tpc-navy hover:bg-tpc-navy/90 text-white">
+                  <Button variant="glow">
                     Join to Share Your Story
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -375,19 +377,19 @@ export default function TestimoniesPage() {
             </div>
           ) : (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {testimonies.map(testimony => (
-                  <Card key={testimony.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={testimony.id} className="rounded-2xl border-border transition-all hover:border-gold/30 hover:shadow-lg">
                     {testimony.image_url && (
-                      <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                      <div className="relative aspect-video overflow-hidden bg-muted">
                         <img
                           src={testimony.image_url}
                           alt=""
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                         />
                         {testimony.video_url && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                            <div className="bg-white rounded-full p-3">
+                            <div className="rounded-full bg-white p-3">
                               <Play className="h-6 w-6 text-navy" />
                             </div>
                           </div>
@@ -395,28 +397,28 @@ export default function TestimoniesPage() {
                       </div>
                     )}
                     <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3 flex items-center justify-between">
                         {testimony.category && (
                           <Badge className={categoryColors[testimony.category]}>
                             {categoryLabels[testimony.category]}
                           </Badge>
                         )}
-                        <span className="flex items-center gap-1 text-sm text-gray-400">
+                        <span className="flex items-center gap-1 text-body-sm text-muted-foreground">
                           <Heart className="h-4 w-4" />
                           {testimony.likes_count}
                         </span>
                       </div>
 
-                      <h3 className="font-semibold text-navy mb-2 line-clamp-2">
+                      <h3 className="mb-2 line-clamp-2 font-semibold text-foreground">
                         {testimony.title}
                       </h3>
 
-                      <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                      <p className="mb-4 line-clamp-3 text-body-sm text-muted-foreground">
                         {testimony.content}
                       </p>
 
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <div className="w-8 h-8 bg-navy/10 rounded-full flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy/10">
                           <User className="h-4 w-4 text-navy" />
                         </div>
                         <span>
@@ -432,16 +434,16 @@ export default function TestimoniesPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-8">
+                <div className="mt-8 flex justify-center gap-2">
                   <Button
                     variant="outline"
                     disabled={page === 1}
                     onClick={() => setPage(p => p - 1)}
                   >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous
                   </Button>
-                  <span className="flex items-center px-4 text-sm text-gray-600">
+                  <span className="flex items-center px-4 text-body-sm text-muted-foreground">
                     Page {page} of {totalPages}
                   </span>
                   <Button
@@ -450,7 +452,7 @@ export default function TestimoniesPage() {
                     onClick={() => setPage(p => p + 1)}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -460,29 +462,29 @@ export default function TestimoniesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative px-4 py-20 overflow-hidden">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073"
             alt="Hands raised in worship"
             fill
-            className="object-cover"
+            className="object-cover opacity-10"
           />
-          <div className="absolute inset-0 bg-tpc-navy/85" />
         </div>
 
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <Quote className="h-12 w-12 text-tpc-gold/50 mx-auto mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <Quote className="mx-auto mb-6 h-12 w-12 text-gold/50" />
+          <h2 className="mb-4 font-display text-display-md text-white">
             Your Story Matters
           </h2>
-          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+          <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
             Every testimony is a seed of faith that can inspire and encourage others.
             Share what God has done in your life.
           </p>
           <Link href="/auth/signup">
-            <Button size="lg" className="bg-tpc-gold text-tpc-navy hover:bg-tpc-gold/90 font-bold">
+            <Button variant="glow" size="lg">
               Join Our Community
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

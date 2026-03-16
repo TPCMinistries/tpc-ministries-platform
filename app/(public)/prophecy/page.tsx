@@ -89,48 +89,53 @@ export default function ProphecyHubPage() {
   })
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-4 font-serif text-5xl font-bold text-white md:text-6xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Hear the Word of the Lord</p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Prophetic Ministry
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Hear what God is saying for this season
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Featured Current Word */}
-      <section className="px-4 py-12 -mt-16 relative z-10">
+      <section className="relative z-10 -mt-16 px-4 py-12">
         <div className="container mx-auto max-w-6xl">
-          <Card className="overflow-hidden shadow-2xl border-2 border-gold/20">
-            <div className="grid md:grid-cols-2 gap-0">
+          <Card className="overflow-hidden rounded-3xl border-white/10 bg-card shadow-2xl">
+            <div className="grid gap-0 md:grid-cols-2">
               {/* Image */}
-              <div className="aspect-video md:aspect-auto bg-gradient-to-br from-gold/30 to-navy/30 relative">
+              <div className="relative aspect-video bg-gradient-to-br from-gold/30 to-navy/30 md:aspect-auto">
                 <ImagePlaceholder aspectRatio="16/9" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white/90 backdrop-blur-sm p-6 rounded-full">
+                  <div className="rounded-full bg-white/90 p-6 backdrop-blur-sm">
                     <Play className="h-12 w-12 text-navy" />
                   </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="p-8 md:p-12 flex flex-col justify-center">
+              <div className="flex flex-col justify-center p-8 md:p-12">
                 <div className="mb-4">
-                  <span className="px-3 py-1 bg-gold/20 text-gold rounded-full text-sm font-medium">
+                  <span className="rounded-full bg-gold/20 px-3 py-1 text-body-sm font-medium text-gold">
                     Featured Word
                   </span>
                 </div>
-                <h2 className="text-3xl font-bold text-navy mb-4">
+                <h2 className="mb-4 font-display text-display-sm text-foreground">
                   {featuredWord.title}
                 </h2>
-                <p className="text-gray-700 mb-6 leading-relaxed">
+                <p className="mb-6 text-body-lg leading-relaxed text-muted-foreground">
                   {featuredWord.excerpt}
                 </p>
-                <div className="flex items-center gap-6 text-sm text-gray-600 mb-6">
+                <div className="mb-6 flex items-center gap-6 text-body-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     {new Date(featuredWord.date).toLocaleDateString('en-US', {
@@ -150,7 +155,7 @@ export default function ProphecyHubPage() {
                 </div>
                 <div className="flex gap-3">
                   <Link href={`/prophecy/${featuredWord.id}`} className="flex-1">
-                    <Button className="w-full bg-navy hover:bg-navy/90">
+                    <Button variant="glow" className="w-full">
                       <Play className="mr-2 h-4 w-4" />
                       Listen Now
                     </Button>
@@ -166,18 +171,19 @@ export default function ProphecyHubPage() {
       </section>
 
       {/* Prophetic Word Library */}
-      <section className="px-4 py-12">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-navy mb-2">Prophetic Word Library</h2>
-            <p className="text-gray-600">Browse all published prophetic words</p>
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Browse Collection</p>
+            <h2 className="font-display text-display-md text-foreground">Prophetic Word Library</h2>
+            <p className="mt-2 text-body-lg text-muted-foreground">Browse all published prophetic words</p>
           </div>
 
           {/* Search and Filter */}
-          <div className="mb-8 flex flex-col md:flex-row gap-4">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search prophetic words..."
@@ -189,7 +195,7 @@ export default function ProphecyHubPage() {
             </div>
             <div className="md:w-64">
               <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy"
+                className="w-full rounded-md border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-gold"
                 value={selectedTheme}
                 onChange={(e) => setSelectedTheme(e.target.value)}
               >
@@ -204,32 +210,32 @@ export default function ProphecyHubPage() {
 
           {/* Prophecy Grid */}
           {filteredProphecies.length === 0 ? (
-            <Card className="border-dashed">
+            <Card className="rounded-2xl border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <Search className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-600 text-lg mb-2">No prophetic words found</p>
-                <p className="text-gray-500 text-sm">Try adjusting your search or filter</p>
+                <Search className="mb-4 h-12 w-12 text-muted-foreground" />
+                <p className="mb-2 text-body-lg text-foreground">No prophetic words found</p>
+                <p className="text-body-sm text-muted-foreground">Try adjusting your search or filter</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredProphecies.map((prophecy) => (
                 <Link key={prophecy.id} href={`/prophecy/${prophecy.id}`}>
-                  <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full cursor-pointer">
-                    <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-navy/20 to-gold/20">
+                  <Card className="group h-full cursor-pointer overflow-hidden rounded-2xl border-border transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
+                    <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-navy/20 to-gold/20">
                       <ImagePlaceholder aspectRatio="16/9" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="bg-white/90 backdrop-blur-sm p-4 rounded-full">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className="rounded-full bg-white/90 p-4 backdrop-blur-sm">
                           <Play className="h-8 w-8 text-navy" />
                         </div>
                       </div>
                       <div className="absolute bottom-3 left-3">
-                        <span className="px-3 py-1 bg-gold text-white rounded-full text-xs font-medium">
+                        <span className="rounded-full bg-gold px-3 py-1 text-body-xs font-medium text-white">
                           {prophecy.theme}
                         </span>
                       </div>
-                      <div className="absolute top-3 right-3">
-                        <div className="bg-navy/80 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 text-white text-xs">
+                      <div className="absolute right-3 top-3">
+                        <div className="flex items-center gap-1 rounded-md bg-navy/80 px-2 py-1 text-body-xs text-white backdrop-blur-sm">
                           <Headphones className="h-3 w-3" />
                           {prophecy.duration}
                         </div>
@@ -237,10 +243,10 @@ export default function ProphecyHubPage() {
                     </div>
 
                     <CardHeader>
-                      <CardTitle className="text-lg text-navy group-hover:text-gold transition-colors line-clamp-2">
+                      <CardTitle className="line-clamp-2 text-body-lg font-semibold text-foreground transition-colors group-hover:text-gold">
                         {prophecy.title}
                       </CardTitle>
-                      <CardDescription className="flex items-center gap-2 text-sm">
+                      <CardDescription className="flex items-center gap-2 text-body-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {new Date(prophecy.date).toLocaleDateString('en-US', {
                           month: 'long',
@@ -251,7 +257,7 @@ export default function ProphecyHubPage() {
                     </CardHeader>
 
                     <CardContent>
-                      <audio controls className="w-full h-10">
+                      <audio controls className="h-10 w-full">
                         <source src={prophecy.audioUrl} type="audio/mpeg" />
                         Your browser does not support the audio element.
                       </audio>
@@ -265,22 +271,21 @@ export default function ProphecyHubPage() {
       </section>
 
       {/* Prayer Request Section */}
-      <section className="px-4 py-16 bg-white">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="mb-6">
-            <Heart className="h-12 w-12 text-gold mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-navy mb-4">Need Prayer?</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Request prayer for specific areas of your life. Our prayer team is here to stand with you in faith.
-            </p>
-          </div>
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <Heart className="mx-auto mb-6 h-12 w-12 text-gold" />
+          <h2 className="mb-4 font-display text-display-md text-white">Need Prayer?</h2>
+          <p className="mx-auto mb-8 max-w-2xl text-body-lg text-white/50">
+            Request prayer for specific areas of your life. Our prayer team is here to stand with you in faith.
+          </p>
           <Link href="/prayer">
-            <Button size="lg" className="bg-gold hover:bg-gold-dark text-white">
+            <Button variant="glow" size="lg">
               <Heart className="mr-2 h-5 w-5" />
               Submit Prayer Request
             </Button>
           </Link>
-          <p className="text-sm text-gray-500 mt-4">Members only</p>
+          <p className="mt-4 text-body-sm text-white/30">Members only</p>
         </div>
       </section>
     </div>

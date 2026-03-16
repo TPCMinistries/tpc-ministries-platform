@@ -140,12 +140,12 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
       book: 'bg-purple-100 text-purple-700',
       audio: 'bg-green-100 text-green-700',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-700'
+    return colors[type as keyof typeof colors] || 'bg-secondary text-secondary-foreground'
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-navy" />
       </div>
     )
@@ -153,9 +153,9 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
 
   if (!teaching) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-navy mb-4">Teaching not found</h1>
+          <h1 className="mb-4 font-display text-display-sm text-foreground">Teaching not found</h1>
           <Link href="/teachings">
             <Button>Back to Teachings</Button>
           </Link>
@@ -167,7 +167,7 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.com'
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* JSON-LD Schema */}
       {teaching.type === 'video' && teaching.video_url && (
         <VideoSchema
@@ -190,11 +190,11 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
       )}
 
       {/* Breadcrumb */}
-      <div className="bg-white border-b">
+      <div className="border-b border-border bg-card">
         <div className="container mx-auto max-w-7xl px-4 py-4">
           <Link
             href="/teachings"
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors"
+            className="flex items-center gap-2 text-body-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Teachings
@@ -206,24 +206,24 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
       <div className="container mx-auto max-w-7xl px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Video/Audio Player or Article Content */}
             {teaching.type === 'video' && teaching.video_url && (
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden rounded-2xl">
                 <div className="aspect-video bg-black">
                   <iframe
                     src={teaching.video_url}
-                    className="w-full h-full"
+                    className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
                 </div>
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-4 text-body-sm text-muted-foreground">
                     <select
                       value={playbackSpeed}
                       onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-                      className="px-3 py-1 border border-gray-300 rounded-md"
+                      className="rounded-md border border-border bg-background px-3 py-1"
                     >
                       <option value={0.5}>0.5x</option>
                       <option value={1}>1x</option>
@@ -232,9 +232,9 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
                       <option value={2}>2x</option>
                     </select>
                     <div className="flex-1">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="h-2 w-full rounded-full bg-muted">
                         <div
-                          className="bg-navy h-2 rounded-full transition-all"
+                          className="h-2 rounded-full bg-navy transition-all"
                           style={{ width: `${progress}%` }}
                         ></div>
                       </div>
@@ -245,8 +245,8 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
             )}
 
             {teaching.type === 'audio' && (
-              <Card className="overflow-hidden">
-                <div className="aspect-video bg-gradient-to-br from-navy to-navy-800 flex items-center justify-center">
+              <Card className="overflow-hidden rounded-2xl">
+                <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-navy to-navy-800">
                   <Headphones className="h-24 w-24 text-gold" />
                 </div>
                 <CardContent className="p-4">
@@ -259,18 +259,18 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
             )}
 
             {teaching.type === 'book' && (
-              <Card>
+              <Card className="rounded-2xl">
                 <CardContent className="p-6">
-                  <div className="aspect-[3/4] max-w-md mx-auto bg-gray-200 flex items-center justify-center mb-6">
-                    <BookOpen className="h-24 w-24 text-gray-400" />
+                  <div className="mx-auto mb-6 flex aspect-[3/4] max-w-md items-center justify-center bg-muted">
+                    <BookOpen className="h-24 w-24 text-muted-foreground" />
                   </div>
                   <div className="text-center">
-                    <Button className="bg-navy hover:bg-navy/90">
+                    <Button>
                       <BookOpen className="mr-2 h-4 w-4" />
                       Read Book
                     </Button>
-                    <p className="text-sm text-gray-600 mt-2">
-                      PDF Viewer • {teaching.duration}
+                    <p className="mt-2 text-body-sm text-muted-foreground">
+                      PDF Viewer - {teaching.duration}
                     </p>
                   </div>
                 </CardContent>
@@ -278,28 +278,28 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
             )}
 
             {teaching.type === 'article' && teaching.content && (
-              <Card>
-                <CardContent className="p-8 prose prose-lg max-w-none">
+              <Card className="rounded-2xl">
+                <CardContent className="prose prose-lg max-w-none p-8 prose-headings:font-display prose-headings:text-foreground prose-a:text-gold">
                   <div dangerouslySetInnerHTML={{ __html: teaching.content }} />
                 </CardContent>
               </Card>
             )}
 
             {/* Teaching Info */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="mb-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 ${getTypeBadgeColor(teaching.type)}`}>
+                      <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-body-xs font-medium ${getTypeBadgeColor(teaching.type)}`}>
                         {getTypeIcon(teaching.type)}
                         {teaching.type.charAt(0).toUpperCase() + teaching.type.slice(1)}
                       </span>
                     </div>
-                    <CardTitle className="text-3xl text-navy mb-2">
+                    <CardTitle className="font-display text-display-sm text-foreground">
                       {teaching.title}
                     </CardTitle>
-                    <p className="text-gray-600">By {teaching.author}</p>
+                    <p className="mt-2 text-muted-foreground">By {teaching.author}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -317,11 +317,11 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <p className="text-gray-700 text-lg leading-relaxed">
+                <p className="text-body-lg leading-relaxed text-muted-foreground">
                   {teaching.description}
                 </p>
 
-                <div className="flex items-center gap-6 text-sm text-gray-600 border-t border-b py-4">
+                <div className="flex items-center gap-6 border-b border-t border-border py-4 text-body-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {teaching.duration}
@@ -335,7 +335,7 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
 
                 <div className="flex gap-3">
                   <Button
-                    className="flex-1 bg-navy hover:bg-navy/90"
+                    className="flex-1"
                     onClick={handleMarkComplete}
                   >
                     <CheckCircle className="mr-2 h-4 w-4" />
@@ -347,14 +347,14 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
 
             {/* Scriptures */}
             {teaching.scriptures && teaching.scriptures.length > 0 && (
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
-                  <CardTitle className="text-xl text-navy">Related Scriptures</CardTitle>
+                  <CardTitle className="font-display text-display-xs text-foreground">Related Scriptures</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {teaching.scriptures.map((scripture, index) => (
-                    <div key={index} className="p-4 bg-gold/10 rounded-lg border-l-4 border-gold">
-                      <p className="text-gray-700 italic">{scripture}</p>
+                    <div key={index} className="rounded-lg border-l-4 border-gold bg-gold/10 p-4">
+                      <p className="italic text-muted-foreground">{scripture}</p>
                     </div>
                   ))}
                 </CardContent>
@@ -365,47 +365,47 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
           {/* Right Sidebar */}
           <div className="space-y-6">
             {/* Author Info */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-lg text-navy">About the Author</CardTitle>
+                <CardTitle className="font-display text-body-lg text-foreground">About the Author</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-navy">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                    <span className="font-display text-display-xs text-navy">
                       {teaching.author?.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-navy">{teaching.author}</h3>
-                    <p className="text-sm text-gray-600">Teacher</p>
+                    <h3 className="font-semibold text-foreground">{teaching.author}</h3>
+                    <p className="text-body-sm text-muted-foreground">Teacher</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Related Teachings */}
-            <Card>
+            <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-lg text-navy">Related Teachings</CardTitle>
+                <CardTitle className="font-display text-body-lg text-foreground">Related Teachings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {relatedTeachings.map((related) => (
                   <Link
                     key={related.id}
                     href={`/teachings/${related.slug}`}
-                    className="block group"
+                    className="group block"
                   >
                     <div className="flex gap-3">
-                      <div className="w-20 h-20 bg-gray-200 rounded-md flex-shrink-0">
+                      <div className="h-20 w-20 flex-shrink-0 rounded-lg bg-muted">
                         <ImagePlaceholder aspectRatio="1/1" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-navy group-hover:text-gold transition-colors line-clamp-2 mb-1">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="mb-1 line-clamp-2 text-body-sm font-medium text-foreground transition-colors group-hover:text-gold">
                           {related.title}
                         </h4>
-                        <p className="text-xs text-gray-600">{related.author}</p>
-                        <p className="text-xs text-gray-500 mt-1">{related.duration}</p>
+                        <p className="text-body-xs text-muted-foreground">{related.author}</p>
+                        <p className="mt-1 text-body-xs text-muted-foreground">{related.duration}</p>
                       </div>
                     </div>
                   </Link>
@@ -415,14 +415,14 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
 
             {/* Topics */}
             {teaching.topic && (
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader>
-                  <CardTitle className="text-lg text-navy">Topics</CardTitle>
+                  <CardTitle className="font-display text-body-lg text-foreground">Topics</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     <Link href={`/teachings?topic=${teaching.topic}`}>
-                      <Button variant="outline" size="sm" className="text-xs">
+                      <Button variant="outline" size="sm" className="text-body-xs">
                         {teaching.topic.charAt(0).toUpperCase() + teaching.topic.slice(1)}
                       </Button>
                     </Link>

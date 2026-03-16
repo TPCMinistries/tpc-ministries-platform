@@ -185,8 +185,6 @@ export default function PodcastPage() {
     }
   }
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hidden Audio Element */}
@@ -204,20 +202,23 @@ export default function PodcastPage() {
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="w-48 h-48 md:w-64 md:h-64 bg-gradient-to-br from-gold/20 to-gold/5 rounded-2xl flex items-center justify-center shadow-2xl">
-              <Headphones className="h-24 w-24 md:h-32 md:w-32 text-gold" />
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-6xl px-4 py-32">
+          <div className="flex flex-col items-center gap-8 md:flex-row">
+            <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 shadow-2xl md:h-64 md:w-64">
+              <Headphones className="h-24 w-24 text-gold md:h-32 md:w-32" />
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Listen & Learn</p>
+              <h1 className="mb-4 font-display text-display-lg md:text-display-xl text-white">
                 TPC Ministries Podcast
               </h1>
-              <p className="text-xl text-gray-300 mb-6 max-w-xl">
+              <p className="mb-6 max-w-xl text-body-xl text-white/50">
                 Prophetic teachings, spiritual insights, and Kingdom wisdom for your journey.
               </p>
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <div className="flex flex-wrap justify-center gap-3 md:justify-start">
                 <Link href="/podcast/feed.xml" target="_blank">
                   <Button variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy">
                     <Rss className="mr-2 h-4 w-4" />
@@ -225,13 +226,13 @@ export default function PodcastPage() {
                   </Button>
                 </Link>
                 <Link href="https://podcasts.apple.com" target="_blank">
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Apple Podcasts
                   </Button>
                 </Link>
                 <Link href="https://spotify.com" target="_blank">
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Spotify
                   </Button>
@@ -240,13 +241,14 @@ export default function PodcastPage() {
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Search */}
-      <section className="px-4 py-6 bg-gray-50 border-b">
+      <section className="border-b border-border bg-secondary px-4 py-6">
         <div className="container mx-auto max-w-6xl">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search episodes..."
@@ -262,18 +264,18 @@ export default function PodcastPage() {
       </section>
 
       {/* Episodes Grid */}
-      <section className="px-4 py-12 bg-white flex-1">
+      <section className="flex-1 bg-background px-4 py-section">
         <div className="container mx-auto max-w-6xl">
           {loading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-navy" />
             </div>
           ) : episodes.length === 0 ? (
-            <Card className="text-center py-16">
+            <Card className="rounded-2xl py-16 text-center">
               <CardContent>
-                <Headphones className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Episodes Found</h3>
-                <p className="text-gray-500">
+                <Headphones className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 font-display text-display-xs text-foreground">No Episodes Found</h3>
+                <p className="text-muted-foreground">
                   {searchQuery ? 'Try a different search term' : 'Check back soon for new episodes'}
                 </p>
               </CardContent>
@@ -284,14 +286,14 @@ export default function PodcastPage() {
                 {episodes.map((episode) => (
                   <Card
                     key={episode.id}
-                    className={`overflow-hidden transition-all hover:shadow-md ${
+                    className={`overflow-hidden rounded-2xl transition-all hover:border-gold/30 hover:shadow-md ${
                       currentEpisode?.id === episode.id ? 'ring-2 ring-gold' : ''
                     }`}
                   >
                     <CardContent className="p-0">
                       <div className="flex flex-col md:flex-row">
                         {/* Thumbnail */}
-                        <div className="relative w-full md:w-48 h-48 md:h-auto flex-shrink-0">
+                        <div className="relative h-48 w-full flex-shrink-0 md:h-auto md:w-48">
                           {episode.thumbnail ? (
                             <Image
                               src={episode.thumbnail}
@@ -301,20 +303,20 @@ export default function PodcastPage() {
                               sizes="(max-width: 768px) 100vw, 192px"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-navy to-navy-800 flex items-center justify-center">
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-navy to-navy-800">
                               <Headphones className="h-12 w-12 text-gold/50" />
                             </div>
                           )}
                           {/* Play Button Overlay */}
                           <button
                             onClick={() => playEpisode(episode)}
-                            className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity"
+                            className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100"
                           >
-                            <div className="h-16 w-16 rounded-full bg-gold flex items-center justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold">
                               {currentEpisode?.id === episode.id && isPlaying ? (
                                 <Pause className="h-8 w-8 text-navy" />
                               ) : (
-                                <Play className="h-8 w-8 text-navy ml-1" />
+                                <Play className="ml-1 h-8 w-8 text-navy" />
                               )}
                             </div>
                           </button>
@@ -325,18 +327,18 @@ export default function PodcastPage() {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               {episode.episode_number && (
-                                <span className="text-sm text-gold font-medium">
+                                <span className="text-body-sm font-medium text-gold">
                                   Episode {episode.episode_number}
-                                  {episode.season_number && ` • Season ${episode.season_number}`}
+                                  {episode.season_number && ` - Season ${episode.season_number}`}
                                 </span>
                               )}
-                              <h3 className="text-xl font-bold text-navy mb-2 line-clamp-2">
+                              <h3 className="mb-2 line-clamp-2 font-display text-display-xs text-foreground">
                                 {episode.title}
                               </h3>
-                              <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                              <p className="mb-4 line-clamp-2 text-body-sm text-muted-foreground">
                                 {episode.description}
                               </p>
-                              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                              <div className="flex flex-wrap items-center gap-4 text-body-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
                                   {formatDate(episode.published_at)}
@@ -378,16 +380,16 @@ export default function PodcastPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-4 mt-8">
+                <div className="mt-8 flex items-center justify-center gap-4">
                   <Button
                     variant="outline"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous
                   </Button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-body-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </span>
                   <Button
@@ -396,7 +398,7 @@ export default function PodcastPage() {
                     disabled={currentPage === totalPages}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -407,17 +409,17 @@ export default function PodcastPage() {
 
       {/* Fixed Audio Player */}
       {currentEpisode && (
-        <div className="fixed bottom-0 left-0 right-0 bg-navy border-t border-navy-700 shadow-lg z-50">
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-navy-950 shadow-lg">
           <div className="container mx-auto max-w-6xl px-4 py-3">
             <div className="flex items-center gap-4">
               {/* Episode Info */}
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-12 h-12 bg-gold/20 rounded flex-shrink-0 flex items-center justify-center">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded bg-gold/20">
                   <Headphones className="h-6 w-6 text-gold" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-white font-medium truncate">{currentEpisode.title}</p>
-                  <p className="text-gray-400 text-sm truncate">{currentEpisode.author}</p>
+                  <p className="truncate font-medium text-white">{currentEpisode.title}</p>
+                  <p className="truncate text-body-sm text-white/40">{currentEpisode.author}</p>
                 </div>
               </div>
 
@@ -434,12 +436,12 @@ export default function PodcastPage() {
                 <Button
                   size="icon"
                   onClick={togglePlayPause}
-                  className="bg-gold hover:bg-gold/90 text-navy h-10 w-10"
+                  className="h-10 w-10 bg-gold text-navy hover:bg-gold/90"
                 >
                   {isPlaying ? (
                     <Pause className="h-5 w-5" />
                   ) : (
-                    <Play className="h-5 w-5 ml-0.5" />
+                    <Play className="ml-0.5 h-5 w-5" />
                   )}
                 </Button>
                 <Button
@@ -453,8 +455,8 @@ export default function PodcastPage() {
               </div>
 
               {/* Progress */}
-              <div className="hidden md:flex items-center gap-3 flex-1">
-                <span className="text-gray-400 text-sm w-12 text-right">
+              <div className="hidden flex-1 items-center gap-3 md:flex">
+                <span className="w-12 text-right text-body-sm text-white/40">
                   {formatTime(currentTime)}
                 </span>
                 <Slider
@@ -464,13 +466,13 @@ export default function PodcastPage() {
                   onValueChange={handleSeek}
                   className="flex-1"
                 />
-                <span className="text-gray-400 text-sm w-12">
+                <span className="w-12 text-body-sm text-white/40">
                   {formatTime(duration)}
                 </span>
               </div>
 
               {/* Volume */}
-              <div className="hidden lg:flex items-center gap-2">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Button
                   variant="ghost"
                   size="icon"

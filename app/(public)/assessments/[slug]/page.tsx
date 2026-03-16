@@ -180,13 +180,13 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Breadcrumb */}
-      <div className="bg-white border-b">
+      <div className="border-b border-border bg-card">
         <div className="container mx-auto max-w-6xl px-4 py-4">
           <Link
             href="/assessments"
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors"
+            className="flex items-center gap-2 text-body-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to All Assessments
@@ -195,40 +195,48 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-navy to-navy-800 px-4 py-16">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-4xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Discover Your Design</p>
+          <h1 className="mb-6 font-display text-display-lg md:text-display-xl text-white">
             {assessment.title}
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+          <p className="mx-auto mb-8 max-w-3xl text-body-xl text-white/50">
             {assessment.subtitle}
           </p>
           <Button
-            size="lg"
+            variant="glow"
+            size="xl"
             onClick={handleStartAssessment}
-            className="bg-gold hover:bg-gold-dark text-white text-lg px-8 py-6"
           >
             Start Assessment
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* What You'll Discover */}
-      <section className="px-4 py-16">
+      <section className="px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            What You'll Discover
-          </h2>
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Benefits</p>
+            <h2 className="font-display text-display-md text-foreground">
+              What You&apos;ll Discover
+            </h2>
+          </div>
           <div className="grid gap-6 md:grid-cols-2">
             {assessment.benefits.map((benefit: string, index: number) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-1">
+              <div key={index} className="flex items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-gold/30 hover:shadow-lg">
+                <div className="mt-1 flex-shrink-0">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
                     <Check className="h-4 w-4 text-green-600" />
                   </div>
                 </div>
-                <p className="text-gray-700">{benefit}</p>
+                <p className="text-muted-foreground">{benefit}</p>
               </div>
             ))}
           </div>
@@ -238,12 +246,12 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
 
       {/* Email Capture Section */}
       {showEmailCapture && (
-        <section className="px-4 py-16 bg-gradient-to-br from-gold/10 to-navy/10">
+        <section className="bg-navy px-4 py-section-sm dark:bg-navy-950">
           <div className="container mx-auto max-w-2xl">
-            <Card className="border-2 border-gold">
+            <Card className="rounded-3xl border-gold/30 bg-card">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-navy">Get Your Personalized Results</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="font-display text-display-xs text-foreground">Get Your Personalized Results</CardTitle>
+                <CardDescription className="text-body-md">
                   Enter your email to receive your complete assessment results and recommendations
                 </CardDescription>
               </CardHeader>
@@ -262,14 +270,14 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
                     />
                   </div>
 
-                  <div className="flex items-start gap-2 text-sm text-gray-600">
-                    <Shield className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 text-body-sm text-muted-foreground">
+                    <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
                     <p>We respect your privacy. Unsubscribe anytime.</p>
                   </div>
 
                   <Button
                     type="submit"
-                    className="w-full bg-navy hover:bg-navy/90"
+                    className="w-full"
                     size="lg"
                     disabled={submitting}
                   >
@@ -281,9 +289,9 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
                 <div className="mt-4 text-center">
                   <button
                     onClick={() => window.location.href = `/assessments/${params.slug}/quiz`}
-                    className="text-sm text-gray-600 hover:text-navy underline"
+                    className="text-body-sm text-muted-foreground underline hover:text-foreground"
                   >
-                    Continue without email (won't save progress)
+                    Continue without email (won&apos;t save progress)
                   </button>
                 </div>
               </CardContent>
@@ -293,48 +301,51 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
       )}
 
       {/* What to Expect */}
-      <section className="px-4 py-16">
+      <section className="bg-background px-4 py-section">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-navy text-center mb-12">
-            What to Expect
-          </h2>
+          <div className="mb-12 text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">The Process</p>
+            <h2 className="font-display text-display-md text-foreground">
+              What to Expect
+            </h2>
+          </div>
 
-          <div className="grid gap-8 md:grid-cols-3 mb-12">
+          <div className="mb-12 grid gap-8 md:grid-cols-3">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-navy/10">
-                <span className="text-2xl font-bold text-navy">{assessment.questionCount}</span>
+                <span className="font-display text-display-xs text-navy">{assessment.questionCount}</span>
               </div>
-              <h3 className="font-semibold text-navy mb-2">Questions</h3>
-              <p className="text-sm text-gray-600">Thoughtfully designed to reveal insights</p>
+              <h3 className="mb-2 font-semibold text-foreground">Questions</h3>
+              <p className="text-body-sm text-muted-foreground">Thoughtfully designed to reveal insights</p>
             </div>
 
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-navy/10">
-                <span className="text-2xl font-bold text-navy">{assessment.estimatedTime}</span>
+                <span className="font-display text-body-lg text-navy">{assessment.estimatedTime}</span>
               </div>
-              <h3 className="font-semibold text-navy mb-2">Time Required</h3>
-              <p className="text-sm text-gray-600">Take your time - no rush</p>
+              <h3 className="mb-2 font-semibold text-foreground">Time Required</h3>
+              <p className="text-body-sm text-muted-foreground">Take your time - no rush</p>
             </div>
 
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/20">
                 <Check className="h-8 w-8 text-gold" />
               </div>
-              <h3 className="font-semibold text-navy mb-2">Personalized Results</h3>
-              <p className="text-sm text-gray-600">Tailored to your unique responses</p>
+              <h3 className="mb-2 font-semibold text-foreground">Personalized Results</h3>
+              <p className="text-body-sm text-muted-foreground">Tailored to your unique responses</p>
             </div>
           </div>
 
-          <Card className="bg-gold/5 border-gold/20">
+          <Card className="rounded-2xl border-gold/20 bg-gold/5">
             <CardHeader>
-              <CardTitle className="text-navy">You'll Learn:</CardTitle>
+              <CardTitle className="font-display text-display-xs text-foreground">You&apos;ll Learn:</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
                 {assessment.learnings.map((learning: string, index: number) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{learning}</span>
+                    <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />
+                    <span className="text-muted-foreground">{learning}</span>
                   </li>
                 ))}
               </ul>
@@ -344,18 +355,19 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
       </section>
 
       {/* Final CTA */}
-      <section className="px-4 py-16 bg-gradient-to-br from-navy to-navy-800">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">
+      <section className="relative overflow-hidden bg-navy-950 px-4 py-section">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
+        <div className="container relative mx-auto max-w-4xl text-center">
+          <h2 className="mb-6 font-display text-display-md text-white">
             Ready to Discover Your Design?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
             Take the first step in understanding how God uniquely created you
           </p>
           <Button
-            size="lg"
+            variant="glow"
+            size="xl"
             onClick={handleStartAssessment}
-            className="bg-gold hover:bg-gold-dark text-white text-lg px-8 py-6"
           >
             Start Assessment Now
             <ArrowRight className="ml-2 h-5 w-5" />

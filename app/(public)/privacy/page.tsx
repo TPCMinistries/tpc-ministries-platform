@@ -8,22 +8,28 @@ export const metadata: Metadata = {
 export default function PrivacyPolicyPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <section className="bg-gradient-to-br from-tpc-navy to-tpc-navy/90 px-4 py-16 md:py-20">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
+      {/* Hero Section */}
+      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
+        <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Legal</p>
+          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Privacy Policy
           </h1>
-          <p className="text-lg text-white/70">
+          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
             Last updated: February 8, 2026
           </p>
+          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      <section className="px-4 py-16 bg-white">
-        <div className="container mx-auto max-w-4xl prose prose-slate prose-lg">
+      <section className="bg-background px-4 py-section">
+        <div className="container mx-auto max-w-4xl prose prose-lg prose-headings:font-display prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-gold prose-a:no-underline hover:prose-a:underline">
           <h2>Introduction</h2>
           <p>
-            TPC Ministries ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy
+            TPC Ministries (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) is committed to protecting your privacy. This Privacy Policy
             explains how we collect, use, disclose, and safeguard your information when you visit our website
             tpcmin.org and use our services.
           </p>
@@ -99,7 +105,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p>
             To exercise these rights, contact us at{' '}
-            <a href="mailto:info@tpcmin.org" className="text-tpc-gold-accent hover:underline">
+            <a href="mailto:info@tpcmin.org">
               info@tpcmin.org
             </a>.
           </p>
@@ -111,7 +117,7 @@ export default function PrivacyPolicyPage() {
             browser preferences.
           </p>
 
-          <h2>Children's Privacy</h2>
+          <h2>Children&apos;s Privacy</h2>
           <p>
             Our services are not directed to children under 13. We do not knowingly collect personal
             information from children under 13. If you believe we have collected such information,
@@ -129,7 +135,7 @@ export default function PrivacyPolicyPage() {
           <h2>Changes to This Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. We will notify you of any changes by
-            posting the new policy on this page and updating the "Last updated" date.
+            posting the new policy on this page and updating the &ldquo;Last updated&rdquo; date.
           </p>
 
           <h2>Contact Us</h2>
@@ -137,8 +143,8 @@ export default function PrivacyPolicyPage() {
             If you have questions about this Privacy Policy, please contact us:
           </p>
           <ul>
-            <li>Email: <a href="mailto:info@tpcmin.org" className="text-tpc-gold-accent hover:underline">info@tpcmin.org</a></li>
-            <li>Website: <a href="/connect" className="text-tpc-gold-accent hover:underline">tpcmin.org/connect</a></li>
+            <li>Email: <a href="mailto:info@tpcmin.org">info@tpcmin.org</a></li>
+            <li>Website: <a href="/connect">tpcmin.org/connect</a></li>
           </ul>
         </div>
       </section>
