@@ -21,21 +21,12 @@ export const metadata: Metadata = {
       'We\'re heading to Kenya with supplies for 3 cities. Help us pack what matters — pledge items or contribute funds.',
     type: 'website',
     siteName: 'TPC Ministries',
-    images: [
-      {
-        url: 'https://tpcmin.org/images/kenya/kenya-flier-2026.png',
-        width: 1200,
-        height: 630,
-        alt: 'Pack the Mission — Kenya 2026',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Pack the Mission — Kenya 2026',
     description:
       'Help us fill the suitcases with supplies for Kenya. Pledge items or contribute funds.',
-    images: ['https://tpcmin.org/images/kenya/kenya-flier-2026.png'],
   },
 }
 
