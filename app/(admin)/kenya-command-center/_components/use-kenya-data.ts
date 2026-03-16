@@ -7,7 +7,8 @@ import type {
   BudgetCategory, Expense, Announcement, Document, FAQ, DailyFocus, Stats,
   PackingItem, PackingStatus, ConferenceSession, LogisticsMatrix,
   MediaCalendarItem, MediaAssignment, ShotListItem, WaitingListEntry,
-  ActionItem, TrackDetail, TrackMaterial, AdminNote, SupportRole
+  ActionItem, TrackDetail, TrackMaterial, AdminNote, SupportRole,
+  KenyaInvite
 } from './types'
 
 export function useKenyaData() {
@@ -46,6 +47,10 @@ export function useKenyaData() {
 
   // Phase 5 data state (migration 047)
   const [supportRoles, setSupportRoles] = useState<SupportRole[]>([])
+
+  // Kenya invite state
+  const [kenyaInvites, setKenyaInvites] = useState<KenyaInvite[]>([])
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   // Check-in data
   const [todayCheckins, setTodayCheckins] = useState<{ participant_id: string; checkin_date: string }[]>([])
@@ -233,6 +238,15 @@ export function useKenyaData() {
           .eq('checkin_date', today)
         setTodayCheckins(checkinRes.data || [])
       } catch { /* table may not exist yet */ }
+
+      // Fetch Kenya invites
+      try {
+        const inviteRes = await fetch('/api/admin/kenya-invites')
+        if (inviteRes.ok) {
+          const inviteData = await inviteRes.json()
+          setKenyaInvites(inviteData)
+        }
+      } catch { /* invite data is supplementary */ }
 
       // Calculate stats
       const p = participantsRes.data || []
@@ -936,6 +950,71 @@ export function useKenyaData() {
     await supabase.from('kenya_trip_support_roles').delete().eq('id', id)
   }
 
+  // ============ KENYA INVITE HANDLERS ============
+
+  const sendKenyaInvite = async (invite: {
+    firstName: string
+    lastName: string
+    email: string
+    track: string
+    role: string
+    sendEmail: boolean
+  }) => {
+    const response = await fetch('/api/admin/kenya-invites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create', ...invite }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      fetchData() // Refresh all data including participants
+    }
+    return data
+  }
+
+  const sendBulkKenyaInvites = async (invites: {
+    firstName: string
+    lastName: string
+    email: string
+    track: string
+    role: string
+  }[]) => {
+    const response = await fetch('/api/admin/kenya-invites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'bulk_create', invites, sendEmails: true }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      fetchData()
+    }
+    return data
+  }
+
+  const resendKenyaInvite = async (inviteId: string) => {
+    const response = await fetch('/api/admin/kenya-invites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resend', inviteId }),
+    })
+    return response.json()
+  }
+
+  const deactivateKenyaInvite = async (inviteId: string) => {
+    const response = await fetch('/api/admin/kenya-invites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deactivate', inviteId }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      setKenyaInvites(prev => prev.map(inv =>
+        inv.id === inviteId ? { ...inv, is_active: false } : inv
+      ))
+    }
+    return data
+  }
+
   return {
     // Core
     loading, trip, fetchData,
@@ -997,5 +1076,8 @@ export function useKenyaData() {
     addLodging,
     // Support roles handlers
     addSupportRole, updateSupportRoleField, deleteSupportRole,
+    // Kenya invite handlers
+    kenyaInvites, showInviteModal, setShowInviteModal,
+    sendKenyaInvite, sendBulkKenyaInvites, resendKenyaInvite, deactivateKenyaInvite,
   }
 }

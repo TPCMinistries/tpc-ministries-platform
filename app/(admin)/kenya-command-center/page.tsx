@@ -24,6 +24,7 @@ import { ModalExpense } from './_components/modal-expense'
 import { ModalAnnouncement } from './_components/modal-announcement'
 import { ModalDailyFocus } from './_components/modal-daily-focus'
 import { ModalParticipantDetail } from './_components/modal-participant-detail'
+import { ModalInviteDelegate } from './_components/modal-invite-delegate'
 import { useState } from 'react'
 
 export default function KenyaCommandCenter() {
@@ -156,6 +157,7 @@ export default function KenyaCommandCenter() {
             promoteToDelegate={data.promoteToDelegate}
             addLodging={data.addLodging}
             saveStatus={data.saveStatus}
+            onOpenInviteModal={() => data.setShowInviteModal(true)}
           />
         )}
 
@@ -329,6 +331,16 @@ export default function KenyaCommandCenter() {
         newDailyFocus={data.newDailyFocus}
         setNewDailyFocus={data.setNewDailyFocus}
         onSubmit={data.handleAddDailyFocus}
+      />
+
+      <ModalInviteDelegate
+        show={data.showInviteModal}
+        onClose={() => data.setShowInviteModal(false)}
+        kenyaInvites={data.kenyaInvites}
+        sendKenyaInvite={data.sendKenyaInvite}
+        sendBulkKenyaInvites={data.sendBulkKenyaInvites}
+        resendKenyaInvite={data.resendKenyaInvite}
+        deactivateKenyaInvite={data.deactivateKenyaInvite}
       />
     </div>
   )

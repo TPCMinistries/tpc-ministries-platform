@@ -2,9 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Use service role for public validation (no user auth required)
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 // GET - Validate an invite code
 export async function GET(request: NextRequest) {
@@ -16,6 +19,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const supabase = getSupabase()
+
     const { data: invite, error } = await supabase
       .from('invite_codes')
       .select('*')
@@ -41,7 +46,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ valid: false, error: 'This invite has already been used' })
     }
 
-    return NextResponse.json({
+    const response: any = {
       valid: true,
       invite: {
         code: invite.code,
@@ -49,7 +54,17 @@ export async function GET(request: NextRequest) {
         email: invite.email,
         role: invite.role,
       },
-    })
+    }
+
+    // Add Kenya-specific fields if this is a Kenya trip invite
+    if (invite.invite_type === 'kenya_trip') {
+      response.invite.invite_type = 'kenya_trip'
+      response.invite.service_track = invite.service_track
+      response.invite.participant_id = invite.participant_id
+      response.invite.trip_id = invite.trip_id
+    }
+
+    return NextResponse.json(response)
   } catch (error: any) {
     console.error('Invite validation error:', error)
     return NextResponse.json({ valid: false, error: 'Failed to validate invite' }, { status: 500 })
@@ -59,6 +74,8 @@ export async function GET(request: NextRequest) {
 // POST - Mark invite as used
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase()
+
     const body = await request.json()
     const { code, memberId } = body
 
