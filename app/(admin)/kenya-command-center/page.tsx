@@ -149,6 +149,7 @@ export default function KenyaCommandCenter() {
             updateLodgingField={data.updateLodgingField}
             updateContactField={data.updateContactField}
             addParticipantDirect={data.addParticipantDirect}
+            sendKenyaInvite={data.sendKenyaInvite}
             deleteParticipant={data.deleteParticipant}
             addContact={data.addContact}
             deleteContact={data.deleteContact}
