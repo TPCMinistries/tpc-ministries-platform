@@ -28,16 +28,18 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
+    // Soft archive — set status to 'removed' instead of hard delete
+    // This preserves all related data and allows restoration
     const { error } = await adminClient
       .from('kenya_trip_participants')
-      .delete()
+      .update({ application_status: 'removed' })
       .eq('id', participantId)
 
     if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Kenya delete participant error:', error)
+    console.error('Kenya archive participant error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

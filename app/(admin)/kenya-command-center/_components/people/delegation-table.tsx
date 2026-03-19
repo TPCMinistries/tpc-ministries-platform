@@ -372,7 +372,7 @@ export function DelegationTable({
                           onClick={() => { deleteParticipant(p.id); setConfirmDeleteId(null) }}
                           className="px-2 py-0.5 text-[11px] font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                         >
-                          Confirm
+                          Archive
                         </button>
                         <button
                           type="button"
