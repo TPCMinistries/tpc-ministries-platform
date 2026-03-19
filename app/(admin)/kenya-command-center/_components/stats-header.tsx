@@ -9,11 +9,13 @@ import type { Trip, Stats } from './types'
 interface StatsHeaderProps {
   trip: Trip
   stats: Stats
+  waitingListCount?: number
+  hideFinancials?: boolean
 }
 
-export function StatsHeader({ trip, stats }: StatsHeaderProps) {
+export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials = false }: StatsHeaderProps) {
   return (
-    <div className="grid gap-6 md:grid-cols-6 mb-8">
+    <div className={`grid gap-6 ${hideFinancials ? 'md:grid-cols-4' : 'md:grid-cols-6'} mb-8`}>
       <Card className="bg-gradient-to-br from-navy to-navy-800 text-white">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -31,24 +33,29 @@ export function StatsHeader({ trip, stats }: StatsHeaderProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-3xl font-bold text-yellow-600">{stats.pendingApplications}</p>
+              <p className="text-3xl font-bold text-yellow-600">{stats.pendingApplications + waitingListCount}</p>
+              {waitingListCount > 0 && (
+                <p className="text-xs text-gray-500">{stats.pendingApplications} apps + {waitingListCount} waiting</p>
+              )}
             </div>
             <Clock className="h-10 w-10 text-yellow-600/20" />
           </div>
         </CardContent>
       </Card>
+      {!hideFinancials && (
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Fundraising</p>
               <p className="text-3xl font-bold text-gold">${(stats.totalRaised / 1000).toFixed(0)}k</p>
-              <p className="text-xs text-gray-500">{((stats.totalRaised / stats.fundraisingGoal) * 100).toFixed(0)}% of goal</p>
+              <p className="text-xs text-gray-500">of ${(stats.fundraisingGoal / 1000).toFixed(0)}k goal</p>
             </div>
             <DollarSign className="h-10 w-10 text-gold/20" />
           </div>
         </CardContent>
       </Card>
+      )}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -73,6 +80,7 @@ export function StatsHeader({ trip, stats }: StatsHeaderProps) {
           </div>
         </CardContent>
       </Card>
+      {!hideFinancials && (
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -84,6 +92,7 @@ export function StatsHeader({ trip, stats }: StatsHeaderProps) {
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }

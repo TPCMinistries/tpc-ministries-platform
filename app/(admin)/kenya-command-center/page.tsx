@@ -95,11 +95,20 @@ export default function KenyaCommandCenter() {
         <CountdownTimer trip={trip} />
 
         {/* Stats Overview */}
-        <StatsHeader trip={trip} stats={data.stats} />
+        <StatsHeader
+          trip={trip}
+          stats={data.stats}
+          waitingListCount={data.waitingList.length}
+          hideFinancials={!data.currentUserIsAdmin}
+        />
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b overflow-x-auto">
-          {tabs.map((tab) => (
+          {tabs.filter(tab => {
+            // Hide financial tabs from non-admin users (e.g. Kenyan coordinators)
+            if (!data.currentUserIsAdmin && (tab.key === 'budget' || tab.key === 'finances')) return false
+            return true
+          }).map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -127,6 +136,7 @@ export default function KenyaCommandCenter() {
             setActiveTab={(t) => setActiveTab(t as TabType)}
             setShowAnnouncementModal={data.setShowAnnouncementModal}
             updateTripField={data.updateTripField}
+            hideFinancials={!data.currentUserIsAdmin}
           />
         )}
 
