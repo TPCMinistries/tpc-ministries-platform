@@ -39,26 +39,6 @@ export async function POST(request: NextRequest) {
     const tsaKnownTravelerNumber = formData.get('tsaKnownTravelerNumber') as string
     const travelNotes = formData.get('travelNotes') as string
     const passportPhoto = formData.get('passportPhoto') as File | null
-    // Enhanced fields (migration 053)
-    const gender = formData.get('gender') as string
-    const preferredName = formData.get('preferredName') as string
-    const tShirtSize = formData.get('tShirtSize') as string
-    const roommatePreference = formData.get('roommatePreference') as string
-    const yellowFeverStatus = formData.get('yellowFeverStatus') as string
-    const yellowFeverDate = formData.get('yellowFeverDate') as string
-    const malariaProphylaxis = formData.get('malariaProphylaxis') as string
-    const travelInsuranceStatus = formData.get('travelInsuranceStatus') as string
-    const travelInsuranceProvider = formData.get('travelInsuranceProvider') as string
-    const emergencyContactName = formData.get('emergencyContactName') as string
-    const emergencyContactPhone = formData.get('emergencyContactPhone') as string
-    const emergencyContactRelationship = formData.get('emergencyContactRelationship') as string
-    const allergies = formData.get('allergies') as string
-    const medications = formData.get('medications') as string
-    const medicalConditions = formData.get('medicalConditions') as string
-    const dietaryRestrictions = formData.get('dietaryRestrictions') as string
-    const languagesSpoken = formData.get('languagesSpoken') as string
-    const priorMissionExperience = formData.get('priorMissionExperience') as string
-    const bloodType = formData.get('bloodType') as string
 
     // Validate required fields
     if (!displayFirstName || !displayLastName || !email || !legalFullName || !serviceTrack) {
@@ -142,26 +122,6 @@ export async function POST(request: NextRequest) {
       travel_notes: travelNotes || null,
       travel_form_completed_at: new Date().toISOString(),
       ...(passportPhotoUrl ? { passport_photo_url: passportPhotoUrl } : {}),
-      // Enhanced fields
-      gender: gender || null,
-      preferred_name: preferredName || null,
-      t_shirt_size: tShirtSize || null,
-      roommate_preference: roommatePreference || null,
-      yellow_fever_status: yellowFeverStatus || 'unknown',
-      yellow_fever_date: yellowFeverDate || null,
-      malaria_prophylaxis: malariaProphylaxis || null,
-      travel_insurance_status: travelInsuranceStatus || 'unknown',
-      travel_insurance_provider: travelInsuranceProvider || null,
-      emergency_contact_name: emergencyContactName || null,
-      emergency_contact_phone: emergencyContactPhone || null,
-      emergency_contact_relationship: emergencyContactRelationship || null,
-      allergies: allergies || null,
-      medications: medications || null,
-      medical_conditions: medicalConditions || null,
-      dietary_restrictions: dietaryRestrictions || null,
-      languages_spoken: languagesSpoken || null,
-      prior_mission_experience: priorMissionExperience || null,
-      blood_type: bloodType || null,
     }
 
     let dbError = null
