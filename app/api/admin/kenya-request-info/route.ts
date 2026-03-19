@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       to: email,
       subject: 'Kenya Trip Application - Follow-Up Questions',
       html: emailHtml,
-      from: 'TPC Ministries <info@tpcmin.org>',
+      from: 'TPC Ministries <info@tpcmin.com>',
     })
 
     // Log the follow-up in participant notes
