@@ -25,6 +25,7 @@ interface TabPeopleProps {
   updateLodgingField: (id: string, field: string, value: string | number) => void
   updateContactField: (id: string, field: string, value: string) => void
   addParticipantDirect: (firstName: string, lastName: string) => void
+  sendKenyaInvite: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
   deleteParticipant: (id: string) => void
   addContact: (name: string) => void
   deleteContact: (id: string) => void
@@ -81,6 +82,7 @@ export function TabPeople({
   updateLodgingField,
   updateContactField,
   addParticipantDirect,
+  sendKenyaInvite,
   deleteParticipant,
   addContact,
   deleteContact,
@@ -96,6 +98,10 @@ export function TabPeople({
   const [showAddDelegate, setShowAddDelegate] = useState(false)
   const [newDelegateFirst, setNewDelegateFirst] = useState('')
   const [newDelegateLast, setNewDelegateLast] = useState('')
+  const [newDelegateEmail, setNewDelegateEmail] = useState('')
+  const [newDelegateTrack, setNewDelegateTrack] = useState('Flex')
+  const [addingDelegate, setAddingDelegate] = useState(false)
+  const [addDelegateResult, setAddDelegateResult] = useState<{ success: boolean; message: string } | null>(null)
 
   // Add Partner inline form state
   const [showAddPartner, setShowAddPartner] = useState(false)
@@ -111,12 +117,45 @@ export function TabPeople({
   const [newHotelCheckIn, setNewHotelCheckIn] = useState('')
   const [newHotelCheckOut, setNewHotelCheckOut] = useState('')
 
-  const handleAddDelegate = () => {
-    if (newDelegateFirst.trim()) {
-      addParticipantDirect(newDelegateFirst.trim(), newDelegateLast.trim())
-      setNewDelegateFirst('')
-      setNewDelegateLast('')
-      setShowAddDelegate(false)
+  const handleAddDelegate = async () => {
+    if (!newDelegateFirst.trim()) return
+    setAddingDelegate(true)
+    setAddDelegateResult(null)
+    try {
+      if (newDelegateEmail.trim()) {
+        // Has email — use invite flow (adds participant + sends email)
+        const data = await sendKenyaInvite({
+          firstName: newDelegateFirst.trim(),
+          lastName: newDelegateLast.trim(),
+          email: newDelegateEmail.trim(),
+          track: newDelegateTrack,
+          role: 'member',
+          sendEmail: true,
+        })
+        if (data.success) {
+          const msg = data.emailSent
+            ? `Added & invite sent to ${newDelegateEmail.trim()}`
+            : `Added but email failed${data.emailError ? ': ' + data.emailError : ''}`
+          setAddDelegateResult({ success: data.emailSent, message: msg })
+          setNewDelegateFirst('')
+          setNewDelegateLast('')
+          setNewDelegateEmail('')
+          setNewDelegateTrack('Flex')
+        } else {
+          setAddDelegateResult({ success: false, message: data.error || 'Failed to add delegate' })
+        }
+      } else {
+        // No email — just add participant (no invite sent)
+        addParticipantDirect(newDelegateFirst.trim(), newDelegateLast.trim())
+        setAddDelegateResult({ success: true, message: 'Added (no email — no invite sent)' })
+        setNewDelegateFirst('')
+        setNewDelegateLast('')
+        setNewDelegateTrack('Flex')
+      }
+    } catch (err: any) {
+      setAddDelegateResult({ success: false, message: err.message || 'Failed' })
+    } finally {
+      setAddingDelegate(false)
     }
   }
 
@@ -206,38 +245,67 @@ export function TabPeople({
 
           {/* Add Delegate Inline Form */}
           {showAddDelegate && (
-            <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded border border-gray-200">
-              <input
-                type="text"
-                placeholder="First Name"
-                value={newDelegateFirst}
-                onChange={(e) => setNewDelegateFirst(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddDelegate()}
-                className={`w-[140px] ${inputClasses}`}
-                autoFocus
-              />
-              <input
-                type="text"
-                placeholder="Last Name"
-                value={newDelegateLast}
-                onChange={(e) => setNewDelegateLast(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddDelegate()}
-                className={`w-[140px] ${inputClasses}`}
-              />
-              <button
-                type="button"
-                onClick={handleAddDelegate}
-                className="px-3 py-1.5 text-[13px] font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-              >
-                Add
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowAddDelegate(false); setNewDelegateFirst(''); setNewDelegateLast('') }}
-                className="px-3 py-1.5 text-[13px] font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+              {addDelegateResult && (
+                <div className={`p-2 rounded text-[13px] font-medium ${addDelegateResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                  {addDelegateResult.message}
+                </div>
+              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="text"
+                  placeholder="First Name *"
+                  value={newDelegateFirst}
+                  onChange={(e) => setNewDelegateFirst(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddDelegate()}
+                  className={`w-[130px] ${inputClasses}`}
+                  autoFocus
+                />
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  value={newDelegateLast}
+                  onChange={(e) => setNewDelegateLast(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddDelegate()}
+                  className={`w-[130px] ${inputClasses}`}
+                />
+                <input
+                  type="email"
+                  placeholder="Email (sends invite)"
+                  value={newDelegateEmail}
+                  onChange={(e) => setNewDelegateEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddDelegate()}
+                  className={`w-[200px] ${inputClasses}`}
+                />
+                <select
+                  value={newDelegateTrack}
+                  onChange={(e) => setNewDelegateTrack(e.target.value)}
+                  className={`w-[100px] ${inputClasses}`}
+                >
+                  <option value="Flex">Flex</option>
+                  <option value="Ministry">Ministry</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Education">Education</option>
+                  <option value="Business">Business</option>
+                  <option value="Media">Media</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={handleAddDelegate}
+                  disabled={addingDelegate || !newDelegateFirst.trim()}
+                  className="px-3 py-1.5 text-[13px] font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {addingDelegate ? 'Adding...' : newDelegateEmail.trim() ? '+ Add & Send Invite' : '+ Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddDelegate(false); setNewDelegateFirst(''); setNewDelegateLast(''); setNewDelegateEmail(''); setNewDelegateTrack('Flex'); setAddDelegateResult(null) }}
+                  className="px-3 py-1.5 text-[13px] font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-500">Add email to auto-send the Kenya trip invitation. Leave blank to add without emailing.</p>
             </div>
           )}
 
