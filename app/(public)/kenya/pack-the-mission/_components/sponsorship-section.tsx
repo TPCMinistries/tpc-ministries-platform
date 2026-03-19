@@ -89,41 +89,41 @@ export function SponsorshipSection() {
         <div className="relative z-10 container mx-auto max-w-6xl">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 bg-gold/15 rounded-full px-4 py-2 mb-4">
-              <Heart className="h-4 w-4 text-gold-dark" />
-              <span className="text-gold-dark text-sm font-semibold">Sponsorship Spotlight</span>
+              <Heart className="h-4 w-4 text-gold-700" />
+              <span className="text-gold-700 text-sm font-semibold">Sponsorship Spotlight</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-navy mb-4">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-navy mb-4">
               Invest in a Life
             </h2>
-            <p className="text-navy/60 text-lg">
+            <p className="text-muted-foreground text-lg">
               Go beyond supplies — sponsor a student, an orphan, or an entire school.
               Monthly or one-time, your investment changes trajectories.
             </p>
           </div>
 
           {/* Monthly Sponsorships */}
-          <h3 className="text-sm font-bold tracking-widest uppercase text-navy/40 mb-4">Monthly Sponsorships</h3>
+          <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-4">Monthly Sponsorships</h3>
           <div className="grid md:grid-cols-3 gap-5 mb-10">
             {sponsorshipItems.filter(i => i.frequency === 'monthly').map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-6 border border-gold/20 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all"
+                className="bg-card rounded-2xl p-6 border border-gold/20 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all"
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-3xl">{item.icon}</span>
-                  <span className="text-[11px] font-bold uppercase tracking-wider bg-gold/15 text-gold-dark px-2.5 py-1 rounded-full">
+                  <span className="text-[11px] font-bold uppercase tracking-wider bg-gold/15 text-gold-700 px-2.5 py-1 rounded-full">
                     Monthly
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-navy mb-1">{item.name}</h3>
-                <p className="text-xs text-navy/60 mb-4 leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-bold text-foreground mb-1">{item.name}</h3>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{item.description}</p>
                 <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-2xl font-bold text-gold-dark">${item.amount}</span>
-                  <span className="text-sm text-navy/40">/month</span>
+                  <span className="text-2xl font-bold text-gold-700">${item.amount}</span>
+                  <span className="text-sm text-muted-foreground">/month</span>
                 </div>
                 <Button
                   onClick={() => handleSponsor(item)}
-                  className="w-full bg-gold hover:bg-gold-light text-navy font-bold rounded-full"
+                  className="w-full bg-gold hover:bg-gold-light text-foreground font-bold rounded-full"
                 >
                   <GraduationCap className="mr-2 h-4 w-4" />
                   Sponsor Monthly
@@ -133,28 +133,28 @@ export function SponsorshipSection() {
           </div>
 
           {/* One-Time Sponsorships */}
-          <h3 className="text-sm font-bold tracking-widest uppercase text-navy/40 mb-4">One-Time Sponsorships</h3>
+          <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground mb-4">One-Time Sponsorships</h3>
           <div className="grid md:grid-cols-3 gap-5">
             {sponsorshipItems.filter(i => i.frequency === 'one_time').map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-6 border border-navy/10 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all"
+                className="bg-card rounded-2xl p-6 border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all"
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-3xl">{item.icon}</span>
-                  <span className="text-[11px] font-bold uppercase tracking-wider bg-navy/5 text-navy/50 px-2.5 py-1 rounded-full">
+                  <span className="text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
                     One-Time
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-navy mb-1">{item.name}</h3>
-                <p className="text-xs text-navy/60 mb-4 leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-bold text-foreground mb-1">{item.name}</h3>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{item.description}</p>
                 <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-2xl font-bold text-navy">${item.amount.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-foreground">${item.amount.toLocaleString()}</span>
                 </div>
                 <Button
                   onClick={() => handleSponsor(item)}
                   variant="outline"
-                  className="w-full border-2 border-navy/20 text-navy font-bold rounded-full hover:bg-navy hover:text-white"
+                  className="w-full border-2 border-border text-foreground font-bold rounded-full hover:bg-navy hover:text-white"
                 >
                   <GraduationCap className="mr-2 h-4 w-4" />
                   Sponsor Now
@@ -169,7 +169,7 @@ export function SponsorshipSection() {
       <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) resetModal(); setModalOpen(open) }}>
         <DialogContent className="sm:max-w-md bg-white rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-serif">
+            <DialogTitle className="text-xl font-display">
               {selectedItem?.name}
             </DialogTitle>
             <DialogDescription>
@@ -181,7 +181,7 @@ export function SponsorshipSection() {
 
           <div className="space-y-4 mt-2">
             <div>
-              <Label htmlFor="sponsor-name" className="text-xs font-semibold uppercase tracking-wide text-navy/60">
+              <Label htmlFor="sponsor-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Your Name
               </Label>
               <Input
@@ -194,7 +194,7 @@ export function SponsorshipSection() {
             </div>
 
             <div>
-              <Label htmlFor="sponsor-email" className="text-xs font-semibold uppercase tracking-wide text-navy/60">
+              <Label htmlFor="sponsor-email" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Email
               </Label>
               <Input
@@ -228,7 +228,7 @@ export function SponsorshipSection() {
               )}
             </Button>
 
-            <p className="text-center text-xs text-navy/40">
+            <p className="text-center text-xs text-muted-foreground">
               Secure payment via Stripe. Tax-deductible. You&apos;ll receive a receipt.
             </p>
           </div>
