@@ -20,8 +20,9 @@ import {
   Utensils,
   Package,
   Star,
+  Truck,
 } from 'lucide-react'
-import type { DelegateTabType, TrackLeadTabType, DocumentType } from './types'
+import type { DelegateTabType, TrackLeadTabType, PartnerTabType, DocumentType } from './types'
 
 // ========== Delegate Tabs ==========
 
@@ -45,6 +46,17 @@ export const trackLeadTabs: { key: TrackLeadTabType; label: string; icon: any }[
   { key: 'prep', label: 'Prep', icon: Layers },
   { key: 'comms', label: 'Comms', icon: MessageSquare },
   { key: 'plan', label: 'Plan', icon: FileText },
+]
+
+// ========== Partner Tabs ==========
+
+export const partnerTabs: { key: PartnerTabType; label: string; icon: typeof LayoutDashboard }[] = [
+  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { key: 'delegation', label: 'Delegation', icon: Users },
+  { key: 'schedule', label: 'Schedule', icon: Calendar },
+  { key: 'logistics', label: 'Logistics', icon: Truck },
+  { key: 'coordination', label: 'Coordination', icon: MessageSquare },
+  { key: 'resources', label: 'Resources', icon: BookOpen },
 ]
 
 // ========== Trip Info ==========

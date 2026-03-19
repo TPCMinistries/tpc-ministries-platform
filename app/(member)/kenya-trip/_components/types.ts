@@ -312,3 +312,38 @@ export interface DocumentType {
   description: string
   required: boolean
 }
+
+// ========== Kenya Partner Types ==========
+
+export interface KenyaPartner {
+  id: string
+  trip_id: string
+  member_id: string
+  partner_type: string
+  organization: string | null
+  title: string | null
+  city: string | null
+  responsibilities: string | null
+  can_propose_changes: boolean
+  is_active: boolean
+  invited_by_member_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PartnerProposal {
+  id: string
+  trip_id: string
+  partner_id: string
+  proposal_type: string
+  title: string
+  description: string
+  status: string
+  admin_response: string | null
+  resolved_by_member_id: string | null
+  created_at: string
+  resolved_at: string | null
+  updated_at: string
+}
+
+export type PartnerTabType = 'overview' | 'delegation' | 'schedule' | 'logistics' | 'coordination' | 'resources'

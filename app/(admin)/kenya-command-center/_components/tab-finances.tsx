@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -67,6 +67,7 @@ interface CategoryBreakdown {
 }
 
 interface FinancialReport {
+  tripId: string
   summary: {
     totalDelegates: number
     totalTripCost: number
@@ -156,12 +157,6 @@ export function TabFinances() {
     fetchReport()
   }, [fetchReport])
 
-  // Delegate payment entries (admin payments for the expanded delegate)
-  const expandedPayments = useMemo(() => {
-    if (!expandedDelegate || !report) return []
-    return report.adminPayments.filter(p => p.participant_id === expandedDelegate)
-  }, [expandedDelegate, report])
-
   // Open credit modal for a specific participant
   const openCreditModal = useCallback((participantId: string) => {
     setSelectedParticipantId(participantId)
@@ -177,18 +172,15 @@ export function TabFinances() {
 
     setSubmitting(true)
     try {
-      // Get trip_id from first delegate
-      const tripId = report?.adminPayments[0]?.trip_id
-      // Or get from delegate data — find participant and derive trip
-      const delegate = report?.byDelegate.find(d => d.id === selectedParticipantId)
-      if (!delegate && !tripId) return
+      const tripId = report?.tripId
+      if (!tripId) return
 
       const res = await fetch('/api/kenya/admin-payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           participant_id: selectedParticipantId,
-          trip_id: tripId || '',
+          trip_id: tripId,
           amount,
           category: creditForm.category,
           description: creditForm.description || undefined,
@@ -366,8 +358,7 @@ export function TabFinances() {
                   <th className="text-center p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide pr-4"></th>
                 </tr>
               </thead>
-              <tbody>
-                {byDelegate.map(d => {
+              {byDelegate.map(d => {
                   const isExpanded = expandedDelegate === d.id
                   const delegateAdminPayments = adminPayments.filter(p => p.participant_id === d.id)
                   const coverPercent = d.tripCost > 0 ? Math.min(100, (d.totalCovered / d.tripCost) * 100) : 0
@@ -499,14 +490,15 @@ export function TabFinances() {
                   )
                 })}
                 {byDelegate.length === 0 && (
-                  <tr>
-                    <td colSpan={12} className="p-12 text-center text-gray-400">
-                      <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                      <p className="text-[14px]">No delegates found</p>
-                    </td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td colSpan={12} className="p-12 text-center text-gray-400">
+                        <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                        <p className="text-[14px]">No delegates found</p>
+                      </td>
+                    </tr>
+                  </tbody>
                 )}
-              </tbody>
             </table>
           </div>
         </CardContent>

@@ -37,6 +37,7 @@ export interface DelegateData {
   trip: Trip | null
   participant: Participant | null
   member: Member | null
+  isPartner: boolean
   announcements: Announcement[]
   documents: Document[]
   faqs: FAQ[]
@@ -111,6 +112,7 @@ export function useDelegateData(): DelegateData {
   const [donations, setDonations] = useState<Donation[]>([])
   const [allParticipants, setAllParticipants] = useState<DelegateData['allParticipants']>([])
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([])
+  const [isPartner, setIsPartner] = useState(false)
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
@@ -123,6 +125,7 @@ export function useDelegateData(): DelegateData {
       setTrip(data.trip)
       setParticipant(data.participant)
       setMember(data.member)
+      setIsPartner(data.isPartner || false)
       setAnnouncements(data.announcements || [])
       setDocuments(data.documents || [])
       setFaqs(data.faqs || [])
@@ -430,6 +433,7 @@ export function useDelegateData(): DelegateData {
     trip,
     participant,
     member,
+    isPartner,
     announcements,
     documents,
     faqs,
