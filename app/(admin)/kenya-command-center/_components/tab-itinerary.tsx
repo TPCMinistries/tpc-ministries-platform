@@ -28,9 +28,18 @@ const TRACK_COLORS: Record<string, { bg: string; text: string; label: string }> 
   media:      { bg: 'bg-orange-100',  text: 'text-orange-700', label: 'MEDIA' },
   meals:      { bg: 'bg-yellow-100',  text: 'text-yellow-700', label: 'MEALS' },
   transport:  { bg: 'bg-sky-100',     text: 'text-sky-700',    label: 'TRANSPORT' },
+  admin:      { bg: 'bg-rose-100',    text: 'text-rose-700',   label: 'ADMIN' },
+  spiritual:  { bg: 'bg-indigo-100',  text: 'text-indigo-700', label: 'SPIRITUAL' },
+  cultural:   { bg: 'bg-teal-100',    text: 'text-teal-700',   label: 'CULTURAL' },
+  free:       { bg: 'bg-lime-100',    text: 'text-lime-700',   label: 'FREE TIME' },
 }
 
-const CATEGORIES = ['all', 'ministry', 'healthcare', 'business', 'education', 'media', 'meals', 'transport']
+// Fallback for custom categories not in TRACK_COLORS
+function getTrackStyle(cat: string) {
+  return TRACK_COLORS[cat] || { bg: 'bg-gray-100', text: 'text-gray-700', label: cat.toUpperCase() }
+}
+
+const DEFAULT_DEFAULT_CATEGORIES = ['all', 'ministry', 'healthcare', 'business', 'education', 'media', 'meals', 'transport', 'admin', 'spiritual', 'cultural', 'free']
 
 function generateDateOptions(startDate: string, endDate: string): { value: string; label: string }[] {
   const dates: { value: string; label: string }[] = []
@@ -205,8 +214,8 @@ export function TabItinerary({
                     onChange={e => setNewItem(prev => ({ ...prev, category: e.target.value }))}
                     className={inputClasses + ' w-full'}
                   >
-                    {CATEGORIES.map(c => (
-                      <option key={c} value={c}>{(TRACK_COLORS[c]?.label || c).toUpperCase()}</option>
+                    {DEFAULT_CATEGORIES.map(c => (
+                      <option key={c} value={c}>{getTrackStyle(c).label}</option>
                     ))}
                   </select>
                 </div>
@@ -298,7 +307,7 @@ export function TabItinerary({
                     {/* Items for this date */}
                     <div className="ml-[11px] pl-6 border-l border-transparent space-y-1.5">
                       {items.map(item => {
-                        const track = TRACK_COLORS[item.category] || TRACK_COLORS.all
+                        const track = getTrackStyle(item.category)
 
                         return (
                           <div
@@ -319,8 +328,8 @@ export function TabItinerary({
                               onChange={e => updateItineraryField(item.id, 'category', e.target.value)}
                               className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider flex-shrink-0 cursor-pointer border-0 outline-none ${track.bg} ${track.text}`}
                             >
-                              {CATEGORIES.map(c => (
-                                <option key={c} value={c}>{(TRACK_COLORS[c]?.label || c).toUpperCase()}</option>
+                              {DEFAULT_CATEGORIES.map(c => (
+                                <option key={c} value={c}>{getTrackStyle(c).label}</option>
                               ))}
                             </select>
 
