@@ -271,6 +271,8 @@ export function ModalParticipantDetail({
               </h2>
               {statusBadge(p.application_status)}
               {p.team_leader && <Badge className="bg-gold/20 text-gold-dark">Leader</Badge>}
+              {p.role === 'admin' && <Badge className="bg-purple-100 text-purple-800">Admin</Badge>}
+              {p.role === 'coordinator' && <Badge className="bg-blue-100 text-blue-800">Coordinator</Badge>}
             </div>
             <p className="text-sm text-gray-500 mt-1">
               Added {p.application_date ? new Date(p.application_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Unknown'}
@@ -352,6 +354,15 @@ export function ModalParticipantDetail({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <EditableField label="First Name" value={p.first_name} field="first_name" onSave={handleSave} placeholder="First name" />
                 <EditableField label="Last Name" value={p.last_name} field="last_name" onSave={handleSave} placeholder="Last name" />
+                <EditableField label="Trip Role" value={p.role || 'delegate'} field="role" onSave={handleSave} type="select" options={[
+                  { value: 'delegate', label: 'Delegate' },
+                  { value: 'coordinator', label: 'Coordinator' },
+                  { value: 'admin', label: 'Admin' },
+                  { value: 'leader', label: 'Team Leader' },
+                ]} />
+                <EditableField label="Team Leader" value={p.team_leader ? 'true' : 'false'} field="team_leader" onSave={handleSave} type="select" options={[
+                  { value: 'false', label: 'No' }, { value: 'true', label: 'Yes' },
+                ]} />
                 <EditableField label="Email" value={p.email} field="email" onSave={handleSave} type="email" placeholder="Add email to send invite" />
                 <EditableField label="Phone" value={p.phone} field="phone" onSave={handleSave} type="tel" placeholder="Phone number" />
                 <EditableField label="Location" value={p.location} field="location" onSave={handleSave} placeholder="City, State" />
