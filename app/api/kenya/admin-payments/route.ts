@@ -77,16 +77,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { participant_id, trip_id, amount, category, description } = body
 
-    // Validate required fields
-    if (!participant_id || !trip_id || !amount || !category) {
-      return NextResponse.json(
-        { error: 'Missing required fields: participant_id, trip_id, amount, category' },
-        { status: 400 }
-      )
+    // Validate required fields (trip_id is optional — will be looked up from participant)
+    if (!participant_id) {
+      return NextResponse.json({ error: 'Missing required field: participant_id' }, { status: 400 })
+    }
+    if (amount === undefined || amount === null || amount === '') {
+      return NextResponse.json({ error: 'Missing required field: amount' }, { status: 400 })
+    }
+    if (!category) {
+      return NextResponse.json({ error: 'Missing required field: category' }, { status: 400 })
     }
 
     // Validate amount
-    const parsedAmount = parseFloat(amount)
+    const parsedAmount = parseFloat(String(amount))
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return NextResponse.json({ error: 'Amount must be a positive number' }, { status: 400 })
     }
@@ -101,12 +104,27 @@ export async function POST(request: NextRequest) {
 
     const admin = createAdminClient()
 
+    // Look up trip_id from participant if not provided
+    let resolvedTripId = trip_id
+    if (!resolvedTripId) {
+      const { data: participant } = await admin
+        .from('kenya_trip_participants')
+        .select('trip_id')
+        .eq('id', participant_id)
+        .single()
+      resolvedTripId = participant?.trip_id
+    }
+
+    if (!resolvedTripId) {
+      return NextResponse.json({ error: 'Could not determine trip_id for participant' }, { status: 400 })
+    }
+
     // Insert admin payment
     const { data: payment, error: insertError } = await admin
       .from('kenya_trip_admin_payments')
       .insert({
         participant_id,
-        trip_id,
+        trip_id: resolvedTripId,
         amount: parsedAmount,
         category,
         description: description || null,

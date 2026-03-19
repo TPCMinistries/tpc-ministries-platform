@@ -64,6 +64,11 @@ export interface Participant {
   flight_status?: string
   hotel_status?: string
   booking_type?: string
+  // Travel roster fields (migration 060)
+  travel_needed?: boolean
+  travel_booked?: boolean
+  admin_travel_notes?: string
+  team_accommodation_notes?: string
 }
 
 export interface ItineraryItem {
@@ -190,6 +195,12 @@ export interface Stats {
   visasApproved: number
   fullyPaid: number
   daysUntilTrip: number
+  // Unified financial stats
+  totalTripCost: number
+  totalCovered: number
+  totalOutstanding: number
+  totalAdminCredits: number
+  totalSelfPayments: number
 }
 
 // ========== Phase 2 & 3 Types ==========
@@ -374,4 +385,4 @@ export interface KenyaInvite {
   created_at: string
 }
 
-export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'finances' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'
+export type TabType = 'overview' | 'people' | 'actions' | 'travel' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'finances' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'

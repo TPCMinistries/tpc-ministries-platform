@@ -12,6 +12,7 @@ import { TabOverview } from './_components/tab-overview'
 import { TabPeople } from './_components/tab-people'
 import { TabActions } from './_components/tab-actions'
 import { TabItinerary } from './_components/tab-itinerary'
+import { TabTravel } from './_components/tab-travel'
 import { TabLogistics } from './_components/tab-logistics'
 import { TabTracks } from './_components/tab-tracks'
 import { TabBudget } from './_components/tab-budget'
@@ -182,6 +183,14 @@ export default function KenyaCommandCenter() {
             addActionItem={data.addActionItem}
             updateActionItemField={data.updateActionItemField}
             deleteActionItem={data.deleteActionItem}
+            saveStatus={data.saveStatus}
+          />
+        )}
+
+        {activeTab === 'travel' && (
+          <TabTravel
+            participants={data.participants}
+            updateParticipantField={data.updateParticipantField}
             saveStatus={data.saveStatus}
           />
         )}

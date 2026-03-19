@@ -74,6 +74,11 @@ export function useKenyaData() {
     visasApproved: 0,
     fullyPaid: 0,
     daysUntilTrip: 0,
+    totalTripCost: 0,
+    totalCovered: 0,
+    totalOutstanding: 0,
+    totalAdminCredits: 0,
+    totalSelfPayments: 0,
   })
 
   // UI state
@@ -268,17 +273,31 @@ export function useKenyaData() {
       const today = new Date()
       const daysUntil = Math.ceil((tripDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
+      // Calculate unified financial stats
+      const totalTripCost = p.reduce((sum: number, x: any) => sum + (Number(x.trip_cost) || 3500), 0)
+      const totalSelfPayments = p.reduce((sum: number, x: any) => sum + (Number(x.amount_paid) || 0), 0)
+      const totalFundraising = p.reduce((sum: number, x: any) => sum + (Number(x.amount_raised) || 0), 0)
+      const totalAdminCredits = p.reduce((sum: number, x: any) => sum + (Number(x.admin_credits_total) || 0), 0)
+      const totalScholarships = p.reduce((sum: number, x: any) => sum + (Number(x.scholarship_amount) || 0), 0)
+      const totalCovered = totalSelfPayments + totalFundraising + totalAdminCredits + totalScholarships
+      const totalOutstanding = Math.max(0, totalTripCost - totalCovered)
+
       setStats({
         totalParticipants: p.length,
         approvedParticipants: p.filter((x: any) => x.application_status === 'approved').length,
         pendingApplications: p.filter((x: any) => x.application_status === 'pending').length,
         teamLeaders: p.filter((x: any) => x.team_leader).length,
-        totalRaised: p.reduce((sum: number, x: any) => sum + (x.amount_raised || 0), 0),
-        fundraisingGoal: tripData.fundraising_goal || 0,
+        totalRaised: totalCovered,
+        fundraisingGoal: tripData.fundraising_goal || totalTripCost,
         passportsVerified: p.filter((x: any) => x.passport_status === 'verified').length,
         visasApproved: p.filter((x: any) => x.visa_status === 'approved').length,
         fullyPaid: p.filter((x: any) => x.payment_status === 'paid').length,
         daysUntilTrip: daysUntil,
+        totalTripCost,
+        totalCovered,
+        totalOutstanding,
+        totalAdminCredits,
+        totalSelfPayments,
       })
     }
 
