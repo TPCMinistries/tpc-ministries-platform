@@ -92,9 +92,14 @@ export function ModalInviteDelegate({
         sendEmail: shouldSendEmail,
       })
       if (data.success) {
+        const emailMsg = data.emailSent
+          ? `Invite sent to ${email}`
+          : data.emailError
+            ? `Invite created but email failed: ${data.emailError}`
+            : `Invite created (no email sent)`
         setResult({
-          success: true,
-          message: data.emailSent ? `Invite sent to ${email}` : `Invite created (no email sent)`,
+          success: data.emailSent || !shouldSendEmail,
+          message: emailMsg,
           inviteUrl: data.inviteUrl,
         })
         resetForm()

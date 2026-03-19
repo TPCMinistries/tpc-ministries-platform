@@ -230,13 +230,20 @@ export async function POST(request: NextRequest) {
       const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://tpcmin.org'}/join/${code}`
 
       // Send Kenya-branded email
+      let emailSent = false
+      let emailError: string | null = null
       if (shouldSendEmail && email) {
         const inviterName = `${staffMember.first_name} ${staffMember.last_name}`.trim()
-        await sendEmail({
+        const emailResult = await sendEmail({
           to: email,
           subject: "You're Invited to the Kenya Kingdom Impact Trip 2026",
           html: buildKenyaEmailHtml(name || 'Friend', track || '', inviteUrl, inviterName),
         })
+        emailSent = emailResult.success
+        if (!emailResult.success) {
+          emailError = emailResult.error instanceof Error ? emailResult.error.message : 'Email failed to send'
+          console.error('Kenya invite email failed:', emailResult.error)
+        }
       }
 
       return NextResponse.json({
@@ -244,7 +251,8 @@ export async function POST(request: NextRequest) {
         invite,
         inviteUrl,
         participantId,
-        emailSent: shouldSendEmail && !!email,
+        emailSent,
+        emailError,
       })
     }
 
