@@ -350,17 +350,18 @@ export function TabPeople({
                       </button>
                     </td>
 
-                    {/* Role — input */}
+                    {/* Role — select */}
                     <td className="p-2.5">
-                      <input
-                        type="text"
-                        defaultValue={p.ministry_role || ''}
-                        onBlur={(e) => {
-                          if (e.target.value !== (p.ministry_role || ''))
-                            updateParticipantField(p.id, 'ministry_role', e.target.value)
-                        }}
-                        className={`w-[100px] ${inputClasses}`}
-                      />
+                      <select
+                        defaultValue={(p as any).role || 'delegate'}
+                        onChange={(e) => updateParticipantField(p.id, 'role', e.target.value)}
+                        className={`w-[110px] ${inputClasses}`}
+                      >
+                        <option value="delegate">Delegate</option>
+                        <option value="coordinator">Coordinator</option>
+                        <option value="admin">Admin</option>
+                        <option value="leader">Leader</option>
+                      </select>
                     </td>
 
                     {/* Track — select */}

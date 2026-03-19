@@ -74,9 +74,19 @@ function buildKenyaEmailHtml(name: string, track: string, inviteUrl: string, inv
           <p style="font-size: 13px; color: #6b7280; text-align: center;">
             Or copy this link: ${inviteUrl}
           </p>
+          <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 12px; color: #92400e; font-size: 16px;">Next Steps</h3>
+            <ol style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px;">
+              <li style="margin: 6px 0;"><strong>Step 1:</strong> <a href="https://tpcmin.org/kenya/travel" style="color: #b45309;">Complete your Travel Form</a> — travel logistics, passport, flights</li>
+              <li style="margin: 6px 0;"><strong>Step 2:</strong> <a href="https://tpcmin.org/kenya/health-safety" style="color: #b45309;">Complete Health & Safety Form</a> — emergency contact, vaccinations, medical info</li>
+              <li style="margin: 6px 0;"><strong>Step 3:</strong> Apply for Kenya eTA at <a href="https://etakenya.go.ke" style="color: #b45309;">etakenya.go.ke</a> ($30)</li>
+              <li style="margin: 6px 0;"><strong>Step 4:</strong> Schedule your Yellow Fever vaccination (takes 10 days to activate)</li>
+            </ol>
+          </div>
         </div>
         <div class="footer">
           <p><strong>TPC Ministries</strong> — Kenya Kingdom Impact Trip 2026</p>
+          <p>April 22 – May 7, 2026 | Nairobi, Kakamega & Mombasa</p>
           <p>Questions? Reply to this email or contact your trip coordinator.</p>
         </div>
       </div>
