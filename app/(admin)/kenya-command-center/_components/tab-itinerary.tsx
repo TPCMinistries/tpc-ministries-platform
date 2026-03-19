@@ -39,7 +39,7 @@ function getTrackStyle(cat: string) {
   return TRACK_COLORS[cat] || { bg: 'bg-gray-100', text: 'text-gray-700', label: cat.toUpperCase() }
 }
 
-const DEFAULT_DEFAULT_CATEGORIES = ['all', 'ministry', 'healthcare', 'business', 'education', 'media', 'meals', 'transport', 'admin', 'spiritual', 'cultural', 'free']
+const DEFAULT_CATEGORIES = ['all', 'ministry', 'healthcare', 'business', 'education', 'media', 'meals', 'transport', 'admin', 'spiritual', 'cultural', 'free']
 
 function generateDateOptions(startDate: string, endDate: string): { value: string; label: string }[] {
   const dates: { value: string; label: string }[] = []
