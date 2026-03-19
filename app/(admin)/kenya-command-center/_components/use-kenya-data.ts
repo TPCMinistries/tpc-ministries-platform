@@ -8,7 +8,7 @@ import type {
   PackingItem, PackingStatus, ConferenceSession, LogisticsMatrix,
   MediaCalendarItem, MediaAssignment, ShotListItem, WaitingListEntry,
   ActionItem, TrackDetail, TrackMaterial, AdminNote, SupportRole,
-  KenyaInvite
+  KenyaInvite, MissionFund, MissionFundSummary
 } from './types'
 
 export function useKenyaData() {
@@ -52,6 +52,10 @@ export function useKenyaData() {
   const [kenyaInvites, setKenyaInvites] = useState<KenyaInvite[]>([])
   const [showInviteModal, setShowInviteModal] = useState(false)
 
+  // Mission fund state
+  const [missionFunds, setMissionFunds] = useState<MissionFund[]>([])
+  const [missionFundSummary, setMissionFundSummary] = useState<MissionFundSummary>({ raised: 0, goal: 60000, deployed: 0, deployedCredits: 0, deployedExpenses: 0, available: 0 })
+
   // Current user role — used to hide financials from non-admin staff (e.g. Kenyan coordinators)
   const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(true)
 
@@ -79,6 +83,10 @@ export function useKenyaData() {
     totalOutstanding: 0,
     totalAdminCredits: 0,
     totalSelfPayments: 0,
+    missionFundRaised: 0,
+    missionFundGoal: 0,
+    missionFundDeployed: 0,
+    missionFundAvailable: 0,
   })
 
   // UI state
@@ -267,6 +275,15 @@ export function useKenyaData() {
         }
       } catch { /* invite data is supplementary */ }
 
+      // Fetch mission fund data
+      try {
+        const mfRes = await fetch(`/api/kenya/mission-funds?trip_id=${tripData.id}`)
+        if (mfRes.ok) {
+          const mfData = await mfRes.json()
+          setMissionFunds(mfData)
+        }
+      } catch { /* mission fund data is supplementary */ }
+
       // Calculate stats
       const p = participantsRes.data || []
       const tripDate = new Date(tripData.start_date)
@@ -288,7 +305,7 @@ export function useKenyaData() {
         pendingApplications: p.filter((x: any) => x.application_status === 'pending').length,
         teamLeaders: p.filter((x: any) => x.team_leader).length,
         totalRaised: totalCovered,
-        fundraisingGoal: tripData.fundraising_goal || totalTripCost,
+        fundraisingGoal: tripData.fundraising_goal || 60000,
         passportsVerified: p.filter((x: any) => x.passport_status === 'verified').length,
         visasApproved: p.filter((x: any) => x.visa_status === 'approved').length,
         fullyPaid: p.filter((x: any) => x.payment_status === 'paid').length,
@@ -298,6 +315,10 @@ export function useKenyaData() {
         totalOutstanding,
         totalAdminCredits,
         totalSelfPayments,
+        missionFundRaised: 0,
+        missionFundGoal: tripData.fundraising_goal || 60000,
+        missionFundDeployed: 0,
+        missionFundAvailable: 0,
       })
     }
 
@@ -1286,6 +1307,41 @@ export function useKenyaData() {
     return data
   }
 
+  // ============ MISSION FUND HANDLERS ============
+
+  const addMissionFund = async (fund: { source_type: string; amount: number; donor_name?: string; description?: string; received_date?: string }) => {
+    if (!trip) return
+    try {
+      const res = await fetch('/api/kenya/mission-funds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trip_id: trip.id, ...fund }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        fetchData()
+      }
+      return data
+    } catch (err) {
+      console.error('Add mission fund error:', err)
+      return { success: false, error: 'Failed to add mission fund' }
+    }
+  }
+
+  const deleteMissionFund = async (id: string) => {
+    setMissionFunds(prev => prev.filter(f => f.id !== id))
+    try {
+      const res = await fetch(`/api/kenya/mission-funds?id=${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.success) {
+        fetchData()
+      }
+    } catch (err) {
+      console.error('Delete mission fund error:', err)
+      fetchData() // Revert
+    }
+  }
+
   return {
     // Core
     loading, trip, fetchData, currentUserIsAdmin,
@@ -1364,5 +1420,7 @@ export function useKenyaData() {
     // Kenya invite handlers
     kenyaInvites, showInviteModal, setShowInviteModal,
     sendKenyaInvite, sendBulkKenyaInvites, resendKenyaInvite, deactivateKenyaInvite,
+    // Mission fund data & handlers
+    missionFunds, missionFundSummary, addMissionFund, deleteMissionFund,
   }
 }
