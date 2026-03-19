@@ -827,6 +827,15 @@ export function useKenyaData() {
     if (!error) fetchData()
   }
 
+  const sendFormLink = async (participantId: string, formType: string) => {
+    const response = await fetch('/api/admin/kenya-send-form-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participantId, formType }),
+    })
+    return response.json()
+  }
+
   const sendPartnerInfoRequest = async (contactId: string) => {
     const response = await fetch('/api/admin/kenya-partner-email', {
       method: 'POST',
@@ -1282,6 +1291,8 @@ export function useKenyaData() {
     addParticipantDirect, deleteParticipant, addContact, deleteContact,
     // Partner & waiting list email handlers
     sendPartnerInfoRequest, sendWaitingListEmail,
+    // Form link email handler
+    sendFormLink,
     // Itinerary handlers
     addItineraryItem, updateItineraryField, deleteItineraryItem,
     // Packing handlers
