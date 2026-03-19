@@ -827,8 +827,25 @@ export function useKenyaData() {
 
   const deleteParticipant = async (id: string) => {
     setParticipants(prev => prev.filter(p => p.id !== id))
-    const supabase = createClient()
-    await supabase.from('kenya_trip_participants').delete().eq('id', id)
+    setSaveStatus('saving')
+    try {
+      const res = await fetch('/api/admin/kenya-delete-participant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ participantId: id }),
+      })
+      const result = await res.json()
+      if (result.success) {
+        flashSave(true)
+      } else {
+        flashSave(false)
+        fetchData() // Revert on error
+      }
+    } catch {
+      flashSave(false)
+      fetchData()
+    }
   }
 
   const deleteContact = async (id: string) => {

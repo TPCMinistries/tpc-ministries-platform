@@ -43,6 +43,7 @@ export function DelegationTable({
   const [newDelegateTrack, setNewDelegateTrack] = useState('Flex')
   const [addingDelegate, setAddingDelegate] = useState(false)
   const [addDelegateResult, setAddDelegateResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const handleAddDelegate = async () => {
     if (!newDelegateFirst.trim()) return
@@ -193,6 +194,7 @@ export function DelegationTable({
                 <th className={thClasses}>Hotel</th>
                 <th className={thClasses}>Passport</th>
                 <th className={thClasses}>Visa</th>
+                <th className={thClasses}>Email</th>
                 <th className={thClasses}>Notes</th>
                 <th className={thClasses}></th>
               </tr>
@@ -334,6 +336,20 @@ export function DelegationTable({
                     </select>
                   </td>
 
+                  {/* Email — editable */}
+                  <td className="p-2.5">
+                    <input
+                      type="email"
+                      defaultValue={p.email || ''}
+                      onBlur={(e) => {
+                        if (e.target.value !== (p.email || ''))
+                          updateParticipantField(p.id, 'email', e.target.value)
+                      }}
+                      placeholder="Add email..."
+                      className={`w-[180px] ${inputClasses} ${!p.email ? 'text-gray-400 italic' : ''}`}
+                    />
+                  </td>
+
                   {/* Notes — input */}
                   <td className="p-2.5">
                     <input
@@ -347,16 +363,35 @@ export function DelegationTable({
                     />
                   </td>
 
-                  {/* Delete */}
+                  {/* Delete — with confirmation */}
                   <td className="p-2.5">
-                    <button
-                      type="button"
-                      onClick={() => deleteParticipant(p.id)}
-                      className="text-red-400 hover:text-red-600 text-lg leading-none transition-colors"
-                      title="Remove delegate"
-                    >
-                      ✕
-                    </button>
+                    {confirmDeleteId === p.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => { deleteParticipant(p.id); setConfirmDeleteId(null) }}
+                          className="px-2 py-0.5 text-[11px] font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2 py-0.5 text-[11px] font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(p.id)}
+                        className="text-red-400 hover:text-red-600 text-lg leading-none transition-colors"
+                        title="Remove delegate"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
