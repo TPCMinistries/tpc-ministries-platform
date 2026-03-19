@@ -166,6 +166,7 @@ export default function KenyaCommandCenter() {
             addContact={data.addContact}
             deleteContact={data.deleteContact}
             sendPartnerInfoRequest={data.sendPartnerInfoRequest}
+            sendPartnerAction={data.sendPartnerAction}
             addWaitingListEntry={data.addWaitingListEntry}
             updateWaitingListEntry={data.updateWaitingListEntry}
             deleteWaitingListEntry={data.deleteWaitingListEntry}

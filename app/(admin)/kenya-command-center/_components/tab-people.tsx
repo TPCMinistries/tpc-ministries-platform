@@ -31,6 +31,7 @@ interface TabPeopleProps {
   addContact: (name: string, fields?: { email?: string; phone?: string; organization?: string; role?: string; city?: string }) => void
   deleteContact: (id: string) => void
   sendPartnerInfoRequest: (contactId: string) => Promise<any>
+  sendPartnerAction: (contactId: string, action: string, payload?: { subject?: string; message?: string }) => Promise<any>
   addWaitingListEntry: (entry: any) => void
   updateWaitingListEntry: (id: string, updates: any) => void
   deleteWaitingListEntry: (id: string) => void
@@ -65,6 +66,7 @@ export function TabPeople({
   addContact,
   deleteContact,
   sendPartnerInfoRequest,
+  sendPartnerAction,
   addWaitingListEntry,
   updateWaitingListEntry,
   deleteWaitingListEntry,
@@ -111,6 +113,7 @@ export function TabPeople({
         addContact={addContact}
         deleteContact={deleteContact}
         sendPartnerInfoRequest={sendPartnerInfoRequest}
+        sendPartnerAction={sendPartnerAction}
       />
 
       {/* Waiting to Hear */}

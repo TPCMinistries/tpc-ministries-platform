@@ -23,6 +23,7 @@ import {
   FileText,
   AlertCircle,
 } from 'lucide-react'
+import { showToast } from '@/lib/toast'
 
 interface TravelFormData {
   // Identity
@@ -86,8 +87,19 @@ export function TravelForm() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [shake, setShake] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const formTopRef = useRef<HTMLDivElement>(null)
+  const firstNameRef = useRef<HTMLInputElement>(null)
+  const lastNameRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const legalNameRef = useRef<HTMLInputElement>(null)
+  const serviceTrackRef = useRef<HTMLSelectElement>(null)
+
+  const triggerShake = () => {
+    setShake(true)
+    setTimeout(() => setShake(false), 600)
+  }
 
   const update = (field: keyof TravelFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -110,12 +122,44 @@ export function TravelForm() {
     setLoading(true)
     setError('')
 
-    // Validate required fields
-    if (!formData.displayFirstName || !formData.displayLastName || !formData.email || !formData.legalFullName || !formData.serviceTrack) {
-      setError('Please fill in all required fields: First Name, Last Name, Email, Legal Name, and Ministry Track.')
+    // Validate required fields and focus the first missing one
+    const missing: string[] = []
+    let firstMissingRef: React.RefObject<HTMLInputElement | HTMLSelectElement | null> | null = null
+
+    if (!formData.displayFirstName) {
+      missing.push('First Name')
+      if (!firstMissingRef) firstMissingRef = firstNameRef
+    }
+    if (!formData.displayLastName) {
+      missing.push('Last Name')
+      if (!firstMissingRef) firstMissingRef = lastNameRef
+    }
+    if (!formData.email) {
+      missing.push('Email')
+      if (!firstMissingRef) firstMissingRef = emailRef
+    }
+    if (!formData.serviceTrack) {
+      missing.push('Ministry Track')
+      if (!firstMissingRef) firstMissingRef = serviceTrackRef
+    }
+    if (!formData.legalFullName) {
+      missing.push('Legal Full Name')
+      if (!firstMissingRef) firstMissingRef = legalNameRef
+    }
+
+    if (missing.length > 0) {
+      const msg = `Missing required fields: ${missing.join(', ')}`
+      setError(msg)
+      showToast.error('Please fix before submitting', msg)
+      triggerShake()
       setLoading(false)
-      // Scroll to top so user sees the error
-      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Focus and scroll to the first missing field
+      if (firstMissingRef?.current) {
+        firstMissingRef.current.focus()
+        firstMissingRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else {
+        formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
       return
     }
 
@@ -135,15 +179,21 @@ export function TravelForm() {
 
       if (res.ok) {
         setSubmitted(true)
-        // Scroll to top to show success
+        showToast.success('Travel form submitted!', 'You\'ll receive a confirmation email shortly.')
         formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       } else {
         const data = await res.json()
-        setError(data.error || 'Something went wrong. Please try again.')
+        const errMsg = data.error || 'Something went wrong. Please try again.'
+        setError(errMsg)
+        showToast.error('Submission failed', errMsg)
+        triggerShake()
         formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     } catch {
-      setError('Failed to submit. Please check your internet connection and try again.')
+      const errMsg = 'Failed to submit. Please check your internet connection and try again.'
+      setError(errMsg)
+      showToast.error('Connection error', errMsg)
+      triggerShake()
       formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } finally {
       setLoading(false)
@@ -229,6 +279,7 @@ export function TravelForm() {
                   First Name <span className="text-amber-600">*</span>
                 </Label>
                 <Input
+                  ref={firstNameRef}
                   value={formData.displayFirstName}
                   onChange={(e) => update('displayFirstName', e.target.value)}
                   required
@@ -240,6 +291,7 @@ export function TravelForm() {
                   Last Name <span className="text-amber-600">*</span>
                 </Label>
                 <Input
+                  ref={lastNameRef}
                   value={formData.displayLastName}
                   onChange={(e) => update('displayLastName', e.target.value)}
                   required
@@ -263,6 +315,7 @@ export function TravelForm() {
             </Label>
             {/* Native select for reliable mobile behavior */}
             <select
+              ref={serviceTrackRef}
               value={formData.serviceTrack}
               onChange={(e) => update('serviceTrack', e.target.value)}
               required
@@ -292,6 +345,7 @@ export function TravelForm() {
                   Email <span className="text-amber-600">*</span>
                 </Label>
                 <Input
+                  ref={emailRef}
                   type="email"
                   value={formData.email}
                   onChange={(e) => update('email', e.target.value)}
@@ -443,6 +497,7 @@ export function TravelForm() {
                 Full Legal Name (as on passport) <span className="text-amber-600">*</span>
               </Label>
               <Input
+                ref={legalNameRef}
                 value={formData.legalFullName}
                 onChange={(e) => update('legalFullName', e.target.value)}
                 required
@@ -639,7 +694,7 @@ export function TravelForm() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-base sm:text-lg h-14 sm:h-16 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
+          className={`w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-base sm:text-lg h-14 sm:h-16 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform ${shake ? 'animate-shake' : ''}`}
         >
           {loading ? (
             <>
