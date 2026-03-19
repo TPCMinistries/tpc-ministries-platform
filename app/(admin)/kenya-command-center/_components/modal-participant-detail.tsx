@@ -243,8 +243,28 @@ export function ModalParticipantDetail({
             )}
             <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
               <span>Track: <strong className="text-navy">{p.service_track || 'Flex'}</strong></span>
-              <span>Role: <strong className="text-navy">{p.role || 'delegate'}</strong></span>
               {p.application_date && <span>Added {new Date(p.application_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+            </div>
+            {/* Role toggle strip */}
+            <div className="flex items-center gap-1.5 mt-3">
+              <span className="text-[11px] text-gray-500 uppercase tracking-wide mr-1">Role:</span>
+              {ROLE_OPTIONS.map(r => (
+                <button key={r.value} type="button"
+                  onClick={() => handleSave('role', r.value)}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors ${
+                    (p.role || 'delegate') === r.value
+                      ? r.value === 'admin'
+                        ? 'bg-purple-600 text-white'
+                        : r.value === 'leader'
+                          ? 'bg-gold text-navy'
+                          : r.value === 'coordinator'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-navy text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  {r.label}
+                </button>
+              ))}
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg -mt-1 -mr-1">
