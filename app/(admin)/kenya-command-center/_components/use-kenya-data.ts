@@ -52,6 +52,9 @@ export function useKenyaData() {
   const [kenyaInvites, setKenyaInvites] = useState<KenyaInvite[]>([])
   const [showInviteModal, setShowInviteModal] = useState(false)
 
+  // Current user role — used to hide financials from non-admin staff (e.g. Kenyan coordinators)
+  const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(true)
+
   // Check-in data
   const [todayCheckins, setTodayCheckins] = useState<{ participant_id: string; checkin_date: string }[]>([])
 
@@ -126,6 +129,17 @@ export function useKenyaData() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
+
+    // Check current user's role
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: member } = await supabase
+        .from('members')
+        .select('is_admin, role')
+        .eq('user_id', user.id)
+        .single()
+      setCurrentUserIsAdmin(member?.is_admin || member?.role === 'admin')
+    }
 
     const { data: tripData } = await supabase
       .from('kenya_trips')
@@ -1246,7 +1260,7 @@ export function useKenyaData() {
 
   return {
     // Core
-    loading, trip, fetchData,
+    loading, trip, fetchData, currentUserIsAdmin,
     // Data
     participants, itinerary, flights, lodging, contacts,
     budgetCategories, expenses, announcements, documents, faqs, dailyFocus,

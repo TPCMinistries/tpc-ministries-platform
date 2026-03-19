@@ -25,12 +25,14 @@ interface TabOverviewProps {
   setActiveTab: (tab: string) => void
   setShowAnnouncementModal: (show: boolean) => void
   updateTripField?: (field: string, value: string | number) => void
+  hideFinancials?: boolean
 }
 
 export function TabOverview({
   trip, participants, expenses, announcements, stats,
   todayCheckins,
   setActiveTab, setShowAnnouncementModal, updateTripField,
+  hideFinancials = false,
 }: TabOverviewProps) {
   const approvedParticipants = participants.filter(p => p.application_status === 'approved')
   const checkedInIds = new Set(todayCheckins.map(c => c.participant_id))
@@ -116,12 +118,14 @@ export function TabOverview({
         </CardContent>
       </Card>
 
-      {/* Fundraising Progress */}
-      <FundraisingCard
-        stats={stats}
-        participants={participants}
-        updateTripField={updateTripField}
-      />
+      {/* Fundraising Progress — hidden for non-admin roles */}
+      {!hideFinancials && (
+        <FundraisingCard
+          stats={stats}
+          participants={participants}
+          updateTripField={updateTripField}
+        />
+      )}
 
       {/* Service Tracks */}
       <Card>
