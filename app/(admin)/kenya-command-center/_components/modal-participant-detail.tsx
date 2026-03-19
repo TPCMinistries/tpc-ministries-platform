@@ -418,7 +418,12 @@ export function ModalParticipantDetail({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <EditableField label="Passport Status" value={p.passport_status} field="passport_status" onSave={handleSave} type="select" options={passportOptions} />
                 <EditableField label="Passport Expiry" value={p.passport_expiry?.split('T')[0] || ''} field="passport_expiry" onSave={handleSave} type="date" />
-                <EditableField label="Visa Status" value={p.visa_status} field="visa_status" onSave={handleSave} type="select" options={visaOptions} />
+                <EditableField label="Passport Valid Until" value={p.passport_valid_until?.split('T')[0] || ''} field="passport_valid_until" onSave={handleSave} type="date" />
+                <EditableField label="Kenya eTA" value={p.eta_status} field="eta_status" onSave={handleSave} type="select" options={[
+                  { value: 'not_started', label: 'Not Started' }, { value: 'applied', label: 'Applied' },
+                  { value: 'approved', label: 'Approved' }, { value: 'denied', label: 'Denied' },
+                ]} />
+                <EditableField label="eTA Applied Date" value={p.eta_application_date?.split('T')[0] || ''} field="eta_application_date" onSave={handleSave} type="date" />
                 <EditableField label="Passport Number" value={p.passport_number} field="passport_number" onSave={handleSave} placeholder="Passport #" />
               </div>
             </div>

@@ -785,8 +785,13 @@ export function TravelForm() {
           </div>
 
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-            <p className="text-sm font-semibold text-red-800">Yellow Fever Vaccination is REQUIRED for Kenya Entry</p>
-            <p className="text-xs text-red-700 mt-1">You must carry a valid Yellow Fever vaccination certificate (yellow card). Without it, you may be denied entry at the border. Schedule your vaccination NOW if you haven&apos;t already — it takes 10 days to become effective.</p>
+            <p className="text-sm font-semibold text-red-800">Yellow Fever Vaccination — Strongly Recommended</p>
+            <p className="text-xs text-red-700 mt-1">The CDC recommends yellow fever vaccination for travel to most areas of Kenya. It is <strong>REQUIRED</strong> if your flight connects through a yellow-fever-endemic country (e.g., Ethiopia via Ethiopian Airlines). Carry your Yellow Card (International Certificate of Vaccination). The vaccine takes 10 days to become effective — schedule NOW.</p>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <p className="text-sm font-semibold text-amber-800">Kenya eTA Required</p>
+            <p className="text-xs text-amber-700 mt-1">All US travelers need a Kenya Electronic Travel Authorization (eTA). Apply at <a href="https://etakenya.go.ke" target="_blank" rel="noopener noreferrer" className="underline font-medium">etakenya.go.ke</a> ($30, allow 3+ business days). Your passport must be valid through at least <strong>October 2026</strong> with 2+ blank pages.</p>
           </div>
 
           <div className="space-y-4">
