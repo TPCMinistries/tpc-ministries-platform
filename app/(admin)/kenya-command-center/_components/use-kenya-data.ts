@@ -326,6 +326,8 @@ export function useKenyaData() {
 
   // Filter participants
   const filteredParticipants = participants.filter(p => {
+    // Hide archived/removed participants unless explicitly filtering for them
+    if (p.application_status === 'removed' && filterStatus !== 'removed') return false
     const matchesSearch =
       `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -826,6 +828,7 @@ export function useKenyaData() {
   }
 
   const deleteParticipant = async (id: string) => {
+    // Soft archive — set application_status to 'removed' instead of hard delete
     setParticipants(prev => prev.filter(p => p.id !== id))
     setSaveStatus('saving')
     try {
