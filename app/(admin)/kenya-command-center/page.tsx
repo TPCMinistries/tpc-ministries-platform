@@ -309,7 +309,9 @@ export default function KenyaCommandCenter() {
         participant={data.selectedParticipant}
         onClose={() => data.setSelectedParticipant(null)}
         onUpdateStatus={data.updateApplicationStatus}
+        onUpdateField={data.updateParticipantField}
         onRequestMoreInfo={data.requestMoreInfo}
+        onSendInvite={data.sendKenyaInvite}
       />
 
       <ModalExpense
