@@ -127,12 +127,14 @@ export function ModalParticipantDetail({
   const [formSendResult, setFormSendResult] = useState<{ form: string; success: boolean } | null>(null)
   const [emailDraft, setEmailDraft] = useState('')
   const [addingEmail, setAddingEmail] = useState(false)
+  const [localEmail, setLocalEmail] = useState<string | null>(null)
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
 
   if (!participant) return null
   const p = participant as any
-  const hasEmail = !!p.email
+  const effectiveEmail = localEmail ?? p.email
+  const hasEmail = !!effectiveEmail
   const isPending = p.application_status === 'pending'
 
   const handleSave = (field: string, value: string) => {
@@ -141,14 +143,16 @@ export function ModalParticipantDetail({
 
   const handleAddEmail = () => {
     if (emailDraft.trim() && emailDraft.includes('@')) {
-      handleSave('email', emailDraft.trim())
+      const email = emailDraft.trim()
+      handleSave('email', email)
+      setLocalEmail(email) // Immediately show email in UI
       setAddingEmail(false)
       setEmailDraft('')
     }
   }
 
   const handleSendInvite = async () => {
-    if (!onSendInvite || !p.email) return
+    if (!onSendInvite || !effectiveEmail) return
     const selectedTrack = inviteTrack || p.service_track || 'Flex'
     const selectedRole = inviteRole || p.role || 'delegate'
 
@@ -160,12 +164,12 @@ export function ModalParticipantDetail({
     setInviteResult(null)
     try {
       const data = await onSendInvite({
-        firstName: p.first_name, lastName: p.last_name || '', email: p.email,
+        firstName: p.first_name, lastName: p.last_name || '', email: effectiveEmail,
         track: selectedTrack, role: 'member', sendEmail: true,
       })
       setInviteResult({
         success: data.success && data.emailSent,
-        message: data.emailSent ? `Invite sent to ${p.email} (${selectedTrack} track)` : data.error || 'Email failed',
+        message: data.emailSent ? `Invite sent to ${effectiveEmail} (${selectedTrack} track)` : data.error || 'Email failed',
       })
       if (data.success) setShowInvitePanel(false)
     } catch {
@@ -193,7 +197,7 @@ export function ModalParticipantDetail({
   const handleRequestInfo = async () => {
     if (!onRequestMoreInfo || !requestMessage.trim()) return
     setSendingRequest(true)
-    const result = await onRequestMoreInfo(p.id, p.email, `${p.first_name} ${p.last_name}`, requestMessage)
+    const result = await onRequestMoreInfo(p.id, effectiveEmail, `${p.first_name} ${p.last_name}`, requestMessage)
     if (result?.success) { setRequestSent(true); setRequestMessage(''); setTimeout(() => setRequestSent(false), 3000) }
     setSendingRequest(false)
   }
@@ -231,7 +235,7 @@ export function ModalParticipantDetail({
             </div>
             {hasEmail ? (
               <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5" /> {p.email}
+                <Mail className="h-3.5 w-3.5" /> {effectiveEmail}
                 {p.phone && <><span className="text-gray-300">|</span><Phone className="h-3.5 w-3.5" /> {p.phone}</>}
               </p>
             ) : (
@@ -298,7 +302,7 @@ export function ModalParticipantDetail({
           {/* Send Invite Panel — assign track + role before sending */}
           {showInvitePanel && hasEmail && (
             <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50 space-y-3">
-              <p className="text-sm font-semibold text-green-900">Send invitation to {p.email}</p>
+              <p className="text-sm font-semibold text-green-900">Send invitation to {effectiveEmail}</p>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="text-[11px] font-medium text-green-800 uppercase tracking-wide">Service Track</label>
@@ -334,7 +338,7 @@ export function ModalParticipantDetail({
           {/* Compose email inline */}
           {showCompose && hasEmail && onRequestMoreInfo && (
             <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
-              <p className="text-xs font-medium text-blue-800">Compose email to {p.first_name} ({p.email})</p>
+              <p className="text-xs font-medium text-blue-800">Compose email to {p.first_name} ({effectiveEmail})</p>
               <Textarea value={requestMessage} onChange={(e) => setRequestMessage(e.target.value)}
                 placeholder={`Hi ${p.first_name},\n\n`} rows={5} className="text-sm bg-white" />
               {requestSent && <p className="text-sm text-green-600 font-medium flex items-center gap-1"><CheckCircle className="h-4 w-4" /> Sent!</p>}
@@ -381,7 +385,7 @@ export function ModalParticipantDetail({
             <div className="grid grid-cols-2 gap-3 text-sm">
               <Field label="First Name" value={p.first_name} field="first_name" onSave={handleSave} />
               <Field label="Last Name" value={p.last_name} field="last_name" onSave={handleSave} />
-              <Field label="Email" value={p.email} field="email" onSave={handleSave} type="email" placeholder="Add email" />
+              <Field label="Email" value={effectiveEmail || p.email} field="email" onSave={(f, v) => { handleSave(f, v); setLocalEmail(v) }} type="email" placeholder="Add email" />
               <Field label="Phone" value={p.phone} field="phone" onSave={handleSave} type="tel" placeholder="Add phone" />
               <Field label="Service Track" value={p.service_track} field="service_track" onSave={handleSave} type="select" options={TRACK_OPTIONS} />
               <Field label="Trip Role" value={p.role || 'delegate'} field="role" onSave={handleSave} type="select" options={ROLE_OPTIONS} />
