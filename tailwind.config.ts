@@ -150,12 +150,21 @@ const config: Config = {
   				'0%, 100%': { boxShadow: '0 0 8px rgba(212, 184, 131, 0.3)' },
   				'50%': { boxShadow: '0 0 20px rgba(212, 184, 131, 0.6)' },
   			},
+  			'shake': {
+  				'0%, 100%': { transform: 'translateX(0)' },
+  				'15%': { transform: 'translateX(-6px)' },
+  				'30%': { transform: 'translateX(5px)' },
+  				'45%': { transform: 'translateX(-4px)' },
+  				'60%': { transform: 'translateX(3px)' },
+  				'75%': { transform: 'translateX(-2px)' },
+  			},
   		},
   		animation: {
   			'gold-shimmer': 'gold-shimmer 2s linear infinite',
   			'fade-in': 'fade-in 0.6s ease-out',
   			'fade-in-up': 'fade-in-up 0.8s ease-out',
   			'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+  			'shake': 'shake 0.5s ease-in-out',
   		},
   	}
   },

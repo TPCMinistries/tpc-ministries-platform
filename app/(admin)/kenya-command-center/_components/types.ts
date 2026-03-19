@@ -58,6 +58,8 @@ export interface Participant {
   waiver_signed_at?: string
   trip_cost?: number
   amount_paid?: number
+  scholarship_amount?: number
+  admin_credits_total?: number
   // New fields from migration 045
   flight_status?: string
   hotel_status?: string

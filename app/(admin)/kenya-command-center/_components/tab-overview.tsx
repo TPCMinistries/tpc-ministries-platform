@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import type { Trip, Participant, Expense, Announcement, Stats } from './types'
 import { serviceTracks } from './constants'
+import { PartnerProposalsPanel } from './partner-proposals-panel'
 
 interface CheckinData {
   participant_id: string
@@ -189,6 +190,11 @@ export function TabOverview({
           )}
         </CardContent>
       </Card>
+
+      {/* Partner Proposals */}
+      <div className="md:col-span-2">
+        <PartnerProposalsPanel />
+      </div>
 
       {/* Recent Announcements */}
       <Card className="md:col-span-2">

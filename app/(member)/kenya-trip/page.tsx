@@ -160,15 +160,26 @@ export default function KenyaTripPage() {
               <p className="font-semibold text-navy">You&apos;re going to Kenya!</p>
               <p className="text-sm text-gray-600">Complete your requirements below to prepare for the trip.</p>
             </div>
-            {data.participant.team_leader && (
-              <a
-                href="/kenya-trip/track-lead"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors"
-              >
-                Track Lead Dashboard
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {data.participant.team_leader && (
+                <a
+                  href="/kenya-trip/track-lead"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors"
+                >
+                  Track Lead Dashboard
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+              {data.isPartner && (
+                <a
+                  href="/kenya-trip/partner"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors"
+                >
+                  Kenya Partner Portal
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
           </CardContent>
         </Card>
 

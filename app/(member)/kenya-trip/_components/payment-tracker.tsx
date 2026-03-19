@@ -14,10 +14,10 @@ interface PaymentTrackerProps {
 
 export function PaymentTracker({ participant, donations }: PaymentTrackerProps) {
   const tripCost = participant.trip_cost || participant.fundraising_goal || 0
-  const scholarship = (participant as Record<string, unknown>).scholarship_amount as number || 0
+  const scholarship = participant.scholarship_amount || 0
   const selfPayments = participant.amount_paid || 0
   const fundraising = participant.amount_raised || 0
-  const adminCredits = (participant as Record<string, unknown>).admin_credits_total as number || 0
+  const adminCredits = participant.admin_credits_total || 0
   const totalCovered = scholarship + selfPayments + fundraising + adminCredits
   const remaining = Math.max(0, tripCost - totalCovered)
   const surplus = tripCost - totalCovered < 0 ? Math.abs(tripCost - totalCovered) : 0

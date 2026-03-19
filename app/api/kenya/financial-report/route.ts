@@ -131,6 +131,7 @@ export async function GET() {
     }))
 
     return NextResponse.json({
+      tripId: trip.id,
       summary: {
         totalDelegates,
         totalTripCost,

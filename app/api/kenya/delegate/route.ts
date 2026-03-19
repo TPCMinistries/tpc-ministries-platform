@@ -117,6 +117,20 @@ export async function GET() {
         .order('last_name'),
     ])
 
+    // Check if user is also a Kenya partner
+    let isPartner = false
+    if (member) {
+      const { data: partnerRecord } = await admin
+        .from('kenya_trip_partners')
+        .select('id, partner_type, is_active')
+        .eq('trip_id', trip.id)
+        .eq('member_id', member.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      isPartner = !!partnerRecord
+    }
+
     // Fetch participant-scoped data
     let packingStatus: { packing_item_id: string; is_packed: boolean }[] = []
     let donations: Record<string, unknown>[] = []
@@ -152,6 +166,7 @@ export async function GET() {
       trip,
       participant,
       member,
+      isPartner,
       announcements: announcementsRes.data || [],
       documents: documentsRes.data || [],
       faqs: faqsRes.data || [],

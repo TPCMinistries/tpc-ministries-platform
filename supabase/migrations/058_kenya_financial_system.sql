@@ -59,49 +59,46 @@ CREATE TRIGGER update_admin_credits
 AFTER INSERT OR UPDATE OR DELETE ON kenya_trip_admin_payments
 FOR EACH ROW EXECUTE FUNCTION update_participant_admin_credits();
 
--- 4. Auto-update payment_status function that considers ALL sources
+-- 4. Auto-update payment_status — reads from SOURCE tables to avoid trigger ordering issues
 CREATE OR REPLACE FUNCTION update_participant_payment_status()
 RETURNS TRIGGER AS $$
 DECLARE
-  p_record RECORD;
-  remaining DECIMAL(10,2);
+  pid UUID;
+  v_trip_cost DECIMAL(10,2);
+  v_scholarship DECIMAL(10,2);
+  v_paid DECIMAL(10,2);
+  v_raised DECIMAL(10,2);
+  v_credits DECIMAL(10,2);
+  v_remaining DECIMAL(10,2);
+  v_total_covered DECIMAL(10,2);
 BEGIN
-  -- Get the participant_id from whatever table triggered this
-  -- This function is called AFTER the individual sum triggers update their columns
-  -- We need to recalculate based on the latest values
+  pid := COALESCE(NEW.participant_id, OLD.participant_id);
 
-  IF TG_TABLE_NAME = 'kenya_trip_admin_payments' THEN
-    SELECT trip_cost, scholarship_amount, amount_paid, amount_raised, admin_credits_total
-    INTO p_record
-    FROM kenya_trip_participants
-    WHERE id = COALESCE(NEW.participant_id, OLD.participant_id);
-  ELSIF TG_TABLE_NAME = 'kenya_trip_payments' THEN
-    SELECT trip_cost, scholarship_amount, amount_paid, amount_raised, admin_credits_total
-    INTO p_record
-    FROM kenya_trip_participants
-    WHERE id = COALESCE(NEW.participant_id, OLD.participant_id);
-  ELSIF TG_TABLE_NAME = 'kenya_trip_donations' THEN
-    SELECT trip_cost, scholarship_amount, amount_paid, amount_raised, admin_credits_total
-    INTO p_record
-    FROM kenya_trip_participants
-    WHERE id = COALESCE(NEW.participant_id, OLD.participant_id);
-  END IF;
+  -- Get base fields from participant
+  SELECT COALESCE(trip_cost, 3500), COALESCE(scholarship_amount, 0)
+  INTO v_trip_cost, v_scholarship
+  FROM kenya_trip_participants WHERE id = pid;
 
-  IF p_record IS NOT NULL THEN
-    remaining := COALESCE(p_record.trip_cost, 3500)
-      - COALESCE(p_record.scholarship_amount, 0)
-      - COALESCE(p_record.amount_paid, 0)
-      - COALESCE(p_record.amount_raised, 0)
-      - COALESCE(p_record.admin_credits_total, 0);
+  -- Calculate from SOURCE tables (not denormalized columns) to avoid trigger ordering issues
+  SELECT COALESCE(SUM(amount), 0) INTO v_paid
+  FROM kenya_trip_payments WHERE participant_id = pid AND status = 'paid';
 
-    UPDATE kenya_trip_participants
-    SET payment_status = CASE
-      WHEN remaining <= 0 THEN 'paid'
-      WHEN COALESCE(p_record.amount_paid, 0) + COALESCE(p_record.amount_raised, 0) + COALESCE(p_record.admin_credits_total, 0) > 0 THEN 'partial'
-      ELSE 'pending'
-    END
-    WHERE id = COALESCE(NEW.participant_id, OLD.participant_id);
-  END IF;
+  SELECT COALESCE(SUM(net_amount), 0) INTO v_raised
+  FROM kenya_trip_donations WHERE participant_id = pid AND status = 'completed';
+
+  SELECT COALESCE(SUM(amount), 0) INTO v_credits
+  FROM kenya_trip_admin_payments WHERE participant_id = pid;
+
+  v_total_covered := v_paid + v_raised + v_credits;
+  v_remaining := v_trip_cost - v_scholarship - v_total_covered;
+
+  UPDATE kenya_trip_participants
+  SET payment_status = CASE
+    WHEN v_remaining <= 0 THEN 'paid'
+    WHEN v_total_covered > 0 THEN 'partial'
+    ELSE 'pending'
+  END
+  WHERE id = pid;
 
   RETURN COALESCE(NEW, OLD);
 END;
