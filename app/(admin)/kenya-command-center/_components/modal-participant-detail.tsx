@@ -20,6 +20,7 @@ interface ModalParticipantDetailProps {
   onUpdateField?: (id: string, field: string, value: string) => void
   onRequestMoreInfo?: (id: string, email: string, name: string, message: string) => Promise<any>
   onSendInvite?: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
+  onSendFormLink?: (participantId: string, formType: string) => Promise<any>
 }
 
 // Editable field component
@@ -125,7 +126,7 @@ function EditableField({ label, value, field, onSave, type = 'text', options, pl
 }
 
 export function ModalParticipantDetail({
-  participant, onClose, onUpdateStatus, onUpdateField, onRequestMoreInfo, onSendInvite,
+  participant, onClose, onUpdateStatus, onUpdateField, onRequestMoreInfo, onSendInvite, onSendFormLink,
 }: ModalParticipantDetailProps) {
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -135,6 +136,8 @@ export function ModalParticipantDetail({
   const [sendingRequest, setSendingRequest] = useState(false)
   const [sendingInvite, setSendingInvite] = useState(false)
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [sendingForm, setSendingForm] = useState<string | null>(null)
+  const [formSendResult, setFormSendResult] = useState<{ form: string; success: boolean } | null>(null)
 
   if (!participant) return null
 
@@ -169,6 +172,21 @@ export function ModalParticipantDetail({
       setTimeout(() => setRequestSent(false), 3000)
     }
     setSendingRequest(false)
+  }
+
+  const handleSendFormLink = async (formType: string) => {
+    if (!onSendFormLink) return
+    setSendingForm(formType)
+    setFormSendResult(null)
+    try {
+      const result = await onSendFormLink(p.id, formType)
+      setFormSendResult({ form: formType, success: result?.success && result?.emailSent })
+    } catch {
+      setFormSendResult({ form: formType, success: false })
+    } finally {
+      setSendingForm(null)
+      setTimeout(() => setFormSendResult(null), 3000)
+    }
   }
 
   const handleSendInvite = async () => {
@@ -285,40 +303,82 @@ export function ModalParticipantDetail({
 
         {/* Scrollable Content */}
         <div className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Form Completion Status */}
-          <div className="flex gap-2 flex-wrap">
-            <Badge className={hasInterestForm ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
-              {hasInterestForm ? '✓' : '○'} Interest Form
-            </Badge>
-            <Badge className={hasTravelForm ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
-              {hasTravelForm ? '✓' : '○'} Travel Form
-            </Badge>
-            <Badge className={hasHealthSafety ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
-              {hasHealthSafety ? '✓' : '○'} Health & Safety
-            </Badge>
-            <Badge className={hasMedicalForm ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
-              {hasMedicalForm ? '✓' : '○'} Medical Form
-            </Badge>
-            <Badge className={hasWaiver ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
-              {hasWaiver ? '✓' : '○'} Waiver
-            </Badge>
+          {/* Form Completion Status — actionable with send buttons */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Forms & Documents</h4>
+              {hasEmail && onSendFormLink && (!hasInterestForm || !hasTravelForm || !hasHealthSafety || !hasMedicalForm || !hasWaiver) && (
+                <button
+                  onClick={() => handleSendFormLink('all_incomplete')}
+                  disabled={sendingForm === 'all_incomplete'}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
+                    formSendResult?.form === 'all_incomplete'
+                      ? formSendResult.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      : 'bg-navy text-white hover:bg-navy/90'
+                  }`}
+                >
+                  {sendingForm === 'all_incomplete' ? '⏳ Sending...' : formSendResult?.form === 'all_incomplete' ? (formSendResult.success ? '✓ Sent All' : '✗ Failed') : '📬 Send All Incomplete'}
+                </button>
+              )}
+            </div>
+            {[
+              { key: 'interest', label: 'Interest Form', done: hasInterestForm },
+              { key: 'travel', label: 'Travel Form', done: hasTravelForm },
+              { key: 'health_safety', label: 'Health & Safety', done: hasHealthSafety },
+              { key: 'medical', label: 'Medical Form', done: hasMedicalForm },
+              { key: 'waiver', label: 'Waiver', done: hasWaiver },
+            ].map(form => (
+              <div key={form.key} className="flex items-center justify-between py-1">
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm ${form.done ? 'text-green-600' : 'text-gray-400'}`}>
+                    {form.done ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${form.done ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    {form.label}
+                  </span>
+                  {form.done && <Badge className="bg-green-100 text-green-700 text-[10px]">Complete</Badge>}
+                </div>
+                {!form.done && hasEmail && onSendFormLink && (
+                  <button
+                    onClick={() => handleSendFormLink(form.key)}
+                    disabled={sendingForm === form.key}
+                    className={`px-2 py-0.5 text-[11px] font-medium rounded transition-colors ${
+                      formSendResult?.form === form.key
+                        ? formSendResult.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                    }`}
+                  >
+                    {sendingForm === form.key ? '⏳...' : formSendResult?.form === form.key ? (formSendResult.success ? '✓ Sent' : '✗ Fail') : '📧 Send'}
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* Send Invite Button — prominent when email exists but no invite sent */}
-          {hasEmail && onSendInvite && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-green-800">
-                <Send className="h-4 w-4" />
-                <span>Send the Kenya trip invitation email to {p.email}</span>
-              </div>
-              <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={handleSendInvite}
-                disabled={sendingInvite}
-              >
-                {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : 'Send Invite'}
-              </Button>
+          {/* Quick Actions — Send invite, email, role */}
+          {hasEmail && (
+            <div className="flex gap-2 flex-wrap">
+              {onSendInvite && (
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-xs"
+                  onClick={handleSendInvite}
+                  disabled={sendingInvite}
+                >
+                  {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send Trip Invite</>}
+                </Button>
+              )}
+              {onRequestMoreInfo && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                  onClick={() => setShowRequestInfo(!showRequestInfo)}
+                >
+                  <Mail className="mr-1.5 h-3.5 w-3.5" />
+                  {showRequestInfo ? 'Hide' : 'Email Delegate'}
+                </Button>
+              )}
             </div>
           )}
           {inviteResult && (
@@ -327,21 +387,36 @@ export function ModalParticipantDetail({
             </div>
           )}
 
-          {/* Travel Form Link — when email exists but travel form not completed */}
-          {hasEmail && !hasTravelForm && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-blue-800">
-                <FileText className="h-4 w-4" />
-                <span>Travel form not yet completed</span>
-              </div>
-              <a
-                href={`/kenya/travel`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+          {/* Request More Info — inline when toggled */}
+          {showRequestInfo && p.email && onRequestMoreInfo && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+              <p className="text-xs text-blue-700">
+                Send a follow-up email to {p.first_name} at {p.email}
+              </p>
+              <Textarea
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder={`Hi ${p.first_name},\n\nThank you for being part of the Kenya Kingdom Impact Trip! We wanted to follow up:\n\n- \n\nLooking forward to hearing from you!\n\nTPC Ministries Team`}
+                rows={6}
+                className="text-sm"
+              />
+              {requestSent && (
+                <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+                  <CheckCircle className="h-4 w-4" /> Email sent to {p.email}
+                </p>
+              )}
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleRequestInfo}
+                disabled={sendingRequest || !requestMessage.trim()}
               >
-                View Form <ExternalLink className="h-3 w-3" />
-              </a>
+                {sendingRequest ? (
+                  <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Sending...</>
+                ) : (
+                  <><Send className="mr-2 h-3.5 w-3.5" />Send Email</>
+                )}
+              </Button>
             </div>
           )}
 
@@ -533,50 +608,6 @@ export function ModalParticipantDetail({
               </div>
             </div>
           </div>
-
-          {/* Request More Info */}
-          {p.email && onRequestMoreInfo && (
-            <div>
-              <button
-                onClick={() => setShowRequestInfo(!showRequestInfo)}
-                className="text-sm font-medium text-navy hover:underline flex items-center gap-1.5"
-              >
-                <Mail className="h-4 w-4" />
-                {showRequestInfo ? 'Hide' : 'Request More Information'}
-              </button>
-              {showRequestInfo && (
-                <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                  <p className="text-xs text-blue-700">
-                    Send a follow-up email to {p.first_name} requesting additional information.
-                  </p>
-                  <Textarea
-                    value={requestMessage}
-                    onChange={(e) => setRequestMessage(e.target.value)}
-                    placeholder={`Hi ${p.first_name},\n\nThank you for your interest in the Kenya Kingdom Impact Trip! We have a few follow-up questions:\n\n- \n\nLooking forward to hearing from you!\n\nTPC Ministries Team`}
-                    rows={6}
-                    className="text-sm"
-                  />
-                  {requestSent && (
-                    <p className="text-sm text-green-600 font-medium flex items-center gap-1">
-                      <CheckCircle className="h-4 w-4" /> Email sent to {p.email}
-                    </p>
-                  )}
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={handleRequestInfo}
-                    disabled={sendingRequest || !requestMessage.trim()}
-                  >
-                    {sendingRequest ? (
-                      <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Sending...</>
-                    ) : (
-                      <><Send className="mr-2 h-3.5 w-3.5" />Send Follow-Up Email</>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Review Notes (for pending applications) */}
           {isPending && onUpdateStatus && (

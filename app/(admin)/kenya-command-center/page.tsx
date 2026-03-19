@@ -335,6 +335,7 @@ export default function KenyaCommandCenter() {
         onUpdateField={data.updateParticipantField}
         onRequestMoreInfo={data.requestMoreInfo}
         onSendInvite={data.sendKenyaInvite}
+        onSendFormLink={data.sendFormLink}
       />
 
       <ModalExpense
