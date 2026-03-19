@@ -193,10 +193,15 @@ export default function KenyaCommandCenter() {
             itinerary={data.itinerary}
             conferenceSessions={data.conferenceSessions}
             logisticsMatrix={data.logisticsMatrix}
+            flights={data.flights}
+            lodging={data.lodging}
+            contacts={data.contacts}
             upsertLogisticsCell={data.upsertLogisticsCell}
             addConferenceSession={data.addConferenceSession}
             deleteConferenceSession={data.deleteConferenceSession}
             copyFromItinerary={data.copyFromItinerary}
+            updateLodgingField={data.updateLodgingField}
+            saveStatus={data.saveStatus}
           />
         )}
 
@@ -225,8 +230,11 @@ export default function KenyaCommandCenter() {
             budgetCategories={data.budgetCategories}
             expenses={data.expenses}
             getBudgetSpent={data.getBudgetSpent}
-            setShowExpenseModal={data.setShowExpenseModal}
             updateExpenseStatus={data.updateExpenseStatus}
+            updateExpenseField={data.updateExpenseField}
+            deleteExpense={data.deleteExpense}
+            addExpenseInline={data.addExpenseInline}
+            saveStatus={data.saveStatus}
           />
         )}
 
@@ -265,6 +273,14 @@ export default function KenyaCommandCenter() {
             documents={data.documents}
             faqs={data.faqs}
             setShowAnnouncementModal={data.setShowAnnouncementModal}
+            updateAnnouncementField={data.updateAnnouncementField}
+            deleteAnnouncement={data.deleteAnnouncement}
+            addFaq={data.addFaq}
+            updateFaqField={data.updateFaqField}
+            deleteFaq={data.deleteFaq}
+            addDocument={data.addDocument}
+            deleteDocument={data.deleteDocument}
+            saveStatus={data.saveStatus}
           />
         )}
 
