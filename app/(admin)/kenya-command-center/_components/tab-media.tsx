@@ -102,8 +102,14 @@ export function TabMedia({
       in_progress: 'bg-blue-100 text-blue-800',
       ready: 'bg-yellow-100 text-yellow-800',
       published: 'bg-green-100 text-green-800',
+      needs_review: 'bg-amber-100 text-amber-800',
     }
     return colors[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const statusSelectClass = (status: string) => {
+    const base = 'border-0 rounded-full px-3 py-1 text-xs font-medium cursor-pointer appearance-none pr-6'
+    return `${base} ${statusBadge(status)}`
   }
 
   return (
@@ -128,14 +134,23 @@ export function TabMedia({
                 >
                   📁 Google Drive Folder
                 </a>
-                <a
-                  href="https://chat.whatsapp.com/REPLACE_WITH_GROUP_LINK"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-green-300 text-green-800 rounded-lg hover:bg-green-100 transition-colors"
-                >
-                  💬 WhatsApp Media Group
-                </a>
+                {(() => {
+                  const whatsappUrl = 'https://chat.whatsapp.com/DENfNwB3zHs0ZmrNwT6dgH'
+                  return whatsappUrl.includes('REPLACE') ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400 border border-gray-200 rounded-lg">
+                      💬 WhatsApp Media Group <span className="text-[11px] italic">(link pending)</span>
+                    </span>
+                  ) : (
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-green-300 text-green-800 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                      💬 WhatsApp Media Group
+                    </a>
+                  )
+                })()}
               </div>
               <p className="text-[11px] text-pink-600 mt-2">
                 Delegates can add files but cannot delete. WhatsApp link — update when group is created.
@@ -148,9 +163,16 @@ export function TabMedia({
       {/* Content Calendar */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" /> Content Calendar
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" /> Content Calendar
+            </CardTitle>
+            {mediaCalendar.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                {mediaCalendar.length} items, {mediaCalendar.filter(i => i.status === 'published').length} published, {mediaCalendar.filter(i => i.status === 'in_progress').length} in progress
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             <select
               value={platformFilter}
@@ -201,12 +223,13 @@ export function TabMedia({
                         <select
                           value={item.status}
                           onChange={(e) => updateMediaCalendarItem(item.id, { status: e.target.value })}
-                          className="border rounded px-2 py-1 text-xs"
+                          className={statusSelectClass(item.status)}
                         >
                           <option value="planned">Planned</option>
                           <option value="in_progress">In Progress</option>
                           <option value="ready">Ready</option>
                           <option value="published">Published</option>
+                          <option value="needs_review">Needs Review</option>
                         </select>
                       </td>
                       <td className="p-3">
@@ -247,6 +270,21 @@ export function TabMedia({
           </div>
         </CardHeader>
         <CardContent>
+          {shotList.length > 0 && (() => {
+            const captured = shotList.filter(s => s.is_captured).length
+            const total = shotList.length
+            const pct = Math.round((captured / total) * 100)
+            return (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-gray-600">{captured} of {total} shots captured ({pct}%)</span>
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            )
+          })()}
           {filteredShots.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No shots in list yet</p>
           ) : (
@@ -292,6 +330,42 @@ export function TabMedia({
           )}
         </CardContent>
       </Card>
+
+      {/* Media Assignments */}
+      {mediaAssignments.length > 0 && (() => {
+        const grouped = mediaAssignments.reduce<Record<string, MediaAssignment[]>>((acc, a) => {
+          const key = a.day_date
+          if (!acc[key]) acc[key] = []
+          acc[key].push(a)
+          return acc
+        }, {})
+        const sortedDays = Object.keys(grouped).sort()
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Media Assignments</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {sortedDays.map(day => (
+                <div key={day}>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                    {new Date(day + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {grouped[day].map(a => (
+                      <div key={a.id} className="flex items-center gap-1.5 bg-white border rounded-lg px-3 py-1.5">
+                        <span className="text-sm font-medium">{a.assigned_to}</span>
+                        <Badge className="text-[10px] bg-purple-100 text-purple-800">{a.track}</Badge>
+                        {a.role && <span className="text-[10px] text-gray-500">({a.role})</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Add Calendar Item Modal */}
       {showCalendarForm && (

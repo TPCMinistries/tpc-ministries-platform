@@ -451,6 +451,124 @@ export function useKenyaData() {
     fetchData()
   }
 
+  const updateExpenseField = useCallback(async (id: string, field: string, value: string | number) => {
+    setExpenses(prev => prev.map(e =>
+      e.id === id ? { ...e, [field]: value } : e
+    ))
+    setSaveStatus('saving')
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_expenses')
+      .update({ [field]: value })
+      .eq('id', id)
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteExpense = async (id: string) => {
+    setExpenses(prev => prev.filter(e => e.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_expenses').delete().eq('id', id)
+  }
+
+  const addExpenseInline = async (expense: { category_id: string; description: string; amount: number; expense_date: string; paid_by: string }) => {
+    if (!trip || !expense.description || !expense.amount) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_expenses').insert({
+      trip_id: trip.id,
+      ...expense,
+      status: 'pending',
+    })
+    if (!error) fetchData()
+  }
+
+  // ============ ANNOUNCEMENT/FAQ/DOC HANDLERS ============
+
+  const updateAnnouncementField = useCallback(async (id: string, field: string, value: string | boolean) => {
+    setAnnouncements(prev => prev.map(a =>
+      a.id === id ? { ...a, [field]: value } : a
+    ))
+    setSaveStatus('saving')
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_announcements')
+      .update({ [field]: value })
+      .eq('id', id)
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteAnnouncement = async (id: string) => {
+    setAnnouncements(prev => prev.filter(a => a.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_announcements').delete().eq('id', id)
+  }
+
+  const addFaq = async (question: string, answer: string) => {
+    if (!trip || !question.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_faqs').insert({
+      trip_id: trip.id,
+      question: question.trim(),
+      answer: answer.trim(),
+      category: 'general',
+      sort_order: faqs.length,
+    })
+    if (!error) fetchData()
+  }
+
+  const updateFaqField = useCallback(async (id: string, field: string, value: string) => {
+    setFaqs(prev => prev.map(f =>
+      f.id === id ? { ...f, [field]: value } : f
+    ))
+    setSaveStatus('saving')
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('kenya_trip_faqs')
+      .update({ [field]: value })
+      .eq('id', id)
+    if (error) {
+      flashSave(false)
+      fetchData()
+    } else {
+      flashSave(true)
+    }
+  }, [flashSave, fetchData])
+
+  const deleteFaq = async (id: string) => {
+    setFaqs(prev => prev.filter(f => f.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_faqs').delete().eq('id', id)
+  }
+
+  const addDocument = async (name: string, fileUrl: string, category: string) => {
+    if (!trip || !name.trim()) return
+    const supabase = createClient()
+    const { error } = await supabase.from('kenya_trip_documents').insert({
+      trip_id: trip.id,
+      name: name.trim(),
+      file_url: fileUrl.trim(),
+      category: category || 'general',
+      is_required: false,
+      sort_order: documents.length,
+    })
+    if (!error) fetchData()
+  }
+
+  const deleteDocument = async (id: string) => {
+    setDocuments(prev => prev.filter(d => d.id !== id))
+    const supabase = createClient()
+    await supabase.from('kenya_trip_documents').delete().eq('id', id)
+  }
+
   // ============ PACKING HANDLERS ============
 
   const addPackingItem = async (item: { item_name: string; category: string; is_required: boolean; quantity: number; notes?: string }) => {
@@ -1110,6 +1228,12 @@ export function useKenyaData() {
     // Existing handlers
     handleAddExpense, handleAddAnnouncement, handleAddDailyFocus,
     updateParticipantStatus, updateExpenseStatus, exportCSV,
+    // Budget inline handlers
+    updateExpenseField, deleteExpense, addExpenseInline,
+    // Announcement/FAQ/Doc handlers
+    updateAnnouncementField, deleteAnnouncement,
+    addFaq, updateFaqField, deleteFaq,
+    addDocument, deleteDocument,
     // Inline edit handlers
     updateParticipantField, updateLodgingField, updateContactField,
     // Add/delete delegates & contacts
