@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
 import {
   X, CheckCircle, Clock, XCircle, Send, Mail, Phone,
   Shield, Stethoscope, Users, MapPin, Briefcase, FileText,
-  Loader2, AlertTriangle, Pencil, Save, ExternalLink,
-  Shirt, Heart, Plane, Globe
+  Loader2, AlertTriangle, Pencil, Save, ChevronDown, ChevronRight,
 } from 'lucide-react'
 import type { Participant } from './types'
 
@@ -23,19 +21,14 @@ interface ModalParticipantDetailProps {
   onSendFormLink?: (participantId: string, formType: string) => Promise<any>
 }
 
-// Editable field component
-function EditableField({ label, value, field, onSave, type = 'text', options, placeholder }: {
-  label: string
-  value: string
-  field: string
-  onSave: (field: string, value: string) => void
+// Compact editable field
+function Field({ label, value, field, onSave, type = 'text', options, placeholder }: {
+  label: string; value: string; field: string; onSave: (field: string, value: string) => void
   type?: 'text' | 'email' | 'tel' | 'date' | 'select' | 'textarea'
-  options?: { value: string; label: string }[]
-  placeholder?: string
+  options?: { value: string; label: string }[]; placeholder?: string
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value || '')
-
   useEffect(() => { setDraft(value || '') }, [value])
 
   const save = () => {
@@ -43,25 +36,13 @@ function EditableField({ label, value, field, onSave, type = 'text', options, pl
     setEditing(false)
   }
 
-  const labelClasses = "text-gray-500 text-xs uppercase tracking-wide"
-  const valueClasses = "font-medium text-gray-900 mt-0.5"
-
   if (!editing) {
     return (
-      <div className="group">
-        <p className={labelClasses}>{label}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <p className={`${valueClasses} ${!value ? 'text-gray-400 italic' : ''}`}>
-            {value || placeholder || 'Not provided'}
-          </p>
-          <button
-            onClick={() => setEditing(true)}
-            className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded transition-opacity"
-            title={`Edit ${label.toLowerCase()}`}
-          >
-            <Pencil className="h-3 w-3 text-gray-400" />
-          </button>
-        </div>
+      <div className="group cursor-pointer" onClick={() => setEditing(true)}>
+        <p className="text-gray-500 text-[11px] uppercase tracking-wide">{label}</p>
+        <p className={`text-sm mt-0.5 ${value ? 'font-medium text-gray-900' : 'text-gray-400 italic'}`}>
+          {value || placeholder || '—'}
+        </p>
       </div>
     )
   }
@@ -69,20 +50,12 @@ function EditableField({ label, value, field, onSave, type = 'text', options, pl
   if (type === 'select' && options) {
     return (
       <div>
-        <p className={labelClasses}>{label}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <select
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={save}
-            autoFocus
-            className="text-sm border rounded px-2 py-1 w-full max-w-[200px]"
-          >
-            {options.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
+        <p className="text-gray-500 text-[11px] uppercase tracking-wide">{label}</p>
+        <select value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={save} autoFocus
+          className="text-sm border rounded px-2 py-1 w-full max-w-[180px] mt-0.5">
+          <option value="">—</option>
+          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
       </div>
     )
   }
@@ -90,47 +63,58 @@ function EditableField({ label, value, field, onSave, type = 'text', options, pl
   if (type === 'textarea') {
     return (
       <div className="col-span-2">
-        <p className={labelClasses}>{label}</p>
-        <div className="flex items-start gap-1.5 mt-0.5">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={save}
-            autoFocus
-            rows={3}
-            placeholder={placeholder}
-            className="text-sm border rounded px-2 py-1 w-full resize-none"
-          />
-        </div>
+        <p className="text-gray-500 text-[11px] uppercase tracking-wide">{label}</p>
+        <textarea value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={save}
+          autoFocus rows={3} placeholder={placeholder}
+          className="text-sm border rounded px-2 py-1 w-full resize-none mt-0.5" />
       </div>
     )
   }
 
   return (
     <div>
-      <p className={labelClasses}>{label}</p>
-      <div className="flex items-center gap-1.5 mt-0.5">
-        <input
-          type={type}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => e.key === 'Enter' && save()}
-          autoFocus
-          placeholder={placeholder}
-          className="text-sm border rounded px-2 py-1 w-full max-w-[200px]"
-        />
-      </div>
+      <p className="text-gray-500 text-[11px] uppercase tracking-wide">{label}</p>
+      <input type={type} value={draft} onChange={(e) => setDraft(e.target.value)}
+        onBlur={save} onKeyDown={(e) => e.key === 'Enter' && save()}
+        autoFocus placeholder={placeholder}
+        className="text-sm border rounded px-2 py-1 w-full max-w-[200px] mt-0.5" />
     </div>
   )
 }
 
+// Collapsible section
+function Section({ title, icon: Icon, badge, defaultOpen = true, children }: {
+  title: string; icon: any; badge?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button type="button" onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors text-left">
+        <div className="flex items-center gap-2 text-sm font-semibold text-navy">
+          <Icon className="h-4 w-4" /> {title} {badge}
+        </div>
+        {open ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+      </button>
+      {open && <div className="p-4">{children}</div>}
+    </div>
+  )
+}
+
+const TRACK_OPTIONS = [
+  { value: 'Flex', label: 'Flex' }, { value: 'Ministry', label: 'Ministry' },
+  { value: 'Medical', label: 'Medical' }, { value: 'Education', label: 'Education' },
+  { value: 'Business', label: 'Business' }, { value: 'Media', label: 'Media' },
+]
+const ROLE_OPTIONS = [
+  { value: 'delegate', label: 'Delegate' }, { value: 'coordinator', label: 'Coordinator' },
+  { value: 'admin', label: 'Admin' }, { value: 'leader', label: 'Team Leader' },
+]
+
 export function ModalParticipantDetail({
   participant, onClose, onUpdateStatus, onUpdateField, onRequestMoreInfo, onSendInvite, onSendFormLink,
 }: ModalParticipantDetailProps) {
-  const [reviewNotes, setReviewNotes] = useState('')
-  const [processing, setProcessing] = useState(false)
-  const [showRequestInfo, setShowRequestInfo] = useState(false)
+  const [showCompose, setShowCompose] = useState(false)
   const [requestMessage, setRequestMessage] = useState('')
   const [requestSent, setRequestSent] = useState(false)
   const [sendingRequest, setSendingRequest] = useState(false)
@@ -138,40 +122,46 @@ export function ModalParticipantDetail({
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null)
   const [sendingForm, setSendingForm] = useState<string | null>(null)
   const [formSendResult, setFormSendResult] = useState<{ form: string; success: boolean } | null>(null)
+  const [emailDraft, setEmailDraft] = useState('')
+  const [addingEmail, setAddingEmail] = useState(false)
+  const [reviewNotes, setReviewNotes] = useState('')
+  const [processing, setProcessing] = useState(false)
 
   if (!participant) return null
-
   const p = participant as any
-  const isPending = p.application_status === 'pending'
-  const hasInterestForm = !!p.interest_form_completed_at
-  const hasTravelForm = !!p.travel_form_completed_at
-  const hasMedicalForm = !!p.medical_form_completed_at
-  const hasWaiver = !!p.waiver_signed_at
-  const hasHealthSafety = !!p.health_safety_form_completed_at
   const hasEmail = !!p.email
+  const isPending = p.application_status === 'pending'
 
   const handleSave = (field: string, value: string) => {
     if (onUpdateField) onUpdateField(p.id, field, value)
   }
 
-  const handleDecision = async (status: string) => {
-    if (!onUpdateStatus) return
-    setProcessing(true)
-    onUpdateStatus(p.id, status)
-    setProcessing(false)
-    onClose()
+  const handleAddEmail = () => {
+    if (emailDraft.trim() && emailDraft.includes('@')) {
+      handleSave('email', emailDraft.trim())
+      setAddingEmail(false)
+      setEmailDraft('')
+    }
   }
 
-  const handleRequestInfo = async () => {
-    if (!onRequestMoreInfo || !requestMessage.trim()) return
-    setSendingRequest(true)
-    const result = await onRequestMoreInfo(p.id, p.email, `${p.first_name} ${p.last_name}`, requestMessage)
-    if (result?.success) {
-      setRequestSent(true)
-      setRequestMessage('')
-      setTimeout(() => setRequestSent(false), 3000)
+  const handleSendInvite = async () => {
+    if (!onSendInvite || !p.email) return
+    setSendingInvite(true)
+    setInviteResult(null)
+    try {
+      const data = await onSendInvite({
+        firstName: p.first_name, lastName: p.last_name || '', email: p.email,
+        track: p.service_track || 'Flex', role: 'member', sendEmail: true,
+      })
+      setInviteResult({
+        success: data.success && data.emailSent,
+        message: data.emailSent ? `Invite sent to ${p.email}` : data.error || 'Email failed',
+      })
+    } catch {
+      setInviteResult({ success: false, message: 'Failed to send' })
+    } finally {
+      setSendingInvite(false)
     }
-    setSendingRequest(false)
   }
 
   const handleSendFormLink = async (formType: string) => {
@@ -189,469 +179,290 @@ export function ModalParticipantDetail({
     }
   }
 
-  const handleSendInvite = async () => {
-    if (!onSendInvite || !p.email) return
-    setSendingInvite(true)
-    setInviteResult(null)
-    try {
-      const data = await onSendInvite({
-        firstName: p.first_name,
-        lastName: p.last_name || '',
-        email: p.email,
-        track: p.service_track || 'Flex',
-        role: 'member',
-        sendEmail: true,
-      })
-      if (data.success) {
-        setInviteResult({
-          success: data.emailSent,
-          message: data.emailSent ? `Invite sent to ${p.email}` : `Invite created but email failed`,
-        })
-      } else {
-        setInviteResult({ success: false, message: data.error || 'Failed' })
-      }
-    } catch {
-      setInviteResult({ success: false, message: 'Failed to send invite' })
-    } finally {
-      setSendingInvite(false)
-    }
+  const handleRequestInfo = async () => {
+    if (!onRequestMoreInfo || !requestMessage.trim()) return
+    setSendingRequest(true)
+    const result = await onRequestMoreInfo(p.id, p.email, `${p.first_name} ${p.last_name}`, requestMessage)
+    if (result?.success) { setRequestSent(true); setRequestMessage(''); setTimeout(() => setRequestSent(false), 3000) }
+    setSendingRequest(false)
   }
 
-  const sectionClasses = "bg-gray-50 p-4 rounded-lg"
-  const labelClasses = "text-gray-500 text-xs uppercase tracking-wide"
-  const valueClasses = "font-medium text-gray-900 mt-0.5"
-
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      waitlisted: 'bg-blue-100 text-blue-800',
-      declined: 'bg-red-100 text-red-800',
-      submitted: 'bg-blue-100 text-blue-800',
-      verified: 'bg-green-100 text-green-800',
-      not_started: 'bg-gray-100 text-gray-600',
-      not_required: 'bg-gray-100 text-gray-600',
-      in_progress: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      partial: 'bg-yellow-100 text-yellow-800',
-    }
-    return <Badge className={colors[status] || 'bg-gray-100 text-gray-800'}>{status?.replace('_', ' ') || 'unknown'}</Badge>
+  const handleDecision = async (status: string) => {
+    if (!onUpdateStatus) return
+    setProcessing(true)
+    onUpdateStatus(p.id, status)
+    setProcessing(false)
+    onClose()
   }
 
-  const trackOptions = [
-    { value: 'Flex', label: 'Flex' },
-    { value: 'Ministry', label: 'Ministry' },
-    { value: 'Medical', label: 'Medical' },
-    { value: 'Education', label: 'Education' },
-    { value: 'Business', label: 'Business' },
-    { value: 'Media', label: 'Media' },
+  const forms = [
+    { key: 'interest', label: 'Interest Form', done: !!p.interest_form_completed_at },
+    { key: 'travel', label: 'Travel Form', done: !!p.travel_form_completed_at },
+    { key: 'health_safety', label: 'Health & Safety', done: !!p.health_safety_form_completed_at },
+    { key: 'medical', label: 'Medical Form', done: !!p.medical_form_completed_at },
+    { key: 'waiver', label: 'Waiver', done: !!p.waiver_signed_at },
   ]
-
-  const passportOptions = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'submitted', label: 'Submitted' },
-    { value: 'verified', label: 'Verified' },
-    { value: 'expired', label: 'Expired' },
-    { value: 'not_required', label: 'Not Required' },
-  ]
-
-  const visaOptions = [
-    { value: 'not_started', label: 'Not Started' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'denied', label: 'Denied' },
-    { value: 'not_required', label: 'Not Required' },
-  ]
-
-  const paymentOptions = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'partial', label: 'Partial' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'refunded', label: 'Refunded' },
-  ]
-
-  const bookingOptions = [
-    { value: 'TBD', label: 'TBD' },
-    { value: 'Group', label: 'Group' },
-    { value: 'Individual', label: 'Individual' },
-    { value: 'Self', label: 'Self-Arranged' },
-  ]
+  const formsCompleted = forms.filter(f => f.done).length
+  const formsIncomplete = forms.filter(f => !f.done)
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold text-navy">
-                {p.first_name} {p.last_name}
-              </h2>
-              {statusBadge(p.application_status)}
+        <div className="flex items-start justify-between p-5 pb-4 border-b flex-shrink-0">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-bold text-navy">{p.first_name} {p.last_name}</h2>
+              <Badge className={p.application_status === 'approved' ? 'bg-green-100 text-green-800' : p.application_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}>
+                {p.application_status?.replace('_', ' ')}
+              </Badge>
               {p.team_leader && <Badge className="bg-gold/20 text-gold-dark">Leader</Badge>}
-              {p.role === 'admin' && <Badge className="bg-purple-100 text-purple-800">Admin</Badge>}
-              {p.role === 'coordinator' && <Badge className="bg-blue-100 text-blue-800">Coordinator</Badge>}
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Added {p.application_date ? new Date(p.application_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Unknown'}
-            </p>
+            {hasEmail ? (
+              <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" /> {p.email}
+                {p.phone && <><span className="text-gray-300">|</span><Phone className="h-3.5 w-3.5" /> {p.phone}</>}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-400 mt-1 italic">No email on file</p>
+            )}
+            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+              <span>Track: <strong className="text-navy">{p.service_track || 'Flex'}</strong></span>
+              <span>Role: <strong className="text-navy">{p.role || 'delegate'}</strong></span>
+              {p.application_date && <span>Added {new Date(p.application_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg -mt-1 -mr-1">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Form Completion Status — actionable with send buttons */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Forms & Documents</h4>
-              {hasEmail && onSendFormLink && (!hasInterestForm || !hasTravelForm || !hasHealthSafety || !hasMedicalForm || !hasWaiver) && (
-                <button
-                  onClick={() => handleSendFormLink('all_incomplete')}
-                  disabled={sendingForm === 'all_incomplete'}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
-                    formSendResult?.form === 'all_incomplete'
-                      ? formSendResult.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      : 'bg-navy text-white hover:bg-navy/90'
-                  }`}
-                >
-                  {sendingForm === 'all_incomplete' ? '⏳ Sending...' : formSendResult?.form === 'all_incomplete' ? (formSendResult.success ? '✓ Sent All' : '✗ Failed') : '📬 Send All Incomplete'}
-                </button>
-              )}
-            </div>
-            {[
-              { key: 'interest', label: 'Interest Form', done: hasInterestForm },
-              { key: 'travel', label: 'Travel Form', done: hasTravelForm },
-              { key: 'health_safety', label: 'Health & Safety', done: hasHealthSafety },
-              { key: 'medical', label: 'Medical Form', done: hasMedicalForm },
-              { key: 'waiver', label: 'Waiver', done: hasWaiver },
-            ].map(form => (
-              <div key={form.key} className="flex items-center justify-between py-1">
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm ${form.done ? 'text-green-600' : 'text-gray-400'}`}>
-                    {form.done ? '✓' : '○'}
-                  </span>
-                  <span className={`text-sm ${form.done ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
-                    {form.label}
-                  </span>
-                  {form.done && <Badge className="bg-green-100 text-green-700 text-[10px]">Complete</Badge>}
-                </div>
-                {!form.done && hasEmail && onSendFormLink && (
-                  <button
-                    onClick={() => handleSendFormLink(form.key)}
-                    disabled={sendingForm === form.key}
-                    className={`px-2 py-0.5 text-[11px] font-medium rounded transition-colors ${
-                      formSendResult?.form === form.key
-                        ? formSendResult.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                    }`}
-                  >
-                    {sendingForm === form.key ? '⏳...' : formSendResult?.form === form.key ? (formSendResult.success ? '✓ Sent' : '✗ Fail') : '📧 Send'}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="p-5 space-y-4 overflow-y-auto flex-1">
 
-          {/* Quick Actions — Send invite, email, role */}
-          {hasEmail && (
-            <div className="flex gap-2 flex-wrap">
-              {onSendInvite && (
-                <Button
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-xs"
-                  onClick={handleSendInvite}
-                  disabled={sendingInvite}
-                >
-                  {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send Trip Invite</>}
-                </Button>
-              )}
-              {onRequestMoreInfo && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs"
-                  onClick={() => setShowRequestInfo(!showRequestInfo)}
-                >
-                  <Mail className="mr-1.5 h-3.5 w-3.5" />
-                  {showRequestInfo ? 'Hide' : 'Email Delegate'}
+          {/* === NO EMAIL STATE — Prominent CTA === */}
+          {!hasEmail && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 text-center">
+              <Mail className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+              <h3 className="font-bold text-amber-900 text-lg">Add Email to Get Started</h3>
+              <p className="text-sm text-amber-700 mt-1 mb-4">
+                Once you add their email, you can send them the trip invitation, form links, and communicate directly.
+              </p>
+              {addingEmail ? (
+                <div className="flex items-center gap-2 max-w-sm mx-auto">
+                  <input type="email" value={emailDraft} onChange={(e) => setEmailDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddEmail()}
+                    placeholder="email@example.com" autoFocus
+                    className="flex-1 border-2 border-amber-300 rounded-lg px-3 py-2 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none" />
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={handleAddEmail}
+                    disabled={!emailDraft.includes('@')}>
+                    <Save className="h-4 w-4 mr-1" /> Save
+                  </Button>
+                </div>
+              ) : (
+                <Button className="bg-amber-600 hover:bg-amber-700" onClick={() => setAddingEmail(true)}>
+                  <Mail className="h-4 w-4 mr-2" /> Add Email Address
                 </Button>
               )}
             </div>
           )}
+
+          {/* === HAS EMAIL — Action Buttons === */}
+          {hasEmail && (
+            <div className="flex gap-2 flex-wrap">
+              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleSendInvite} disabled={sendingInvite}>
+                {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send Trip Invite</>}
+              </Button>
+              {formsIncomplete.length > 0 && onSendFormLink && (
+                <Button size="sm" variant="outline" onClick={() => handleSendFormLink('all_incomplete')} disabled={sendingForm === 'all_incomplete'}>
+                  {sendingForm === 'all_incomplete' ? '⏳ Sending...' : formSendResult?.form === 'all_incomplete' ? (formSendResult.success ? '✓ Sent!' : '✗ Failed') : `📬 Send ${formsIncomplete.length} Missing Form${formsIncomplete.length > 1 ? 's' : ''}`}
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => setShowCompose(!showCompose)}>
+                <Mail className="mr-1.5 h-3.5 w-3.5" /> Email
+              </Button>
+            </div>
+          )}
           {inviteResult && (
-            <div className={`p-2 rounded text-sm font-medium ${inviteResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+            <div className={`p-2.5 rounded-lg text-sm font-medium ${inviteResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+              {inviteResult.success ? <CheckCircle className="h-4 w-4 inline mr-1.5" /> : <XCircle className="h-4 w-4 inline mr-1.5" />}
               {inviteResult.message}
             </div>
           )}
 
-          {/* Request More Info — inline when toggled */}
-          {showRequestInfo && p.email && onRequestMoreInfo && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-              <p className="text-xs text-blue-700">
-                Send a follow-up email to {p.first_name} at {p.email}
-              </p>
-              <Textarea
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                placeholder={`Hi ${p.first_name},\n\nThank you for being part of the Kenya Kingdom Impact Trip! We wanted to follow up:\n\n- \n\nLooking forward to hearing from you!\n\nTPC Ministries Team`}
-                rows={6}
-                className="text-sm"
-              />
-              {requestSent && (
-                <p className="text-sm text-green-600 font-medium flex items-center gap-1">
-                  <CheckCircle className="h-4 w-4" /> Email sent to {p.email}
-                </p>
-              )}
-              <Button
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={handleRequestInfo}
-                disabled={sendingRequest || !requestMessage.trim()}
-              >
-                {sendingRequest ? (
-                  <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Sending...</>
-                ) : (
-                  <><Send className="mr-2 h-3.5 w-3.5" />Send Email</>
-                )}
-              </Button>
+          {/* Compose email inline */}
+          {showCompose && hasEmail && onRequestMoreInfo && (
+            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
+              <p className="text-xs font-medium text-blue-800">Compose email to {p.first_name} ({p.email})</p>
+              <Textarea value={requestMessage} onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder={`Hi ${p.first_name},\n\n`} rows={5} className="text-sm bg-white" />
+              {requestSent && <p className="text-sm text-green-600 font-medium flex items-center gap-1"><CheckCircle className="h-4 w-4" /> Sent!</p>}
+              <div className="flex gap-2">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleRequestInfo}
+                  disabled={sendingRequest || !requestMessage.trim()}>
+                  {sendingRequest ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send</>}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowCompose(false)}>Cancel</Button>
+              </div>
             </div>
           )}
 
-          {/* Contact & Personal — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4" /> Contact & Personal
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="First Name" value={p.first_name} field="first_name" onSave={handleSave} placeholder="First name" />
-                <EditableField label="Last Name" value={p.last_name} field="last_name" onSave={handleSave} placeholder="Last name" />
-                <EditableField label="Trip Role" value={p.role || 'delegate'} field="role" onSave={handleSave} type="select" options={[
-                  { value: 'delegate', label: 'Delegate' },
-                  { value: 'coordinator', label: 'Coordinator' },
-                  { value: 'admin', label: 'Admin' },
-                  { value: 'leader', label: 'Team Leader' },
-                ]} />
-                <EditableField label="Team Leader" value={p.team_leader ? 'true' : 'false'} field="team_leader" onSave={handleSave} type="select" options={[
-                  { value: 'false', label: 'No' }, { value: 'true', label: 'Yes' },
-                ]} />
-                <EditableField label="Email" value={p.email} field="email" onSave={handleSave} type="email" placeholder="Add email to send invite" />
-                <EditableField label="Phone" value={p.phone} field="phone" onSave={handleSave} type="tel" placeholder="Phone number" />
-                <EditableField label="Location" value={p.location} field="location" onSave={handleSave} placeholder="City, State" />
-                <EditableField label="Service Track" value={p.service_track} field="service_track" onSave={handleSave} type="select" options={trackOptions} />
-                <EditableField label="Organization" value={p.organization} field="organization" onSave={handleSave} placeholder="Church, company, etc." />
-                <EditableField label="Role/Title" value={p.org_title} field="org_title" onSave={handleSave} placeholder="Title within org" />
-                <EditableField label="Date of Birth" value={p.date_of_birth?.split('T')[0] || ''} field="date_of_birth" onSave={handleSave} type="date" />
-                <EditableField label="Ministry Role" value={p.ministry_role} field="ministry_role" onSave={handleSave} placeholder="Role in ministry" />
-                <EditableField label="Gender" value={p.gender} field="gender" onSave={handleSave} type="select" options={[
-                  { value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'other', label: 'Prefer not to say' },
-                ]} />
-                <EditableField label="Preferred Name" value={p.preferred_name} field="preferred_name" onSave={handleSave} placeholder="For ID badge" />
-                <EditableField label="T-Shirt Size" value={p.t_shirt_size} field="t_shirt_size" onSave={handleSave} type="select" options={[
-                  { value: 'XS', label: 'XS' }, { value: 'S', label: 'S' }, { value: 'M', label: 'M' }, { value: 'L', label: 'L' },
-                  { value: 'XL', label: 'XL' }, { value: '2XL', label: '2XL' }, { value: '3XL', label: '3XL' },
-                ]} />
-                <EditableField label="Languages" value={p.languages_spoken} field="languages_spoken" onSave={handleSave} placeholder="English, Swahili..." />
-                <EditableField label="Mission Experience" value={p.prior_mission_experience} field="prior_mission_experience" onSave={handleSave} type="select" options={[
-                  { value: 'first_time', label: 'First trip' }, { value: '1-2_trips', label: '1-2 trips' },
-                  { value: '3-5_trips', label: '3-5 trips' }, { value: 'veteran', label: '6+ trips' },
-                ]} />
+          {/* === FORMS PROGRESS === */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Forms ({formsCompleted}/{forms.length})</h4>
+              <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${(formsCompleted / forms.length) * 100}%` }} />
               </div>
             </div>
-          </div>
-
-          {/* Notes — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <FileText className="h-4 w-4" /> Notes
-            </h3>
-            <div className={sectionClasses}>
-              <EditableField label="Admin Notes" value={p.notes} field="notes" onSave={handleSave} type="textarea" placeholder="Add notes about this delegate..." />
-            </div>
-          </div>
-
-          {/* Travel Details — show always, editable */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4" /> Travel Details
-              {hasTravelForm && <Badge className="bg-green-100 text-green-800 text-[10px]">Form Completed</Badge>}
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="Legal Full Name" value={p.legal_full_name} field="legal_full_name" onSave={handleSave} placeholder="As shown on passport" />
-                <EditableField label="Booking Type" value={p.booking_type} field="booking_type" onSave={handleSave} type="select" options={bookingOptions} />
-                <EditableField label="Departure Airport" value={p.departure_airport} field="departure_airport" onSave={handleSave} placeholder="e.g. JFK" />
-                <EditableField label="Return Airport" value={p.return_airport} field="return_airport" onSave={handleSave} placeholder="e.g. NBO" />
-                <EditableField label="Travel Date In" value={p.travel_date_in?.split('T')[0] || ''} field="travel_date_in" onSave={handleSave} type="date" />
-                <EditableField label="Travel Date Out" value={p.travel_date_out?.split('T')[0] || ''} field="travel_date_out" onSave={handleSave} type="date" />
-                <EditableField label="Accommodation" value={p.travel_accommodation_type} field="travel_accommodation_type" onSave={handleSave} placeholder="Group, self-arrange, etc." />
-                <EditableField label="Roommate Preference" value={p.roommate_preference} field="roommate_preference" onSave={handleSave} placeholder="Who they want to room with" />
-                <EditableField label="Flight Confirmation #" value={p.flight_confirmation_number} field="flight_confirmation_number" onSave={handleSave} placeholder="Booking reference" />
-                <EditableField label="Arrival Flight" value={p.arrival_flight_info} field="arrival_flight_info" onSave={handleSave} placeholder="e.g., KQ100 Apr 22 7:30pm" />
-                <EditableField label="Departure Flight" value={p.departure_flight_info} field="departure_flight_info" onSave={handleSave} placeholder="e.g., KQ101 May 7 11pm" />
-                <EditableField label="Luggage Count" value={String(p.luggage_count || '')} field="luggage_count" onSave={handleSave} placeholder="# of bags" />
-                <EditableField label="Special Assistance" value={p.special_assistance} field="special_assistance" onSave={handleSave} placeholder="None" />
-                <EditableField label="Travel Notes" value={p.travel_notes} field="travel_notes" onSave={handleSave} type="textarea" placeholder="Any travel notes..." />
-              </div>
-            </div>
-          </div>
-
-          {/* Travel Documents — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4" /> Travel Documents
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="Passport Status" value={p.passport_status} field="passport_status" onSave={handleSave} type="select" options={passportOptions} />
-                <EditableField label="Passport Expiry" value={p.passport_expiry?.split('T')[0] || ''} field="passport_expiry" onSave={handleSave} type="date" />
-                <EditableField label="Passport Valid Until" value={p.passport_valid_until?.split('T')[0] || ''} field="passport_valid_until" onSave={handleSave} type="date" />
-                <EditableField label="Kenya eTA" value={p.eta_status} field="eta_status" onSave={handleSave} type="select" options={[
-                  { value: 'not_started', label: 'Not Started' }, { value: 'applied', label: 'Applied' },
-                  { value: 'approved', label: 'Approved' }, { value: 'denied', label: 'Denied' },
-                ]} />
-                <EditableField label="eTA Applied Date" value={p.eta_application_date?.split('T')[0] || ''} field="eta_application_date" onSave={handleSave} type="date" />
-                <EditableField label="Passport Number" value={p.passport_number} field="passport_number" onSave={handleSave} placeholder="Passport #" />
-              </div>
-            </div>
-          </div>
-
-          {/* Vaccinations & Insurance — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Heart className="h-4 w-4" /> Vaccinations & Insurance
-              {p.yellow_fever_status === 'need_to_schedule' && (
-                <Badge className="bg-red-100 text-red-800 text-[10px]">Yellow Fever Needed!</Badge>
-              )}
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="Yellow Fever" value={p.yellow_fever_status} field="yellow_fever_status" onSave={handleSave} type="select" options={[
-                  { value: 'unknown', label: 'Unknown' }, { value: 'vaccinated', label: 'Vaccinated' },
-                  { value: 'scheduled', label: 'Scheduled' }, { value: 'need_to_schedule', label: 'Needs to Schedule' },
-                  { value: 'exempt', label: 'Exempt' },
-                ]} />
-                <EditableField label="Yellow Fever Date" value={p.yellow_fever_date?.split('T')[0] || ''} field="yellow_fever_date" onSave={handleSave} type="date" />
-                <EditableField label="Malaria Medication" value={p.malaria_prophylaxis} field="malaria_prophylaxis" onSave={handleSave} type="select" options={[
-                  { value: 'malarone', label: 'Malarone' }, { value: 'doxycycline', label: 'Doxycycline' },
-                  { value: 'mefloquine', label: 'Mefloquine' }, { value: 'not_yet', label: 'Undecided' }, { value: 'none', label: 'None' },
-                ]} />
-                <EditableField label="Travel Insurance" value={p.travel_insurance_status} field="travel_insurance_status" onSave={handleSave} type="select" options={[
-                  { value: 'unknown', label: 'Unknown' }, { value: 'have_policy', label: 'Has Policy' },
-                  { value: 'purchasing', label: 'Purchasing' }, { value: 'need_help', label: 'Needs Help' }, { value: 'none', label: 'None' },
-                ]} />
-                <EditableField label="Insurance Provider" value={p.travel_insurance_provider} field="travel_insurance_provider" onSave={handleSave} placeholder="Company + policy #" />
-                <EditableField label="Background Check" value={p.background_check_status} field="background_check_status" onSave={handleSave} type="select" options={[
-                  { value: 'not_required', label: 'Not Required' }, { value: 'pending', label: 'Pending' },
-                  { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' },
-                ]} />
-              </div>
-            </div>
-          </div>
-
-          {/* Medical — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Stethoscope className="h-4 w-4" /> Medical
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="Blood Type" value={p.blood_type} field="blood_type" onSave={handleSave} type="select" options={[
-                  { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' },
-                  { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' },
-                  { value: 'unknown', label: "Don't know" },
-                ]} />
-                <EditableField label="Allergies" value={p.allergies} field="allergies" onSave={handleSave} placeholder="None" />
-                <EditableField label="Medications" value={p.medications} field="medications" onSave={handleSave} placeholder="None" />
-                <EditableField label="Medical Conditions" value={p.medical_conditions} field="medical_conditions" onSave={handleSave} placeholder="None" />
-                <EditableField label="Dietary Restrictions" value={p.dietary_restrictions} field="dietary_restrictions" onSave={handleSave} placeholder="None" />
-              </div>
-            </div>
-          </div>
-
-          {/* Emergency Contact — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4" /> Emergency Contact
-            </h3>
-            <div className={sectionClasses}>
-              {!p.emergency_contact_name && !onUpdateField && (
-                <p className="text-sm text-amber-600 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  Not yet provided
-                </p>
-              )}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <EditableField label="Contact Name" value={p.emergency_contact_name} field="emergency_contact_name" onSave={handleSave} placeholder="Full name" />
-                <EditableField label="Contact Phone" value={p.emergency_contact_phone} field="emergency_contact_phone" onSave={handleSave} type="tel" placeholder="Phone number" />
-                <EditableField label="Relationship" value={p.emergency_contact_relationship} field="emergency_contact_relationship" onSave={handleSave} placeholder="e.g. Spouse, Parent" />
-              </div>
-            </div>
-          </div>
-
-          {/* Financial — EDITABLE */}
-          <div>
-            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-              <Briefcase className="h-4 w-4" /> Financial
-            </h3>
-            <div className={sectionClasses}>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <EditableField label="Trip Cost" value={String(p.trip_cost || p.fundraising_goal || 3500)} field="fundraising_goal" onSave={handleSave} />
-                <div>
-                  <p className={labelClasses}>Amount Paid</p>
-                  <p className={valueClasses}>${p.amount_paid || 0}</p>
+            <div className="grid grid-cols-5 gap-2">
+              {forms.map(form => (
+                <div key={form.key} className={`text-center p-2 rounded-lg ${form.done ? 'bg-green-100' : 'bg-white border border-gray-200'}`}>
+                  <div className={`text-lg ${form.done ? 'text-green-600' : 'text-gray-300'}`}>{form.done ? '✓' : '○'}</div>
+                  <p className={`text-[10px] mt-0.5 leading-tight ${form.done ? 'text-green-700 font-medium' : 'text-gray-500'}`}>{form.label}</p>
+                  {!form.done && hasEmail && onSendFormLink && (
+                    <button onClick={() => handleSendFormLink(form.key)} disabled={sendingForm === form.key}
+                      className={`mt-1 px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                        formSendResult?.form === form.key
+                          ? formSendResult.success ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
+                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      }`}>
+                      {sendingForm === form.key ? '...' : formSendResult?.form === form.key ? (formSendResult.success ? 'Sent!' : 'Fail') : 'Send'}
+                    </button>
+                  )}
                 </div>
-                <EditableField label="Payment Status" value={p.payment_status} field="payment_status" onSave={handleSave} type="select" options={paymentOptions} />
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Review Notes (for pending applications) */}
+          {/* === ESSENTIAL INFO (always visible) === */}
+          <Section title="Contact & Role" icon={Users} defaultOpen={true}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="First Name" value={p.first_name} field="first_name" onSave={handleSave} />
+              <Field label="Last Name" value={p.last_name} field="last_name" onSave={handleSave} />
+              <Field label="Email" value={p.email} field="email" onSave={handleSave} type="email" placeholder="Add email" />
+              <Field label="Phone" value={p.phone} field="phone" onSave={handleSave} type="tel" placeholder="Add phone" />
+              <Field label="Service Track" value={p.service_track} field="service_track" onSave={handleSave} type="select" options={TRACK_OPTIONS} />
+              <Field label="Trip Role" value={p.role || 'delegate'} field="role" onSave={handleSave} type="select" options={ROLE_OPTIONS} />
+              <Field label="Team Leader" value={p.team_leader ? 'true' : 'false'} field="team_leader" onSave={handleSave} type="select"
+                options={[{ value: 'false', label: 'No' }, { value: 'true', label: 'Yes' }]} />
+              <Field label="Location" value={p.location} field="location" onSave={handleSave} placeholder="City, State" />
+            </div>
+          </Section>
+
+          {/* Notes */}
+          <Section title="Notes" icon={FileText} defaultOpen={!!p.notes}>
+            <Field label="Admin Notes" value={p.notes} field="notes" onSave={handleSave} type="textarea" placeholder="Add notes about this delegate..." />
+          </Section>
+
+          {/* Travel */}
+          <Section title="Travel Details" icon={MapPin}
+            badge={p.travel_form_completed_at ? <Badge className="bg-green-100 text-green-700 text-[10px] ml-1">Form Done</Badge> : undefined}
+            defaultOpen={false}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="Legal Full Name" value={p.legal_full_name} field="legal_full_name" onSave={handleSave} placeholder="As on passport" />
+              <Field label="Booking Type" value={p.booking_type} field="booking_type" onSave={handleSave} type="select"
+                options={[{ value: 'TBD', label: 'TBD' }, { value: 'Group', label: 'Group' }, { value: 'Individual', label: 'Individual' }, { value: 'Self', label: 'Self-Arranged' }]} />
+              <Field label="Departure Airport" value={p.departure_airport} field="departure_airport" onSave={handleSave} placeholder="e.g. JFK" />
+              <Field label="Return Airport" value={p.return_airport} field="return_airport" onSave={handleSave} placeholder="e.g. NBO" />
+              <Field label="Travel Date In" value={p.travel_date_in?.split('T')[0] || ''} field="travel_date_in" onSave={handleSave} type="date" />
+              <Field label="Travel Date Out" value={p.travel_date_out?.split('T')[0] || ''} field="travel_date_out" onSave={handleSave} type="date" />
+              <Field label="Roommate Preference" value={p.roommate_preference} field="roommate_preference" onSave={handleSave} placeholder="Who they want to room with" />
+              <Field label="Flight Confirmation" value={p.flight_confirmation_number} field="flight_confirmation_number" onSave={handleSave} placeholder="Booking ref" />
+              <Field label="Arrival Flight" value={p.arrival_flight_info} field="arrival_flight_info" onSave={handleSave} placeholder="KQ100 Apr 22 7:30pm" />
+              <Field label="Departure Flight" value={p.departure_flight_info} field="departure_flight_info" onSave={handleSave} placeholder="KQ101 May 7 11pm" />
+            </div>
+          </Section>
+
+          {/* Documents */}
+          <Section title="Travel Documents" icon={Shield} defaultOpen={false}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="Passport Status" value={p.passport_status} field="passport_status" onSave={handleSave} type="select"
+                options={[{ value: 'pending', label: 'Pending' }, { value: 'submitted', label: 'Submitted' }, { value: 'verified', label: 'Verified' }, { value: 'expired', label: 'Expired' }]} />
+              <Field label="Passport Expiry" value={p.passport_expiry?.split('T')[0] || ''} field="passport_expiry" onSave={handleSave} type="date" />
+              <Field label="Kenya eTA" value={p.eta_status} field="eta_status" onSave={handleSave} type="select"
+                options={[{ value: 'not_started', label: 'Not Started' }, { value: 'applied', label: 'Applied' }, { value: 'approved', label: 'Approved' }]} />
+              <Field label="Passport Number" value={p.passport_number} field="passport_number" onSave={handleSave} placeholder="Passport #" />
+            </div>
+          </Section>
+
+          {/* Health */}
+          <Section title="Health & Medical" icon={Stethoscope} defaultOpen={false}
+            badge={p.yellow_fever_status === 'need_to_schedule' ? <Badge className="bg-red-100 text-red-800 text-[10px] ml-1">Yellow Fever Needed</Badge> : undefined}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="Yellow Fever" value={p.yellow_fever_status} field="yellow_fever_status" onSave={handleSave} type="select"
+                options={[{ value: 'unknown', label: 'Unknown' }, { value: 'vaccinated', label: 'Vaccinated' }, { value: 'scheduled', label: 'Scheduled' }, { value: 'need_to_schedule', label: 'Needs to Schedule' }]} />
+              <Field label="Malaria Meds" value={p.malaria_prophylaxis} field="malaria_prophylaxis" onSave={handleSave} type="select"
+                options={[{ value: 'malarone', label: 'Malarone' }, { value: 'doxycycline', label: 'Doxycycline' }, { value: 'not_yet', label: 'Undecided' }, { value: 'none', label: 'None' }]} />
+              <Field label="Allergies" value={p.allergies} field="allergies" onSave={handleSave} placeholder="None" />
+              <Field label="Medications" value={p.medications} field="medications" onSave={handleSave} placeholder="None" />
+              <Field label="Dietary Restrictions" value={p.dietary_restrictions} field="dietary_restrictions" onSave={handleSave} placeholder="None" />
+              <Field label="Blood Type" value={p.blood_type} field="blood_type" onSave={handleSave} type="select"
+                options={[{ value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }, { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }]} />
+            </div>
+          </Section>
+
+          {/* Emergency Contact */}
+          <Section title="Emergency Contact" icon={Phone} defaultOpen={false}
+            badge={!p.emergency_contact_name ? <Badge className="bg-amber-100 text-amber-700 text-[10px] ml-1">Missing</Badge> : undefined}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="Contact Name" value={p.emergency_contact_name} field="emergency_contact_name" onSave={handleSave} placeholder="Full name" />
+              <Field label="Contact Phone" value={p.emergency_contact_phone} field="emergency_contact_phone" onSave={handleSave} type="tel" placeholder="Phone" />
+              <Field label="Relationship" value={p.emergency_contact_relationship} field="emergency_contact_relationship" onSave={handleSave} placeholder="e.g. Spouse" />
+            </div>
+          </Section>
+
+          {/* Financial */}
+          <Section title="Financial" icon={Briefcase} defaultOpen={false}>
+            <div className="grid grid-cols-3 gap-3 text-sm">
+              <Field label="Trip Cost" value={String(p.trip_cost || p.fundraising_goal || 3500)} field="fundraising_goal" onSave={handleSave} />
+              <div>
+                <p className="text-gray-500 text-[11px] uppercase tracking-wide">Amount Paid</p>
+                <p className="text-sm font-medium text-gray-900 mt-0.5">${p.amount_paid || 0}</p>
+              </div>
+              <Field label="Payment Status" value={p.payment_status} field="payment_status" onSave={handleSave} type="select"
+                options={[{ value: 'pending', label: 'Pending' }, { value: 'partial', label: 'Partial' }, { value: 'paid', label: 'Paid' }]} />
+            </div>
+          </Section>
+
+          {/* Personal Extras */}
+          <Section title="Personal Details" icon={Users} defaultOpen={false}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Field label="Organization" value={p.organization} field="organization" onSave={handleSave} placeholder="Church, company" />
+              <Field label="Title" value={p.org_title} field="org_title" onSave={handleSave} placeholder="Role in org" />
+              <Field label="Gender" value={p.gender} field="gender" onSave={handleSave} type="select"
+                options={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }]} />
+              <Field label="Preferred Name" value={p.preferred_name} field="preferred_name" onSave={handleSave} placeholder="For ID badge" />
+              <Field label="T-Shirt Size" value={p.t_shirt_size} field="t_shirt_size" onSave={handleSave} type="select"
+                options={[{ value: 'S', label: 'S' }, { value: 'M', label: 'M' }, { value: 'L', label: 'L' }, { value: 'XL', label: 'XL' }, { value: '2XL', label: '2XL' }, { value: '3XL', label: '3XL' }]} />
+              <Field label="Languages" value={p.languages_spoken} field="languages_spoken" onSave={handleSave} placeholder="English, Swahili..." />
+              <Field label="Date of Birth" value={p.date_of_birth?.split('T')[0] || ''} field="date_of_birth" onSave={handleSave} type="date" />
+              <Field label="Mission Experience" value={p.prior_mission_experience} field="prior_mission_experience" onSave={handleSave} type="select"
+                options={[{ value: 'first_time', label: 'First trip' }, { value: '1-2_trips', label: '1-2 trips' }, { value: '3-5_trips', label: '3-5 trips' }, { value: 'veteran', label: '6+ trips' }]} />
+            </div>
+          </Section>
+
+          {/* Review Notes — only for pending */}
           {isPending && onUpdateStatus && (
-            <div>
-              <h3 className="font-semibold text-navy mb-3 text-sm">Review Notes</h3>
-              <Textarea
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-                placeholder="Add internal notes about this application..."
-                rows={3}
-                className="text-sm"
-              />
+            <div className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
+              <h4 className="text-sm font-semibold text-yellow-800 mb-2">Application Review</h4>
+              <Textarea value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)}
+                placeholder="Add review notes..." rows={3} className="text-sm bg-white" />
             </div>
           )}
         </div>
 
-        {/* Action Buttons (sticky footer) */}
+        {/* Footer — actions */}
         {isPending && onUpdateStatus && (
-          <div className="flex gap-3 p-6 border-t flex-shrink-0 bg-white rounded-b-xl">
-            <Button
-              className="flex-1 bg-green-600 hover:bg-green-700"
-              onClick={() => handleDecision('approved')}
-              disabled={processing}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Approve
+          <div className="flex gap-3 p-5 border-t flex-shrink-0 bg-white rounded-b-xl">
+            <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => handleDecision('approved')} disabled={processing}>
+              <CheckCircle className="h-4 w-4 mr-2" /> Approve
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => handleDecision('waitlisted')}
-              disabled={processing}
-            >
-              <Clock className="h-4 w-4 mr-2" />
-              Waitlist
+            <Button variant="outline" className="flex-1" onClick={() => handleDecision('waitlisted')} disabled={processing}>
+              <Clock className="h-4 w-4 mr-2" /> Waitlist
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
-              onClick={() => handleDecision('declined')}
-              disabled={processing}
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Decline
+            <Button variant="outline" className="flex-1 text-red-600 border-red-300 hover:bg-red-50" onClick={() => handleDecision('declined')} disabled={processing}>
+              <XCircle className="h-4 w-4 mr-2" /> Decline
             </Button>
           </div>
         )}
