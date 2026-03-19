@@ -2,7 +2,7 @@ import {
   Target, Users, Calendar, DollarSign, MessageSquare, Heart,
   Stethoscope, BookOpen, Building, Star, Briefcase,
   Truck, Package, Camera, UserPlus,
-  ClipboardList, Layers, StickyNote
+  ClipboardList, Layers, StickyNote, Wallet
 } from 'lucide-react'
 import type { TabType } from './types'
 
@@ -23,6 +23,7 @@ export const tabs: { key: TabType; label: string; icon: any }[] = [
   { key: 'logistics', label: 'Logistics', icon: Truck },
   { key: 'tracks', label: 'Tracks', icon: Layers },
   { key: 'budget', label: 'Budget', icon: DollarSign },
+  { key: 'finances', label: 'Finances', icon: Wallet },
   { key: 'supplies', label: 'Supplies', icon: Package },
   { key: 'comms', label: 'Comms', icon: MessageSquare },
   { key: 'media', label: 'Media', icon: Camera },

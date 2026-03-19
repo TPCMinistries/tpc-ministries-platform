@@ -86,7 +86,7 @@ async function handleTripPayment(session: Stripe.Checkout.Session) {
       // Update participant payment status
       const { data: participant } = await supabase
         .from('kenya_trip_participants')
-        .select('trip_cost, amount_paid, scholarship_amount')
+        .select('trip_cost, amount_paid, scholarship_amount, amount_raised, admin_credits_total')
         .eq('id', participant_id)
         .single()
 
@@ -94,7 +94,9 @@ async function handleTripPayment(session: Stripe.Checkout.Session) {
         const tripCost = Number(participant.trip_cost) || 3500
         const scholarship = Number(participant.scholarship_amount) || 0
         const newPaid = (Number(participant.amount_paid) || 0) + amount
-        const remaining = tripCost - scholarship - newPaid
+        const amountRaised = Number(participant.amount_raised) || 0
+        const adminCredits = Number(participant.admin_credits_total) || 0
+        const remaining = tripCost - scholarship - newPaid - amountRaised - adminCredits
 
         await supabase
           .from('kenya_trip_participants')
@@ -195,7 +197,7 @@ async function handleInstallmentPayment(invoice: Stripe.Invoice) {
     // Update participant amount_paid
     const { data: participant } = await supabase
       .from('kenya_trip_participants')
-      .select('trip_cost, amount_paid, scholarship_amount')
+      .select('trip_cost, amount_paid, scholarship_amount, amount_raised, admin_credits_total')
       .eq('id', participant_id)
       .single()
 
@@ -203,7 +205,9 @@ async function handleInstallmentPayment(invoice: Stripe.Invoice) {
       const tripCost = Number(participant.trip_cost) || 3500
       const scholarship = Number(participant.scholarship_amount) || 0
       const newPaid = (Number(participant.amount_paid) || 0) + amount
-      const remaining = tripCost - scholarship - newPaid
+      const amountRaised = Number(participant.amount_raised) || 0
+      const adminCredits = Number(participant.admin_credits_total) || 0
+      const remaining = tripCost - scholarship - newPaid - amountRaised - adminCredits
 
       await supabase
         .from('kenya_trip_participants')

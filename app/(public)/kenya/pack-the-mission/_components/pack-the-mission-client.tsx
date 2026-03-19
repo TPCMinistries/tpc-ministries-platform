@@ -195,12 +195,13 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
           className="object-cover"
           priority
         />
-        {/* Overlay — visible image but readable text */}
-        <div className="absolute inset-0 bg-navy-950/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/40 via-transparent to-navy-950/60" />
+        {/* Light overlay — let the Kenya landscape shine */}
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(212,175,55,0.12),transparent_60%)]" />
 
-        <div className="relative z-10 text-center max-w-3xl px-5 py-16 md:py-12 [text-shadow:0_2px_12px_rgba(0,0,0,0.5)]">
+        <div className="relative z-10 text-center max-w-3xl px-5 py-16 md:py-12">
+          <div className="rounded-3xl bg-navy-950/50 backdrop-blur-xl border border-white/10 p-8 md:p-12 max-w-2xl mx-auto shadow-2xl [text-shadow:0_1px_8px_rgba(0,0,0,0.3)]">
           <Link
             href="/kenya"
             className="inline-flex items-center gap-2 text-gold/70 hover:text-gold mb-6 transition-colors text-sm"
@@ -273,6 +274,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
               Give Funds Instead
             </button>
           </div>
+          </div>
         </div>
       </section>
 
@@ -340,7 +342,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
 
                   {/* Progress bar */}
                   <div className="px-5 mb-1">
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-1000 ${colors?.fill || 'bg-gold'}`}
                         style={{ width: `${progress}%` }}
@@ -382,13 +384,13 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-body-xs font-semibold text-gold-700">{item.value}</span>
+                              <span className="text-body-xs font-bold text-gold-700">{item.value}</span>
                               <span className="text-body-xs text-muted-foreground">&middot; {item.qty}</span>
                             </div>
                           </div>
                           <button
                             onClick={() => !isPledged && openPledgeModal(cat.id, item.name, item.value, item.fundAmount, item.sourcing)}
-                            className={`text-xs font-bold px-4 py-2.5 rounded-full transition-all flex-shrink-0 whitespace-nowrap min-h-[40px] ${
+                            className={`text-sm font-bold px-5 py-2.5 rounded-full transition-all flex-shrink-0 whitespace-nowrap min-h-[44px] ${
                               isPledged
                                 ? 'bg-green-500 text-white cursor-default'
                                 : 'bg-gold text-navy-950 hover:bg-gold-300 shadow-sm hover:shadow-md cursor-pointer'
@@ -398,7 +400,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
                               ? `Pledged${count > 1 ? ` (${count})` : ''}`
                               : isKenya
                                 ? `Fund $${item.fundAmount}`
-                                : `I Got This · $${item.fundAmount}`}
+                                : `Pledge $${item.fundAmount}`}
                           </button>
                         </div>
                       )
@@ -430,22 +432,15 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       <SponsorshipSection />
 
       {/* ===== FUND THE MISSION ===== */}
-      <section id="fund" className="relative px-4 py-section text-white overflow-hidden">
-        <Image
-          src="/images/kenya/donate-bg.png"
-          alt=""
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-navy-950/92" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.08),transparent_70%)]" />
+      <section id="fund" className="relative px-4 py-section text-white overflow-hidden bg-navy-950">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="relative z-10 container mx-auto max-w-5xl">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <p className="text-body-sm font-semibold uppercase tracking-[0.2em] text-gold mb-4">Fund the Mission</p>
             <h2 className="font-display text-display-sm md:text-display-md font-bold text-white mb-3">
               Let Us Do the Shopping
             </h2>
-            <p className="text-body-md text-white/60">
+            <p className="text-body-md text-white/80">
               Pick an amount — we&apos;ll buy supplies here or source them in Kenya, whichever stretches your dollar further.
             </p>
           </div>
@@ -457,7 +452,7 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
                 onClick={() => handleFundSelect(tier.amount)}
                 className={`rounded-2xl p-4 sm:p-5 text-left transition-all border-2 ${
                   selectedFundAmount === tier.amount && !customFundAmount
-                    ? 'border-gold bg-gold/15 scale-[1.02]'
+                    ? 'border-gold bg-gold/20 scale-[1.02]'
                     : 'border-white/15 bg-white/5 hover:border-gold/50'
                 }`}
               >

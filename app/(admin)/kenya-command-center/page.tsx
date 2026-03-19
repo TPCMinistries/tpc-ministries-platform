@@ -15,6 +15,7 @@ import { TabItinerary } from './_components/tab-itinerary'
 import { TabLogistics } from './_components/tab-logistics'
 import { TabTracks } from './_components/tab-tracks'
 import { TabBudget } from './_components/tab-budget'
+import { TabFinances } from './_components/tab-finances'
 import { TabPacking } from './_components/tab-packing'
 import { TabComms } from './_components/tab-comms'
 import { TabMedia } from './_components/tab-media'
@@ -153,10 +154,12 @@ export default function KenyaCommandCenter() {
             deleteParticipant={data.deleteParticipant}
             addContact={data.addContact}
             deleteContact={data.deleteContact}
+            sendPartnerInfoRequest={data.sendPartnerInfoRequest}
             addWaitingListEntry={data.addWaitingListEntry}
             updateWaitingListEntry={data.updateWaitingListEntry}
             deleteWaitingListEntry={data.deleteWaitingListEntry}
             promoteToDelegate={data.promoteToDelegate}
+            sendWaitingListEmail={data.sendWaitingListEmail}
             addLodging={data.addLodging}
             saveStatus={data.saveStatus}
             onOpenInviteModal={() => data.setShowInviteModal(true)}
@@ -236,6 +239,10 @@ export default function KenyaCommandCenter() {
             addExpenseInline={data.addExpenseInline}
             saveStatus={data.saveStatus}
           />
+        )}
+
+        {activeTab === 'finances' && (
+          <TabFinances />
         )}
 
         {activeTab === 'supplies' && (

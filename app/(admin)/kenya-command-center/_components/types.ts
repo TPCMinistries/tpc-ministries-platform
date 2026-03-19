@@ -372,4 +372,4 @@ export interface KenyaInvite {
   created_at: string
 }
 
-export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'
+export type TabType = 'overview' | 'people' | 'actions' | 'itinerary' | 'logistics' | 'tracks' | 'budget' | 'finances' | 'supplies' | 'comms' | 'media' | 'prayer' | 'notes'

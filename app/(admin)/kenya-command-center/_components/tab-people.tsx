@@ -28,12 +28,14 @@ interface TabPeopleProps {
   addParticipantDirect: (firstName: string, lastName: string) => void
   sendKenyaInvite: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
   deleteParticipant: (id: string) => void
-  addContact: (name: string) => void
+  addContact: (name: string, fields?: { email?: string; phone?: string; organization?: string; role?: string; city?: string }) => void
   deleteContact: (id: string) => void
+  sendPartnerInfoRequest: (contactId: string) => Promise<any>
   addWaitingListEntry: (entry: any) => void
   updateWaitingListEntry: (id: string, updates: any) => void
   deleteWaitingListEntry: (id: string) => void
   promoteToDelegate: (entry: WaitingListEntry) => void
+  sendWaitingListEmail: (waitingListId: string, action: 'entice' | 'welcome' | 'decline') => Promise<any>
   addLodging: (city: string, checkIn: string, checkOut: string) => void
   saveStatus: 'idle' | 'saving' | 'saved' | 'error'
   onOpenInviteModal?: () => void
@@ -62,10 +64,12 @@ export function TabPeople({
   deleteParticipant,
   addContact,
   deleteContact,
+  sendPartnerInfoRequest,
   addWaitingListEntry,
   updateWaitingListEntry,
   deleteWaitingListEntry,
   promoteToDelegate,
+  sendWaitingListEmail,
   addLodging,
   saveStatus,
   onOpenInviteModal,
@@ -106,6 +110,7 @@ export function TabPeople({
         updateContactField={updateContactField}
         addContact={addContact}
         deleteContact={deleteContact}
+        sendPartnerInfoRequest={sendPartnerInfoRequest}
       />
 
       {/* Waiting to Hear */}
@@ -115,6 +120,7 @@ export function TabPeople({
         updateWaitingListEntry={updateWaitingListEntry}
         deleteWaitingListEntry={deleteWaitingListEntry}
         promoteToDelegate={promoteToDelegate}
+        sendWaitingListEmail={sendWaitingListEmail}
       />
 
       {/* Hotel Blocks */}

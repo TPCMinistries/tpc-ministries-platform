@@ -811,20 +811,42 @@ export function useKenyaData() {
     }
   }
 
-  const addContact = async (name: string) => {
+  const addContact = async (name: string, fields?: { email?: string; phone?: string; organization?: string; role?: string; city?: string }) => {
     if (!trip || !name.trim()) return
     const supabase = createClient()
     const { error } = await supabase.from('kenya_trip_contacts').insert({
       trip_id: trip.id,
       name: name.trim(),
-      role: '',
-      organization: '',
-      phone: '',
-      email: '',
-      city: '',
+      role: fields?.role || '',
+      organization: fields?.organization || '',
+      phone: fields?.phone || '',
+      email: fields?.email || '',
+      city: fields?.city || '',
       is_primary: false,
     })
     if (!error) fetchData()
+  }
+
+  const sendPartnerInfoRequest = async (contactId: string) => {
+    const response = await fetch('/api/admin/kenya-partner-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contactId }),
+    })
+    return response.json()
+  }
+
+  const sendWaitingListEmail = async (waitingListId: string, action: 'entice' | 'welcome' | 'decline') => {
+    const response = await fetch('/api/admin/kenya-waiting-list-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ waitingListId, action }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      fetchData() // Refresh to pick up status changes
+    }
+    return data
   }
 
   const deleteParticipant = async (id: string) => {
@@ -1258,6 +1280,8 @@ export function useKenyaData() {
     updateParticipantField, updateLodgingField, updateContactField,
     // Add/delete delegates & contacts
     addParticipantDirect, deleteParticipant, addContact, deleteContact,
+    // Partner & waiting list email handlers
+    sendPartnerInfoRequest, sendWaitingListEmail,
     // Itinerary handlers
     addItineraryItem, updateItineraryField, deleteItineraryItem,
     // Packing handlers
