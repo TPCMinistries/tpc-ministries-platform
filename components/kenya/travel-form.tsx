@@ -22,6 +22,7 @@ import {
   MapPin,
   FileText,
   AlertCircle,
+  Stethoscope,
 } from 'lucide-react'
 
 interface TravelFormData {
@@ -29,8 +30,13 @@ interface TravelFormData {
   displayFirstName: string
   displayLastName: string
   honorific: string
+  preferredName: string
+  gender: string
+  tShirtSize: string
   // Ministry
   serviceTrack: string
+  languagesSpoken: string
+  priorMissionExperience: string
   // Contact
   email: string
   phone: string
@@ -38,11 +44,16 @@ interface TravelFormData {
   organization: string
   orgTitle: string
   location: string
+  // Emergency Contact
+  emergencyContactName: string
+  emergencyContactPhone: string
+  emergencyContactRelationship: string
   // Travel
   travelAccommodationType: string
   travelAccommodationOther: string
   travelDateIn: string
   travelDateOut: string
+  roommatePreference: string
   // Passport / ID
   legalFullName: string
   dateOfBirth: string
@@ -54,6 +65,17 @@ interface TravelFormData {
   specialAssistanceDetails: string
   tsaKnownTravelerNumber: string
   travelNotes: string
+  // Health & Safety
+  yellowFeverStatus: string
+  yellowFeverDate: string
+  malariaProphylaxis: string
+  travelInsuranceStatus: string
+  travelInsuranceProvider: string
+  bloodType: string
+  allergies: string
+  medications: string
+  medicalConditions: string
+  dietaryRestrictions: string
 }
 
 export function TravelForm() {
@@ -61,17 +83,26 @@ export function TravelForm() {
     displayFirstName: '',
     displayLastName: '',
     honorific: '',
+    preferredName: '',
+    gender: '',
+    tShirtSize: '',
     serviceTrack: '',
+    languagesSpoken: '',
+    priorMissionExperience: '',
     email: '',
     phone: '',
     mailingAddress: '',
     organization: '',
     orgTitle: '',
     location: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelationship: '',
     travelAccommodationType: '',
     travelAccommodationOther: '',
     travelDateIn: '',
     travelDateOut: '',
+    roommatePreference: '',
     legalFullName: '',
     dateOfBirth: '',
     departureAirport: '',
@@ -80,6 +111,16 @@ export function TravelForm() {
     specialAssistanceDetails: '',
     tsaKnownTravelerNumber: '',
     travelNotes: '',
+    yellowFeverStatus: '',
+    yellowFeverDate: '',
+    malariaProphylaxis: '',
+    travelInsuranceStatus: '',
+    travelInsuranceProvider: '',
+    bloodType: '',
+    allergies: '',
+    medications: '',
+    medicalConditions: '',
+    dietaryRestrictions: '',
   })
 
   const [passportFile, setPassportFile] = useState<File | null>(null)
@@ -111,8 +152,8 @@ export function TravelForm() {
     setError('')
 
     // Validate required fields
-    if (!formData.displayFirstName || !formData.displayLastName || !formData.email || !formData.legalFullName || !formData.serviceTrack) {
-      setError('Please fill in all required fields: First Name, Last Name, Email, Legal Name, and Ministry Track.')
+    if (!formData.displayFirstName || !formData.displayLastName || !formData.email || !formData.legalFullName || !formData.serviceTrack || !formData.gender || !formData.tShirtSize || !formData.emergencyContactName || !formData.emergencyContactPhone || !formData.yellowFeverStatus || !formData.travelInsuranceStatus) {
+      setError('Please fill in all required fields marked with *.')
       setLoading(false)
       // Scroll to top so user sees the error
       formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -247,6 +288,54 @@ export function TravelForm() {
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Preferred Name / Nickname</Label>
+                <Input
+                  value={formData.preferredName}
+                  onChange={(e) => update('preferredName', e.target.value)}
+                  placeholder="For your ID badge"
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  Gender <span className="text-amber-600">*</span>
+                </Label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) => update('gender', e.target.value)}
+                  required
+                  className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                >
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Prefer not to say</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  T-Shirt Size <span className="text-amber-600">*</span>
+                </Label>
+                <select
+                  value={formData.tShirtSize}
+                  onChange={(e) => update('tShirtSize', e.target.value)}
+                  required
+                  className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                >
+                  <option value="">Select size</option>
+                  <option value="XS">XS</option>
+                  <option value="S">Small</option>
+                  <option value="M">Medium</option>
+                  <option value="L">Large</option>
+                  <option value="XL">XL</option>
+                  <option value="2XL">2XL</option>
+                  <option value="3XL">3XL</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -275,6 +364,32 @@ export function TravelForm() {
               <option value="business">Business &amp; Economic Development</option>
               <option value="all">All Ministries</option>
             </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium text-sm">Languages Spoken</Label>
+              <Input
+                value={formData.languagesSpoken}
+                onChange={(e) => update('languagesSpoken', e.target.value)}
+                placeholder="e.g., English, Swahili, French"
+                className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium text-sm">Mission Trip Experience</Label>
+              <select
+                value={formData.priorMissionExperience}
+                onChange={(e) => update('priorMissionExperience', e.target.value)}
+                className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              >
+                <option value="">Select experience level</option>
+                <option value="first_time">First mission trip</option>
+                <option value="1-2_trips">1-2 previous trips</option>
+                <option value="3-5_trips">3-5 previous trips</option>
+                <option value="veteran">6+ trips (veteran)</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -355,7 +470,62 @@ export function TravelForm() {
           </div>
         </div>
 
-        {/* ============ SECTION 4: Travel Accommodations ============ */}
+        {/* ============ SECTION 4: Emergency Contact ============ */}
+        <div>
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-200">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+            <h3 className="text-base sm:text-lg font-semibold text-stone-900">Emergency Contact</h3>
+          </div>
+          <p className="text-sm text-stone-500 mb-4">Someone we can reach in case of emergency while you&apos;re in Kenya.</p>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  Contact Name <span className="text-amber-600">*</span>
+                </Label>
+                <Input
+                  value={formData.emergencyContactName}
+                  onChange={(e) => update('emergencyContactName', e.target.value)}
+                  required
+                  placeholder="Full name"
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  Contact Phone <span className="text-amber-600">*</span>
+                </Label>
+                <Input
+                  type="tel"
+                  value={formData.emergencyContactPhone}
+                  onChange={(e) => update('emergencyContactPhone', e.target.value)}
+                  required
+                  placeholder="Phone number"
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 max-w-xs">
+              <Label className="text-stone-700 font-medium text-sm">Relationship</Label>
+              <select
+                value={formData.emergencyContactRelationship}
+                onChange={(e) => update('emergencyContactRelationship', e.target.value)}
+                className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              >
+                <option value="">Select</option>
+                <option value="Spouse">Spouse</option>
+                <option value="Parent">Parent</option>
+                <option value="Sibling">Sibling</option>
+                <option value="Child">Child (Adult)</option>
+                <option value="Friend">Friend</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* ============ SECTION 5: Travel Accommodations ============ */}
         <div>
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-200">
             <Plane className="h-5 w-5 text-amber-600" />
@@ -427,10 +597,19 @@ export function TravelForm() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium text-sm">Roommate Preference</Label>
+              <Input
+                value={formData.roommatePreference}
+                onChange={(e) => update('roommatePreference', e.target.value)}
+                placeholder="Name of someone you'd like to room with (optional)"
+                className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+              />
+            </div>
           </div>
         </div>
 
-        {/* ============ SECTION 5: Passport / Legal ID ============ */}
+        {/* ============ SECTION 6: Passport / Legal ID ============ */}
         <div>
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-200">
             <FileText className="h-5 w-5 text-amber-600" />
@@ -598,7 +777,161 @@ export function TravelForm() {
           </div>
         </div>
 
-        {/* ============ SECTION 7: Additional Notes ============ */}
+        {/* ============ SECTION 8: Health & Safety ============ */}
+        <div>
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-200">
+            <Stethoscope className="h-5 w-5 text-amber-600" />
+            <h3 className="text-base sm:text-lg font-semibold text-stone-900">Health &amp; Safety</h3>
+          </div>
+
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <p className="text-sm font-semibold text-red-800">Yellow Fever Vaccination is REQUIRED for Kenya Entry</p>
+            <p className="text-xs text-red-700 mt-1">You must carry a valid Yellow Fever vaccination certificate (yellow card). Without it, you may be denied entry at the border. Schedule your vaccination NOW if you haven&apos;t already — it takes 10 days to become effective.</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  Yellow Fever Vaccination <span className="text-amber-600">*</span>
+                </Label>
+                <select
+                  value={formData.yellowFeverStatus}
+                  onChange={(e) => update('yellowFeverStatus', e.target.value)}
+                  required
+                  className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                >
+                  <option value="">Select status</option>
+                  <option value="vaccinated">Vaccinated (have yellow card)</option>
+                  <option value="scheduled">Appointment scheduled</option>
+                  <option value="need_to_schedule">Need to schedule</option>
+                  <option value="exempt">Medical exemption</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Vaccination Date</Label>
+                <Input
+                  type="date"
+                  value={formData.yellowFeverDate}
+                  onChange={(e) => update('yellowFeverDate', e.target.value)}
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium text-sm">Malaria Prevention Medication</Label>
+              <select
+                value={formData.malariaProphylaxis}
+                onChange={(e) => update('malariaProphylaxis', e.target.value)}
+                className="flex h-12 w-full max-w-md items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              >
+                <option value="">Select (or discuss with your doctor)</option>
+                <option value="malarone">Malarone (atovaquone/proguanil)</option>
+                <option value="doxycycline">Doxycycline</option>
+                <option value="mefloquine">Mefloquine (Lariam)</option>
+                <option value="not_yet">Haven&apos;t decided yet</option>
+                <option value="none">Choosing not to take</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">
+                  Travel Insurance <span className="text-amber-600">*</span>
+                </Label>
+                <select
+                  value={formData.travelInsuranceStatus}
+                  onChange={(e) => update('travelInsuranceStatus', e.target.value)}
+                  required
+                  className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                >
+                  <option value="">Select status</option>
+                  <option value="have_policy">I have a policy</option>
+                  <option value="purchasing">Planning to purchase</option>
+                  <option value="need_help">Need help finding one</option>
+                  <option value="none">Not planning to get</option>
+                </select>
+              </div>
+              {(formData.travelInsuranceStatus === 'have_policy') && (
+                <div className="space-y-2">
+                  <Label className="text-stone-700 font-medium text-sm">Insurance Provider &amp; Policy #</Label>
+                  <Input
+                    value={formData.travelInsuranceProvider}
+                    onChange={(e) => update('travelInsuranceProvider', e.target.value)}
+                    placeholder="e.g., Allianz #12345"
+                    className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Blood Type</Label>
+                <select
+                  value={formData.bloodType}
+                  onChange={(e) => update('bloodType', e.target.value)}
+                  className="flex h-12 w-full items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                >
+                  <option value="">Select (if known)</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="unknown">Don&apos;t know</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Allergies</Label>
+                <Input
+                  value={formData.allergies}
+                  onChange={(e) => update('allergies', e.target.value)}
+                  placeholder="Food, drug, or environmental allergies"
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Current Medications</Label>
+                <Input
+                  value={formData.medications}
+                  onChange={(e) => update('medications', e.target.value)}
+                  placeholder="List any daily medications"
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-stone-700 font-medium text-sm">Dietary Restrictions</Label>
+                <Input
+                  value={formData.dietaryRestrictions}
+                  onChange={(e) => update('dietaryRestrictions', e.target.value)}
+                  placeholder="Vegetarian, halal, gluten-free, etc."
+                  className="h-12 bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-stone-700 font-medium text-sm">Medical Conditions</Label>
+              <Textarea
+                value={formData.medicalConditions}
+                onChange={(e) => update('medicalConditions', e.target.value)}
+                placeholder="Any conditions our team should be aware of (e.g., diabetes, asthma, seizure disorder)"
+                rows={2}
+                className="bg-white text-base text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ============ SECTION 9: Additional Notes ============ */}
         <div>
           <div className="space-y-2">
             <Label className="text-stone-700 font-medium text-sm">Additional Travel &amp; Booking Notes</Label>

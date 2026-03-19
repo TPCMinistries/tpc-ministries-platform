@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import {
   X, CheckCircle, Clock, XCircle, Send, Mail, Phone,
   Shield, Stethoscope, Users, MapPin, Briefcase, FileText,
-  Loader2, AlertTriangle, Pencil, Save, ExternalLink
+  Loader2, AlertTriangle, Pencil, Save, ExternalLink,
+  Shirt, Heart, Plane, Globe
 } from 'lucide-react'
 import type { Participant } from './types'
 
@@ -355,6 +356,19 @@ export function ModalParticipantDetail({
                 <EditableField label="Role/Title" value={p.org_title} field="org_title" onSave={handleSave} placeholder="Title within org" />
                 <EditableField label="Date of Birth" value={p.date_of_birth?.split('T')[0] || ''} field="date_of_birth" onSave={handleSave} type="date" />
                 <EditableField label="Ministry Role" value={p.ministry_role} field="ministry_role" onSave={handleSave} placeholder="Role in ministry" />
+                <EditableField label="Gender" value={p.gender} field="gender" onSave={handleSave} type="select" options={[
+                  { value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'other', label: 'Prefer not to say' },
+                ]} />
+                <EditableField label="Preferred Name" value={p.preferred_name} field="preferred_name" onSave={handleSave} placeholder="For ID badge" />
+                <EditableField label="T-Shirt Size" value={p.t_shirt_size} field="t_shirt_size" onSave={handleSave} type="select" options={[
+                  { value: 'XS', label: 'XS' }, { value: 'S', label: 'S' }, { value: 'M', label: 'M' }, { value: 'L', label: 'L' },
+                  { value: 'XL', label: 'XL' }, { value: '2XL', label: '2XL' }, { value: '3XL', label: '3XL' },
+                ]} />
+                <EditableField label="Languages" value={p.languages_spoken} field="languages_spoken" onSave={handleSave} placeholder="English, Swahili..." />
+                <EditableField label="Mission Experience" value={p.prior_mission_experience} field="prior_mission_experience" onSave={handleSave} type="select" options={[
+                  { value: 'first_time', label: 'First trip' }, { value: '1-2_trips', label: '1-2 trips' },
+                  { value: '3-5_trips', label: '3-5 trips' }, { value: 'veteran', label: '6+ trips' },
+                ]} />
               </div>
             </div>
           </div>
@@ -384,6 +398,11 @@ export function ModalParticipantDetail({
                 <EditableField label="Travel Date In" value={p.travel_date_in?.split('T')[0] || ''} field="travel_date_in" onSave={handleSave} type="date" />
                 <EditableField label="Travel Date Out" value={p.travel_date_out?.split('T')[0] || ''} field="travel_date_out" onSave={handleSave} type="date" />
                 <EditableField label="Accommodation" value={p.travel_accommodation_type} field="travel_accommodation_type" onSave={handleSave} placeholder="Group, self-arrange, etc." />
+                <EditableField label="Roommate Preference" value={p.roommate_preference} field="roommate_preference" onSave={handleSave} placeholder="Who they want to room with" />
+                <EditableField label="Flight Confirmation #" value={p.flight_confirmation_number} field="flight_confirmation_number" onSave={handleSave} placeholder="Booking reference" />
+                <EditableField label="Arrival Flight" value={p.arrival_flight_info} field="arrival_flight_info" onSave={handleSave} placeholder="e.g., KQ100 Apr 22 7:30pm" />
+                <EditableField label="Departure Flight" value={p.departure_flight_info} field="departure_flight_info" onSave={handleSave} placeholder="e.g., KQ101 May 7 11pm" />
+                <EditableField label="Luggage Count" value={String(p.luggage_count || '')} field="luggage_count" onSave={handleSave} placeholder="# of bags" />
                 <EditableField label="Special Assistance" value={p.special_assistance} field="special_assistance" onSave={handleSave} placeholder="None" />
                 <EditableField label="Travel Notes" value={p.travel_notes} field="travel_notes" onSave={handleSave} type="textarea" placeholder="Any travel notes..." />
               </div>
@@ -405,6 +424,39 @@ export function ModalParticipantDetail({
             </div>
           </div>
 
+          {/* Vaccinations & Insurance — EDITABLE */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
+              <Heart className="h-4 w-4" /> Vaccinations & Insurance
+              {p.yellow_fever_status === 'need_to_schedule' && (
+                <Badge className="bg-red-100 text-red-800 text-[10px]">Yellow Fever Needed!</Badge>
+              )}
+            </h3>
+            <div className={sectionClasses}>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <EditableField label="Yellow Fever" value={p.yellow_fever_status} field="yellow_fever_status" onSave={handleSave} type="select" options={[
+                  { value: 'unknown', label: 'Unknown' }, { value: 'vaccinated', label: 'Vaccinated' },
+                  { value: 'scheduled', label: 'Scheduled' }, { value: 'need_to_schedule', label: 'Needs to Schedule' },
+                  { value: 'exempt', label: 'Exempt' },
+                ]} />
+                <EditableField label="Yellow Fever Date" value={p.yellow_fever_date?.split('T')[0] || ''} field="yellow_fever_date" onSave={handleSave} type="date" />
+                <EditableField label="Malaria Medication" value={p.malaria_prophylaxis} field="malaria_prophylaxis" onSave={handleSave} type="select" options={[
+                  { value: 'malarone', label: 'Malarone' }, { value: 'doxycycline', label: 'Doxycycline' },
+                  { value: 'mefloquine', label: 'Mefloquine' }, { value: 'not_yet', label: 'Undecided' }, { value: 'none', label: 'None' },
+                ]} />
+                <EditableField label="Travel Insurance" value={p.travel_insurance_status} field="travel_insurance_status" onSave={handleSave} type="select" options={[
+                  { value: 'unknown', label: 'Unknown' }, { value: 'have_policy', label: 'Has Policy' },
+                  { value: 'purchasing', label: 'Purchasing' }, { value: 'need_help', label: 'Needs Help' }, { value: 'none', label: 'None' },
+                ]} />
+                <EditableField label="Insurance Provider" value={p.travel_insurance_provider} field="travel_insurance_provider" onSave={handleSave} placeholder="Company + policy #" />
+                <EditableField label="Background Check" value={p.background_check_status} field="background_check_status" onSave={handleSave} type="select" options={[
+                  { value: 'not_required', label: 'Not Required' }, { value: 'pending', label: 'Pending' },
+                  { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' },
+                ]} />
+              </div>
+            </div>
+          </div>
+
           {/* Medical — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
@@ -412,6 +464,11 @@ export function ModalParticipantDetail({
             </h3>
             <div className={sectionClasses}>
               <div className="grid grid-cols-2 gap-4 text-sm">
+                <EditableField label="Blood Type" value={p.blood_type} field="blood_type" onSave={handleSave} type="select" options={[
+                  { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' },
+                  { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' },
+                  { value: 'unknown', label: "Don't know" },
+                ]} />
                 <EditableField label="Allergies" value={p.allergies} field="allergies" onSave={handleSave} placeholder="None" />
                 <EditableField label="Medications" value={p.medications} field="medications" onSave={handleSave} placeholder="None" />
                 <EditableField label="Medical Conditions" value={p.medical_conditions} field="medical_conditions" onSave={handleSave} placeholder="None" />
