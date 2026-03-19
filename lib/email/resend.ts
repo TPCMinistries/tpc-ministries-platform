@@ -12,7 +12,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'TPC Ministries <info@tpcmin.org>',
+  from = 'TPC Ministries <info@tpcmin.com>',
 }: {
   to: string | string[]
   subject: string
@@ -38,7 +38,7 @@ export async function sendBulkEmail({
   recipients,
   subject,
   html,
-  from = 'TPC Ministries <info@tpcmin.org>',
+  from = 'TPC Ministries <info@tpcmin.com>',
 }: {
   recipients: string[]
   subject: string
