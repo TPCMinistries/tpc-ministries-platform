@@ -120,6 +120,9 @@ export function ModalParticipantDetail({
   const [sendingRequest, setSendingRequest] = useState(false)
   const [sendingInvite, setSendingInvite] = useState(false)
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [showInvitePanel, setShowInvitePanel] = useState(false)
+  const [inviteTrack, setInviteTrack] = useState('')
+  const [inviteRole, setInviteRole] = useState('')
   const [sendingForm, setSendingForm] = useState<string | null>(null)
   const [formSendResult, setFormSendResult] = useState<{ form: string; success: boolean } | null>(null)
   const [emailDraft, setEmailDraft] = useState('')
@@ -146,17 +149,25 @@ export function ModalParticipantDetail({
 
   const handleSendInvite = async () => {
     if (!onSendInvite || !p.email) return
+    const selectedTrack = inviteTrack || p.service_track || 'Flex'
+    const selectedRole = inviteRole || p.role || 'delegate'
+
+    // Save track and role to participant before sending
+    if (selectedTrack !== (p.service_track || 'Flex')) handleSave('service_track', selectedTrack)
+    if (selectedRole !== (p.role || 'delegate')) handleSave('role', selectedRole)
+
     setSendingInvite(true)
     setInviteResult(null)
     try {
       const data = await onSendInvite({
         firstName: p.first_name, lastName: p.last_name || '', email: p.email,
-        track: p.service_track || 'Flex', role: 'member', sendEmail: true,
+        track: selectedTrack, role: 'member', sendEmail: true,
       })
       setInviteResult({
         success: data.success && data.emailSent,
-        message: data.emailSent ? `Invite sent to ${p.email}` : data.error || 'Email failed',
+        message: data.emailSent ? `Invite sent to ${p.email} (${selectedTrack} track)` : data.error || 'Email failed',
       })
+      if (data.success) setShowInvitePanel(false)
     } catch {
       setInviteResult({ success: false, message: 'Failed to send' })
     } finally {
@@ -270,8 +281,8 @@ export function ModalParticipantDetail({
           {/* === HAS EMAIL — Action Buttons === */}
           {hasEmail && (
             <div className="flex gap-2 flex-wrap">
-              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleSendInvite} disabled={sendingInvite}>
-                {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send Trip Invite</>}
+              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => { setInviteTrack(p.service_track || 'Flex'); setInviteRole(p.role || 'delegate'); setShowInvitePanel(!showInvitePanel) }}>
+                <Send className="mr-1.5 h-3.5 w-3.5" /> Send Trip Invite
               </Button>
               {formsIncomplete.length > 0 && onSendFormLink && (
                 <Button size="sm" variant="outline" onClick={() => handleSendFormLink('all_incomplete')} disabled={sendingForm === 'all_incomplete'}>
@@ -283,6 +294,36 @@ export function ModalParticipantDetail({
               </Button>
             </div>
           )}
+
+          {/* Send Invite Panel — assign track + role before sending */}
+          {showInvitePanel && hasEmail && (
+            <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50 space-y-3">
+              <p className="text-sm font-semibold text-green-900">Send invitation to {p.email}</p>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-[11px] font-medium text-green-800 uppercase tracking-wide">Service Track</label>
+                  <select value={inviteTrack} onChange={(e) => setInviteTrack(e.target.value)}
+                    className="w-full mt-1 border border-green-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none">
+                    {TRACK_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="text-[11px] font-medium text-green-800 uppercase tracking-wide">Trip Role</label>
+                  <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}
+                    className="w-full mt-1 border border-green-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none">
+                    {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleSendInvite} disabled={sendingInvite}>
+                  {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : <><Send className="mr-1.5 h-3.5 w-3.5" />Send Invite as {inviteTrack}</>}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowInvitePanel(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
           {inviteResult && (
             <div className={`p-2.5 rounded-lg text-sm font-medium ${inviteResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
               {inviteResult.success ? <CheckCircle className="h-4 w-4 inline mr-1.5" /> : <XCircle className="h-4 w-4 inline mr-1.5" />}
