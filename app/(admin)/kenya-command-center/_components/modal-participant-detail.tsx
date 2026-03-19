@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import {
   X, CheckCircle, Clock, XCircle, Send, Mail, Phone,
   Shield, Stethoscope, Users, MapPin, Briefcase, FileText,
-  Loader2, AlertTriangle, Calendar
+  Loader2, AlertTriangle, Pencil, Save, ExternalLink
 } from 'lucide-react'
 import type { Participant } from './types'
 
@@ -15,11 +16,115 @@ interface ModalParticipantDetailProps {
   participant: Participant | null
   onClose: () => void
   onUpdateStatus?: (id: string, status: string) => void
+  onUpdateField?: (id: string, field: string, value: string) => void
   onRequestMoreInfo?: (id: string, email: string, name: string, message: string) => Promise<any>
+  onSendInvite?: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
+}
+
+// Editable field component
+function EditableField({ label, value, field, onSave, type = 'text', options, placeholder }: {
+  label: string
+  value: string
+  field: string
+  onSave: (field: string, value: string) => void
+  type?: 'text' | 'email' | 'tel' | 'date' | 'select' | 'textarea'
+  options?: { value: string; label: string }[]
+  placeholder?: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value || '')
+
+  useEffect(() => { setDraft(value || '') }, [value])
+
+  const save = () => {
+    if (draft !== (value || '')) onSave(field, draft)
+    setEditing(false)
+  }
+
+  const labelClasses = "text-gray-500 text-xs uppercase tracking-wide"
+  const valueClasses = "font-medium text-gray-900 mt-0.5"
+
+  if (!editing) {
+    return (
+      <div className="group">
+        <p className={labelClasses}>{label}</p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <p className={`${valueClasses} ${!value ? 'text-gray-400 italic' : ''}`}>
+            {value || placeholder || 'Not provided'}
+          </p>
+          <button
+            onClick={() => setEditing(true)}
+            className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded transition-opacity"
+            title={`Edit ${label.toLowerCase()}`}
+          >
+            <Pencil className="h-3 w-3 text-gray-400" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (type === 'select' && options) {
+    return (
+      <div>
+        <p className={labelClasses}>{label}</p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <select
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={save}
+            autoFocus
+            className="text-sm border rounded px-2 py-1 w-full max-w-[200px]"
+          >
+            {options.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    )
+  }
+
+  if (type === 'textarea') {
+    return (
+      <div className="col-span-2">
+        <p className={labelClasses}>{label}</p>
+        <div className="flex items-start gap-1.5 mt-0.5">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={save}
+            autoFocus
+            rows={3}
+            placeholder={placeholder}
+            className="text-sm border rounded px-2 py-1 w-full resize-none"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <p className={labelClasses}>{label}</p>
+      <div className="flex items-center gap-1.5 mt-0.5">
+        <input
+          type={type}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={save}
+          onKeyDown={(e) => e.key === 'Enter' && save()}
+          autoFocus
+          placeholder={placeholder}
+          className="text-sm border rounded px-2 py-1 w-full max-w-[200px]"
+        />
+      </div>
+    </div>
+  )
 }
 
 export function ModalParticipantDetail({
-  participant, onClose, onUpdateStatus, onRequestMoreInfo,
+  participant, onClose, onUpdateStatus, onUpdateField, onRequestMoreInfo, onSendInvite,
 }: ModalParticipantDetailProps) {
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -27,16 +132,22 @@ export function ModalParticipantDetail({
   const [requestMessage, setRequestMessage] = useState('')
   const [requestSent, setRequestSent] = useState(false)
   const [sendingRequest, setSendingRequest] = useState(false)
+  const [sendingInvite, setSendingInvite] = useState(false)
+  const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null)
 
   if (!participant) return null
 
-  const p = participant as any // Cast to access fields not in strict type
-
+  const p = participant as any
   const isPending = p.application_status === 'pending'
   const hasInterestForm = !!p.interest_form_completed_at
   const hasTravelForm = !!p.travel_form_completed_at
   const hasMedicalForm = !!p.medical_form_completed_at
   const hasWaiver = !!p.waiver_signed_at
+  const hasEmail = !!p.email
+
+  const handleSave = (field: string, value: string) => {
+    if (onUpdateField) onUpdateField(p.id, field, value)
+  }
 
   const handleDecision = async (status: string) => {
     if (!onUpdateStatus) return
@@ -58,6 +169,34 @@ export function ModalParticipantDetail({
     setSendingRequest(false)
   }
 
+  const handleSendInvite = async () => {
+    if (!onSendInvite || !p.email) return
+    setSendingInvite(true)
+    setInviteResult(null)
+    try {
+      const data = await onSendInvite({
+        firstName: p.first_name,
+        lastName: p.last_name || '',
+        email: p.email,
+        track: p.service_track || 'Flex',
+        role: 'member',
+        sendEmail: true,
+      })
+      if (data.success) {
+        setInviteResult({
+          success: data.emailSent,
+          message: data.emailSent ? `Invite sent to ${p.email}` : `Invite created but email failed`,
+        })
+      } else {
+        setInviteResult({ success: false, message: data.error || 'Failed' })
+      }
+    } catch {
+      setInviteResult({ success: false, message: 'Failed to send invite' })
+    } finally {
+      setSendingInvite(false)
+    }
+  }
+
   const sectionClasses = "bg-gray-50 p-4 rounded-lg"
   const labelClasses = "text-gray-500 text-xs uppercase tracking-wide"
   const valueClasses = "font-medium text-gray-900 mt-0.5"
@@ -71,11 +210,52 @@ export function ModalParticipantDetail({
       submitted: 'bg-blue-100 text-blue-800',
       verified: 'bg-green-100 text-green-800',
       not_started: 'bg-gray-100 text-gray-600',
+      not_required: 'bg-gray-100 text-gray-600',
+      in_progress: 'bg-blue-100 text-blue-800',
       paid: 'bg-green-100 text-green-800',
       partial: 'bg-yellow-100 text-yellow-800',
     }
     return <Badge className={colors[status] || 'bg-gray-100 text-gray-800'}>{status?.replace('_', ' ') || 'unknown'}</Badge>
   }
+
+  const trackOptions = [
+    { value: 'Flex', label: 'Flex' },
+    { value: 'Ministry', label: 'Ministry' },
+    { value: 'Medical', label: 'Medical' },
+    { value: 'Education', label: 'Education' },
+    { value: 'Business', label: 'Business' },
+    { value: 'Media', label: 'Media' },
+  ]
+
+  const passportOptions = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'submitted', label: 'Submitted' },
+    { value: 'verified', label: 'Verified' },
+    { value: 'expired', label: 'Expired' },
+    { value: 'not_required', label: 'Not Required' },
+  ]
+
+  const visaOptions = [
+    { value: 'not_started', label: 'Not Started' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'approved', label: 'Approved' },
+    { value: 'denied', label: 'Denied' },
+    { value: 'not_required', label: 'Not Required' },
+  ]
+
+  const paymentOptions = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'partial', label: 'Partial' },
+    { value: 'paid', label: 'Paid' },
+    { value: 'refunded', label: 'Refunded' },
+  ]
+
+  const bookingOptions = [
+    { value: 'TBD', label: 'TBD' },
+    { value: 'Group', label: 'Group' },
+    { value: 'Individual', label: 'Individual' },
+    { value: 'Self', label: 'Self-Arranged' },
+  ]
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -91,7 +271,7 @@ export function ModalParticipantDetail({
               {p.team_leader && <Badge className="bg-gold/20 text-gold-dark">Leader</Badge>}
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              Applied {p.application_date ? new Date(p.application_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Unknown'}
+              Added {p.application_date ? new Date(p.application_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Unknown'}
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -117,224 +297,162 @@ export function ModalParticipantDetail({
             </Badge>
           </div>
 
-          {/* Contact & Personal */}
+          {/* Send Invite Button — prominent when email exists but no invite sent */}
+          {hasEmail && onSendInvite && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-green-800">
+                <Send className="h-4 w-4" />
+                <span>Send the Kenya trip invitation email to {p.email}</span>
+              </div>
+              <Button
+                size="sm"
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleSendInvite}
+                disabled={sendingInvite}
+              >
+                {sendingInvite ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Sending...</> : 'Send Invite'}
+              </Button>
+            </div>
+          )}
+          {inviteResult && (
+            <div className={`p-2 rounded text-sm font-medium ${inviteResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+              {inviteResult.message}
+            </div>
+          )}
+
+          {/* Travel Form Link — when email exists but travel form not completed */}
+          {hasEmail && !hasTravelForm && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-blue-800">
+                <FileText className="h-4 w-4" />
+                <span>Travel form not yet completed</span>
+              </div>
+              <a
+                href={`/kenya/travel`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+              >
+                View Form <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+
+          {/* Contact & Personal — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
               <Users className="h-4 w-4" /> Contact & Personal
             </h3>
             <div className={sectionClasses}>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className={labelClasses}>Email</p>
-                  <p className={valueClasses}>
-                    <a href={`mailto:${p.email}`} className="text-navy hover:underline">{p.email}</a>
-                  </p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Phone</p>
-                  <p className={valueClasses}>{p.phone || 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Location</p>
-                  <p className={valueClasses}>{p.location || 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Service Track</p>
-                  <p className={valueClasses}>{p.service_track || 'Not selected'}</p>
-                </div>
-                {p.organization && (
-                  <div>
-                    <p className={labelClasses}>Organization</p>
-                    <p className={valueClasses}>{p.organization}{p.org_title ? ` (${p.org_title})` : ''}</p>
-                  </div>
-                )}
-                {p.date_of_birth && (
-                  <div>
-                    <p className={labelClasses}>Date of Birth</p>
-                    <p className={valueClasses}>{new Date(p.date_of_birth).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {p.ministry_role && (
-                  <div>
-                    <p className={labelClasses}>Ministry Role</p>
-                    <p className={valueClasses}>{p.ministry_role}</p>
-                  </div>
-                )}
-                {p.scholarship_requested && (
-                  <div className="col-span-2">
-                    <Badge className="bg-amber-100 text-amber-800">Scholarship Requested</Badge>
-                  </div>
-                )}
+                <EditableField label="First Name" value={p.first_name} field="first_name" onSave={handleSave} placeholder="First name" />
+                <EditableField label="Last Name" value={p.last_name} field="last_name" onSave={handleSave} placeholder="Last name" />
+                <EditableField label="Email" value={p.email} field="email" onSave={handleSave} type="email" placeholder="Add email to send invite" />
+                <EditableField label="Phone" value={p.phone} field="phone" onSave={handleSave} type="tel" placeholder="Phone number" />
+                <EditableField label="Location" value={p.location} field="location" onSave={handleSave} placeholder="City, State" />
+                <EditableField label="Service Track" value={p.service_track} field="service_track" onSave={handleSave} type="select" options={trackOptions} />
+                <EditableField label="Organization" value={p.organization} field="organization" onSave={handleSave} placeholder="Church, company, etc." />
+                <EditableField label="Role/Title" value={p.org_title} field="org_title" onSave={handleSave} placeholder="Title within org" />
+                <EditableField label="Date of Birth" value={p.date_of_birth?.split('T')[0] || ''} field="date_of_birth" onSave={handleSave} type="date" />
+                <EditableField label="Ministry Role" value={p.ministry_role} field="ministry_role" onSave={handleSave} placeholder="Role in ministry" />
               </div>
             </div>
           </div>
 
-          {/* Applicant Notes / Skills */}
-          {p.notes && (
-            <div>
-              <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-                <FileText className="h-4 w-4" /> Applicant Notes & Skills
-              </h3>
-              <div className={`${sectionClasses} border-l-4 border-navy`}>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{p.notes}</p>
+          {/* Notes — EDITABLE */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4" /> Notes
+            </h3>
+            <div className={sectionClasses}>
+              <EditableField label="Admin Notes" value={p.notes} field="notes" onSave={handleSave} type="textarea" placeholder="Add notes about this delegate..." />
+            </div>
+          </div>
+
+          {/* Travel Details — show always, editable */}
+          <div>
+            <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
+              <MapPin className="h-4 w-4" /> Travel Details
+              {hasTravelForm && <Badge className="bg-green-100 text-green-800 text-[10px]">Form Completed</Badge>}
+            </h3>
+            <div className={sectionClasses}>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <EditableField label="Legal Full Name" value={p.legal_full_name} field="legal_full_name" onSave={handleSave} placeholder="As shown on passport" />
+                <EditableField label="Booking Type" value={p.booking_type} field="booking_type" onSave={handleSave} type="select" options={bookingOptions} />
+                <EditableField label="Departure Airport" value={p.departure_airport} field="departure_airport" onSave={handleSave} placeholder="e.g. JFK" />
+                <EditableField label="Return Airport" value={p.return_airport} field="return_airport" onSave={handleSave} placeholder="e.g. NBO" />
+                <EditableField label="Travel Date In" value={p.travel_date_in?.split('T')[0] || ''} field="travel_date_in" onSave={handleSave} type="date" />
+                <EditableField label="Travel Date Out" value={p.travel_date_out?.split('T')[0] || ''} field="travel_date_out" onSave={handleSave} type="date" />
+                <EditableField label="Accommodation" value={p.travel_accommodation_type} field="travel_accommodation_type" onSave={handleSave} placeholder="Group, self-arrange, etc." />
+                <EditableField label="Special Assistance" value={p.special_assistance} field="special_assistance" onSave={handleSave} placeholder="None" />
+                <EditableField label="Travel Notes" value={p.travel_notes} field="travel_notes" onSave={handleSave} type="textarea" placeholder="Any travel notes..." />
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Travel Info (if travel form completed) */}
-          {hasTravelForm && (
-            <div>
-              <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4" /> Travel Details
-              </h3>
-              <div className={sectionClasses}>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {p.legal_full_name && (
-                    <div>
-                      <p className={labelClasses}>Legal Full Name</p>
-                      <p className={valueClasses}>{p.legal_full_name}</p>
-                    </div>
-                  )}
-                  {p.travel_accommodation_type && (
-                    <div>
-                      <p className={labelClasses}>Accommodation Type</p>
-                      <p className={valueClasses}>{p.travel_accommodation_type}</p>
-                    </div>
-                  )}
-                  {(p.travel_date_in || p.travel_date_out) && (
-                    <>
-                      <div>
-                        <p className={labelClasses}>Travel Date In</p>
-                        <p className={valueClasses}>{p.travel_date_in ? new Date(p.travel_date_in).toLocaleDateString() : 'TBD'}</p>
-                      </div>
-                      <div>
-                        <p className={labelClasses}>Travel Date Out</p>
-                        <p className={valueClasses}>{p.travel_date_out ? new Date(p.travel_date_out).toLocaleDateString() : 'TBD'}</p>
-                      </div>
-                    </>
-                  )}
-                  {(p.departure_airport || p.return_airport) && (
-                    <div>
-                      <p className={labelClasses}>Route</p>
-                      <p className={valueClasses}>{p.departure_airport || 'TBD'} → {p.return_airport || 'NBO'}</p>
-                    </div>
-                  )}
-                  {p.special_assistance && (
-                    <div>
-                      <p className={labelClasses}>Special Assistance</p>
-                      <p className={valueClasses}>{p.special_assistance}</p>
-                    </div>
-                  )}
-                  {p.travel_notes && (
-                    <div className="col-span-2">
-                      <p className={labelClasses}>Travel Notes</p>
-                      <p className={valueClasses}>{p.travel_notes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Travel Documents */}
+          {/* Travel Documents — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
               <Shield className="h-4 w-4" /> Travel Documents
             </h3>
             <div className={sectionClasses}>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className={labelClasses}>Passport</p>
-                  <div className="mt-0.5">{statusBadge(p.passport_status)}</div>
-                </div>
-                <div>
-                  <p className={labelClasses}>Passport Expiry</p>
-                  <p className={valueClasses}>{p.passport_expiry ? new Date(p.passport_expiry).toLocaleDateString() : 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Visa</p>
-                  <div className="mt-0.5">{statusBadge(p.visa_status)}</div>
-                </div>
-                <div>
-                  <p className={labelClasses}>Flight Status</p>
-                  <p className={valueClasses}>{p.flight_status || 'Not booked'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Hotel Status</p>
-                  <p className={valueClasses}>{p.hotel_status || 'Not booked'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Booking Type</p>
-                  <p className={valueClasses}>{p.booking_type || 'TBD'}</p>
-                </div>
+                <EditableField label="Passport Status" value={p.passport_status} field="passport_status" onSave={handleSave} type="select" options={passportOptions} />
+                <EditableField label="Passport Expiry" value={p.passport_expiry?.split('T')[0] || ''} field="passport_expiry" onSave={handleSave} type="date" />
+                <EditableField label="Visa Status" value={p.visa_status} field="visa_status" onSave={handleSave} type="select" options={visaOptions} />
+                <EditableField label="Passport Number" value={p.passport_number} field="passport_number" onSave={handleSave} placeholder="Passport #" />
               </div>
             </div>
           </div>
 
-          {/* Medical */}
+          {/* Medical — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
               <Stethoscope className="h-4 w-4" /> Medical
             </h3>
             <div className={sectionClasses}>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className={labelClasses}>Allergies</p>
-                  <p className={valueClasses}>{p.allergies || 'None'}</p>
-                </div>
-                <div>
-                  <p className={labelClasses}>Medications</p>
-                  <p className={valueClasses}>{p.medications || 'None'}</p>
-                </div>
+                <EditableField label="Allergies" value={p.allergies} field="allergies" onSave={handleSave} placeholder="None" />
+                <EditableField label="Medications" value={p.medications} field="medications" onSave={handleSave} placeholder="None" />
+                <EditableField label="Medical Conditions" value={p.medical_conditions} field="medical_conditions" onSave={handleSave} placeholder="None" />
+                <EditableField label="Dietary Restrictions" value={p.dietary_restrictions} field="dietary_restrictions" onSave={handleSave} placeholder="None" />
               </div>
             </div>
           </div>
 
-          {/* Emergency Contact */}
+          {/* Emergency Contact — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
               <Phone className="h-4 w-4" /> Emergency Contact
             </h3>
             <div className={sectionClasses}>
-              {p.emergency_contact_name ? (
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className={labelClasses}>Name</p>
-                    <p className={valueClasses}>{p.emergency_contact_name}</p>
-                  </div>
-                  <div>
-                    <p className={labelClasses}>Phone</p>
-                    <p className={valueClasses}>{p.emergency_contact_phone}</p>
-                  </div>
-                </div>
-              ) : (
+              {!p.emergency_contact_name && !onUpdateField && (
                 <p className="text-sm text-amber-600 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
                   Not yet provided
                 </p>
               )}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <EditableField label="Contact Name" value={p.emergency_contact_name} field="emergency_contact_name" onSave={handleSave} placeholder="Full name" />
+                <EditableField label="Contact Phone" value={p.emergency_contact_phone} field="emergency_contact_phone" onSave={handleSave} type="tel" placeholder="Phone number" />
+                <EditableField label="Relationship" value={p.emergency_contact_relationship} field="emergency_contact_relationship" onSave={handleSave} placeholder="e.g. Spouse, Parent" />
+              </div>
             </div>
           </div>
 
-          {/* Financial */}
+          {/* Financial — EDITABLE */}
           <div>
             <h3 className="font-semibold text-navy mb-3 flex items-center gap-2 text-sm">
               <Briefcase className="h-4 w-4" /> Financial
             </h3>
             <div className={sectionClasses}>
               <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className={labelClasses}>Trip Cost</p>
-                  <p className={valueClasses}>${p.trip_cost || p.fundraising_goal || 3500}</p>
-                </div>
+                <EditableField label="Trip Cost" value={String(p.trip_cost || p.fundraising_goal || 3500)} field="fundraising_goal" onSave={handleSave} />
                 <div>
                   <p className={labelClasses}>Amount Paid</p>
                   <p className={valueClasses}>${p.amount_paid || 0}</p>
                 </div>
-                <div>
-                  <p className={labelClasses}>Payment Status</p>
-                  <div className="mt-0.5">{statusBadge(p.payment_status)}</div>
-                </div>
+                <EditableField label="Payment Status" value={p.payment_status} field="payment_status" onSave={handleSave} type="select" options={paymentOptions} />
               </div>
             </div>
           </div>
@@ -352,13 +470,13 @@ export function ModalParticipantDetail({
               {showRequestInfo && (
                 <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
                   <p className="text-xs text-blue-700">
-                    Send a follow-up email to {p.first_name} requesting additional information before making a decision.
+                    Send a follow-up email to {p.first_name} requesting additional information.
                   </p>
                   <Textarea
                     value={requestMessage}
                     onChange={(e) => setRequestMessage(e.target.value)}
-                    placeholder={`Hi ${p.first_name},\n\nThank you for your interest in the Kenya Kingdom Impact Trip! Before we finalize your application, we'd love to learn a bit more:\n\n- How did you hear about the trip?\n- Do you have a connection to TPC Ministries or a referral?\n- What specific skills or experience would you bring to the ${p.service_track || 'ministry'} track?\n\nLooking forward to hearing from you!\n\nTPC Ministries Team`}
-                    rows={8}
+                    placeholder={`Hi ${p.first_name},\n\nThank you for your interest in the Kenya Kingdom Impact Trip! We have a few follow-up questions:\n\n- \n\nLooking forward to hearing from you!\n\nTPC Ministries Team`}
+                    rows={6}
                     className="text-sm"
                   />
                   {requestSent && (
