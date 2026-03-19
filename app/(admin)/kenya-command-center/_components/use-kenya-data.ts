@@ -878,6 +878,15 @@ export function useKenyaData() {
     return response.json()
   }
 
+  const sendPartnerAction = async (contactId: string, action: string, payload?: { subject?: string; message?: string }) => {
+    const response = await fetch('/api/admin/kenya-partner-send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contactId, action, ...payload }),
+    })
+    return response.json()
+  }
+
   const sendWaitingListEmail = async (waitingListId: string, action: 'entice' | 'welcome' | 'decline') => {
     const response = await fetch('/api/admin/kenya-waiting-list-email', {
       method: 'POST',
@@ -1323,7 +1332,7 @@ export function useKenyaData() {
     // Add/delete delegates & contacts
     addParticipantDirect, deleteParticipant, addContact, deleteContact,
     // Partner & waiting list email handlers
-    sendPartnerInfoRequest, sendWaitingListEmail,
+    sendPartnerInfoRequest, sendPartnerAction, sendWaitingListEmail,
     // Form link email handler
     sendFormLink,
     // Itinerary handlers

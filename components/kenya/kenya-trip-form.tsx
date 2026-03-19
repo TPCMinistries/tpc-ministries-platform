@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { CheckCircle, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import { showToast } from '@/lib/toast'
 
 export function KenyaTripForm() {
   const [formData, setFormData] = useState({
@@ -31,11 +32,38 @@ export function KenyaTripForm() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [shake, setShake] = useState(false)
+  const formTopRef = useRef<HTMLDivElement>(null)
+
+  const triggerShake = () => {
+    setShake(true)
+    setTimeout(() => setShake(false), 600)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Client-side validation with clear feedback
+    const missing: string[] = []
+    if (!formData.firstName) missing.push('First Name')
+    if (!formData.lastName) missing.push('Last Name')
+    if (!formData.email) missing.push('Email')
+    if (!formData.preferredTrack) missing.push('Service Track')
+    if (!formData.passportStatus) missing.push('Passport Status')
+    if (!formData.scholarshipNeeded) missing.push('Scholarship')
+    if (!formData.consent) missing.push('Consent checkbox')
+
+    if (missing.length > 0) {
+      const msg = `Missing required fields: ${missing.join(', ')}`
+      setError(msg)
+      showToast.error('Please fix before submitting', msg)
+      triggerShake()
+      setLoading(false)
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
 
     try {
       const res = await fetch('/api/public/kenya-trip', {
@@ -46,12 +74,21 @@ export function KenyaTripForm() {
 
       if (res.ok) {
         setSubmitted(true)
+        showToast.success('Application submitted!', 'We\'ll review and be in touch soon.')
       } else {
         const data = await res.json()
-        setError(data.error || 'Something went wrong. Please try again.')
+        const errMsg = data.error || 'Something went wrong. Please try again.'
+        setError(errMsg)
+        showToast.error('Submission failed', errMsg)
+        triggerShake()
+        formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     } catch {
-      setError('Failed to submit. Please try again.')
+      const errMsg = 'Failed to submit. Please check your internet connection and try again.'
+      setError(errMsg)
+      showToast.error('Connection error', errMsg)
+      triggerShake()
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } finally {
       setLoading(false)
     }
@@ -78,7 +115,16 @@ export function KenyaTripForm() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+    <div ref={formTopRef} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Please fix the following:</p>
+            <p>{error}</p>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
         <div className="grid md:grid-cols-2 gap-4">
@@ -268,7 +314,7 @@ export function KenyaTripForm() {
         <Button
           type="submit"
           disabled={loading || !formData.consent}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg h-14 rounded-xl disabled:opacity-50"
+          className={`w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg h-14 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform ${shake ? 'animate-shake' : ''}`}
         >
           {loading ? (
             <>

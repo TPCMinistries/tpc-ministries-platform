@@ -119,8 +119,15 @@ export interface Contact {
   role: string
   organization: string
   phone: string
+  phone_alt: string | null
   email: string
+  whatsapp: string | null
   city: string
+  region: string | null
+  description: string | null
+  services: string | null
+  contact_type: string | null
+  notes: string | null
   is_primary: boolean
 }
 
