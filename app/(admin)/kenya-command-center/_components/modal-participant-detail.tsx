@@ -144,6 +144,7 @@ export function ModalParticipantDetail({
   const hasTravelForm = !!p.travel_form_completed_at
   const hasMedicalForm = !!p.medical_form_completed_at
   const hasWaiver = !!p.waiver_signed_at
+  const hasHealthSafety = !!p.health_safety_form_completed_at
   const hasEmail = !!p.email
 
   const handleSave = (field: string, value: string) => {
@@ -289,6 +290,9 @@ export function ModalParticipantDetail({
             </Badge>
             <Badge className={hasTravelForm ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
               {hasTravelForm ? '✓' : '○'} Travel Form
+            </Badge>
+            <Badge className={hasHealthSafety ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
+              {hasHealthSafety ? '✓' : '○'} Health & Safety
             </Badge>
             <Badge className={hasMedicalForm ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}>
               {hasMedicalForm ? '✓' : '○'} Medical Form
