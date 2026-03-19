@@ -10,6 +10,7 @@ const VALID_CATEGORIES = [
   'scholarship',
   'admin_adjustment',
   'refund_credit',
+  'external_payment',
   'other',
 ] as const
 

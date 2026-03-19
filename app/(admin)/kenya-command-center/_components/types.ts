@@ -191,6 +191,29 @@ export interface DailyFocus {
   leadership_notes: string
 }
 
+export interface MissionFund {
+  id: string
+  trip_id: string
+  source_type: string
+  amount: number
+  donor_name: string | null
+  description: string | null
+  received_date: string
+  created_by_member_id: string | null
+  created_at: string
+  updated_at: string
+  members?: { first_name: string; last_name: string } | null
+}
+
+export interface MissionFundSummary {
+  raised: number
+  goal: number
+  deployed: number
+  deployedCredits: number
+  deployedExpenses: number
+  available: number
+}
+
 export interface Stats {
   totalParticipants: number
   approvedParticipants: number
@@ -208,6 +231,11 @@ export interface Stats {
   totalOutstanding: number
   totalAdminCredits: number
   totalSelfPayments: number
+  // Mission fund stats
+  missionFundRaised: number
+  missionFundGoal: number
+  missionFundDeployed: number
+  missionFundAvailable: number
 }
 
 // ========== Phase 2 & 3 Types ==========

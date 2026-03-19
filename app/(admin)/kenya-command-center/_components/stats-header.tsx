@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import {
-  Users, Clock, DollarSign, Shield, FileText, CreditCard, TrendingUp
+  Users, Clock, DollarSign, Shield, FileText, CreditCard, TrendingUp, Wallet, ArrowDownToLine
 } from 'lucide-react'
 import type { Trip, Stats } from './types'
 
@@ -20,14 +20,14 @@ function formatK(n: number): string {
 }
 
 export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials = false }: StatsHeaderProps) {
-  const raisedPercent = stats.fundraisingGoal > 0
-    ? Math.min(100, Math.round((stats.totalRaised / stats.fundraisingGoal) * 100))
+  const raisedPercent = stats.missionFundGoal > 0
+    ? Math.min(100, Math.round((stats.missionFundRaised / stats.missionFundGoal) * 100))
     : 0
 
   return (
     <div className="space-y-6 mb-8">
       {/* Top row: core stats */}
-      <div className={`grid gap-4 ${hideFinancials ? 'md:grid-cols-4' : 'md:grid-cols-6'}`}>
+      <div className={`grid gap-4 ${hideFinancials ? 'md:grid-cols-4' : 'md:grid-cols-4 lg:grid-cols-8'}`}>
         <Card className="bg-gradient-to-br from-navy to-navy-800 text-white">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -60,8 +60,8 @@ export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Raised</p>
-                <p className="text-3xl font-bold text-gold">{formatK(stats.totalRaised)}</p>
-                <p className="text-xs text-gray-500">of {formatK(stats.fundraisingGoal)} goal</p>
+                <p className="text-3xl font-bold text-gold">{formatK(stats.missionFundRaised)}</p>
+                <p className="text-xs text-gray-500">of {formatK(stats.missionFundGoal)} goal</p>
               </div>
               <DollarSign className="h-10 w-10 text-gold/20" />
             </div>
@@ -74,10 +74,38 @@ export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Deployed</p>
-                <p className="text-3xl font-bold text-purple-600">{formatK(stats.totalAdminCredits)}</p>
-                <p className="text-xs text-gray-500">credits applied</p>
+                <p className="text-3xl font-bold text-purple-600">{formatK(stats.missionFundDeployed)}</p>
+                <p className="text-xs text-gray-500">credits + expenses</p>
               </div>
               <CreditCard className="h-10 w-10 text-purple-600/20" />
+            </div>
+          </CardContent>
+        </Card>
+        )}
+        {!hideFinancials && (
+        <Card className="border-green-200 bg-gradient-to-br from-green-50/50 to-transparent">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Available</p>
+                <p className="text-3xl font-bold text-green-600">{formatK(stats.missionFundAvailable)}</p>
+                <p className="text-xs text-gray-500">ready to deploy</p>
+              </div>
+              <Wallet className="h-10 w-10 text-green-600/20" />
+            </div>
+          </CardContent>
+        </Card>
+        )}
+        {!hideFinancials && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Outstanding</p>
+                <p className="text-3xl font-bold text-red-500">{formatK(stats.totalOutstanding)}</p>
+                <p className="text-xs text-gray-500">delegate balances</p>
+              </div>
+              <ArrowDownToLine className="h-10 w-10 text-red-500/20" />
             </div>
           </CardContent>
         </Card>
@@ -109,7 +137,7 @@ export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials 
       </div>
 
       {/* Financial progress bar — only when financials visible */}
-      {!hideFinancials && stats.fundraisingGoal > 0 && (
+      {!hideFinancials && stats.missionFundGoal > 0 && (
         <Card className="border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -117,14 +145,14 @@ export function StatsHeader({ trip, stats, waitingListCount = 0, hideFinancials 
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm font-semibold text-navy">
-                    We&apos;ve raised {formatK(stats.totalRaised)} of {formatK(stats.fundraisingGoal)}
+                    We&apos;ve raised {formatK(stats.missionFundRaised)} of {formatK(stats.missionFundGoal)}
                   </span>
                   <span className="text-sm text-gray-500">{raisedPercent}%</span>
                 </div>
                 <Progress value={raisedPercent} className="h-2.5" />
                 <div className="flex items-center justify-between mt-1.5 text-xs text-gray-500">
-                  <span>{formatK(stats.totalAdminCredits)} deployed</span>
-                  <span>{formatK(stats.totalOutstanding)} still needed</span>
+                  <span>{formatK(stats.missionFundDeployed)} deployed &middot; {formatK(stats.missionFundAvailable)} available</span>
+                  <span>{formatK(stats.totalOutstanding)} delegate balances outstanding</span>
                 </div>
               </div>
             </div>

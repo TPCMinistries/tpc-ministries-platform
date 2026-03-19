@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// Categories where the ministry deploys funds (counts toward "Deployed")
+const DEPLOYED_CATEGORIES = [
+  'flight_credit', 'hotel_credit', 'trip_sponsorship', 'church_gift',
+  'scholarship', 'admin_adjustment', 'other',
+]
+
+// Categories that are pass-through (updates delegate balance but NOT ministry deployment)
+const PASSTHROUGH_CATEGORIES = ['external_payment', 'refund_credit']
+
 // Verify caller is staff/admin
 async function verifyFinancialAccess() {
   const supabase = await createClient()
@@ -32,7 +41,7 @@ export async function GET() {
     // Get latest trip
     const { data: trip } = await admin
       .from('kenya_trips')
-      .select('id')
+      .select('id, fundraising_goal')
       .order('created_at', { ascending: false })
       .limit(1)
       .single()
@@ -41,8 +50,8 @@ export async function GET() {
       return NextResponse.json({ error: 'No trip found' }, { status: 404 })
     }
 
-    // Fetch participants and admin credits in parallel
-    const [participantsRes, adminPaymentsRes] = await Promise.all([
+    // Fetch all data in parallel
+    const [participantsRes, adminPaymentsRes, missionFundsRes, expensesRes] = await Promise.all([
       admin
         .from('kenya_trip_participants')
         .select('id, first_name, last_name, email, service_track, trip_cost, scholarship_amount, amount_paid, amount_raised, admin_credits_total, payment_status, application_status')
@@ -54,10 +63,22 @@ export async function GET() {
         .select('id, participant_id, amount, category, description, created_at, created_by_member_id, members!created_by_member_id(first_name, last_name)')
         .eq('trip_id', trip.id)
         .order('created_at', { ascending: false }),
+      admin
+        .from('kenya_trip_mission_funds')
+        .select('*, members!created_by_member_id(first_name, last_name)')
+        .eq('trip_id', trip.id)
+        .order('received_date', { ascending: false }),
+      admin
+        .from('kenya_trip_expenses')
+        .select('id, amount, status, description, category_id')
+        .eq('trip_id', trip.id)
+        .in('status', ['approved', 'paid', 'reimbursed']),
     ])
 
     const participants = participantsRes.data || []
     const adminPayments = adminPaymentsRes.data || []
+    const missionFunds = missionFundsRes.data || []
+    const approvedExpenses = expensesRes.data || []
 
     // Build per-delegate breakdown
     const byDelegate = participants.map(p => {
@@ -88,7 +109,7 @@ export async function GET() {
       }
     })
 
-    // Build summary
+    // Build delegate-level summary
     const totalDelegates = byDelegate.length
     const totalTripCost = byDelegate.reduce((sum, d) => sum + d.tripCost, 0)
     const totalScholarships = byDelegate.reduce((sum, d) => sum + d.scholarship, 0)
@@ -98,6 +119,18 @@ export async function GET() {
     const totalCovered = byDelegate.reduce((sum, d) => sum + d.totalCovered, 0)
     const totalOutstanding = byDelegate.reduce((sum, d) => sum + d.remaining, 0)
     const totalSurplus = byDelegate.reduce((sum, d) => sum + d.surplus, 0)
+
+    // Mission Fund calculations
+    const missionFundRaised = missionFunds.reduce((sum, f) => sum + Number(f.amount), 0)
+    const missionFundGoal = Number(trip.fundraising_goal) || 60000
+
+    // Deployed = ministry-funded admin credits + approved budget expenses
+    const deployedCredits = adminPayments
+      .filter(ap => DEPLOYED_CATEGORIES.includes(ap.category))
+      .reduce((sum, ap) => sum + Number(ap.amount), 0)
+    const deployedExpenses = approvedExpenses.reduce((sum, e) => sum + Number(e.amount), 0)
+    const totalDeployed = deployedCredits + deployedExpenses
+    const missionFundAvailable = Math.max(0, missionFundRaised - totalDeployed)
 
     // Build by-track summary
     const trackMap = new Map<string, { delegates: number; totalCost: number; totalCovered: number; outstanding: number }>()
@@ -143,10 +176,19 @@ export async function GET() {
         totalOutstanding,
         totalSurplus,
       },
+      missionFund: {
+        raised: missionFundRaised,
+        goal: missionFundGoal,
+        deployed: totalDeployed,
+        deployedCredits,
+        deployedExpenses,
+        available: missionFundAvailable,
+      },
       byTrack,
       byDelegate,
       adminCreditsBreakdown,
       adminPayments,
+      missionFunds,
     })
   } catch (error) {
     console.error('Financial report error:', error)
