@@ -33,11 +33,25 @@ export async function POST(request: NextRequest) {
 
     if (existingMember) {
       console.log('Member already exists, returning success')
+
+      // Check if user is a Kenya trip participant
+      let isKenyaDelegate = false
+      try {
+        const { data: kenyaParticipant } = await adminClient
+          .from('kenya_trip_participants')
+          .select('id')
+          .eq('email', user.email)
+          .eq('application_status', 'approved')
+          .maybeSingle()
+        isKenyaDelegate = !!kenyaParticipant
+      } catch { /* non-fatal */ }
+
       return NextResponse.json({
         success: true,
         message: 'Member record already exists',
         is_admin: existingMember.is_admin,
         is_new_member: false,
+        is_kenya_delegate: isKenyaDelegate,
       })
     }
 
