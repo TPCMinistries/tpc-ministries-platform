@@ -4,8 +4,8 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, useReducedMotion } from "framer-motion"
-import { 
-  LayoutDashboard, MessageSquare, FileText, Users, BarChart3
+import {
+  LayoutDashboard, MessageSquare, FileText, Users, Plane
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -47,16 +47,16 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
       matchPaths: ["/admin-sermons", "/admin-resources", "/admin-prophecy", "/admin-gallery"],
     },
     {
+      label: "Kenya",
+      href: "/kenya-command-center",
+      icon: Plane,
+      matchPaths: ["/kenya-command-center"],
+    },
+    {
       label: "People",
       href: "/admin-members",
       icon: Users,
       matchPaths: ["/admin-members", "/admin-groups", "/admin-prayers", "/admin-events"],
-    },
-    {
-      label: "Reports",
-      href: "/analytics",
-      icon: BarChart3,
-      matchPaths: ["/analytics", "/admin-giving", "/admin-reports", "/admin-ai-insights"],
     },
   ]
 
