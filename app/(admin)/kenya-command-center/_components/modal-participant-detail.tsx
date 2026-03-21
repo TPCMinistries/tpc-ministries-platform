@@ -8,6 +8,7 @@ import {
   X, CheckCircle, Clock, XCircle, Send, Mail, Phone,
   Shield, Stethoscope, Users, MapPin, Briefcase, FileText,
   Loader2, AlertTriangle, Pencil, Save, ChevronDown, ChevronRight,
+  Eye, ExternalLink,
 } from 'lucide-react'
 import type { Participant } from './types'
 
@@ -440,7 +441,9 @@ export function ModalParticipantDetail({
           </Section>
 
           {/* Documents */}
-          <Section title="Travel Documents" icon={Shield} defaultOpen={false}>
+          <Section title="Travel Documents" icon={Shield} defaultOpen={false}
+            badge={p.passport_photo_url ? <Badge className="bg-green-100 text-green-700 text-[10px] ml-1">Photo Uploaded</Badge> : undefined}>
+            {p.passport_photo_url && <PassportViewer url={p.passport_photo_url} name={`${p.first_name} ${p.last_name}`} />}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <Field label="Passport Status" value={p.passport_status} field="passport_status" onSave={handleSave} type="select"
                 options={[{ value: 'pending', label: 'Pending' }, { value: 'submitted', label: 'Submitted' }, { value: 'verified', label: 'Verified' }, { value: 'expired', label: 'Expired' }]} />
@@ -532,6 +535,80 @@ export function ModalParticipantDetail({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+// ============ Passport Photo Viewer ============
+
+function PassportViewer({ url, name }: { url: string; name: string }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [showImage, setShowImage] = useState(false)
+
+  const getSignedUrl = async () => {
+    setLoading(true)
+    try {
+      // Extract the file path from the full URL
+      const pathMatch = url.match(/kenya-trip-documents\/(.+)$/)
+      if (!pathMatch) return
+      const filePath = pathMatch[1]
+
+      const res = await fetch(`/api/admin/kenya-passport-view?path=${encodeURIComponent(filePath)}`)
+      const data = await res.json()
+      if (data.url) {
+        setSignedUrl(data.url)
+        setShowImage(true)
+      }
+    } catch (err) {
+      console.error('Failed to load passport:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="mb-3">
+      {!showImage ? (
+        <button
+          onClick={getSignedUrl}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-100 transition-colors w-full"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+          View Passport Photo — {name}
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Passport Photo</span>
+            <div className="flex gap-2">
+              <a
+                href={signedUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              >
+                <ExternalLink className="h-3 w-3" /> Open Full Size
+              </a>
+              <button onClick={() => setShowImage(false)} className="text-xs text-gray-400 hover:text-gray-600">
+                Hide
+              </button>
+            </div>
+          </div>
+          {signedUrl && (
+            <img
+              src={signedUrl}
+              alt={`${name} passport`}
+              className="w-full max-h-[300px] object-contain rounded-lg border bg-gray-50"
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
