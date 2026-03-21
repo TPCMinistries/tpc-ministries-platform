@@ -262,7 +262,7 @@ export default function KenyaCommandCenter() {
         )}
 
         {activeTab === 'finances' && (
-          <TabFinances />
+          <TabFinances onDataChanged={data.fetchData} />
         )}
 
         {activeTab === 'supplies' && (
