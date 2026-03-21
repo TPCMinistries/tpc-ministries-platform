@@ -60,6 +60,9 @@ export interface Participant {
   amount_paid?: number
   scholarship_amount?: number
   admin_credits_total?: number
+  passport_photo_url?: string
+  passport_number?: string
+  eta_status?: string
   // New fields from migration 045
   flight_status?: string
   hotel_status?: string
