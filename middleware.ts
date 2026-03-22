@@ -85,7 +85,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/admin-dashboard', '/onboarding']
+  const protectedRoutes = ['/dashboard', '/admin-dashboard', '/kenya-command-center', '/onboarding']
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
   // If accessing a protected route without being logged in, redirect to login
@@ -100,16 +100,44 @@ export async function middleware(request: NextRequest) {
   if (user) {
     try {
       // Get member data once for all checks - include role field
-      const { data: member, error: memberError } = await supabase
-        .from('members')
-        .select('id, is_admin, role, last_login_at, login_count')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      let member = null
+      let memberFetchFailed = false
+
+      const fetchMember = async () => {
+        const { data, error } = await supabase
+          .from('members')
+          .select('id, is_admin, role, last_login_at, login_count')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (error) throw error
+        return data
+      }
+
+      try {
+        member = await fetchMember()
+      } catch (err) {
+        console.error('[Middleware] Member fetch failed, retrying:', err)
+        try {
+          member = await fetchMember()
+        } catch (retryErr) {
+          console.error('[Middleware] Member fetch retry failed:', retryErr)
+          memberFetchFailed = true
+        }
+      }
+
+      // If member fetch failed entirely, redirect to login with error rather than
+      // silently defaulting to 'free' role (which would misroute admins)
+      if (memberFetchFailed && isProtectedRoute) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/auth/login'
+        url.searchParams.set('error', 'member_fetch_failed')
+        return NextResponse.redirect(url)
+      }
 
       // Use role field, fallback to is_admin for backward compatibility
       const userRole = member?.role || (member?.is_admin ? 'admin' : 'free')
 
-      console.log('[Middleware] User:', user.id, 'Path:', pathname, 'Role:', userRole)
+      console.log('[Middleware] User:', user.id, 'Path:', pathname, 'Role:', userRole, 'Member:', member?.id || 'none')
 
       // Track login activity (update once per session, not every request)
       // Only update if last_login was more than 5 minutes ago
@@ -136,7 +164,7 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith('/auth')) {
         if (member) {
           const url = request.nextUrl.clone()
-          url.pathname = isStaffOrAbove(userRole) ? '/admin-dashboard' : '/dashboard'
+          url.pathname = isStaffOrAbove(userRole) ? '/kenya-command-center' : '/dashboard'
           return NextResponse.redirect(url)
         }
       }
@@ -145,7 +173,7 @@ export async function middleware(request: NextRequest) {
       if (pathname === '/onboarding') {
         if (member) {
           const url = request.nextUrl.clone()
-          url.pathname = isStaffOrAbove(userRole) ? '/admin-dashboard' : '/dashboard'
+          url.pathname = isStaffOrAbove(userRole) ? '/kenya-command-center' : '/dashboard'
           return NextResponse.redirect(url)
         }
         // User is authenticated but has no member record - let them proceed to onboarding
