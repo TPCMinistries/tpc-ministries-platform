@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, signInWithGoogle } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,8 +29,24 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      // Redirect to onboarding - middleware will handle routing to correct dashboard
-      // if member record already exists
+      // Check if user is admin/staff before redirecting
+      try {
+        const supabase = createClient()
+        const { data: member } = await supabase
+          .from('members')
+          .select('role, is_admin')
+          .eq('user_id', data.user?.id)
+          .maybeSingle()
+
+        if (member && (member.role === 'admin' || member.role === 'staff' || member.is_admin)) {
+          window.location.href = '/kenya-command-center'
+          return
+        }
+      } catch (err) {
+        // If member fetch fails, fall through to onboarding
+        console.warn('Could not check admin status:', err)
+      }
+
       window.location.href = '/onboarding'
     }
   }
