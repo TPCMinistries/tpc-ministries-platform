@@ -20,6 +20,7 @@ import {
   Plane,
   Gift,
   CircleDollarSign,
+  CreditCard,
 } from 'lucide-react'
 import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
 import { ExpandableCities } from '@/components/kenya/expandable-sections'
@@ -181,13 +182,19 @@ export default function KenyaTripPage() {
           <p className="mb-1 text-body-lg font-bold text-white">APRIL 23 – MAY 6, 2026</p>
           <p className="mb-8 font-display text-display-md text-gold">$3,500</p>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <a href="#apply">
               <Button size="lg" className="h-14 w-full bg-gold px-8 text-body-lg font-bold text-navy hover:bg-gold-300 sm:w-auto">
                 Apply Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </a>
+            <Link href="/kenya/pay">
+              <Button size="lg" className="h-14 w-full border-2 border-gold bg-gold/20 px-8 text-body-lg font-bold text-gold backdrop-blur-sm hover:bg-gold hover:text-navy sm:w-auto">
+                <CreditCard className="mr-2 h-5 w-5" />
+                Make Your Payment
+              </Button>
+            </Link>
             <Link href="/kenya/give">
               <Button size="lg" className="h-14 w-full border-2 border-white/30 bg-white/10 px-8 text-body-lg font-bold text-white backdrop-blur-sm hover:bg-white hover:text-navy sm:w-auto">
                 <Heart className="mr-2 h-5 w-5" />
@@ -769,12 +776,20 @@ export default function KenyaTripPage() {
             Spaces are limited.
           </p>
           <div className="mx-auto mb-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-          <a href="#apply">
-            <Button size="lg" className="h-14 bg-gold px-10 text-body-lg font-bold text-navy shadow-lg hover:bg-gold-300">
-              Apply Now
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </a>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <a href="#apply">
+              <Button size="lg" className="h-14 bg-gold px-10 text-body-lg font-bold text-navy shadow-lg hover:bg-gold-300">
+                Apply Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </a>
+            <Link href="/kenya/pay">
+              <Button size="lg" className="h-14 border-2 border-gold bg-gold/20 px-10 text-body-lg font-bold text-gold hover:bg-gold hover:text-navy">
+                <CreditCard className="mr-2 h-5 w-5" />
+                Make Your Payment
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>
