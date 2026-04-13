@@ -11,27 +11,15 @@ import {
   ArrowLeft,
   Calendar,
   MapPin,
-  CheckCircle,
   Loader2,
   DollarSign,
   Shield,
-  Clock,
-  Sparkles,
   AlertCircle,
 } from 'lucide-react'
 
 const TRIP_COST = 3500
-const DEPOSIT_AMOUNT = 500
 
-interface PaymentOption {
-  id: string
-  title: string
-  description: string
-  amount: string
-  detail: string
-  icon: React.ReactNode
-  popular?: boolean
-}
+const QUICK_AMOUNTS = [500, 1000, 1750, 2500, 3500]
 
 export default function KenyaPayPage() {
   const searchParams = useSearchParams()
@@ -41,66 +29,22 @@ export default function KenyaPayPage() {
   const [email, setEmail] = useState(prefillEmail)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
-  const [customAmount, setCustomAmount] = useState('')
+  const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const paymentOptions: PaymentOption[] = [
-    {
-      id: 'full',
-      title: 'Pay in Full',
-      description: 'One-time payment — best value',
-      amount: `$${TRIP_COST.toLocaleString()}`,
-      detail: 'Single payment, fully secured',
-      icon: <CheckCircle className="h-6 w-6" />,
-    },
-    {
-      id: 'deposit',
-      title: 'Deposit',
-      description: 'Secure your spot now',
-      amount: `$${DEPOSIT_AMOUNT}`,
-      detail: `Remaining $${(TRIP_COST - DEPOSIT_AMOUNT).toLocaleString()} due before departure`,
-      icon: <Shield className="h-6 w-6" />,
-    },
-    {
-      id: 'installment_4',
-      title: '4-Month Plan',
-      description: 'Spread over 4 monthly payments',
-      amount: `$${Math.ceil(TRIP_COST / 4)}/mo`,
-      detail: `4 payments of $${Math.ceil(TRIP_COST / 4)}`,
-      icon: <Calendar className="h-6 w-6" />,
-      popular: true,
-    },
-    {
-      id: 'installment_6',
-      title: '6-Month Plan',
-      description: 'Lowest monthly payment',
-      amount: `$${Math.ceil(TRIP_COST / 6)}/mo`,
-      detail: `6 payments of $${Math.ceil(TRIP_COST / 6)}`,
-      icon: <Clock className="h-6 w-6" />,
-    },
-    {
-      id: 'custom',
-      title: 'Custom Amount',
-      description: 'Pay any amount toward your trip',
-      amount: 'You choose',
-      detail: 'Scholarship recipients or partial payments',
-      icon: <Sparkles className="h-6 w-6" />,
-    },
-  ]
+  const handleQuickAmount = (value: number) => {
+    setAmount(value.toString())
+    setError('')
+  }
 
   const handlePayment = async () => {
     if (!email) {
       setError('Please enter your email address.')
       return
     }
-    if (!selectedPlan) {
-      setError('Please select a payment option.')
-      return
-    }
-    if (selectedPlan === 'custom' && (!customAmount || Number(customAmount) < 10)) {
-      setError('Please enter a custom amount of at least $10.')
+    if (!amount || Number(amount) < 10) {
+      setError('Please enter an amount of at least $10.')
       return
     }
 
@@ -108,6 +52,9 @@ export default function KenyaPayPage() {
     setError('')
 
     try {
+      const numAmount = Number(amount)
+      const isFullPayment = numAmount >= TRIP_COST
+
       const res = await fetch('/api/kenya/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,8 +62,8 @@ export default function KenyaPayPage() {
           email,
           firstName,
           lastName,
-          paymentType: selectedPlan,
-          customAmount: selectedPlan === 'custom' ? Number(customAmount) : undefined,
+          paymentType: isFullPayment ? 'full' : 'custom',
+          customAmount: isFullPayment ? undefined : numAmount,
         }),
       })
 
@@ -138,7 +85,7 @@ export default function KenyaPayPage() {
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
           <Link
             href="/kenya"
             className="inline-flex items-center gap-1 text-amber-300 hover:text-amber-200 text-sm mb-6 transition-colors"
@@ -160,7 +107,7 @@ export default function KenyaPayPage() {
           <div className="flex flex-wrap gap-4 mt-6 text-sm">
             <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
               <Calendar className="h-4 w-4 text-amber-400" />
-              <span>April 22 – May 7, 2026</span>
+              <span>April 22 - May 7, 2026</span>
             </div>
             <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
               <MapPin className="h-4 w-4 text-amber-400" />
@@ -174,25 +121,17 @@ export default function KenyaPayPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Canceled notice */}
         {canceled && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-amber-800">Payment was canceled</p>
-              <p className="text-sm text-amber-700">No worries — you can try again when you&apos;re ready.</p>
+              <p className="text-sm text-amber-700">No worries - you can try again when you&apos;re ready.</p>
             </div>
           </div>
         )}
-
-        {/* Intro */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 md:p-8 mb-8">
-          <h2 className="text-xl font-bold text-stone-900 mb-3">Secure Your Spot</h2>
-          <p className="text-stone-700 leading-relaxed">
-            Choose a payment option that works for you. All payments are processed securely through Stripe. Payment plans are flexible — we want to make this trip accessible to everyone called to go.
-          </p>
-        </div>
 
         {/* Contact Info */}
         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6">
@@ -231,73 +170,46 @@ export default function KenyaPayPage() {
           </div>
         </div>
 
-        {/* Payment Options */}
-        <div className="space-y-4 mb-8">
-          <h3 className="text-lg font-semibold text-stone-900">Choose Your Payment Option</h3>
-          <div className="grid gap-4">
-            {paymentOptions.map((option) => (
+        {/* Amount */}
+        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6">
+          <h3 className="text-lg font-semibold text-stone-900 mb-2">Payment Amount</h3>
+          <p className="text-sm text-stone-500 mb-6">
+            Enter any amount toward your trip balance. Your payment will be applied to your account.
+          </p>
+
+          {/* Quick amount buttons */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
+            {QUICK_AMOUNTS.map((value) => (
               <button
-                key={option.id}
+                key={value}
                 type="button"
-                onClick={() => { setSelectedPlan(option.id); setError('') }}
-                className={`relative w-full p-5 rounded-xl border-2 text-left transition-all ${
-                  selectedPlan === option.id
-                    ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200 shadow-md'
-                    : 'border-stone-200 bg-white hover:border-amber-300 hover:bg-amber-50/30 hover:shadow-sm'
+                onClick={() => handleQuickAmount(value)}
+                className={`py-3 px-2 rounded-xl border-2 font-bold text-sm transition-all ${
+                  amount === value.toString()
+                    ? 'border-amber-500 bg-amber-50 text-amber-700 ring-2 ring-amber-200'
+                    : 'border-stone-200 bg-white text-stone-700 hover:border-amber-300'
                 }`}
               >
-                {option.popular && (
-                  <span className="absolute -top-2.5 right-4 bg-amber-500 text-black text-xs font-bold px-3 py-0.5 rounded-full">
-                    Most Popular
-                  </span>
-                )}
-                <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${
-                    selectedPlan === option.id ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-500'
-                  }`}>
-                    {option.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className={`font-semibold ${
-                        selectedPlan === option.id ? 'text-amber-800' : 'text-stone-900'
-                      }`}>
-                        {option.title}
-                      </h4>
-                      <span className={`text-lg font-bold ${
-                        selectedPlan === option.id ? 'text-amber-700' : 'text-stone-900'
-                      }`}>
-                        {option.amount}
-                      </span>
-                    </div>
-                    <p className="text-sm text-stone-600 mt-0.5">{option.description}</p>
-                    <p className="text-xs text-stone-500 mt-1">{option.detail}</p>
-                  </div>
-                </div>
+                ${value >= 1000 ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k` : value}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Custom Amount Input */}
-        {selectedPlan === 'custom' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 mb-8">
-            <Label className="text-stone-700 font-medium">Enter Amount ($)</Label>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-2xl text-stone-400">$</span>
-              <Input
-                type="number"
-                min={10}
-                max={TRIP_COST}
-                value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                placeholder="Enter amount"
-                className="text-xl bg-white text-stone-900 border-stone-300 focus:border-amber-500 max-w-xs"
-              />
-            </div>
-            <p className="text-xs text-stone-500 mt-2">Minimum $10</p>
+          {/* Custom amount input */}
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-stone-400 font-medium">$</span>
+            <Input
+              type="number"
+              min={10}
+              max={TRIP_COST}
+              value={amount}
+              onChange={(e) => { setAmount(e.target.value); setError('') }}
+              placeholder="Enter amount"
+              className="text-2xl font-bold h-16 pl-10 bg-white text-stone-900 border-stone-300 focus:border-amber-500 rounded-xl"
+            />
           </div>
-        )}
+          <p className="text-xs text-stone-500 mt-2">Minimum $10</p>
+        </div>
 
         {/* Error */}
         {error && (
@@ -309,7 +221,7 @@ export default function KenyaPayPage() {
         {/* Pay Button */}
         <Button
           onClick={handlePayment}
-          disabled={loading || !selectedPlan || !email}
+          disabled={loading || !amount || !email}
           className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg h-14 rounded-xl disabled:opacity-50 mb-4"
         >
           {loading ? (
@@ -320,12 +232,7 @@ export default function KenyaPayPage() {
           ) : (
             <>
               <CreditCard className="mr-2 h-5 w-5" />
-              {selectedPlan === 'full' ? `Pay $${TRIP_COST.toLocaleString()}` :
-               selectedPlan === 'deposit' ? `Pay $${DEPOSIT_AMOUNT} Deposit` :
-               selectedPlan === 'installment_4' ? `Start 4-Month Plan ($${Math.ceil(TRIP_COST / 4)}/mo)` :
-               selectedPlan === 'installment_6' ? `Start 6-Month Plan ($${Math.ceil(TRIP_COST / 6)}/mo)` :
-               selectedPlan === 'custom' && customAmount ? `Pay $${Number(customAmount).toLocaleString()}` :
-               'Continue to Payment'}
+              {amount ? `Pay $${Number(amount).toLocaleString()}` : 'Enter Amount to Pay'}
             </>
           )}
         </Button>
