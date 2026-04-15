@@ -5,10 +5,6 @@
       "schedule": "0 10 * * *"
     },
     {
-      "path": "/api/cron/weekly-newsletter",
-      "schedule": "0 13 * * 0"
-    },
-    {
       "path": "/api/notifications/weekly-digest",
       "schedule": "0 9 * * 1"
     },
