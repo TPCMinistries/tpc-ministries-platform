@@ -120,12 +120,9 @@ export default function KenyaGivingPage() {
         },
         body: JSON.stringify({
           amount,
-          type: `kenya-${selectedType}`,
+          type: 'missions',
           frequency,
-          metadata: {
-            campaign: 'Kenya Kingdom Impact Trip 2026',
-            designation: currentOption.title,
-          },
+          campaign: `kenya-2026-${selectedType}`,
         }),
       })
 
