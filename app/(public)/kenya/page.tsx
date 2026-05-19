@@ -22,16 +22,15 @@ import {
   CircleDollarSign,
   CreditCard,
 } from 'lucide-react'
-import { KenyaTripForm } from '@/components/kenya/kenya-trip-form'
 import { ExpandableCities } from '@/components/kenya/expandable-sections'
 
 export const metadata: Metadata = {
   title: 'Kenya 2026 Kingdom Impact Trip | TPC Ministries',
-  description: 'Join the Kenya 2026 Global Impact Delegation. April 23 – May 6, 2026. 14 days of leadership, ministry, healthcare, and business impact across Nairobi, Kakamega, and Mombasa. $3,500 all-inclusive.',
+  description: 'Kenya 2026 (April 23 – May 6) is complete. 14 days of ministry across Kenya. See the full recap and join the next mission list.',
   keywords: ['Kenya mission trip', 'TPC Ministries', 'Christian missions', 'Africa missions', 'Kingdom Impact Trip', 'Kenya 2026'],
   openGraph: {
-    title: 'Kenya 2026 Kingdom Impact Trip',
-    description: '14 days of Kingdom impact across Kenya. Apply now — spaces limited.',
+    title: 'Kenya 2026 Kingdom Impact Trip — Recap',
+    description: '14 days of Kingdom impact across Kenya. The trip is complete — see the recap.',
     type: 'website',
     siteName: 'TPC Ministries',
     images: [
@@ -45,17 +44,17 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kenya 2026 Kingdom Impact Trip',
-    description: '14 days of Kingdom impact across Kenya. Apply now — spaces limited.',
+    title: 'Kenya 2026 Kingdom Impact Trip — Recap',
+    description: 'The 14-day mission to Kenya is complete. See the recap.',
     images: ['https://tpcmin.org/images/kenya/kenya-flier-2026.png'],
   },
 }
 
 const stats = [
-  { value: '14', label: 'Days of Impact' },
-  { value: '3', label: 'Cities' },
-  { value: '4', label: 'Service Tracks' },
-  { value: '20+', label: 'Delegates' },
+  { value: '14', label: 'Days completed' },
+  { value: '2026', label: 'The year' },
+  { value: 'Kenya', label: 'The nation' },
+  { value: '✓', label: 'Mission accomplished' },
 ]
 
 const tracks = [
@@ -140,6 +139,17 @@ const partners: Array<{ name: string; image?: string }> = [
 export default function KenyaTripPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* ===== POST-TRIP RECAP BANNER ===== */}
+      <Link
+        href="/kenya-2026"
+        className="group relative block bg-gradient-to-r from-gold/90 via-gold to-gold/90 px-4 py-3 text-center text-sm font-semibold text-navy-950 transition hover:from-gold hover:to-gold sm:text-base"
+      >
+        <span className="inline-flex items-center gap-2">
+          The Kenya 2026 trip is complete.
+          <span className="underline decoration-navy-950/50 underline-offset-2">See the full recap →</span>
+        </span>
+      </Link>
+
       {/* ===== HERO — Full photo background ===== */}
       <section className="relative flex min-h-[85vh] items-center overflow-hidden">
         <Image
@@ -179,20 +189,20 @@ export default function KenyaTripPage() {
             <MapPin className="h-4 w-4" />
             Nairobi &bull; Kakamega &bull; Mombasa
           </p>
-          <p className="mb-1 text-body-lg font-bold text-white">APRIL 23 – MAY 6, 2026</p>
-          <p className="mb-8 font-display text-display-md text-gold">$3,500</p>
+          <p className="mb-1 text-body-lg font-bold text-white">APRIL 23 – MAY 6, 2026 · COMPLETE</p>
+          <p className="mb-8 font-display text-display-md text-gold">Mission accomplished</p>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-            <a href="#apply">
+            <Link href="/kenya-2026">
               <Button size="lg" className="h-14 w-full bg-gold px-8 text-body-lg font-bold text-navy hover:bg-gold-300 sm:w-auto">
-                Apply Now
+                See the recap
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </a>
+            </Link>
             <Link href="/kenya/pay">
               <Button size="lg" className="h-14 w-full border-2 border-gold bg-gold/20 px-8 text-body-lg font-bold text-gold backdrop-blur-sm hover:bg-gold hover:text-navy sm:w-auto">
                 <CreditCard className="mr-2 h-5 w-5" />
-                Make Your Payment
+                Make a final payment
               </Button>
             </Link>
             <Link href="/kenya/give">
@@ -513,21 +523,37 @@ export default function KenyaTripPage() {
         </div>
       </section>
 
-      {/* ===== APPLICATION FORM ===== */}
+      {/* ===== APPLICATION CLOSED ===== */}
       <section id="apply" className="bg-secondary px-4 py-section">
         <div className="container mx-auto max-w-2xl">
           <div className="mb-12 text-center">
-            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Take the First Step</p>
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold-600">Kenya 2026 · Closed</p>
             <h2 className="mb-4 font-display text-display-md md:text-display-lg text-foreground">
-              Apply for the Kenya Trip
+              The trip is complete.
             </h2>
             <p className="text-body-lg text-muted-foreground">
-              Complete this interest form and our team will contact you within 48 hours.
+              Applications for Kenya 2026 are now closed. The team is back. See the full recap of what happened on the ground.
             </p>
             <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           </div>
 
-          <KenyaTripForm />
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link href="/kenya-2026">
+              <Button size="lg" className="h-12 bg-gold px-6 font-bold text-navy-950 hover:bg-gold-300">
+                See the Kenya 2026 recap
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/connect">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 border-2 border-gold/40 bg-transparent px-6 text-foreground hover:border-gold hover:bg-gold/10"
+              >
+                Join the list for the next mission
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -767,26 +793,25 @@ export default function KenyaTripPage() {
       <section className="relative bg-navy-950 px-4 py-section">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
         <div className="container relative mx-auto max-w-4xl text-center">
-          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Answer the Call</p>
+          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Mission Complete</p>
           <h2 className="mb-4 font-display text-display-lg md:text-display-xl text-white">
-            Say Yes to the Call
+            See what God did.
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-body-xl text-white/50">
-            Don&apos;t miss this opportunity to be part of something greater than yourself.
-            Spaces are limited.
+            Fourteen days on the ground in Kenya. Every moment captured. Watch the full recap and step into what comes next.
           </p>
           <div className="mx-auto mb-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a href="#apply">
+            <Link href="/kenya-2026">
               <Button size="lg" className="h-14 bg-gold px-10 text-body-lg font-bold text-navy shadow-lg hover:bg-gold-300">
-                Apply Now
+                Watch the recap
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </a>
-            <Link href="/kenya/pay">
+            </Link>
+            <Link href="/kenya/give">
               <Button size="lg" className="h-14 border-2 border-gold bg-gold/20 px-10 text-body-lg font-bold text-gold hover:bg-gold hover:text-navy">
-                <CreditCard className="mr-2 h-5 w-5" />
-                Make Your Payment
+                <Heart className="mr-2 h-5 w-5" />
+                Support the work
               </Button>
             </Link>
           </div>

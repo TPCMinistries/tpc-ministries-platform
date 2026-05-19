@@ -403,14 +403,14 @@ export default function KenyaGivingPage() {
                 About the Kenya Trip
               </h2>
               <p className="mb-6 text-body-md leading-relaxed text-muted-foreground">
-                The Kenya Global Impact Delegation brings together leaders, professionals, and ministry partners for a 14-day multi-sector initiative in Nairobi, Kakamega, and Mombasa. Teams serve across four tracks: ministry, health and wellness, education and technology, and business and economic empowerment.
+                The Kenya 2026 Global Impact Delegation brought leaders, professionals, and ministry partners together for a 14-day multi-sector mission across Kenya — ministry, health and wellness, education and technology, and business and economic empowerment. Giving continues to fuel follow-up and the next mission.
               </p>
               <div className="mb-8 space-y-3">
                 {[
-                  'April 23 – May 6, 2026',
-                  'Four service tracks based on your skills',
-                  'Cultural immersion and safari experience',
-                  'Scholarships available for qualified applicants',
+                  'Completed: April 23 – May 6, 2026',
+                  'Four service tracks delivered',
+                  'Multiple regions reached across Kenya',
+                  'Giving fuels follow-up + the next mission',
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />

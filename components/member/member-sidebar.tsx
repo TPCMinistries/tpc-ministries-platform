@@ -70,12 +70,14 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const shouldReduceMotion = useReducedMotion()
 
+  const isStaffOrAdmin = member.role === 'admin' || member.role === 'staff' || member.is_admin === true
+
   const navigationSections: NavSection[] = [
     {
       title: null,
       items: [
         { name: 'Dashboard', href: '/dashboard', icon: Home },
-        { name: 'Kenya 2026', href: '/kenya-trip', icon: Plane, highlight: true },
+        { name: isStaffOrAdmin ? 'Kenya Command Center' : 'Kenya 2026', href: isStaffOrAdmin ? '/kenya-command-center' : '/kenya-trip', icon: Plane, highlight: true },
         { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
         { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
       ]

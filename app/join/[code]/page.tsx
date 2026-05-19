@@ -30,6 +30,7 @@ export default function JoinPage() {
   const [inviteData, setInviteData] = useState<InviteData | null>(null)
   const [inviteError, setInviteError] = useState<string | null>(null)
 
+  const [hasExistingAccount, setHasExistingAccount] = useState(false)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,6 +49,7 @@ export default function JoinPage() {
         if (data.valid) {
           setInviteValid(true)
           setInviteData(data.invite)
+          if (data.has_existing_account) setHasExistingAccount(true)
           // Pre-fill fields if available
           if (data.invite.name) setFullName(data.invite.name)
           if (data.invite.email) setEmail(data.invite.email)
@@ -96,6 +98,13 @@ export default function JoinPage() {
       const { error: signUpError } = await signUp(email, password, fullName)
 
       if (signUpError) {
+        // If user already registered, show sign-in UI instead of error
+        if (signUpError.message?.toLowerCase().includes('already registered') ||
+            signUpError.message?.toLowerCase().includes('already been registered')) {
+          setHasExistingAccount(true)
+          setLoading(false)
+          return
+        }
         setError(signUpError.message)
         setLoading(false)
         return
@@ -196,6 +205,67 @@ export default function JoinPage() {
                 Go to Login
               </Button>
             </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  // Existing account — show sign-in UI instead of signup form
+  if (hasExistingAccount) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center p-4 ${
+        inviteData?.invite_type === 'kenya_trip'
+          ? 'bg-gradient-to-br from-green-900 via-green-800 to-green-900'
+          : 'bg-gradient-to-br from-navy via-navy/95 to-navy/90'
+      }`}>
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur">
+          <CardHeader className="space-y-1 text-center">
+            {inviteData?.invite_type === 'kenya_trip' ? (
+              <>
+                <div className="mx-auto mb-2 h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-2xl">🇰🇪</span>
+                </div>
+                <CardTitle className="text-2xl font-bold text-navy">Kenya Kingdom Impact Trip</CardTitle>
+                <CardDescription className="text-gray-600">
+                  You've been invited to join the 2026 Kenya delegation
+                </CardDescription>
+              </>
+            ) : (
+              <>
+                <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-gold/20 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-gold" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-navy">Welcome Back!</CardTitle>
+              </>
+            )}
+            {inviteData?.name && (
+              <p className="text-sm text-navy font-medium mt-2">
+                Welcome back, {inviteData.name}!
+              </p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <CheckCircle className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <h4 className="font-semibold text-blue-800 mb-1">You Already Have an Account</h4>
+              <p className="text-sm text-blue-700">
+                Sign in with your existing account to access your trip dashboard and forms.
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-3">
+            <Link href="/auth/login" className="w-full">
+              <Button className="w-full bg-navy hover:bg-navy/90 text-white">
+                Sign In & Access Your Trip
+              </Button>
+            </Link>
+            <button
+              onClick={() => setHasExistingAccount(false)}
+              className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Not your account? Create a new one instead
+            </button>
           </CardFooter>
         </Card>
       </div>

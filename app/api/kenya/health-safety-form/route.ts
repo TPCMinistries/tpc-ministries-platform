@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       languages_spoken: languagesSpoken || null,
       prior_mission_experience: priorMissionExperience || null,
       health_safety_form_completed_at: new Date().toISOString(),
+      medical_form_completed_at: new Date().toISOString(),
     }
 
     const { error: dbError } = await supabase
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     // Send admin notification
     try {
       await sendEmail({
-        to: 'info@tpcmin.com',
+        to: 'info@tpcmin.org',
         subject: `Health & Safety Form: ${participant.first_name} ${participant.last_name}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

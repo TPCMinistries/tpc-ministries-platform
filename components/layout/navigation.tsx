@@ -13,7 +13,7 @@ import InstallButton from '@/components/pwa/install-button'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/kenya', label: 'Kenya 2026' },
+  { href: '/kenya-2026', label: 'Kenya 2026' },
   { href: '/giving', label: 'Give' },
   { href: '/blog', label: 'Blog' },
   { href: '/connect', label: 'Connect' },

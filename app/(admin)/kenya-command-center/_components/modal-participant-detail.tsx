@@ -304,21 +304,37 @@ export function ModalParticipantDetail({
           )}
 
           {/* === HAS EMAIL — Action Buttons === */}
-          {hasEmail && (
-            <div className="flex gap-2 flex-wrap">
-              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => { setInviteTrack(p.service_track || 'Flex'); setInviteRole(p.role || 'delegate'); setShowInvitePanel(!showInvitePanel) }}>
-                <Send className="mr-1.5 h-3.5 w-3.5" /> Send Trip Invite
-              </Button>
-              {formsIncomplete.length > 0 && onSendFormLink && (
-                <Button size="sm" variant="outline" onClick={() => handleSendFormLink('all_incomplete')} disabled={sendingForm === 'all_incomplete'}>
-                  {sendingForm === 'all_incomplete' ? '⏳ Sending...' : formSendResult?.form === 'all_incomplete' ? (formSendResult.success ? '✓ Sent!' : '✗ Failed') : `📬 Send ${formsIncomplete.length} Missing Form${formsIncomplete.length > 1 ? 's' : ''}`}
+          {hasEmail && (() => {
+            // Staged form sequence: Travel → Health & Safety → remaining (waiver, interest)
+            const formStages: { key: string; label: string }[] = [
+              { key: 'travel', label: 'Travel Form' },
+              { key: 'health_safety', label: 'Health & Safety Form' },
+              { key: 'waiver', label: 'Waiver' },
+              { key: 'interest', label: 'Interest Form' },
+            ]
+            const nextForm = formStages.find(s => formsIncomplete.some(f => f.key === s.key))
+
+            return (
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => { setInviteTrack(p.service_track || 'Flex'); setInviteRole(p.role || 'delegate'); setShowInvitePanel(!showInvitePanel) }}>
+                  <Send className="mr-1.5 h-3.5 w-3.5" /> Send Trip Invite
                 </Button>
-              )}
-              <Button size="sm" variant="outline" onClick={() => setShowCompose(!showCompose)}>
-                <Mail className="mr-1.5 h-3.5 w-3.5" /> Email
-              </Button>
-            </div>
-          )}
+                {nextForm && onSendFormLink && (
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleSendFormLink(nextForm.key)} disabled={sendingForm === nextForm.key}>
+                    {sendingForm === nextForm.key ? '⏳ Sending...' : formSendResult?.form === nextForm.key ? (formSendResult.success ? '✓ Sent!' : '✗ Failed') : `📨 Send Next: ${nextForm.label}`}
+                  </Button>
+                )}
+                {formsIncomplete.length > 1 && onSendFormLink && (
+                  <Button size="sm" variant="outline" className="text-xs" onClick={() => handleSendFormLink('all_incomplete')} disabled={sendingForm === 'all_incomplete'}>
+                    {sendingForm === 'all_incomplete' ? '⏳ Sending...' : formSendResult?.form === 'all_incomplete' ? (formSendResult.success ? '✓ Sent!' : '✗ Failed') : `Send all ${formsIncomplete.length} remaining`}
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => setShowCompose(!showCompose)}>
+                  <Mail className="mr-1.5 h-3.5 w-3.5" /> Email
+                </Button>
+              </div>
+            )
+          })()}
 
           {/* Send Invite Panel — assign track + role before sending */}
           {showInvitePanel && hasEmail && (

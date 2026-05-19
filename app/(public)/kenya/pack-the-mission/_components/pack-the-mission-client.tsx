@@ -42,6 +42,8 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
   const [customFundAmount, setCustomFundAmount] = useState('')
   const [fundLoading, setFundLoading] = useState(false)
   const [fundError, setFundError] = useState<string | null>(null)
+  const [donorName, setDonorName] = useState('')
+  const [donorEmail, setDonorEmail] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
   const [successBanner, setSuccessBanner] = useState<string | null>(null)
 
@@ -129,6 +131,11 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
       return
     }
 
+    if (!donorName.trim() || !donorEmail.trim()) {
+      setFundError('Please enter your name and email so we can thank you!')
+      return
+    }
+
     setFundLoading(true)
     setFundError(null)
 
@@ -139,6 +146,8 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
         body: JSON.stringify({
           amount,
           designation: 'Pack the Mission — Supply Fund',
+          donorName: donorName.trim(),
+          donorEmail: donorEmail.trim(),
         }),
       })
       const data = await response.json()
@@ -479,6 +488,26 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
               />
             </div>
 
+            {/* Donor info — shows when amount selected */}
+            {(getFundAmount() ?? 0) > 0 && (
+              <div className="space-y-3 mb-4">
+                <Input
+                  type="text"
+                  placeholder="Your name"
+                  value={donorName}
+                  onChange={(e) => setDonorName(e.target.value)}
+                  className="bg-white/10 border-white/10 text-white placeholder:text-white/30 rounded-full h-12 px-5 focus-visible:ring-gold focus-visible:border-gold"
+                />
+                <Input
+                  type="email"
+                  placeholder="Your email"
+                  value={donorEmail}
+                  onChange={(e) => setDonorEmail(e.target.value)}
+                  className="bg-white/10 border-white/10 text-white placeholder:text-white/30 rounded-full h-12 px-5 focus-visible:ring-gold focus-visible:border-gold"
+                />
+              </div>
+            )}
+
             {/* Big CTA — only shows when amount selected */}
             {(getFundAmount() ?? 0) > 0 && (
               <Button
@@ -550,9 +579,9 @@ export default function PackTheMissionClient({ initialPledgeStats }: PackTheMiss
             <span>KDA</span>
           </div>
           <p className="text-white/20 text-sm">
-            Kenya 2026 Global Impact Delegation &middot; April 23 – May 6 &middot;{' '}
-            <Link href="/kenya" className="text-gold hover:text-gold-light transition-colors">
-              tpcmin.org/kenya
+            Kenya 2026 Global Impact Delegation &middot; April 23 – May 6, 2026 (complete) &middot;{' '}
+            <Link href="/kenya-2026" className="text-gold hover:text-gold-light transition-colors">
+              See the recap
             </Link>
           </p>
         </div>

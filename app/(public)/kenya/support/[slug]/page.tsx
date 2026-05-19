@@ -286,7 +286,7 @@ export default function FundraisingPage() {
                 <div className="flex flex-wrap gap-4 mb-6 text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="h-4 w-4" />
-                    April 23 - May 6, 2026
+                    April 23 – May 6, 2026 (complete)
                   </div>
                   {participant.service_track && (
                     <div className="flex items-center gap-2 text-gray-600">

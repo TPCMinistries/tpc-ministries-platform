@@ -276,13 +276,34 @@ async function handlePackFundCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
+  // Build update payload — backfill donor info from Stripe if missing
+  const updateData: Record<string, string> = {
+    status: 'completed',
+    stripe_payment_intent: session.payment_intent as string,
+    updated_at: new Date().toISOString(),
+  }
+
+  // Stripe customer_details has the real name/email from checkout
+  const customerName = session.customer_details?.name
+  const customerEmail = session.customer_details?.email
+
+  // Fetch current record to check if donor info is missing
+  const { data: existing } = await supabase
+    .from('kenya_supply_funds')
+    .select('donor_name, donor_email')
+    .eq('id', fundRecordId)
+    .single()
+
+  if (existing && (!existing.donor_name || existing.donor_name === 'Anonymous') && customerName) {
+    updateData.donor_name = customerName
+  }
+  if (existing && !existing.donor_email && customerEmail) {
+    updateData.donor_email = customerEmail
+  }
+
   const { error } = await supabase
     .from('kenya_supply_funds')
-    .update({
-      status: 'completed',
-      stripe_payment_intent: session.payment_intent as string,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', fundRecordId)
 
   if (error) {

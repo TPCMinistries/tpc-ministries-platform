@@ -43,7 +43,7 @@ export function ConnectSection() {
                   <Users className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/prayer">
+              <Link href="/auth/signup?next=/prayer">
                 <Button variant="outline" size="xl" className="w-full justify-between">
                   Submit a Prayer Request
                   <ArrowRight className="h-5 w-5" />

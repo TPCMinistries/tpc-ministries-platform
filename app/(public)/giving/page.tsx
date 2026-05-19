@@ -1,18 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Heart, Globe, Users, DollarSign, CheckCircle, ArrowRight, Sparkles } from 'lucide-react'
 
 export default function GivingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <GivingPageInner />
+    </Suspense>
+  )
+}
+
+function GivingPageInner() {
+  const searchParams = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<string>('50')
   const [customAmount, setCustomAmount] = useState<string>('')
   const [givingType, setGivingType] = useState<'ministry' | 'missions' | 'leadership'>('ministry')
   const [frequency, setFrequency] = useState<'once' | 'monthly'>('once')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const campaign = searchParams.get('campaign') || undefined
+
+  useEffect(() => {
+    const typeParam = searchParams.get('type')
+    if (typeParam === 'ministry' || typeParam === 'missions' || typeParam === 'leadership') {
+      setGivingType(typeParam)
+    }
+    const freqParam = searchParams.get('frequency')
+    if (freqParam === 'once' || freqParam === 'monthly') {
+      setFrequency(freqParam)
+    }
+    const amountParam = searchParams.get('amount')
+    if (amountParam && !isNaN(Number(amountParam)) && Number(amountParam) > 0) {
+      setSelectedAmount(amountParam)
+      setCustomAmount('')
+    }
+  }, [searchParams])
 
   const quickAmounts = ['25', '50', '100', '250', '500', '1000']
 
@@ -51,6 +78,7 @@ export default function GivingPage() {
           amount,
           type: givingType === 'ministry' ? 'general' : givingType,
           frequency,
+          ...(campaign ? { campaign } : {}),
         }),
       })
 

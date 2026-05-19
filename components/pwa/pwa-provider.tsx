@@ -37,35 +37,42 @@ export default function PWAProvider({ children }: { children: React.ReactNode })
       setNotificationPermission(Notification.permission)
     }
 
-    // Register service worker
+    // Register service worker — production only.
+    // In dev, unregister any stale SW + clear its caches so HMR can hand fresh chunks.
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('SW registered:', registration)
+      if (process.env.NODE_ENV !== 'production') {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((r) => r.unregister())
+        })
+        if ('caches' in window) {
+          caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)))
+        }
+      } else {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered:', registration)
 
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available
-                  setWaitingWorker(newWorker)
-                  setShowUpdateBanner(true)
-                }
-              })
-            }
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    setWaitingWorker(newWorker)
+                    setShowUpdateBanner(true)
+                  }
+                })
+              }
+            })
           })
-        })
-        .catch((error) => {
-          console.error('SW registration failed:', error)
-        })
+          .catch((error) => {
+            console.error('SW registration failed:', error)
+          })
 
-      // Handle controller change (when new SW takes over)
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload()
-      })
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload()
+        })
+      }
     }
 
     // Handle install prompt

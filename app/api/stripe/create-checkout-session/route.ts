@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { amount, type, frequency, donorEmail, donorName } = body
+    const { amount, type, frequency, donorEmail, donorName, campaign } = body
 
     console.log('Received donation request:', { amount, type, frequency })
 
@@ -192,6 +192,7 @@ export async function POST(request: NextRequest) {
           frequency,
           user_id: user?.id || 'anonymous',
           donor_name: donorName || 'Anonymous',
+          ...(campaign ? { campaign: String(campaign).slice(0, 50) } : {}),
         },
         success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/giving`,
@@ -229,6 +230,7 @@ export async function POST(request: NextRequest) {
           frequency,
           user_id: user?.id || 'anonymous',
           donor_name: donorName || 'Anonymous',
+          ...(campaign ? { campaign: String(campaign).slice(0, 50) } : {}),
         },
         success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/giving`,

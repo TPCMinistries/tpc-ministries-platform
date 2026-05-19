@@ -16,8 +16,18 @@ const passportLabels: Record<string, string> = {
   apply: 'Need to apply',
 }
 
-// POST - Submit Kenya trip interest/application
+// POST - Kenya 2026 applications are closed (trip ended 2026-05-06).
+// Endpoint kept for archival but returns 410 Gone. Re-enable for future trips by removing this guard.
 export async function POST(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'applications_closed',
+      message: 'Kenya 2026 applications are closed. The trip is complete — see the recap at /kenya-2026.',
+    },
+    { status: 410 }
+  )
+
+  // eslint-disable-next-line no-unreachable
   try {
     const supabase = createAdminClient()
 

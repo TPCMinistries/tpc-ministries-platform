@@ -46,8 +46,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ valid: false, error: 'This invite has already been used' })
     }
 
+    // Check if this email already has an auth account
+    let hasExistingAccount = false
+    if (invite.email) {
+      const { data: exists } = await supabase.rpc('check_email_exists', {
+        check_email: invite.email,
+      })
+      hasExistingAccount = !!exists
+    }
+
     const response: any = {
       valid: true,
+      has_existing_account: hasExistingAccount,
       invite: {
         code: invite.code,
         name: invite.name,
