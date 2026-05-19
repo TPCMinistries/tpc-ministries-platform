@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
+import { MEMBERSHIP_TIERS, isMembershipTier } from '@/lib/membership/tiers'
 
 export const runtime = 'nodejs'
 
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
           await handlePackFundCompleted(session)
         } else if (session.metadata?.type === 'pack-sponsorship') {
           await handlePackSponsorshipCompleted(session)
+        } else if (session.metadata?.type === 'membership') {
+          await handleMembershipCheckout(session)
         } else {
           await recordDonation(session)
         }
@@ -50,7 +53,13 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
         if (invoice.subscription) {
-          await recordRecurringDonation(invoice)
+          // Skip donation insert for membership invoices — they aren't donations.
+          const sub = await stripe.subscriptions.retrieve(invoice.subscription as string)
+          if (sub.metadata?.type === 'membership') {
+            await recordMembershipInvoice(invoice, sub)
+          } else {
+            await recordRecurringDonation(invoice)
+          }
         }
         break
       }
@@ -302,8 +311,39 @@ async function upgradeGiverToPartner(
 }
 
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
+  if (subscription.metadata?.type === 'membership') {
+    // Membership cancellation: mark sub canceled + downgrade tier back to free.
+    const nowIso = new Date().toISOString()
+    const { data: sub } = await supabase
+      .from('member_subscriptions')
+      .update({
+        status: 'canceled',
+        canceled_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq('stripe_subscription_id', subscription.id)
+      .select('member_id')
+      .single()
+
+    if (sub?.member_id) {
+      await supabase
+        .from('members')
+        .update({
+          role: 'free',
+          tier: 'free',
+          role_updated_at: nowIso,
+          role_upgrade_reason: 'Membership canceled',
+        })
+        .eq('id', sub.member_id)
+    }
+
+    console.log('Membership canceled:', subscription.id)
+    return
+  }
+
+  // Legacy donation-subscription path.
   const { error } = await supabase
     .from('donations')
     .update({ subscription_status: 'canceled', updated_at: new Date().toISOString() })
@@ -315,6 +355,130 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
   }
 
   console.log('Subscription canceled:', subscription.id)
+}
+
+// ── Membership: initial checkout completed ──
+async function handleMembershipCheckout(session: Stripe.Checkout.Session) {
+  const supabase = createAdminClient()
+
+  const tierSlug = session.metadata?.tier_slug || ''
+  const billingCycle = session.metadata?.billing_cycle || 'monthly'
+  const userId = session.metadata?.user_id || session.client_reference_id || null
+  const memberIdMeta = session.metadata?.member_id || null
+  const email = session.customer_email || session.customer_details?.email || null
+  const stripeSubscriptionId = session.subscription as string | null
+  const stripeCustomerId = session.customer as string | null
+
+  if (!isMembershipTier(tierSlug)) {
+    console.error('Membership checkout: invalid tier_slug', tierSlug)
+    return
+  }
+
+  const tier = MEMBERSHIP_TIERS[tierSlug]
+
+  // Resolve member by metadata first, then user_id, then email.
+  let member: { id: string } | null = null
+  if (memberIdMeta) {
+    const { data } = await supabase.from('members').select('id').eq('id', memberIdMeta).single()
+    member = data
+  }
+  if (!member && userId) {
+    const { data } = await supabase.from('members').select('id').eq('user_id', userId).single()
+    member = data
+  }
+  if (!member && email) {
+    const { data } = await supabase.from('members').select('id').eq('email', email).single()
+    member = data
+  }
+
+  if (!member) {
+    console.error('Membership checkout: no member found for', { userId, email })
+    return
+  }
+
+  // Pull subscription details for current_period_*.
+  let periodStart: string | null = null
+  let periodEnd: string | null = null
+  if (stripeSubscriptionId) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+      periodStart = sub.current_period_start
+        ? new Date(sub.current_period_start * 1000).toISOString() : null
+      periodEnd = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toISOString() : null
+    } catch (err) {
+      console.error('Failed to fetch subscription for period dates:', err)
+    }
+  }
+
+  const nowIso = new Date().toISOString()
+
+  // Upsert member_subscriptions by stripe_subscription_id.
+  if (stripeSubscriptionId) {
+    const { data: existing } = await supabase
+      .from('member_subscriptions')
+      .select('id')
+      .eq('stripe_subscription_id', stripeSubscriptionId)
+      .maybeSingle()
+
+    const payload = {
+      member_id: member.id,
+      user_id: userId,
+      tier_slug: tierSlug,
+      billing_cycle: billingCycle,
+      stripe_subscription_id: stripeSubscriptionId,
+      stripe_customer_id: stripeCustomerId,
+      status: 'active',
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+      cancel_at_period_end: false,
+      updated_at: nowIso,
+    }
+
+    if (existing) {
+      await supabase.from('member_subscriptions').update(payload).eq('id', existing.id)
+    } else {
+      await supabase.from('member_subscriptions').insert({ ...payload, created_at: nowIso })
+    }
+  }
+
+  // Upgrade tier + role.
+  await supabase
+    .from('members')
+    .update({
+      role: tier.role,
+      tier: tier.role,
+      role_updated_at: nowIso,
+      role_upgrade_reason: `${tier.name} membership (${billingCycle})`,
+    })
+    .eq('id', member.id)
+
+  console.log(`Membership activated: member=${member.id} tier=${tierSlug}`)
+}
+
+// ── Membership: recurring invoice paid ──
+async function recordMembershipInvoice(
+  invoice: Stripe.Invoice,
+  subscription: Stripe.Subscription,
+) {
+  const supabase = createAdminClient()
+  const nowIso = new Date().toISOString()
+  const periodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString() : null
+  const periodStart = subscription.current_period_start
+    ? new Date(subscription.current_period_start * 1000).toISOString() : null
+
+  await supabase
+    .from('member_subscriptions')
+    .update({
+      status: 'active',
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+      updated_at: nowIso,
+    })
+    .eq('stripe_subscription_id', subscription.id)
+
+  console.log('Membership renewed:', subscription.id, 'next:', periodEnd)
 }
 
 // ── Pack the Mission: Supply Fund ──
