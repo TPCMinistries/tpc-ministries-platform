@@ -30,17 +30,24 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (member) {
-      // User has member record - go to dashboard
-      const isStaff = member.role === 'staff' || member.role === 'admin' || member.is_admin
-      return NextResponse.redirect(new URL(isStaff ? '/admin-dashboard' : '/dashboard', origin))
-    } else {
-      // New user - go to onboarding
-      return NextResponse.redirect(new URL('/onboarding', origin))
+    // Staff/admin always lands on admin dashboard, regardless of ?next=
+    if (member && (member.role === 'staff' || member.role === 'admin' || member.is_admin)) {
+      return NextResponse.redirect(new URL('/admin-dashboard', origin))
     }
+
+    // Honor ?next= for deep-link signups (AI handoff, post-assessment, etc.)
+    // Only allow same-origin paths starting with / to prevent open-redirect.
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      return NextResponse.redirect(new URL(next, origin))
+    }
+
+    // Default destinations by member existence
+    return NextResponse.redirect(
+      new URL(member ? '/dashboard' : '/onboarding', origin)
+    )
   }
 
-  // Fallback: redirect to the next path or onboarding
+  // No authenticated user — honor next or fall through
   return NextResponse.redirect(new URL(next, origin))
 }
 

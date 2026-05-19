@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
           )
 
           await getResend().emails.send({
-            from: 'TPC Ministries <devotional@tpcmin.com>',
+            from: process.env.RESEND_DEVOTIONAL_FROM || 'TPC Ministries <devotional@tpcmin.org>',
             to: recipient.email,
             subject: `${devotional?.title || 'Daily Devotional'} - Your Morning Word`,
             html: emailHtml,

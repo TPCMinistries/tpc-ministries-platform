@@ -1,7 +1,10 @@
 import { createClient } from './supabase/client'
 
-export async function signUp(email: string, password: string, fullName: string) {
+export async function signUp(email: string, password: string, fullName: string, next?: string) {
   const supabase = createClient()
+
+  // Allow same-origin paths only — prevents open-redirect via emailRedirectTo
+  const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/onboarding'
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -10,7 +13,7 @@ export async function signUp(email: string, password: string, fullName: string) 
       data: {
         full_name: fullName,
       },
-      emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(safeNext)}`,
     },
   })
 

@@ -16,10 +16,17 @@ const trackLabels: Record<string, string> = {
   all: 'All Ministries',
 }
 
-export async function POST(request: NextRequest) {
+// Kenya 2026 trip ended 2026-05-06 — POSTs return 410 Gone.
+export async function POST(_request: NextRequest) {
+  return NextResponse.json(
+    { error: 'kenya_2026_closed', message: 'Kenya 2026 is complete. See the recap at /kenya-2026.' },
+    { status: 410 }
+  )
+
+  // eslint-disable-next-line no-unreachable
   try {
     const supabase = createAdminClient()
-    const body = await request.json()
+    const body = await _request.json()
 
     const {
       firstName,

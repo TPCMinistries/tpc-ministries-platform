@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/member/dashboard`
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_URL || 'https://tpcmin.org'}/member/dashboard`
 
     const { subject, html } = EmailTemplates.welcome(name, dashboardUrl)
 

@@ -155,6 +155,16 @@ async function recordDonation(session: Stripe.Checkout.Session) {
 
   // Auto-upgrade giver to partner role
   await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
+
+  // Fire thank-you email (best-effort, never blocks webhook ack)
+  await sendDonationReceipt({
+    donorName: donationData.donor_name,
+    email: donationData.donor_email,
+    amount: donationData.amount,
+    donationType: donationData.type,
+    transactionId: donationData.stripe_session_id,
+    isRecurring: false,
+  })
 }
 
 async function recordRecurringDonation(invoice: Stripe.Invoice) {
@@ -185,6 +195,47 @@ async function recordRecurringDonation(invoice: Stripe.Invoice) {
 
   // Auto-upgrade giver to partner role
   await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
+
+  // Fire monthly receipt email
+  await sendDonationReceipt({
+    donorName: donationData.donor_name,
+    email: donationData.donor_email,
+    amount: donationData.amount,
+    donationType: donationData.type,
+    transactionId: donationData.stripe_invoice_id,
+    isRecurring: true,
+  })
+}
+
+// Best-effort donation receipt — calls the existing send-donation-receipt endpoint.
+// Never throws — webhook must always 200 to Stripe.
+async function sendDonationReceipt(params: {
+  donorName: string
+  email: string | null | undefined
+  amount: number
+  donationType: string
+  transactionId?: string | null
+  isRecurring: boolean
+}) {
+  if (!params.email) return
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'
+    await fetch(`${baseUrl}/api/email/send-donation-receipt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        donorName: params.donorName,
+        email: params.email,
+        amount: params.amount,
+        donationType: params.donationType,
+        transactionId: params.transactionId,
+        isRecurring: params.isRecurring,
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      }),
+    })
+  } catch (err) {
+    console.error('Donation receipt send failed (non-fatal):', err)
+  }
 }
 
 // Auto-upgrade givers to partner role
