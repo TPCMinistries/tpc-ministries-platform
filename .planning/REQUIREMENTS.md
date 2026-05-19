@@ -19,11 +19,11 @@ Requirements for this milestone. Each maps to one roadmap phase.
 
 ### KENYA — Recap content & polish
 
-- [ ] **KENYA-01**: ARW → web JPG conversion pipeline (script) — curate top 3-5 photos per day across Days 1-14
-- [ ] **KENYA-02**: Day-by-day journey on `/kenya-2026` extended from 4 days (11-14) to all 14 days (1-14)
-- [ ] **KENYA-03**: Each day card includes inline photo gallery (3-5 photos) alongside the existing video
-- [ ] **KENYA-04**: Designer-written visual captions per day (location + 1-sentence framing) — no fabricated narrative, anchored to what's visible in the footage
-- [ ] **KENYA-05**: Standalone `/kenya-2026/gallery` page — masonry layout, day-filterable, 30-60 curated photos with lightbox
+- [x] **KENYA-01**: ARW → web JPG conversion pipeline (script) — curate top 3-5 photos per day across Days 1-14
+- [x] **KENYA-02**: Day-by-day journey on `/kenya-2026` extended from 4 days (11-14) to all 14 days (1-14)
+- [x] **KENYA-03**: Each day card includes inline photo gallery (3-5 photos) alongside the existing video
+- [x] **KENYA-04**: Designer-written visual captions per day (location + 1-sentence framing) — no fabricated narrative, anchored to what's visible in the footage
+- [x] **KENYA-05**: Standalone `/kenya-2026/gallery` page — masonry layout, day-filterable, 30-60 curated photos with lightbox
 
 ### DESIGN — Public-page visual + tonal sweep
 
@@ -95,11 +95,11 @@ Populated by roadmap creation — 2026-05-18.
 | COHERE-04 | Phase 1 | Complete ✓ |
 | COHERE-05 | Phase 1 | Complete ✓ |
 | COHERE-06 | Phase 1 | Complete ✓ |
-| KENYA-01 | Phase 2 | Pending |
-| KENYA-02 | Phase 3 | Pending |
-| KENYA-03 | Phase 3 | Pending |
-| KENYA-04 | Phase 3 | Pending |
-| KENYA-05 | Phase 4 | Pending |
+| KENYA-01 | Phase 2 | Complete ✓ |
+| KENYA-02 | Phase 3 | Complete ✓ |
+| KENYA-03 | Phase 3 | Complete ✓ |
+| KENYA-04 | Phase 3 | Complete ✓ |
+| KENYA-05 | Phase 4 | Complete ✓ |
 | DESIGN-01 | Phase 5 | Pending |
 | DESIGN-02 | Phase 6 | Pending |
 | DESIGN-03 | Phase 6 | Pending |

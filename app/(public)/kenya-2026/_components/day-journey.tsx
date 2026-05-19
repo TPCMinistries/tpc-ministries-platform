@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
-import { Calendar } from 'lucide-react'
+import { Calendar, Images, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Section } from '@/components/ui/section'
 
 type Day = {
@@ -246,6 +247,17 @@ export function KenyaDayJourney() {
         {DAYS.map((day, i) => (
           <DayCard key={day.day} day={day} index={i} />
         ))}
+      </div>
+
+      <div className="mt-20 flex justify-center">
+        <Link
+          href="/kenya-2026/gallery"
+          className="group inline-flex items-center gap-3 rounded-full border border-gold/40 bg-gold/10 px-6 py-3 text-sm font-bold uppercase tracking-[0.15em] text-gold transition hover:border-gold hover:bg-gold/20"
+        >
+          <Images className="h-4 w-4" />
+          See all 50 photos
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </Section>
   )

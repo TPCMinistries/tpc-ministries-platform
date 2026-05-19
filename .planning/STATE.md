@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 
 ## Current Position
 
-Phase: 2 of 9 (Kenya Photo Pipeline)
+Phase: 5 of 9 (Design Sweep — Front Door Pages)
 Plan: 0 of 1 in current phase
-Status: Phase 1 ✓ complete (commit c1546e4) — Phase 2 ready
-Last activity: 2026-05-18 — Phase 1 shipped: COHERE-01 through COHERE-06 verified
+Status: Phases 1-4 ✓ complete — Kenya category fully done
+Last activity: 2026-05-19 — Phase 4 shipped: /kenya-2026/gallery with 50 photos
 
-Progress: [█░░░░░░░░░] 11%
+Progress: [████░░░░░░] 44%
 
 ## Performance Metrics
 
