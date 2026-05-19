@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import {
   HelpCircle,
   ChevronDown,
@@ -89,14 +90,22 @@ export default function FAQPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy to-navy-800" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">We&apos;re Here to Help</p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Frequently Asked Questions
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Find answers to common questions about our ministry, beliefs, and how to get involved.
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Quick answers</p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              Questions, answered.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              The most-asked questions about TPC Ministries, our beliefs, and how to get involved.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>

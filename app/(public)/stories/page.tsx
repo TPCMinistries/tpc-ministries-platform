@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import {
   Heart,
   Quote,
@@ -134,15 +135,22 @@ export default function TestimoniesPage() {
           />
         </div>
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Real Stories, Real Faith</p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Stories of Transformation
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Witness the power of God at work through the testimonies of our community.
-            Every story is a testament to His faithfulness, healing, and breakthrough.
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Real Stories, Real Faith</p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              What God did<br />in their lives.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              Testimonies of healing, breakthrough, and walking in assignment — straight from the community.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
           <div className="mt-8 flex flex-wrap justify-center gap-6 text-white/40">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gold" />

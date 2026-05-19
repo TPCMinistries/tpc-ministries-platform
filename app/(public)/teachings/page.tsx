@@ -20,6 +20,7 @@ import {
   Video,
   ArrowRight
 } from 'lucide-react'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 
 interface Teaching {
   id: string
@@ -152,30 +153,40 @@ export default function TeachingsPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
 
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            Learn &amp; Grow
-          </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Teachings &amp; Resources
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Transformative content for your spiritual growth
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              The Word, Released
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              Teachings of the<br />Prophet.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              Messages, prophecy, and equipping — preached, written, recorded.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-2xl">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search teachings, topics, speakers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-14 border-white/10 bg-white/10 pl-12 text-lg text-white placeholder:text-white/40 backdrop-blur-sm focus:border-gold/50 focus:bg-white/15"
-              />
-            </div>
-          </form>
+          <ScrollReveal delay={0.4}>
+            <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-2xl">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search teachings, topics, speakers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-14 border-white/10 bg-white/10 pl-12 text-lg text-white placeholder:text-white/40 backdrop-blur-sm focus:border-gold/50 focus:bg-white/15"
+                />
+              </div>
+            </form>
+          </ScrollReveal>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />

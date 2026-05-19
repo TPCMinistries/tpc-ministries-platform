@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, ArrowRight, Crown, User } from 'lucide-react'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 
 export const metadata: Metadata = {
   title: 'Ebooks & Written Works | TPC Ministries',
@@ -39,31 +40,36 @@ export default async function PublicEbooksPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            Written Works
-          </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Transformative Teachings
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Explore ebooks and written works designed to awaken purpose, ignite vision,
-            and deepen your spiritual journey.
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Written Works
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              Words to walk with.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              Ebooks from Prophet Lorenzo — purpose, prophecy, and Kingdom strategy in print.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <div className="inline-flex items-center gap-2 rounded-full bg-gold/15 px-6 py-3">
-              <Crown className="h-5 w-5 text-gold" />
-              <span className="text-body-md font-medium text-white">Included with Partnership</span>
+          <ScrollReveal delay={0.4}>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="inline-flex items-center gap-2 rounded-full bg-gold/15 px-6 py-3">
+                <Crown className="h-5 w-5 text-gold" />
+                <span className="text-body-md font-medium text-white">Free with Partnership</span>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-6 py-3">
+                <span className="text-body-md text-white/80">$9.99 each</span>
+              </div>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-6 py-3">
-              <span className="text-body-md text-white/80">$9.99 each</span>
-            </div>
-          </div>
-          <p className="mx-auto mt-6 max-w-xl text-body-sm text-white/40">
-            Ministry Partners enjoy complimentary access to our entire written works library
-            through their member dashboard.
-          </p>
+          </ScrollReveal>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />

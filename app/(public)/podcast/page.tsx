@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -207,17 +208,25 @@ export default function PodcastPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
         <div className="container relative mx-auto max-w-6xl px-4 py-32">
           <div className="flex flex-col items-center gap-8 md:flex-row">
-            <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 shadow-2xl md:h-64 md:w-64">
-              <Headphones className="h-24 w-24 text-gold md:h-32 md:w-32" />
-            </div>
+            <ScrollReveal variant="fade-scale">
+              <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 shadow-2xl md:h-64 md:w-64">
+                <Headphones className="h-24 w-24 text-gold md:h-32 md:w-32" />
+              </div>
+            </ScrollReveal>
             <div className="text-center md:text-left">
-              <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">Listen & Learn</p>
-              <h1 className="mb-4 font-display text-display-lg md:text-display-xl text-white">
-                TPC Ministries Podcast
-              </h1>
-              <p className="mb-6 max-w-xl text-body-xl text-white/50">
-                Prophetic teachings, spiritual insights, and Kingdom wisdom for your journey.
-              </p>
+              <ScrollReveal>
+                <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">In the Prophet's Voice</p>
+              </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <h1 className="mb-4 font-display text-display-lg md:text-display-xl text-white">
+                  TPC Ministries Podcast
+                </h1>
+              </ScrollReveal>
+              <ScrollReveal delay={0.2}>
+                <p className="mb-6 max-w-xl text-body-xl text-white/70">
+                  Prophetic teaching, spiritual insight, and Kingdom strategy — recorded for the road.
+                </p>
+              </ScrollReveal>
               <div className="flex flex-wrap justify-center gap-3 md:justify-start">
                 <Link href="/podcast/feed.xml" target="_blank">
                   <Button variant="outline" className="border-gold text-gold hover:bg-gold hover:text-navy">

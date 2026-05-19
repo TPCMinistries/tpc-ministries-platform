@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import { Button } from '@/components/ui/button'
 import {
   Gift,
@@ -77,28 +78,40 @@ export default function AssessmentsHubPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/15">
-            <Sparkles className="h-10 w-10 text-gold" />
-          </div>
-          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            Know Your Design
-          </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Discover Your Spiritual Design
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Take free, biblically-based assessments to understand how God uniquely created you for His purposes
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal variant="fade-scale">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/15">
+              <Sparkles className="h-10 w-10 text-gold" />
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Know Your Design
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              Discover your<br />spiritual design.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              Free, biblical, prophet-informed assessments. Walk away knowing how God built you.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.4}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-4 text-body-sm text-white/90">
-            {['100% Free', 'Biblically Grounded', 'Personalized Results', 'No Account Required'].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-gold" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
+          <ScrollReveal delay={0.5}>
+            <div className="mt-8 flex flex-wrap justify-center gap-4 text-body-sm text-white/90">
+              {['100% Free', 'Biblically Grounded', 'Personalized Results', 'No Account Required'].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-gold" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />

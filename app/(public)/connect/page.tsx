@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import {
   Send,
   Mail,
@@ -66,17 +67,24 @@ export default function ConnectPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,184,131,0.12),transparent_60%)]" />
 
         <div className="container relative mx-auto max-w-5xl px-4 py-32 text-center">
-          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            We&apos;d Love to Hear From You
-          </p>
-          <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
-            Connect With Us
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Whether you have questions, need prayer, or want to get involved,
-            we&apos;re here for you. Reach out and let&apos;s start a conversation.
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Stay in the room
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
+              Walk with us.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              Questions, prayer, partnership — start the conversation here.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
