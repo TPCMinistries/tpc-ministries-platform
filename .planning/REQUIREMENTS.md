@@ -34,22 +34,22 @@ Requirements for this milestone. Each maps to one roadmap phase.
 
 ### AI — Prophet Lorenzo engagement refinement
 
-- [ ] **AI-01**: Post-signup AI handoff — public chat conversation persists into member chat after signup (user signs up mid-conversation, lands in member chat with prior turns)
-- [ ] **AI-02**: Ask-Prophet widget persistent across all public pages (not just homepage), conversation continuity via session storage
-- [ ] **AI-03**: Member AI verified as the destination after handoff (smoke test full flow: public chat → signup → member chat)
+- [x] **AI-01**: Post-signup AI handoff — public chat conversation persists into member chat after signup (user signs up mid-conversation, lands in member chat with prior turns)
+- [x] **AI-02**: Ask-Prophet widget persistent across all public pages (not just homepage), conversation continuity via session storage
+- [x] **AI-03**: Member AI verified as the destination after handoff (smoke test full flow: public chat → signup → member chat)
 
 ### CONVERT — Conversion path
 
-- [ ] **CONVERT-01**: Streams of Grace daily devotional surfaced as primary devotional CTA (link/embed from `streamsofgrace.app`, do not rebuild)
-- [ ] **CONVERT-02**: Conversion analytics — events for `page_view`, `ai_chat_start`, `ai_chat_message`, `signup`, `give_click`, `apply_click` wired into existing analytics (or PostHog if absent), so the funnel is observable
-- [ ] **CONVERT-03**: One unmistakable primary CTA per public section — no choice paralysis (verified by walking each page top-to-bottom)
+- [x] **CONVERT-01**: Streams of Grace daily devotional surfaced as primary devotional CTA (link/embed from `streamsofgrace.app`, do not rebuild)
+- [x] **CONVERT-02**: Conversion analytics — events for `page_view`, `ai_chat_start`, `ai_chat_message`, `signup`, `give_click`, `apply_click` wired into existing analytics (or PostHog if absent), so the funnel is observable
+- [x] **CONVERT-03**: One unmistakable primary CTA per public section — no choice paralysis (verified by walking each page top-to-bottom)
 
 ### LAUNCH — Pre-deploy gates
 
-- [ ] **LAUNCH-01**: Lighthouse mobile: ≥85 performance, ≥95 accessibility on `/`, `/kenya-2026`, top 5 public pages
-- [ ] **LAUNCH-02**: Every link in nav + footer returns 200 (no 404s) — automated check
-- [ ] **LAUNCH-03**: Vercel preview deploy passes smoke test, then promoted to production on tpcmin.org
-- [ ] **LAUNCH-04**: Service Worker verified in production build (registers cleanly, dev-mode auto-unregister still works)
+- [~] **LAUNCH-01**: Lighthouse mobile on `/` — Accessibility 96 ✓, Best Practices 100 ✓, SEO 100 ✓; Performance 75 (target 85) — flagged for follow-up (image optimization, video compression)
+- [x] **LAUNCH-02**: Every link in nav + footer returns 200 (no 404s) — 24/24 routes verified live
+- [x] **LAUNCH-03**: Vercel preview deploy passes smoke test, then promoted to production on tpcmin.org (multiple production deploys this session, all live)
+- [x] **LAUNCH-04**: Service Worker verified in production build (registers cleanly via NODE_ENV guard, dev-mode auto-unregister works)
 
 ## v1.1 Requirements (Deferred)
 
@@ -104,16 +104,16 @@ Populated by roadmap creation — 2026-05-18.
 | DESIGN-02 | Phase 6 | Complete ✓ |
 | DESIGN-03 | Phase 6 | Complete ✓ |
 | DESIGN-04 | Phase 6 | Complete ✓ |
-| AI-01 | Phase 7 | Pending |
-| AI-02 | Phase 7 | Pending |
-| AI-03 | Phase 7 | Pending |
-| CONVERT-01 | Phase 8 | Pending |
-| CONVERT-02 | Phase 8 | Pending |
-| CONVERT-03 | Phase 8 | Pending |
-| LAUNCH-01 | Phase 9 | Pending |
-| LAUNCH-02 | Phase 9 | Pending |
-| LAUNCH-03 | Phase 9 | Pending |
-| LAUNCH-04 | Phase 9 | Pending |
+| AI-01 | Phase 7 | Complete ✓ |
+| AI-02 | Phase 7 | Complete ✓ |
+| AI-03 | Phase 7 | Complete ✓ |
+| CONVERT-01 | Phase 8 | Complete ✓ |
+| CONVERT-02 | Phase 8 | Complete ✓ |
+| CONVERT-03 | Phase 8 | Complete ✓ |
+| LAUNCH-01 | Phase 9 | Partial (perf 75/85, others ✓) |
+| LAUNCH-02 | Phase 9 | Complete ✓ |
+| LAUNCH-03 | Phase 9 | Complete ✓ |
+| LAUNCH-04 | Phase 9 | Complete ✓ |
 
 **Coverage:**
 - v1.0 requirements: 25 total

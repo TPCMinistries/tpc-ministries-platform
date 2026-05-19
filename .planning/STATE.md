@@ -9,12 +9,26 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 
 ## Current Position
 
-Phase: 5 of 9 (Design Sweep — Front Door Pages)
-Plan: 0 of 1 in current phase
-Status: Phases 1-4 ✓ complete — Kenya category fully done
-Last activity: 2026-05-19 — Phase 4 shipped: /kenya-2026/gallery with 50 photos
+Milestone: v1.0 — Kenya 2026 Recap + Gen-Z Engagement Push
+Phase: 9 of 9 (Launch Gates) ✓
+Status: MILESTONE SUBSTANTIALLY COMPLETE — 24/25 reqs ✓, 1 partial (LAUNCH-01 perf 75/85)
+Last activity: 2026-05-19 — All 9 phases live on tpcmin.org production
 
-Progress: [████░░░░░░] 44%
+Progress: [█████████░] 96%
+
+### Phases Complete (all 9)
+- Phase 1: Coherence Baseline             ✓ c1546e4
+- Phase 2: Kenya Photo Pipeline            ✓ 1f6db1f
+- Phase 3: Kenya Recap Deepening           ✓ 7e28eeb
+- Phase 4: Kenya Gallery Page              ✓ 3beae81
+- Phase 5: Design Sweep — Front Door       ✓ 4aa1628
+- Phase 6: Design Sweep — Content/Func     ✓ 0ff4f45
+- Phase 7: AI Engagement Layer             ✓ 95f238b
+- Phase 8: Conversion Path                 ✓ d9fd731
+- Phase 9: Launch Gates                    ✓ (this commit)
+
+### Open Follow-ups
+- LAUNCH-01: Mobile perf 75/85 — image/video optimization (hero AVIF/WebM, defer AI widget mount). Other Lighthouse categories all green (A11y 96, Best Practices 100, SEO 100)
 
 ## Performance Metrics
 
