@@ -28,9 +28,8 @@ export function GivingCtaSection() {
           <h2 className="mx-auto mb-6 max-w-3xl font-display text-display-md md:text-display-lg lg:text-display-xl text-white">
             Your Generosity Changes Lives
           </h2>
-          <p className="mx-auto mb-8 md:mb-12 max-w-2xl text-body-lg text-white/50">
-            Every gift transforms lives across Kenya, South Africa, and Grenada —
-            spreading the Gospel and building lasting impact.
+          <p className="mx-auto mb-8 md:mb-12 max-w-2xl text-body-lg text-white/65">
+            Every gift fuels the work — US digital ministry, on-the-ground missions in Kenya, South Africa, and Grenada, and the global community we're building online.
           </p>
         </ScrollReveal>
 

@@ -20,7 +20,7 @@ export function OrganizationSchema() {
       width: 512,
       height: 512
     },
-    description: 'Transforming Lives Through Christ - A prophetic ministry serving communities across Kenya, South Africa, and Grenada.',
+    description: 'TPC Ministries — a prophetic ministry for the digital age led by Prophet Lorenzo Daughtry-Chambers. Based in the United States, with active mission work in Kenya, South Africa, Grenada, and a growing global online community.',
     foundingDate: '2020',
     sameAs: [
       'https://www.facebook.com/tpcministries',

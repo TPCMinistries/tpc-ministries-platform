@@ -82,8 +82,8 @@ export default function VisitPage() {
           <h1 className="mb-6 font-display text-display-xl md:text-display-2xl text-white">
             Connect With Us
           </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            Join our global community of believers from Kenya, South Africa, Grenada, and beyond
+          <p className="mx-auto max-w-2xl text-body-xl text-white/65">
+            A growing community across the US and worldwide. Find us online, on the road, and in the room.
           </p>
           <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>
@@ -223,7 +223,7 @@ export default function VisitPage() {
               { icon: Headphones, title: 'Prophetic Words', desc: 'Receive timely prophetic insights and guidance for your spiritual journey.' },
               { icon: BookOpen, title: 'Biblical Teaching', desc: 'Deep, transformative teaching rooted in Scripture and the prophetic.' },
               { icon: Heart, title: 'Prayer Support', desc: 'Submit prayer requests and join our community in intercession.' },
-              { icon: Globe, title: 'Global Missions', desc: 'Partner with our missions in Kenya, South Africa, and Grenada.' },
+              { icon: Globe, title: 'Global Missions', desc: 'Partner with US digital ministry + on-the-ground work in Kenya, South Africa, and Grenada.' },
             ].map((item) => (
               <div
                 key={item.title}

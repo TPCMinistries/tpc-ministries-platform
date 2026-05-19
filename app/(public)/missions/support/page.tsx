@@ -56,8 +56,8 @@ function MissionsSupportContent() {
           <h1 className="mb-6 font-display text-display-xl text-white md:text-display-2xl">
             Support Global Missions
           </h1>
-          <p className="mx-auto max-w-3xl text-body-xl text-white/50">
-            Your partnership brings hope, healing, and transformation to communities across Kenya, South Africa, and Grenada
+          <p className="mx-auto max-w-3xl text-body-xl text-white/65">
+            Your partnership funds US digital ministry, on-the-ground missions in Kenya, South Africa, and Grenada, and the global online community we're building.
           </p>
           <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>

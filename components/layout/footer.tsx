@@ -90,8 +90,7 @@ export function Footer() {
               />
             </div>
             <p className="text-body-sm text-navy-200">
-              Transforming lives through Christ across Kenya, South Africa, and Grenada.
-              Awakening purpose. Igniting vision.
+              A prophetic ministry for the digital age — based in the US, with active mission work in Kenya, South Africa, Grenada, and a growing global online community. Awakening purpose. Igniting vision.
             </p>
           </div>
 

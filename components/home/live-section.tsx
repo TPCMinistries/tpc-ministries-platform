@@ -120,7 +120,7 @@ export function LiveSection() {
               : isScheduled
                 ? service?.description ||
                   'A space for worship, the Word, and prophetic ministry — wherever you are in the world.'
-                : 'Sunday gatherings and prophetic conferences streamed live across three nations. Subscribe to know when we go on air.'}
+                : 'Sunday gatherings and prophetic conferences streamed live to the US and around the world. Subscribe to know when we go on air.'}
           </p>
 
           {/* Service meta */}

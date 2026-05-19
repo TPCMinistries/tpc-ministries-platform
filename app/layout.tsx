@@ -54,11 +54,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "TPC Ministries - Transforming Lives Through Christ",
+    default: "TPC Ministries — A Prophetic Ministry for the Digital Age",
     template: "%s | TPC Ministries"
   },
-  description: "Join TPC Ministries in a journey of faith, growth, and purpose. Serving communities across Kenya, South Africa, and Grenada.",
-  keywords: ["ministry", "faith", "discipleship", "missions", "church", "Christianity", "spiritual growth", "Bible teaching", "prayer", "assessments"],
+  description: "TPC Ministries — a prophetic ministry led by Prophet Lorenzo Daughtry-Chambers. Based in the US, serving Kenya, South Africa, Grenada, and a global online community. Faith, formation, and Kingdom strategy for the digital age.",
+  keywords: ["ministry", "faith", "discipleship", "missions", "church", "Christianity", "spiritual growth", "Bible teaching", "prayer", "assessments", "Prophet Lorenzo", "digital ministry", "online church"],
   authors: [{ name: "TPC Ministries" }],
   creator: "TPC Ministries",
   manifest: '/manifest.json',

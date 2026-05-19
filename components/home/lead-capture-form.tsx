@@ -16,7 +16,7 @@ const interestOptions = [
   { id: 'giving', label: 'Giving & Supporting Missions' },
   { id: 'events', label: 'Live Events & Gatherings' },
   { id: 'prophecy', label: 'Personal Prophecy' },
-  { id: 'missions', label: 'Mission Work (Kenya, South Africa, Grenada)' },
+  { id: 'missions', label: 'Mission Work (US, Kenya, South Africa, Grenada)' },
 ]
 
 export default function LeadCaptureForm() {

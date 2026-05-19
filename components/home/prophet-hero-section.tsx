@@ -144,8 +144,7 @@ export function ProphetHeroSection() {
               animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.0 }}
             >
-              A prophetic, global ministry across <strong className="font-semibold text-white/85">Kenya, South Africa, and Grenada</strong> — built for the generation
-              that grew up online and is still hungry for something real.
+              A prophetic ministry for the <strong className="font-semibold text-white/85">digital age</strong> — meeting people where they are, across the US and around the world. Wherever you scroll, the Word can find you.
             </motion.p>
 
             {/* CTAs */}
@@ -194,7 +193,7 @@ export function ProphetHeroSection() {
             >
               <span className="flex items-center gap-2">
                 <span className="inline-block h-1 w-1 rounded-full bg-gold/60" />
-                3 nations
+                US + global
               </span>
               <span className="flex items-center gap-2">
                 <span className="inline-block h-1 w-1 rounded-full bg-gold/60" />
