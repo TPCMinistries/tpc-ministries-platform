@@ -57,13 +57,43 @@ export default function AskProphetLorenzoPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const [handoffBanner, setHandoffBanner] = useState(false)
+
   useEffect(() => {
     initializeMember()
+    consumePublicHandoff()
   }, [])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // If the user just signed up from the public Ask-Prophet widget, pull their
+  // conversation history out of localStorage and prepend it. Only fires when
+  // ?handoff=1 is in the URL and the public widget left a v1 history payload.
+  const consumePublicHandoff = () => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('handoff') !== '1') return
+    try {
+      const raw = window.localStorage.getItem('tpc.ask-prophet.history.v1')
+      if (!raw) return
+      const parsed = JSON.parse(raw) as Array<{ role: 'user' | 'assistant'; content: string }>
+      if (!Array.isArray(parsed) || parsed.length === 0) return
+      setMessages(parsed.map((m) => ({ role: m.role, content: m.content })))
+      setHandoffBanner(true)
+      // Clear so it doesn't replay on next visit
+      window.localStorage.removeItem('tpc.ask-prophet.history.v1')
+      // Auto-dismiss banner
+      setTimeout(() => setHandoffBanner(false), 6000)
+      // Clean the URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete('handoff')
+      window.history.replaceState({}, '', url.toString())
+    } catch {
+      // Silent fail — handoff is best-effort
+    }
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -198,6 +228,14 @@ export default function AskProphetLorenzoPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-4 lg:p-6">
+      {/* Handoff banner — shown briefly after public→member chat transition */}
+      {handoffBanner && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-gold/40 bg-gold/10 px-4 py-2 text-sm text-navy">
+          <Sparkles className="h-4 w-4 text-gold" />
+          <span>Continuing your earlier conversation. Welcome in.</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

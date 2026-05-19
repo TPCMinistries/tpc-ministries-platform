@@ -1,5 +1,6 @@
 import { Navigation } from '@/components/layout/navigation'
 import { Footer } from '@/components/layout/footer'
+import { AskProphetWidget } from '@/components/ai/ask-prophet-widget'
 
 export default function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default function PublicLayout({
       <Navigation />
       <main>{children}</main>
       <Footer />
+      <AskProphetWidget />
     </>
   )
 }

@@ -12,7 +12,6 @@ import { KenyaSection } from '@/components/home/kenya-section'
 import { GivingCtaSection } from '@/components/home/giving-cta-section'
 import { AssessmentsSection } from '@/components/home/assessments-section'
 import { ConnectSection } from '@/components/home/connect-section'
-import { AskProphetWidget } from '@/components/ai/ask-prophet-widget'
 
 export default async function HomePage() {
   const teachings = await getRecentTeachings(4).catch(() => [])
@@ -45,7 +44,6 @@ export default async function HomePage() {
       <GivingCtaSection />
       <AssessmentsSection />
       <ConnectSection />
-      <AskProphetWidget />
     </div>
   )
 }

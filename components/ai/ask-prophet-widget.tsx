@@ -274,7 +274,7 @@ export function AskProphetWidget() {
                   </p>
                   <div className="flex gap-2">
                     <Link
-                      href="/auth/signup"
+                      href="/auth/signup?next=%2Fask-prophet-lorenzo%3Fhandoff%3D1"
                       className="flex-1 rounded-lg bg-gold px-3 py-2 text-center text-body-sm font-bold text-navy-950 transition-colors hover:bg-gold-300"
                     >
                       Create free account
