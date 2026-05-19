@@ -47,14 +47,6 @@ const REELS: Reel[] = [
   },
   {
     kind: 'mp4',
-    id: 'kenya-itete-market',
-    src: '/videos/kenya/itete-market.mp4',
-    poster: '/videos/kenya/posters/itete-market.jpg',
-    title: 'Itete Market',
-    tag: 'KENYA 2026',
-  },
-  {
-    kind: 'mp4',
     id: 'kenya-reel-02',
     src: '/videos/kenya/reel-02.mp4',
     poster: '/videos/kenya/posters/reel-02.jpg',

@@ -28,13 +28,6 @@ const LOCATIONS: Location[] = [
     poster: '/videos/kenya/posters/sda-church-dago.jpg',
     aspect: 'video',
   },
-  {
-    id: 'itete-market',
-    name: 'Itete Market',
-    src: '/videos/kenya/itete-market.mp4',
-    poster: '/videos/kenya/posters/itete-market.jpg',
-    aspect: 'portrait',
-  },
 ]
 
 function LocationCard({ loc, index }: { loc: Location; index: number }) {
