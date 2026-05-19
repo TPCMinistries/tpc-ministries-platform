@@ -5,10 +5,15 @@ import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Heart, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { track } from '@/lib/analytics'
 
 export function KenyaStoryHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const shouldReduceMotion = useReducedMotion()
+
+  useEffect(() => {
+    track('kenya_recap_view')
+  }, [])
 
   useEffect(() => {
     const v = videoRef.current

@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUp, Sparkles, X, Loader2 } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 type ChatRole = 'user' | 'assistant'
 type ChatMessage = { role: ChatRole; content: string }
@@ -72,6 +73,8 @@ export function AskProphetWidget() {
     setInput('')
     setSending(true)
 
+    track('ai_chat_message', { turn: next.length })
+
     try {
       const res = await fetch('/api/ai/ask-prophet-public', {
         method: 'POST',
@@ -86,7 +89,10 @@ export function AskProphetWidget() {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.response }])
 
       if (typeof data.remaining === 'number') setRemaining(data.remaining)
-      if (data.limitReached) setLimitReached(true)
+      if (data.limitReached) {
+        setLimitReached(true)
+        track('ai_chat_limit_reached', { turns: next.length })
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -135,7 +141,10 @@ export function AskProphetWidget() {
             animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
             exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.85, y: 20 }}
             transition={{ duration: 0.3 }}
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true)
+              track('ai_chat_open')
+            }}
             aria-label="Open Ask Prophet Lorenzo chat"
             className="group fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full border border-gold/40 bg-navy-950 px-4 py-3 text-white shadow-2xl shadow-navy-950/40 transition-all hover:border-gold hover:bg-navy-900 sm:bottom-6 sm:right-6 sm:px-5 sm:py-3.5"
           >
@@ -275,6 +284,7 @@ export function AskProphetWidget() {
                   <div className="flex gap-2">
                     <Link
                       href="/auth/signup?next=%2Fask-prophet-lorenzo%3Fhandoff%3D1"
+                      onClick={() => track('ai_chat_handoff_signup')}
                       className="flex-1 rounded-lg bg-gold px-3 py-2 text-center text-body-sm font-bold text-navy-950 transition-colors hover:bg-gold-300"
                     >
                       Create free account

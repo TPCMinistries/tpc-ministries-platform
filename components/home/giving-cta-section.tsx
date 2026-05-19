@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { track } from '@/lib/analytics'
 import { Section } from '@/components/ui/section'
 import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import { NumberCounter } from '@/components/motion/number-counter'
@@ -51,7 +52,7 @@ export function GivingCtaSection() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.3} className="text-center">
-          <Link href="/giving">
+          <Link href="/giving" onClick={() => track('give_click', { source: 'home_giving_cta' })}>
             <Button variant="glow" size="xl" className="text-lg animate-glow-pulse">
               Donate Now
               <Heart className="ml-2 h-5 w-5" />
