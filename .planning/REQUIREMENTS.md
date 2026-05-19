@@ -10,12 +10,12 @@ Requirements for this milestone. Each maps to one roadmap phase.
 
 ### COHERE — Audit-driven coherence fixes
 
-- [ ] **COHERE-01**: `/kenya` application form is disabled post-trip with "trip closed — view the recap" messaging
-- [ ] **COHERE-02**: Hardcoded "April 23 – May 6" dates in `/kenya/pack-the-mission`, `/kenya/give`, `/kenya/support/[slug]` reframed as past-tense or contextualized as the closed trip
-- [ ] **COHERE-03**: Active countdown timer on homepage `kenya-section` removed or reframed ("Trip completed")
-- [ ] **COHERE-04**: Homepage `/live` and `/prayer` CTAs route to existing public alternatives (`/kenya/live`) or signup flow (no public→member 404s)
-- [ ] **COHERE-05**: Footer + navigation rationalized — single canonical "Kenya 2026" entry, no duplicate/conflicting paths
-- [ ] **COHERE-06**: `/kenya` page stats ("20+ Delegates", "What to Expect") reframed as past-tense achievement or removed
+- [x] **COHERE-01**: `/kenya` application form is disabled post-trip with "trip closed — view the recap" messaging
+- [x] **COHERE-02**: Hardcoded "April 23 – May 6" dates in `/kenya/pack-the-mission`, `/kenya/give`, `/kenya/support/[slug]` reframed as past-tense or contextualized as the closed trip
+- [x] **COHERE-03**: Active countdown timer on homepage `kenya-section` removed or reframed ("Trip completed")
+- [x] **COHERE-04**: Homepage `/live` and `/prayer` CTAs route to existing public alternatives (`/kenya/live`) or signup flow (no public→member 404s)
+- [x] **COHERE-05**: Footer + navigation rationalized — single canonical "Kenya 2026" entry, no duplicate/conflicting paths
+- [x] **COHERE-06**: `/kenya` page stats ("20+ Delegates", "What to Expect") reframed as past-tense achievement or removed
 
 ### KENYA — Recap content & polish
 
@@ -89,12 +89,12 @@ Populated by roadmap creation — 2026-05-18.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COHERE-01 | Phase 1 | Pending |
-| COHERE-02 | Phase 1 | Pending |
-| COHERE-03 | Phase 1 | Pending |
-| COHERE-04 | Phase 1 | Pending |
-| COHERE-05 | Phase 1 | Pending |
-| COHERE-06 | Phase 1 | Pending |
+| COHERE-01 | Phase 1 | Complete ✓ |
+| COHERE-02 | Phase 1 | Complete ✓ |
+| COHERE-03 | Phase 1 | Complete ✓ |
+| COHERE-04 | Phase 1 | Complete ✓ |
+| COHERE-05 | Phase 1 | Complete ✓ |
+| COHERE-06 | Phase 1 | Complete ✓ |
 | KENYA-01 | Phase 2 | Pending |
 | KENYA-02 | Phase 3 | Pending |
 | KENYA-03 | Phase 3 | Pending |
