@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signUp, signInWithGoogle } from '@/lib/auth'
@@ -10,6 +10,15 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function SignupPage() {
+  // useSearchParams() needs a Suspense boundary in Next.js 14 App Router.
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  )
+}
+
+function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') || undefined
