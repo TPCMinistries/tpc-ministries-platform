@@ -14,6 +14,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useState } from 'react'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 
 interface BeliefSection {
   id: string
@@ -151,26 +152,28 @@ export default function BeliefsPage() {
 
       {/* Introduction */}
       <section className="border-b border-border bg-secondary/50 px-4 py-section-sm">
-        <div className="container mx-auto max-w-4xl text-center">
-          <Shield className="mx-auto mb-4 h-12 w-12 text-gold" />
-          <h2 className="mb-4 font-display text-display-sm text-navy dark:text-white">
-            Grounded in Scripture, United in Christ
-          </h2>
-          <p className="text-body-lg leading-relaxed text-muted-foreground">
-            At TPC Ministries, we hold firmly to the historic Christian faith as revealed in the Holy Scriptures.
-            These beliefs are not mere traditions but living truths that shape how we worship,
-            serve, and engage with the world around us. We invite you to explore what we believe and why it matters.
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="container mx-auto max-w-4xl text-center">
+            <Shield className="mx-auto mb-4 h-12 w-12 text-gold" />
+            <h2 className="mb-4 font-display text-display-sm text-navy dark:text-white">
+              Grounded in Scripture, United in Christ
+            </h2>
+            <p className="text-body-lg leading-relaxed text-muted-foreground">
+              At TPC Ministries, we hold firmly to the historic Christian faith as revealed in the Holy Scriptures.
+              These beliefs are not mere traditions but living truths that shape how we worship,
+              serve, and engage with the world around us. We invite you to explore what we believe and why it matters.
+            </p>
+          </div>
+        </ScrollReveal>
       </section>
 
       {/* Beliefs Grid */}
       <section className="px-4 py-section">
         <div className="container mx-auto max-w-5xl">
           <div className="space-y-6">
-            {beliefs.map((belief) => (
+            {beliefs.map((belief, idx) => (
+              <ScrollReveal key={belief.id} delay={Math.min(idx, 4) * 0.05}>
               <div
-                key={belief.id}
                 className={`cursor-pointer rounded-3xl border bg-card p-6 transition-all duration-300 ${
                   expandedBelief === belief.id ? 'border-gold/30 shadow-xl' : 'border-border hover:border-gold/20 hover:shadow-md'
                 }`}
@@ -221,6 +224,7 @@ export default function BeliefsPage() {
                   </div>
                 </div>
               </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>

@@ -2,14 +2,15 @@ import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, Globe, Users, Award, ArrowRight, BookOpen, Sparkles, Cross } from 'lucide-react'
+import { Heart, Globe, Users, Award, ArrowRight, BookOpen, Sparkles, Cross, Images } from 'lucide-react'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about TPC Ministries - a prophetic ministry transforming lives through Christ-centered teaching, discipleship, and global missions across Kenya, South Africa, and Grenada.',
+  description: 'TPC Ministries is a prophetic ministry led by Prophet Lorenzo Daughtry-Chambers. Christ-centered teaching, discipleship, and global missions — most recently Kenya 2026.',
   openGraph: {
     title: 'About TPC Ministries',
-    description: 'Transforming lives through Christ-centered teaching, discipleship, and global missions.',
+    description: 'Prophet-led ministry. Christ-centered. Globally active. See what God did in Kenya 2026.',
     type: 'website',
   },
 }
@@ -24,17 +25,37 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,184,131,0.06),transparent_60%)]" />
 
         <div className="container relative mx-auto max-w-5xl px-4 py-20 md:py-32 text-center">
-          <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            Our Story
-          </p>
-          <h1 className="mb-6 font-display text-display-md sm:text-display-lg md:text-display-xl lg:text-display-2xl text-white">
-            About TPC Ministries
-          </h1>
-          <p className="mx-auto max-w-2xl text-body-xl text-white/50">
-            A prophetic ministry transforming lives through Christ-centered
-            teaching, discipleship, and global missions
-          </p>
-          <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          <ScrollReveal>
+            <p className="mb-6 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Our Story
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="mb-6 font-display text-display-md sm:text-display-lg md:text-display-xl lg:text-display-2xl text-white">
+              Prophet-led.<br />Globally active.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="mx-auto max-w-2xl text-body-xl text-white/70">
+              TPC Ministries is the ministry of Prophet Lorenzo Daughtry-Chambers — built around hearing God, walking in assignment, and going where the work takes us.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.3}>
+            <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </ScrollReveal>
+          <ScrollReveal delay={0.4}>
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Link href="/kenya-2026">
+                <Button size="lg" className="h-12 bg-gold px-6 font-bold text-navy-950 hover:bg-gold-300">
+                  See Kenya 2026
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <a href="#story" className="text-sm font-medium uppercase tracking-[0.15em] text-white/60 transition hover:text-gold">
+                Read the story ↓
+              </a>
+            </div>
+          </ScrollReveal>
         </div>
 
         {/* Bottom gradient fade */}
@@ -42,14 +63,16 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section — Editorial */}
-      <section className="px-4 py-12 md:py-section">
+      <section id="story" className="px-4 py-12 md:py-section">
         <div className="container mx-auto max-w-6xl">
           {/* Big statement */}
-          <div className="mb-12 md:mb-20 text-center">
-            <h2 className="mx-auto max-w-4xl font-display text-display-md md:text-display-lg text-navy dark:text-white">
-              Empowering believers to discover their God-given purpose
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mb-12 md:mb-20 text-center">
+              <h2 className="mx-auto max-w-4xl font-display text-display-md md:text-display-lg text-navy dark:text-white">
+                Empowering believers to discover their God-given purpose
+              </h2>
+            </div>
+          </ScrollReveal>
 
           {/* Two-column layout */}
           <div className="grid items-start gap-8 lg:gap-16 lg:grid-cols-2">
@@ -204,21 +227,93 @@ export default function AboutPage() {
       {/* Global Reach — Stats bar */}
       <section className="border-y border-border bg-secondary/50 px-4 py-10 md:py-section-sm">
         <div className="container mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
-            {[
-              { label: 'Countries', value: '3' },
-              { label: 'Lives Impacted', value: '1,000+' },
-              { label: 'Active Members', value: '500+' },
-              { label: 'Mission Trips', value: '14-Day' },
-            ].map((stat) => (
-              <div key={stat.label} className="px-6 text-center">
-                <div className="font-display text-display-sm md:text-display-md text-navy dark:text-white">
-                  {stat.value}
+          <ScrollReveal>
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-0 md:divide-x md:divide-border">
+              {[
+                { label: 'Nations reached', value: '3' },
+                { label: 'Lives impacted', value: '1,000+' },
+                { label: 'Active members', value: '500+' },
+                { label: 'Latest mission', value: 'Kenya 2026 ✓', href: '/kenya-2026' },
+              ].map((stat) => (
+                <div key={stat.label} className="px-6 text-center">
+                  {stat.href ? (
+                    <Link href={stat.href} className="group block">
+                      <div className="font-display text-display-sm md:text-display-md text-gold transition group-hover:text-gold-300">
+                        {stat.value}
+                      </div>
+                      <div className="mt-1 text-body-sm font-medium text-muted-foreground group-hover:text-foreground">
+                        {stat.label} →
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <div className="font-display text-display-sm md:text-display-md text-navy dark:text-white">
+                        {stat.value}
+                      </div>
+                      <div className="mt-1 text-body-sm font-medium text-muted-foreground">{stat.label}</div>
+                    </>
+                  )}
                 </div>
-                <div className="mt-1 text-body-sm font-medium text-muted-foreground">{stat.label}</div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Kenya 2026 Proof Strip — real photos from latest mission */}
+      <section className="bg-navy-950 px-4 py-12 md:py-section-sm">
+        <div className="container mx-auto max-w-6xl">
+          <ScrollReveal>
+            <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="mb-2 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+                  From the latest mission
+                </p>
+                <h3 className="font-display text-display-sm md:text-display-md text-white">
+                  Kenya 2026 — fourteen days.
+                </h3>
               </div>
-            ))}
-          </div>
+              <Link
+                href="/kenya-2026/gallery"
+                className="group inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] text-gold transition hover:border-gold hover:bg-gold/20"
+              >
+                <Images className="h-3.5 w-3.5" />
+                See all 50 photos
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6 md:gap-3">
+              {[
+                ['/kenya-2026/photos/day-01/01.jpg', 'Day 1'],
+                ['/kenya-2026/photos/day-04/02.jpg', 'Day 4'],
+                ['/kenya-2026/photos/day-06/03.jpg', 'Day 6'],
+                ['/kenya-2026/photos/day-08/04.jpg', 'Day 8'],
+                ['/kenya-2026/photos/day-11/01.jpg', 'Day 11'],
+                ['/kenya-2026/photos/day-14/02.jpg', 'Day 14'],
+              ].map(([src, alt]) => (
+                <Link
+                  key={src}
+                  href="/kenya-2026/gallery"
+                  className="group relative aspect-square overflow-hidden rounded-xl bg-navy-900 ring-1 ring-white/10 transition-all hover:ring-gold/50"
+                >
+                  <Image
+                    src={src}
+                    alt={`Kenya 2026 — ${alt}`}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 16vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-gold">
+                      {alt}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -262,34 +357,37 @@ export default function AboutPage() {
       <section className="relative overflow-hidden bg-navy-950 px-4 py-16 md:py-section-lg">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.1),transparent_70%)]" />
 
-        <div className="container relative mx-auto max-w-3xl text-center">
-          <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
-            Ready?
-          </p>
-          <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
-            Join Us on This Journey
-          </h2>
-          <p className="mb-10 text-body-xl text-white/50">
-            Be part of a community that&apos;s transforming lives and impacting nations
-          </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link href="/auth/signup">
-              <Button variant="glow" size="xl">
-                Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/partner">
-              <Button
-                variant="outline"
-                size="xl"
-                className="border-2 border-gold/30 text-white hover:bg-gold/10"
-              >
-                Become a Partner
-              </Button>
-            </Link>
+        <ScrollReveal>
+          <div className="container relative mx-auto max-w-3xl text-center">
+            <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">
+              Ready?
+            </p>
+            <h2 className="mb-6 font-display text-display-md md:text-display-lg text-white">
+              Walk it with us.
+            </h2>
+            <p className="mb-10 text-body-xl text-white/60">
+              Engage the prophet, support the work, or step into the next mission.
+            </p>
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <Link href="/auth/signup">
+                <Button variant="glow" size="xl">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/giving">
+                <Button
+                  variant="outline"
+                  size="xl"
+                  className="border-2 border-gold/30 text-white hover:bg-gold/10"
+                >
+                  <Heart className="mr-2 h-5 w-5" />
+                  Support the work
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
     </div>
   )

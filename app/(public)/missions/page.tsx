@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Globe, Heart, Cross, Activity, BookOpen, Laptop } from 'lucide-react'
+import { ArrowRight, Globe, Heart, Cross, Activity, BookOpen, Laptop, CheckCircle } from 'lucide-react'
+import { ScrollReveal } from '@/components/motion/scroll-reveal'
 
 export default function MissionsPage() {
   const missions = [
@@ -8,31 +9,37 @@ export default function MissionsPage() {
       id: 'kenya',
       country: 'Kenya',
       flag: '🇰🇪',
-      tagline: 'Empowering Communities',
+      tagline: 'Kenya 2026 — Complete',
+      status: 'complete' as const,
       description:
-        'Through education, faith-based programs, and community development, we\'re transforming lives across Kenya',
+        'Fourteen days on the ground in Kenya. The trip is complete — see the footage, hear the stories, and walk what we built.',
       color: 'from-green-600 to-green-800',
-      href: '/missions/kenya',
+      href: '/kenya-2026',
+      ctaLabel: 'See the recap',
     },
     {
       id: 'south-africa',
       country: 'South Africa',
       flag: '🇿🇦',
       tagline: 'Building Churches',
+      status: 'active' as const,
       description:
-        'Planting churches, training leaders, and establishing strong faith communities throughout South Africa',
+        'Planting churches, training leaders, and establishing strong faith communities throughout South Africa.',
       color: 'from-blue-600 to-blue-800',
       href: '/missions/south-africa',
+      ctaLabel: 'Learn more',
     },
     {
       id: 'grenada',
       country: 'Grenada',
       flag: '🇬🇩',
       tagline: 'Serving Families',
+      status: 'active' as const,
       description:
-        'Strengthening families, providing support, and building a strong foundation of faith in Grenada',
+        'Strengthening families, providing support, and building a strong foundation of faith in Grenada.',
       color: 'from-red-600 to-red-800',
       href: '/missions/grenada',
+      ctaLabel: 'Learn more',
     },
   ]
 
@@ -129,27 +136,35 @@ export default function MissionsPage() {
           </div>
 
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {missions.map((mission) => (
-              <div key={mission.id} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-                <div className={`bg-gradient-to-br ${mission.color} p-8 text-center`}>
-                  <div className="mb-4 text-7xl">{mission.flag}</div>
-                  <h3 className="mb-2 font-display text-display-sm text-white">
-                    {mission.country}
-                  </h3>
-                  <p className="text-body-lg font-semibold text-white/90">{mission.tagline}</p>
-                </div>
+            {missions.map((mission, i) => (
+              <ScrollReveal key={mission.id} delay={i * 0.1}>
+                <div className="group overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+                  <div className={`relative bg-gradient-to-br ${mission.color} p-8 text-center`}>
+                    {mission.status === 'complete' && (
+                      <div className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.15em] text-white backdrop-blur-sm">
+                        <CheckCircle className="h-3 w-3" />
+                        Complete
+                      </div>
+                    )}
+                    <div className="mb-4 text-7xl">{mission.flag}</div>
+                    <h3 className="mb-2 font-display text-display-sm text-white">
+                      {mission.country}
+                    </h3>
+                    <p className="text-body-lg font-semibold text-white/90">{mission.tagline}</p>
+                  </div>
 
-                <div className="p-6">
-                  <p className="mb-6 text-body-md text-muted-foreground">{mission.description}</p>
+                  <div className="p-6">
+                    <p className="mb-6 text-body-md text-muted-foreground">{mission.description}</p>
 
-                  <Link href={mission.href} className="block">
-                    <Button className="w-full bg-navy text-white hover:bg-navy-800">
-                      Learn More
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                    <Link href={mission.href} className="block">
+                      <Button className="w-full bg-navy text-white hover:bg-navy-800">
+                        {mission.ctaLabel}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
