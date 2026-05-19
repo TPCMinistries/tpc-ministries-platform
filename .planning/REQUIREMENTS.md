@@ -85,41 +85,41 @@ Requirements for this milestone. Each maps to one roadmap phase.
 
 ## Traceability
 
-Populated by roadmap creation.
+Populated by roadmap creation — 2026-05-18.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COHERE-01 | TBD | Pending |
-| COHERE-02 | TBD | Pending |
-| COHERE-03 | TBD | Pending |
-| COHERE-04 | TBD | Pending |
-| COHERE-05 | TBD | Pending |
-| COHERE-06 | TBD | Pending |
-| KENYA-01 | TBD | Pending |
-| KENYA-02 | TBD | Pending |
-| KENYA-03 | TBD | Pending |
-| KENYA-04 | TBD | Pending |
-| KENYA-05 | TBD | Pending |
-| DESIGN-01 | TBD | Pending |
-| DESIGN-02 | TBD | Pending |
-| DESIGN-03 | TBD | Pending |
-| DESIGN-04 | TBD | Pending |
-| AI-01 | TBD | Pending |
-| AI-02 | TBD | Pending |
-| AI-03 | TBD | Pending |
-| CONVERT-01 | TBD | Pending |
-| CONVERT-02 | TBD | Pending |
-| CONVERT-03 | TBD | Pending |
-| LAUNCH-01 | TBD | Pending |
-| LAUNCH-02 | TBD | Pending |
-| LAUNCH-03 | TBD | Pending |
-| LAUNCH-04 | TBD | Pending |
+| COHERE-01 | Phase 1 | Pending |
+| COHERE-02 | Phase 1 | Pending |
+| COHERE-03 | Phase 1 | Pending |
+| COHERE-04 | Phase 1 | Pending |
+| COHERE-05 | Phase 1 | Pending |
+| COHERE-06 | Phase 1 | Pending |
+| KENYA-01 | Phase 2 | Pending |
+| KENYA-02 | Phase 3 | Pending |
+| KENYA-03 | Phase 3 | Pending |
+| KENYA-04 | Phase 3 | Pending |
+| KENYA-05 | Phase 4 | Pending |
+| DESIGN-01 | Phase 5 | Pending |
+| DESIGN-02 | Phase 6 | Pending |
+| DESIGN-03 | Phase 6 | Pending |
+| DESIGN-04 | Phase 6 | Pending |
+| AI-01 | Phase 7 | Pending |
+| AI-02 | Phase 7 | Pending |
+| AI-03 | Phase 7 | Pending |
+| CONVERT-01 | Phase 8 | Pending |
+| CONVERT-02 | Phase 8 | Pending |
+| CONVERT-03 | Phase 8 | Pending |
+| LAUNCH-01 | Phase 9 | Pending |
+| LAUNCH-02 | Phase 9 | Pending |
+| LAUNCH-03 | Phase 9 | Pending |
+| LAUNCH-04 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 25 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 25 ⚠
+- Mapped to phases: 25
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 after initial definition*
+*Last updated: 2026-05-18 — Traceability populated after roadmap creation*

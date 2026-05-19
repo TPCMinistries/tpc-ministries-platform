@@ -5,15 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-05-18)
 
 **Core value:** A Gen-Z visitor should land on tpcmin.org, engage with the prophet's voice (via story or AI), and convert — while member data stays HIGH-sensitivity protected.
-**Current focus:** Milestone v1.0 — Kenya 2026 Recap + Gen-Z Engagement Push
+**Current focus:** Milestone v1.0 — Phase 1: Coherence Baseline
 
 ## Current Position
 
-Milestone: v1.0 — Kenya 2026 Recap + Gen-Z Engagement Push
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-18 — Milestone v1.0 started
+Phase: 1 of 9 (Coherence Baseline)
+Plan: 0 of 2 in current phase
+Status: Phase 1 ready to plan
+Last activity: 2026-05-18 — Roadmap created; 9 phases / 25 requirements mapped
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -22,39 +23,44 @@ Last activity: 2026-05-18 — Milestone v1.0 started
 - Average duration: —
 - Total execution time: 0 hours
 
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+**Recent Trend:**
+- Last 5 plans: —
+- Trend: —
+
+*Updated after each plan completion*
+
 ## Accumulated Context
 
 ### Decisions
 
 See PROJECT.md Key Decisions.
+Recent decisions affecting current work:
+
+- Phase 2: ARW conversion — dcraw NOT installed; validate `sips` first, then ImageMagick/vips as fallback; do NOT install dcraw
+- Phase 2: Target max-side 1600px, under 300 KB per exported JPG; output to `/public/kenya-2026/photos/day-{N}/`
+- All phases: No new DB tables this milestone — shared DB with SoG + Boardroom Prayer Room is high-risk
+- Phase 1: Two Kenya routes coexist — `/kenya` (planning archive, now closed) + `/kenya-2026` (live recap front door)
 
 ### Pending Todos
 
-- Lorenzo to provide day-by-day narrative for Days 1–14 (currently neutral placeholder)
-- Decide: edit podcast Eps 1 & 2 fully, or ship raw video first?
-- ARW → JPG conversion approach: install dcraw vs. use sips vs. defer
+- Lorenzo to provide day-by-day narrative for Days 1-14 (Phase 3 uses designer captions as placeholder)
+- Decide podcast Eps 1 & 2: edit fully or ship raw video? (Deferred to v1.1)
+- ARW conversion approach must be validated in Phase 2, plan 02-01 before bulk curation
 
 ### Blockers/Concerns
 
-- Insta360 footage (169 GB) — needs special player, out of scope this milestone
-- Member data is HIGH sensitivity — DB shared with Streams of Grace + Boardroom
-- /db-safe enforced on any DB work
-- Local disk has only 87 GB free; can't bulk-copy 2.1 TB of raw footage
-
-### Shipped Before This Milestone
-
-- `/kenya-2026` immersive recap page (8 sections, all video assets serving)
-- Prophet Lorenzo public AI chat widget at `/api/ai/ask-prophet-public`
-- Homepage hero rewrite (prophet voice + AI tease)
-- Reels section (6 vertical Kenya shorts + 2 YouTube)
-- Cinema section on homepage
-- Live section with countdown / live state
-- Header "Kenya 2026" route fix → `/kenya-2026`
-- Recap banner on stale `/kenya` planning page
-- Service Worker dev-mode auto-unregister
+- Phase 2: sips ARW support unverified — plan 02-01 must validate before bulk work; if sips fails, try vipsthumbnail (libvips) or ffmpeg
+- Disk: 87 GB free — do NOT bulk-copy raw footage; work from mounted Transcend drive directly
+- DB: /db-safe enforced; no DROP/DELETE; shared schema risk with SoG + Boardroom
 
 ## Session Continuity
 
 Last session: 2026-05-18
-Stopped at: Milestone v1.0 setup (this file)
-Resume file: None — proceed to requirements definition
+Stopped at: Roadmap and STATE.md created; requirements traceability updated
+Resume file: None — run `/gsd:plan-phase 1` to begin
