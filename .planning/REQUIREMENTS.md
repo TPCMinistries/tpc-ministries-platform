@@ -27,10 +27,10 @@ Requirements for this milestone. Each maps to one roadmap phase.
 
 ### DESIGN — Public-page visual + tonal sweep
 
-- [ ] **DESIGN-01**: `/about`, `/beliefs`, `/missions` aligned to new design system (prophet voice, motion variants, navy/gold palette)
-- [ ] **DESIGN-02**: `/teachings`, `/ebooks`, `/podcast`, `/prophecy` aligned to new design system
-- [ ] **DESIGN-03**: `/assessments`, `/stories`, `/contact`, `/connect`, `/faq` polished to coherent style (lighter rebuild — typography, color, motion only)
-- [ ] **DESIGN-04**: Shared design tokens documented in code (`components/ui/`) — typography scale, motion presets, color usage — so future pages stay aligned
+- [x] **DESIGN-01**: `/about`, `/beliefs`, `/missions` aligned to new design system (prophet voice, motion variants, navy/gold palette)
+- [x] **DESIGN-02**: `/teachings`, `/ebooks`, `/podcast`, `/prophecy` aligned to new design system
+- [x] **DESIGN-03**: `/assessments`, `/stories`, `/contact`, `/connect`, `/faq` polished to coherent style (lighter rebuild — typography, color, motion only)
+- [x] **DESIGN-04**: Shared design tokens documented in code (`components/ui/`) — typography scale, motion presets, color usage — so future pages stay aligned
 
 ### AI — Prophet Lorenzo engagement refinement
 
@@ -100,10 +100,10 @@ Populated by roadmap creation — 2026-05-18.
 | KENYA-03 | Phase 3 | Complete ✓ |
 | KENYA-04 | Phase 3 | Complete ✓ |
 | KENYA-05 | Phase 4 | Complete ✓ |
-| DESIGN-01 | Phase 5 | Pending |
-| DESIGN-02 | Phase 6 | Pending |
-| DESIGN-03 | Phase 6 | Pending |
-| DESIGN-04 | Phase 6 | Pending |
+| DESIGN-01 | Phase 5 | Complete ✓ |
+| DESIGN-02 | Phase 6 | Complete ✓ |
+| DESIGN-03 | Phase 6 | Complete ✓ |
+| DESIGN-04 | Phase 6 | Complete ✓ |
 | AI-01 | Phase 7 | Pending |
 | AI-02 | Phase 7 | Pending |
 | AI-03 | Phase 7 | Pending |
