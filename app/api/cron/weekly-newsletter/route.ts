@@ -200,7 +200,8 @@ export async function GET(request: NextRequest) {
           )
 
           await getResend().emails.send({
-            from: 'TPC Ministries <newsletter@tpcmin.com>',
+            from: process.env.RESEND_NEWSLETTER_FROM
+              || 'TPC Ministries <newsletter@tpcmin.org>',
             to: recipient.email,
             subject: `This Week at TPC Ministries - ${weekDate}`,
             html: emailHtml,

@@ -158,6 +158,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Preconnect to third-party origins the public site definitely hits */}
+        <link rel="preconnect" href="https://naulwwnzrznslvhhxfed.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://naulwwnzrznslvhhxfed.supabase.co" />
+        <link rel="preconnect" href="https://js.stripe.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://js.stripe.com" />
+
         {/* JSON-LD Structured Data */}
         <OrganizationSchema />
         <WebSiteSchema />

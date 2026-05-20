@@ -1,0 +1,66 @@
+-- Pin search_path on 61 flagged functions to prevent schema-shadowing
+-- attacks. Supabase advisor: function_search_path_mutable.
+-- pg_catalog first so built-ins can't be shadowed; public second so
+-- existing bare-table references in function bodies keep working.
+
+alter function public.auto_subscribe_new_member() set search_path = pg_catalog, public;
+alter function public.calculate_daily_stats() set search_path = pg_catalog, public;
+alter function public.calculate_engagement_score(p_member_id uuid) set search_path = pg_catalog, public;
+alter function public.check_and_award_badges() set search_path = pg_catalog, public;
+alter function public.cleanup_expired_insights() set search_path = pg_catalog, public;
+alter function public.complete_challenge_day(p_challenge_id uuid, p_day_number integer, p_reflection text) set search_path = pg_catalog, public;
+alter function public.current_user_has_role(required_role character varying) set search_path = pg_catalog, public;
+alter function public.generate_certificate_number() set search_path = pg_catalog, public;
+alter function public.generate_invite_code() set search_path = pg_catalog, public;
+alter function public.get_admin_unread_counts() set search_path = pg_catalog, public;
+alter function public.get_collection_progress(p_user_id uuid, p_collection_id uuid) set search_path = pg_catalog, public;
+alter function public.get_member_profile_stats(p_member_id uuid) set search_path = pg_catalog, public;
+alter function public.get_member_tier(member_uuid uuid) set search_path = pg_catalog, public;
+alter function public.get_streak_stats(p_user_id uuid) set search_path = pg_catalog, public;
+alter function public.get_unread_voice_count() set search_path = pg_catalog, public;
+alter function public.handle_new_user() set search_path = pg_catalog, public;
+alter function public.has_minimum_role(user_role character varying, required_role character varying) set search_path = pg_catalog, public;
+alter function public.increment_assessment_completions() set search_path = pg_catalog, public;
+alter function public.increment_play_count(music_uuid uuid) set search_path = pg_catalog, public;
+alter function public.is_admin() set search_path = pg_catalog, public;
+alter function public.is_tpc_admin() set search_path = pg_catalog, public;
+alter function public.join_challenge(p_challenge_id uuid) set search_path = pg_catalog, public;
+alter function public.log_community_activity(p_member_id uuid, p_activity_type character varying, p_title character varying, p_description text, p_metadata jsonb, p_is_public boolean) set search_path = pg_catalog, public;
+alter function public.log_lead_activity() set search_path = pg_catalog, public;
+alter function public.log_role_change() set search_path = pg_catalog, public;
+alter function public.mark_voice_message_read(message_id uuid) set search_path = pg_catalog, public;
+alter function public.on_assessment_complete() set search_path = pg_catalog, public;
+alter function public.on_badge_earned() set search_path = pg_catalog, public;
+alter function public.on_discussion_created() set search_path = pg_catalog, public;
+alter function public.on_group_join() set search_path = pg_catalog, public;
+alter function public.on_member_connection() set search_path = pg_catalog, public;
+alter function public.process_scheduled_prophecies() set search_path = pg_catalog, public;
+alter function public.publish_scheduled_content() set search_path = pg_catalog, public;
+alter function public.record_activity(p_user_id uuid, p_activity_type text, p_timezone text) set search_path = pg_catalog, public;
+alter function public.run_prophecy_scheduler() set search_path = pg_catalog, public;
+alter function public.set_updated_at() set search_path = pg_catalog, public;
+alter function public.trigger_update_streak() set search_path = pg_catalog, public;
+alter function public.update_conversation_last_message() set search_path = pg_catalog, public;
+alter function public.update_conversation_stats() set search_path = pg_catalog, public;
+alter function public.update_course_counts() set search_path = pg_catalog, public;
+alter function public.update_course_rating() set search_path = pg_catalog, public;
+alter function public.update_discussion_stats() set search_path = pg_catalog, public;
+alter function public.update_discussion_updated_at() set search_path = pg_catalog, public;
+alter function public.update_enrollment_progress() set search_path = pg_catalog, public;
+alter function public.update_journal_streak() set search_path = pg_catalog, public;
+alter function public.update_kenya_updated_at() set search_path = pg_catalog, public;
+alter function public.update_leads_updated_at() set search_path = pg_catalog, public;
+alter function public.update_member_engagement_scores() set search_path = pg_catalog, public;
+alter function public.update_member_streak() set search_path = pg_catalog, public;
+alter function public.update_member_streak(p_member_id uuid) set search_path = pg_catalog, public;
+alter function public.update_participant_admin_credits() set search_path = pg_catalog, public;
+alter function public.update_participant_amount_paid() set search_path = pg_catalog, public;
+alter function public.update_participant_fundraising() set search_path = pg_catalog, public;
+alter function public.update_participant_payment_status() set search_path = pg_catalog, public;
+alter function public.update_prayer_count() set search_path = pg_catalog, public;
+alter function public.update_prophecy_deliveries_updated_at() set search_path = pg_catalog, public;
+alter function public.update_shared_conversations_updated_at() set search_path = pg_catalog, public;
+alter function public.update_sms_conversation() set search_path = pg_catalog, public;
+alter function public.update_spiritual_profile_stats() set search_path = pg_catalog, public;
+alter function public.update_updated_at_column() set search_path = pg_catalog, public;
+alter function public.use_streak_freeze(p_user_id uuid, p_timezone text) set search_path = pg_catalog, public;

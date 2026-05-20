@@ -32,7 +32,7 @@ interface Prophecy {
   id: string
   title: string
   content: string
-  prophecy_type: 'public' | 'personal'
+  type: 'public' | 'personal'
   prophecy_date: string
   themes?: string
   audio_url?: string
@@ -75,36 +75,38 @@ export default function MyPropheciesPage() {
 
       setUserId(user.id)
 
-      // Get member name
+      // Get member id + name (personal prophecies key off members.id, not auth.users.id)
       const { data: member } = await supabase
         .from('members')
-        .select('first_name')
+        .select('id, first_name')
         .eq('user_id', user.id)
         .single()
 
       if (member) setMemberName(member.first_name)
 
-      // Fetch personal prophecies (assigned to this user)
-      const { data: personalData, error: personalError } = await supabase
-        .from('prophecies')
-        .select('*')
-        .eq('prophecy_type', 'personal')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('prophecy_date', { ascending: false })
+      // Fetch personal prophecies (assigned to this member via recipient_id)
+      if (member?.id) {
+        const { data: personalData, error: personalError } = await supabase
+          .from('prophecies')
+          .select('*')
+          .eq('type', 'personal')
+          .eq('recipient_id', member.id)
+          .eq('published', true)
+          .order('prophecy_date', { ascending: false })
 
-      if (personalError) {
-        console.error('Error fetching personal prophecies:', personalError)
-      } else {
-        setPersonalProphecies(personalData || [])
+        if (personalError) {
+          console.error('Error fetching personal prophecies:', personalError)
+        } else {
+          setPersonalProphecies(personalData || [])
+        }
       }
 
-      // Fetch public prophecies (featured ones)
+      // Fetch public prophecies
       const { data: publicData, error: publicError } = await supabase
         .from('prophecies')
         .select('*')
-        .eq('prophecy_type', 'public')
-        .eq('status', 'active')
+        .eq('type', 'public')
+        .eq('published', true)
         .order('prophecy_date', { ascending: false })
 
       if (publicError) {
@@ -231,7 +233,7 @@ export default function MyPropheciesPage() {
 
   // Full-screen prophecy reading view
   if (selectedProphecy) {
-    const isPersonal = selectedProphecy.prophecy_type === 'personal'
+    const isPersonal = selectedProphecy.type === 'personal'
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 dark:from-slate-900 dark:via-purple-950/30 dark:to-slate-900">
@@ -725,7 +727,7 @@ export default function MyPropheciesPage() {
               return (
                 <div className="space-y-4">
                   {filteredFavorites.map((prophecy) => {
-                    const isPersonal = prophecy.prophecy_type === 'personal'
+                    const isPersonal = prophecy.type === 'personal'
 
                     return (
                       <Card
