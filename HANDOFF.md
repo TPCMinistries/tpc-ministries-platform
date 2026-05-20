@@ -4,6 +4,16 @@
 
 ---
 
+## ⚡ Session 4 highlights (2026-05-20, later)
+
+After session 3, knocked out the non-Stripe punch list:
+1. **Personal prophecy view fixed at schema level** — page was querying `prophecy_type`, `user_id`, `status` (none exist on the prophecies table). Rewrote queries to use `type`, `recipient_id` (FK → members.id, so the page now looks up member.id first), and `published=true`. Added 4 missing UI columns (themes, audio_url, video_url, is_featured) as nullable so the rich UI can render once content exists.
+2. **Weekly newsletter cron wired up** — the substantial `/api/cron/weekly-newsletter` (AI summary, batched send, campaign logging) was sitting cold. Added to `vercel.json` on Sundays 14:00 UTC, plus fixed its sender domain bug (`newsletter@tpcmin.com` → `.org`, with `RESEND_NEWSLETTER_FROM` env override).
+3. **Pinned `search_path` on 61 SECURITY DEFINER functions** to `pg_catalog,public` — preempts schema-shadowing attacks. Largest remaining WARN category cleared.
+4. **Preconnect hints** for Supabase + Stripe.js added in the root layout — saves DNS+TLS on first auth/donation hit.
+
+Supabase advisor state: **175 → 114 lints (-35%)**, ERRORs unchanged at 3 (all intentional). WARN `function_search_path_mutable: 61 → 0`.
+
 ## ⚡ Session 3 highlights (2026-05-20)
 
 Building on the audit closeout, this session:
@@ -130,17 +140,17 @@ Today's products are in test mode. To go live:
 
 ### 🟡 P1 — Remaining cleanup
 
-**3. Weekly newsletter cron — implement or delete**
-`/api/cron/weekly-newsletter/route.ts` exists but is NOT in `vercel.json` crons. Decide.
-
-**4. Personal prophecy view broken at schema level**
-`app/(member)/my-prophecies/page.tsx` filters by `prophecy_type='personal'` and `user_id=user.id`. Neither column exists on the `prophecies` table (the actual columns are `type` and `recipient_id`). Decide: fix the page or remove the feature.
-
-**5. Performance push to Lighthouse 90+** (currently 75; today's work likely got it to ~85)
+**3. Performance push to Lighthouse 90+** (currently 75; sessions 3+4 should get it to ~85)
 Bigger wins still on the table: re-encode hero video to AVIF/WebM (offline ffmpeg work), defer below-fold sections via dynamic imports + IntersectionObserver, prefetch likely-next-pages.
 
-**6. Set `ADMIN_EMAIL` env var in Vercel** (currently falls back to `info@tpcmin.org`)
+**4. Set `ADMIN_EMAIL` env var in Vercel** (currently falls back to `info@tpcmin.org`)
 Prayer-request admin notifications + contact form submissions route here.
+
+**5. Enable Supabase auth leaked-password protection** (1 advisor WARN, UI click in Supabase dashboard, no migration)
+Auth → Settings → Password Strength → toggle HIBP check.
+
+**6. Review storage bucket public-listing** (1 advisor WARN, `public_bucket_allows_listing`)
+Some bucket is set to allow listing; review whether intentional.
 
 ### 🟢 P2 — Polish
 
@@ -331,6 +341,11 @@ May need to add to Vercel later:
 ---
 
 ## 🔑 Commits worth knowing
+
+Session 4 (2026-05-20):
+```
+b9f12dc  fix(misc): prophecy schema drift, weekly newsletter cron, DB hardening, preconnect
+```
 
 Session 3 (2026-05-20):
 ```
