@@ -1,6 +1,55 @@
 # TPC Ministries Platform — Handoff
 
-> **Last updated 2026-05-19** · Milestone v1.0 shipped + 5 critical hotfixes deployed + site audit completed. **Resume from here** in the next session.
+> **Last updated 2026-05-19 (audit closeout session)** · v1.0 shipped + the entire audit punch list closed + multiple newly-discovered schema-drift bombs fixed. **Resume from here.**
+
+---
+
+## ⚡ Audit closeout (this session)
+
+The original `/tmp/tpc-audit-report.md` punch list (now at `.planning/AUDIT-2026-05-19.md`) is **fully closed**. Status of every item:
+
+| # | Item | Status | Commit |
+|---|---|---|---|
+| 1 | Auth callback honors `?next=` | ✅ | `f8413ed` |
+| 2 | Donation thank-you email wired | ✅ | `f8413ed` + `af82332` (the webhook insert it depended on was also broken — fixed) |
+| 3 | `/partner/upgrade` route exists | ✅ | `4dcf301` |
+| 4 | Membership Stripe webhook routes correctly | ✅ | `4dcf301` |
+| 5 | Assessment tables (`assessment_responses`, `member_assessment_results`) exist with correct columns + RLS | ✅ | `4dcf301` (created table that didn't exist + added 12 missing columns) |
+| 6 | Prayer-request confirmation + admin notification emails | ✅ | `4dcf301` |
+| 7 | Devotional sender domain + auto-subscribe | ✅ | `f8413ed` (domain) + DB trigger `auto_subscribe_new_member` already wired (audit was wrong about this) |
+| 8 | Welcome email URL env var (and 11 other call sites) | ✅ | `af82332` (centralized in `lib/base-url.ts`) |
+| 9 | Delete dead assessments dual-system | ✅ | `6ed18a0` (removed all 9 `/api/assessments/*` routes — zero callers) |
+| 10 | Kenya forms locked at 410 | ✅ | `f8413ed` |
+| bonus | Dead PDF + Share buttons on results page | ✅ | `af82332` (PDF removed, Share wired to navigator.share + clipboard fallback) |
+
+### Newly-discovered schema-drift bombs (NOT in original audit) — also fixed
+
+- **`donations` webhook was inserting columns that don't exist.** The table is `(member_id, amount, currency, stripe_payment_intent_id, donation_type [one_time|recurring], designation, is_anonymous, status [succeeded|pending|failed], fund_id, is_recurring)` — completely different from what the webhook wrote (`type`, `frequency`, `user_id`, `donor_email`, `donor_name`, `stripe_session_id`, `status='completed'`, `notes`). **Every donation that came through was silently failing the insert.** Webhook rewritten in `af82332`. Donor name/email stays in Stripe (canonical for receipts) — passed in-process to the receipt email.
+- **`assessment_responses` table did not exist** and `member_assessment_results` was missing 12 columns the code inserted. Created/extended in `4dcf301`.
+- **`NEXT_PUBLIC_URL` was referenced in 12 places** but never set in prod. robots/sitemap/RSS fell back to wrong domain (`tpcministries.com`); two notification routes fell back to `localhost:3000`. Centralized in `lib/base-url.ts` in `af82332`.
+- **11 PII-bearing tables had RLS disabled.** Supabase advisor `rls_disabled_in_public` is now 0 (excluding `conversation_participants`, which is intentionally app-level-controlled per its table comment). Coverage:
+  - `donations` — own member + admin
+  - `admin_notes` — admin only
+  - `member_subscriptions` — own member + admin (also added `tier_slug`, `billing_cycle`, etc.)
+  - `membership_tiers`, `seasons` — public read + admin all
+  - `member_seasons` — own member + admin
+  - `prophecies` — published-only public SELECT + admin all
+  - `documents`, `prayer_responses`, `prayer_supporters` — admin only (unused in app code)
+
+### Migrations applied (TPC ministries DB `naulwwnzrznslvhhxfed`)
+
+1. `20260519_fix_assessment_tables` — created `assessment_responses`, added 12 columns to `member_assessment_results`, permissive UUID-token RLS
+2. `20260519_membership_subscriptions` — added `tier_slug`/`billing_cycle`/`user_id`/`stripe_customer_id`/`canceled_at` to `member_subscriptions`, RLS
+3. `20260519_donations_rls_lockdown` — donations: own + admin
+4. `20260519_safe_rls_lockdown` — admin_notes, membership_tiers, seasons, member_seasons
+5. `20260519_pii_rls_lockdown` — prophecies, documents, prayer_responses, prayer_supporters
+
+### Code additions worth knowing
+
+- **`lib/membership/tiers.ts`** — single source of truth for membership tier slugs + prices (partner $50/$500, covenant $150/$1500). Used by both `/api/stripe/create-checkout` and `/partner/upgrade`.
+- **`lib/base-url.ts`** — `getBaseUrl()` returns `NEXT_PUBLIC_SITE_URL || NEXT_PUBLIC_URL || 'https://tpcmin.org'`. Use this for any URL building going forward; do not reference `NEXT_PUBLIC_URL` directly.
+- **`app/(public)/partner/upgrade/page.tsx`** — Partner/Covenant flow: tier-aware, auth-gated with `?next=` redirect, monthly/annual selector.
+- **`app/api/stripe/webhook/route.ts`** — now routes `metadata.type==='membership'` to a dedicated `handleMembershipCheckout` that upgrades tier + records subscription. Recurring invoices for memberships go to `recordMembershipInvoice` (no donations insert). Cancellation downgrades back to free.
 
 ---
 
@@ -52,64 +101,43 @@
 
 ## 🚨 Open items for next session — PRIORITY ORDER
 
-> Sourced from `/tmp/tpc-audit-report.md` (full 1,484-word audit). Read that file first.
+The original audit punch list is closed (see table above). What's left:
 
-### 🔴 P0 — Blocking the conversion path
+### 🔴 P0 — Verify the rewrites against real Stripe
 
-**1. Verify assessment tables exist in Supabase**
-- Live quiz code writes to `assessment_responses` + `member_assessment_results`
-- Neither table is in `supabase/schema.sql` or any migration file
-- If they don't exist, **every assessment submission is silently failing**
-- Action: run `mcp__supabase-tpc__list_tables` or check Supabase dashboard, confirm tables + RLS
-- If missing: write migration + apply
+**1. End-to-end Stripe test mode validation**
+The donation + membership webhook handlers were significantly rewritten this session. Code is type-checked but **not yet exercised against a real Stripe webhook**. Before promoting to live mode in any meaningful volume:
+- Trigger a test donation via `/giving` in Stripe test mode → confirm `donations` insert succeeds + receipt email fires + giver auto-upgrades to partner
+- Trigger a test membership via `/partner/upgrade?tier=partner` → confirm `member_subscriptions` row lands + `members.role` upgrades + redirect to `/member/account?tab=membership&success=true`
+- Trigger a test monthly renewal (`stripe trigger invoice.payment_succeeded`) → confirm `current_period_end` updates without a duplicate donations row
 
-**2. Build `/partner/upgrade` route + fix Stripe membership webhook**
-- `/partner` page links to `/partner/upgrade?tier=partner` and `tier=covenant` — those routes 404
-- Even if they existed, Stripe webhook has no `metadata.type === 'membership'` branch
-- The CHECK constraint on `donations.type` blocks `'membership'`, so Partner subs error inserting
-- Action: build `/partner/upgrade/page.tsx` → Stripe checkout → webhook branch that updates `members.tier` + `.role` WITHOUT inserting into donations (or relax constraint)
+### 🟡 P1 — Performance + remaining advisor flags
 
-**3. Prayer-request silent failure**
-- `/api/prayer/submit` writes to `prayer_requests` and returns. No email, no SMS, no admin notification
-- Users have no confirmation their request was received
-- Action: wire confirmation email to submitter + admin notification email
+**2. Mobile Lighthouse Performance 75 → 90+**
+- Hero video to AVIF/WebM, defer AskProphetWidget mount until idle, `loading="eager"` only on first photo per gallery
+- A11y 96, BP 100, SEO 100 are already good — only Perf needs work
 
-### 🟡 P1 — UX paper cuts
+**3. 8 SECURITY DEFINER views still flagged ERROR-level by Supabase advisor**
+- `user_activity_stats`, `kenya_fundraising_public`, `kenya_trip_fundraising_public`, `kenya_trip_participant_status`, `kenya_sponsorship_stats`, `kenya_supply_pledge_stats`, `kenya_supply_fund_stats`
+- These run with the view creator's privileges, bypassing RLS on underlying tables. For the `_public` ones this may be intentional (aggregate public stats). For the others, review whether `SECURITY INVOKER` is acceptable.
+- Audit each, decide which need `SECURITY INVOKER`, write migrations.
 
-**4. Delete the dead second assessment system**
-- `/api/assessments/submit-anonymous` + `submit-member` use different tables (`assessments`, `assessment_questions`) + different calculator
-- Dead code, never called from the live quiz pages
-- Action: delete both routes + remove unused calculator code
+**4. Weekly newsletter cron — implement or delete**
+`/api/cron/weekly-newsletter/route.ts` exists but is NOT in `vercel.json` crons. Decide.
 
-**5. Auto-subscribe new members to daily devotional**
-- New members aren't inserted into `email_subscriptions` on signup
-- The cron at `/api/cron/daily-devotional` has 0 recipients
-- Action: in signup flow or DB trigger, default-subscribe new members (with opt-out)
+**5. Personal prophecy view broken at schema level**
+`app/(member)/my-prophecies/page.tsx` filters by `prophecy_type='personal'` and `user_id=user.id`. Neither column exists on the `prophecies` table (the actual columns are `type` and `recipient_id`). Decide: fix the page or remove the feature.
 
-**6. Results page dead buttons**
-- "Download PDF Results" + "Share Results" on every assessment results page have no `onClick`
-- Action: hide them OR wire them (PDF generation + Web Share API)
+### 🟢 P2 — Polish
 
-**7. Weekly newsletter cron is dead code**
-- `/api/cron/weekly-newsletter` exists but is NOT in `vercel.json` crons
-- Action: either delete the route OR add to vercel.json
+**6. Edit + publish podcast Episodes 1 & 2**
+Raw camera MP4s + multi-mic WAVs on Transcend drive at `Day 10/podcasts/`.
 
-### 🟢 P2 — Polish + performance
+**7. Spiritual-gifts dead reference**
+`app/(public)/assessments/[slug]/results/page.tsx:239` has undefined `spiritualGiftsResults` in an unused `renderSpiritualGiftsResults` function. Never called; latent crash. Delete.
 
-**8. Mobile Lighthouse Performance 75 → 90+**
-- A11y 96, BP 100, SEO 100 — only Perf needs work
-- Optimizations: hero video to AVIF/WebM, defer AskProphetWidget mount until idle, `loading="eager"` only on first photo per gallery
-- Action: ~1 session of media + lazy-load work
-
-**9. Edit + publish podcast Episodes 1 & 2**
-- Raw camera MP4s + multi-mic WAVs on Transcend drive at `Day 10/podcasts/`
-- Decision: ship raw video first OR mix audio + sync? (defer in audit said "v1.1")
-- Action: encode raw MP4s for web, build `/podcast/kenya-debrief-ep1` and `-ep2`
-
-**10. Spiritual-gifts dead reference**
-- Results page has undefined `spiritualGiftsResults` reference inside unused `renderSpiritualGiftsResults` function (`results/page.tsx:239`)
-- Never called, but a latent crash if it ever is invoked
-- Action: delete the unused function
+**8. Set `ADMIN_EMAIL` env var in Vercel** (currently falls back to `info@tpcmin.org`)
+Prayer-request admin notifications + contact form submissions go here.
 
 ---
 
@@ -287,22 +315,30 @@ May need to add to Vercel later:
 
 ---
 
-## 🔑 Session-end commits
+## 🔑 Commits worth knowing
 
+Audit closeout session (2026-05-19, latest):
+```
+6ed18a0  fix(audit): close RLS gap + delete dead assessments dual-system
+af82332  fix(audit): kill base-URL drift, fix donations webhook schema, harden RLS
+4dcf301  fix(audit): close 3 P0s — assessment tables, membership funnel, prayer follow-ups
+236654c  docs: handoff update + persist pre-launch audit report
+```
+
+v1.0 launch session (2026-05-19, earlier):
 ```
 69c660d  fix(build): wrap signup useSearchParams in Suspense
-(audit)  fix(audit): 4 critical pre-launch hotfixes
+f8413ed  fix(audit): 4 critical pre-launch hotfixes
 8da3cf3  feat(positioning): reframe as "digital age" — US + global
 fab3e5f  fix: restore site nav on homepage + remove Itete Market
-603f247  docs: Phase 9 — launch gates verified; milestone v1.0 substantially complete
+603f247  docs: Phase 9 — launch gates verified
 d9fd731  feat(analytics): Phase 8 — conversion path
-95f238b  feat(ai): Phase 7 — persistent Ask-Prophet widget + post-signup handoff
-0ff4f45  feat(design): Phase 6 — design sweep on 9 public pages + tokens doc
-4aa1628  feat(design): Phase 5 — design sweep on /about, /beliefs, /missions
-ab1cf74  fix(build): remove dead app/(public)/page.tsx
+95f238b  feat(ai): Phase 7 — persistent Ask-Prophet widget
+0ff4f45  feat(design): Phase 6 — design sweep + tokens
+4aa1628  feat(design): Phase 5 — sweep on /about, /beliefs, /missions
 3beae81  feat(kenya): Phase 4 — /kenya-2026/gallery
-7e28eeb  feat(kenya): Phase 3 — extend journey to all 14 days + galleries
-1f6db1f  feat(kenya): Phase 2 — ARW→JPG pipeline + curated photos
+7e28eeb  feat(kenya): Phase 3 — 14-day journey
+1f6db1f  feat(kenya): Phase 2 — ARW pipeline + photos
 c1546e4  feat(coherence): Phase 1 baseline
 ```
 
@@ -311,24 +347,25 @@ c1546e4  feat(coherence): Phase 1 baseline
 ## 🎯 Next session — start here
 
 **Read in this order:**
-1. This file (HANDOFF.md)
-2. `/tmp/tpc-audit-report.md` (full audit)
-3. `.planning/v1.1-DRAFT-best-site-ever.md` (proposed plan)
-4. `.planning/STATE.md` (current position)
+1. This file (HANDOFF.md) — top section is current state
+2. `.planning/AUDIT-2026-05-19.md` — full original audit (every item is now closed)
+3. `.planning/v1.1-DRAFT-best-site-ever.md` — proposed v1.1 themes
 
-**Then pick a path:**
-- **Path A — Close audit P0s** (recommended): tackle the 3 P0 items above (assessment tables, partner upgrade + Stripe membership, prayer follow-up). 1-2 sessions of work, unlocks revenue.
-- **Path B — Performance push**: Lighthouse 75 → 90+ via hero video re-encode, AI widget defer, image priorities. 1 session.
-- **Path C — Launch v1.1 milestone**: `/gsd:new-milestone` using the v1.1 draft as input, then proceed to research/planning/execution.
+**Suggested first move — verify the rewrites against real Stripe:**
+The webhook + checkout flows were significantly rewritten. They type-check but haven't been exercised yet. Spend 30 min with Stripe CLI test mode hitting `/giving` (donation flow) and `/partner/upgrade?tier=partner` (membership flow), confirm DB inserts succeed + emails fire + tier upgrades land. After that's green, move on to:
+
+- **Path A — Performance push**: Lighthouse Perf 75 → 90+ (hero video re-encode, AI widget defer, image priorities).
+- **Path B — Launch v1.1 milestone**: `/gsd:new-milestone` using the v1.1 draft.
+- **Path C — Tackle the 8 SECURITY DEFINER views** flagged by the Supabase advisor.
 
 **Quick command to resume orientation:**
 ```bash
 cd ~/tpc-ministries-platform
-cat HANDOFF.md
-cat /tmp/tpc-audit-report.md
+cat HANDOFF.md | head -150
+cat .planning/AUDIT-2026-05-19.md
 git log --oneline -15
 ```
 
 ---
 
-*Generated 2026-05-19 at the end of the v1.0 launch + audit + hotfix session.*
+*Updated 2026-05-19 at the end of the audit closeout session. Original v1.0 launch session intact above.*
