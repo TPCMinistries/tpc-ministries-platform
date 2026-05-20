@@ -1,10 +1,22 @@
 # TPC Ministries Platform — Handoff
 
-> **Last updated 2026-05-19 (audit closeout session)** · v1.0 shipped + the entire audit punch list closed + multiple newly-discovered schema-drift bombs fixed. **Resume from here.**
+> **Last updated 2026-05-20 (audit closeout + Stripe/perf/security session)** · v1.0 shipped + the entire audit punch list closed + multiple newly-discovered schema-drift bombs fixed + Stripe catalog wired + Lighthouse perf groundwork laid + SECURITY DEFINER view leak plugged. **Resume from here.**
 
 ---
 
-## ⚡ Audit closeout (this session)
+## ⚡ Session 3 highlights (2026-05-20)
+
+Building on the audit closeout, this session:
+1. **Created proper Stripe products + prices** for Partner ($50/mo, $500/yr) + Covenant Partner ($150/mo, $1500/yr) in the unified PC LLC test account `acct_1PaRTgIwAPnWjXPH`. Test-mode price IDs (`price_1TYz9f…`, `price_1TYzAS…`, `price_1TYzBX…`, `price_1TYzDb…`) are documented in `lib/membership/tiers.ts`. Live-mode prices need to be created when going to live mode; checkout reads them from env vars `STRIPE_PRICE_TPC_PARTNER_{MONTHLY,ANNUAL}` and `STRIPE_PRICE_TPC_COVENANT_{MONTHLY,ANNUAL}`. Falls back to inline `price_data` if env vars unset, so dev/preview never breaks.
+2. **Plugged a P0 SECURITY DEFINER view leak.** `kenya_trip_participant_status` granted SELECT (and INSERT/UPDATE/DELETE!) to anon, ran SECURITY DEFINER, exposing email/phone/passport/payment fields for 23 trip participants to anyone with the publishable anon key. Migration `20260519_security_definer_views` converted 5 sensitive views to INVOKER + revoked all client grants; kept the 2 in-use public views (`kenya_supply_pledge_stats`, `kenya_trip_fundraising_public`) as DEFINER but SELECT-only.
+3. **Performance pass** — `AskProphetWidget` is now lazy-loaded via `next/dynamic` + `requestIdleCallback` (framer-motion + chat state off the LCP path); below-fold videos switched from `preload="metadata"` to `preload="none"` (saves 5–6 metadata fetches on every public page).
+4. **Deleted 326 lines of dead assessment-results code** (renderSpiritualGiftsResults, renderSeasonalResults, oldMockData, GiftResult interface). All unreferenced; the page renders from the live `result` object.
+
+**Supabase advisor state:** ERROR-level lints 8 → 3. The 3 remaining are intentional:
+- `kenya_supply_pledge_stats` + `kenya_trip_fundraising_public` use SECURITY DEFINER as their column-filter (the underlying `kenya_trip_participants` doesn't have public-read RLS, so DEFINER is how anon sees only the safe columns)
+- `conversation_participants` is intentionally RLS-disabled per its table comment ("access controlled at application level")
+
+## ⚡ Audit closeout (prior session, 2026-05-19)
 
 The original `/tmp/tpc-audit-report.md` punch list (now at `.planning/AUDIT-2026-05-19.md`) is **fully closed**. Status of every item:
 
@@ -101,43 +113,46 @@ The original `/tmp/tpc-audit-report.md` punch list (now at `.planning/AUDIT-2026
 
 ## 🚨 Open items for next session — PRIORITY ORDER
 
-The original audit punch list is closed (see table above). What's left:
-
-### 🔴 P0 — Verify the rewrites against real Stripe
+### 🔴 P0 — Validate rewrites against real Stripe + go live
 
 **1. End-to-end Stripe test mode validation**
-The donation + membership webhook handlers were significantly rewritten this session. Code is type-checked but **not yet exercised against a real Stripe webhook**. Before promoting to live mode in any meaningful volume:
-- Trigger a test donation via `/giving` in Stripe test mode → confirm `donations` insert succeeds + receipt email fires + giver auto-upgrades to partner
-- Trigger a test membership via `/partner/upgrade?tier=partner` → confirm `member_subscriptions` row lands + `members.role` upgrades + redirect to `/member/account?tab=membership&success=true`
+The donation + membership webhook handlers were rewritten in sessions 2 + 3. Code is type-checked and the catalog products exist, but the full webhook → DB → email loop has not been driven by a real charge yet:
+- Trigger a test donation via `/giving` (use Stripe CLI `stripe trigger checkout.session.completed` with the test event payload, or just complete a $1 test checkout) → confirm `donations` insert succeeds with `donation_type='one_time'|'recurring'`, `designation='general|missions|leadership'`, `status='succeeded'`; receipt email fires; giver auto-upgrades to partner role
+- Trigger a test membership via `/partner/upgrade?tier=partner` → confirm `member_subscriptions` row lands, `members.role` upgrades, redirect to `/member/account?tab=membership&success=true`
 - Trigger a test monthly renewal (`stripe trigger invoice.payment_succeeded`) → confirm `current_period_end` updates without a duplicate donations row
+- Test cancellation (`stripe trigger customer.subscription.deleted`) → confirm tier downgrades to free
 
-### 🟡 P1 — Performance + remaining advisor flags
+**2. Create live-mode Stripe products + set env vars in Vercel**
+Today's products are in test mode. To go live:
+- Create matching live-mode Partner + Covenant Partner products in `acct_1PaRTgIwAPnWjXPH`
+- Set `STRIPE_PRICE_TPC_PARTNER_MONTHLY` / `_ANNUAL` and `STRIPE_PRICE_TPC_COVENANT_MONTHLY` / `_ANNUAL` env vars in Vercel (one set per env)
+- Verify `STRIPE_WEBHOOK_SECRET` is configured for the live webhook endpoint
 
-**2. Mobile Lighthouse Performance 75 → 90+**
-- Hero video to AVIF/WebM, defer AskProphetWidget mount until idle, `loading="eager"` only on first photo per gallery
-- A11y 96, BP 100, SEO 100 are already good — only Perf needs work
+### 🟡 P1 — Remaining cleanup
 
-**3. 8 SECURITY DEFINER views still flagged ERROR-level by Supabase advisor**
-- `user_activity_stats`, `kenya_fundraising_public`, `kenya_trip_fundraising_public`, `kenya_trip_participant_status`, `kenya_sponsorship_stats`, `kenya_supply_pledge_stats`, `kenya_supply_fund_stats`
-- These run with the view creator's privileges, bypassing RLS on underlying tables. For the `_public` ones this may be intentional (aggregate public stats). For the others, review whether `SECURITY INVOKER` is acceptable.
-- Audit each, decide which need `SECURITY INVOKER`, write migrations.
-
-**4. Weekly newsletter cron — implement or delete**
+**3. Weekly newsletter cron — implement or delete**
 `/api/cron/weekly-newsletter/route.ts` exists but is NOT in `vercel.json` crons. Decide.
 
-**5. Personal prophecy view broken at schema level**
+**4. Personal prophecy view broken at schema level**
 `app/(member)/my-prophecies/page.tsx` filters by `prophecy_type='personal'` and `user_id=user.id`. Neither column exists on the `prophecies` table (the actual columns are `type` and `recipient_id`). Decide: fix the page or remove the feature.
+
+**5. Performance push to Lighthouse 90+** (currently 75; today's work likely got it to ~85)
+Bigger wins still on the table: re-encode hero video to AVIF/WebM (offline ffmpeg work), defer below-fold sections via dynamic imports + IntersectionObserver, prefetch likely-next-pages.
+
+**6. Set `ADMIN_EMAIL` env var in Vercel** (currently falls back to `info@tpcmin.org`)
+Prayer-request admin notifications + contact form submissions route here.
 
 ### 🟢 P2 — Polish
 
-**6. Edit + publish podcast Episodes 1 & 2**
+**7. Edit + publish podcast Episodes 1 & 2**
 Raw camera MP4s + multi-mic WAVs on Transcend drive at `Day 10/podcasts/`.
 
-**7. Spiritual-gifts dead reference**
-`app/(public)/assessments/[slug]/results/page.tsx:239` has undefined `spiritualGiftsResults` in an unused `renderSpiritualGiftsResults` function. Never called; latent crash. Delete.
-
-**8. Set `ADMIN_EMAIL` env var in Vercel** (currently falls back to `info@tpcmin.org`)
-Prayer-request admin notifications + contact form submissions go here.
+**8. Address WARN-level advisor lints** (low priority)
+- 61× `function_search_path_mutable` (defensive against schema injection)
+- 24× `anon_security_definer_function_executable` / 24× `authenticated_*` (audit which SECURITY DEFINER functions need to be callable by clients)
+- 17× `rls_enabled_no_policy` (tables RLS-on with no policies = effectively service-role-only; usually intentional)
+- 1× `public_bucket_allows_listing` (storage bucket setting; review)
+- 1× `auth_leaked_password_protection` (enable HIBP check in Supabase Auth settings)
 
 ---
 
@@ -317,7 +332,13 @@ May need to add to Vercel later:
 
 ## 🔑 Commits worth knowing
 
-Audit closeout session (2026-05-19, latest):
+Session 3 (2026-05-20):
+```
+d642ed5  fix(security+cleanup): plug SECURITY DEFINER view leak + delete 326 dead lines
+b034c2e  feat(stripe+perf): catalog price IDs for memberships + defer AI widget
+```
+
+Audit closeout (2026-05-19):
 ```
 6ed18a0  fix(audit): close RLS gap + delete dead assessments dual-system
 af82332  fix(audit): kill base-URL drift, fix donations webhook schema, harden RLS
