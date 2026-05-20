@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail, EmailTemplates } from '@/lib/email'
 import { createClient } from '@/lib/supabase/server'
+import { getBaseUrl } from '@/lib/base-url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/member/seasons`
+    const dashboardUrl = `${getBaseUrl()}/member/seasons`
 
     const { subject, html } = EmailTemplates.seasonComplete(
       member.full_name,

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { getBaseUrl } from '@/lib/base-url'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Play,
@@ -164,7 +165,7 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
     )
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.com'
+  const baseUrl = getBaseUrl()
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

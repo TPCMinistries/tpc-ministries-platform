@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { getBaseUrl } from '@/lib/base-url'
 import TeachingClient from './teaching-client'
 
 interface Props {
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.com'
+  const baseUrl = getBaseUrl()
   const typeLabels: Record<string, string> = {
     video: 'Video Teaching',
     article: 'Article',

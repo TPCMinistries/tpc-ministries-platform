@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { getBaseUrl } from '@/lib/base-url'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.com'
+  const baseUrl = getBaseUrl()
   const supabase = await createClient()
 
   // Static pages

@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getBaseUrl } from '@/lib/base-url'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600 // Revalidate every hour
 
 export async function GET() {
   const supabase = await createClient()
-  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.com'
+  const baseUrl = getBaseUrl()
 
   // Fetch all published podcast episodes
   const { data: episodes, error } = await supabase

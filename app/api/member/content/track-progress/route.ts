@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getBaseUrl } from '@/lib/base-url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
           // If all teachings are completed, trigger completion email
           if (totalTeachings && completedInSeason === totalTeachings) {
-            await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/notifications/season-complete`, {
+            await fetch(`${getBaseUrl()}/api/notifications/season-complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

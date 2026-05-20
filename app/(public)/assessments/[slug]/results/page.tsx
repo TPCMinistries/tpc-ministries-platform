@@ -9,7 +9,6 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import {
   ArrowRight,
-  Download,
   Share2,
   Lock,
   CheckCircle,
@@ -643,18 +642,39 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
 
           {/* Actions */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-            {isLoggedIn && (
-              <>
-                <Button size="lg" className="bg-navy hover:bg-navy/90">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download PDF Results
-                </Button>
-                <Button size="lg" variant="outline">
-                  <Share2 className="mr-2 h-5 w-5" />
-                  Share Results
-                </Button>
-              </>
-            )}
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={async () => {
+                const url = typeof window !== 'undefined' ? window.location.href : ''
+                const title = result?.title ? `${result.title} — TPC Assessment` : 'My TPC Assessment Results'
+                const text = result?.description || 'I just took the TPC assessment.'
+                if (typeof navigator !== 'undefined' && (navigator as any).share) {
+                  try {
+                    await (navigator as any).share({ title, text, url })
+                    return
+                  } catch {
+                    // user dismissed — fall through to clipboard
+                  }
+                }
+                try {
+                  await navigator.clipboard.writeText(url)
+                  toast({
+                    title: 'Link copied',
+                    description: 'Paste it anywhere to share your results.',
+                  })
+                } catch {
+                  toast({
+                    title: 'Copy failed',
+                    description: 'Manually copy the URL from your browser.',
+                    variant: 'destructive',
+                  })
+                }
+              }}
+            >
+              <Share2 className="mr-2 h-5 w-5" />
+              Share Results
+            </Button>
           </div>
 
           {/* Next Steps */}

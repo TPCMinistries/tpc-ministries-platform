@@ -2,9 +2,9 @@
  * JSON-LD Schema Components for SEO
  * Provides structured data for search engines
  */
+import { getBaseUrl } from '@/lib/base-url'
 
-// Base URL for the site
-const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://tpcministries.org'
+const BASE_URL = getBaseUrl()
 
 // Organization Schema - Used site-wide
 export function OrganizationSchema() {

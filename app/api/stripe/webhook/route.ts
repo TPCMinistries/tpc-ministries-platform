@@ -82,38 +82,17 @@ export async function POST(request: NextRequest) {
 }
 
 async function recordEbookPurchase(session: Stripe.Checkout.Session) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const ebookId = session.metadata?.ebook_id
   const ebookTitle = session.metadata?.ebook_title
-  const userId = session.metadata?.user_id !== 'anonymous' ? session.metadata?.user_id : null
-  const customerEmail = session.customer_email || session.customer_details?.email
+  const amount = (session.amount_total || 0) / 100
 
-  // Record purchase in donations table with type 'ebook_purchase'
-  const purchaseData = {
-    amount: (session.amount_total || 0) / 100,
-    type: 'ebook_purchase',
-    frequency: 'once',
-    user_id: userId,
-    donor_email: customerEmail,
-    donor_name: session.customer_details?.name || 'Customer',
-    stripe_session_id: session.id,
-    stripe_payment_intent: session.payment_intent as string,
-    status: 'completed',
-    notes: `Ebook: ${ebookTitle} (ID: ${ebookId})`,
-    created_at: new Date().toISOString(),
-  }
+  // Ebook purchases are commerce, not donations — log to Stripe-canonical only
+  // and bump the download counter. (The donations table's CHECK constraint
+  // would reject any non-one_time/recurring donation_type anyway.)
+  console.log(`Ebook purchase: ${ebookTitle} ($${amount}) session=${session.id}`)
 
-  const { error: purchaseError } = await supabase.from('donations').insert(purchaseData)
-
-  if (purchaseError) {
-    console.error('Error recording ebook purchase:', purchaseError)
-    // Don't throw - still try to update download count
-  } else {
-    console.log('Ebook purchase recorded:', purchaseData)
-  }
-
-  // Increment download count on the ebook resource
   if (ebookId) {
     const { data: resource } = await supabase
       .from('resources')
@@ -130,88 +109,127 @@ async function recordEbookPurchase(session: Stripe.Checkout.Session) {
 
     if (updateError) {
       console.error('Error incrementing download count:', updateError)
-    } else {
-      console.log(`Download count incremented for ebook ${ebookId}`)
     }
   }
 }
 
+// donations table schema (verified 2026-05-19):
+//   member_id, amount, currency, stripe_payment_intent_id, donation_type
+//   ('one_time'|'recurring'), designation, is_anonymous, status
+//   ('succeeded'|'pending'|'failed'), fund_id, is_recurring
+// Donor email/name are NOT stored in donations — Stripe is the source of truth;
+// we pass them to the receipt email in-process below.
+
+async function resolveMemberId(
+  supabase: any,
+  userId: string | null | undefined,
+  email: string | null | undefined,
+): Promise<string | null> {
+  if (userId) {
+    const { data } = await supabase.from('members').select('id').eq('user_id', userId).single()
+    if (data?.id) return data.id
+  }
+  if (email) {
+    const { data } = await supabase.from('members').select('id').eq('email', email).single()
+    if (data?.id) return data.id
+  }
+  return null
+}
+
 async function recordDonation(session: Stripe.Checkout.Session) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
+
+  const userId = session.metadata?.user_id && session.metadata.user_id !== 'anonymous'
+    ? session.metadata.user_id : null
+  const donorEmail = session.customer_email || session.customer_details?.email || null
+  const donorName = session.metadata?.donor_name
+    || session.customer_details?.name
+    || 'Anonymous'
+  const amount = (session.amount_total || 0) / 100
+  const designation = session.metadata?.type || 'general'
+  const isRecurring = session.metadata?.frequency === 'monthly' || !!session.subscription
+  const isAnonymous = !userId && (!donorName || donorName === 'Anonymous')
+
+  const memberId = await resolveMemberId(supabase, userId, donorEmail)
 
   const donationData = {
-    amount: (session.amount_total || 0) / 100,
-    type: session.metadata?.type || 'general',
-    frequency: session.metadata?.frequency || 'once',
-    user_id: session.metadata?.user_id !== 'anonymous' ? session.metadata?.user_id : null,
-    donor_email: session.customer_email || session.customer_details?.email,
-    donor_name: session.metadata?.donor_name || 'Anonymous',
-    stripe_session_id: session.id,
-    stripe_payment_intent: session.payment_intent as string,
-    stripe_subscription_id: session.subscription as string | null,
-    status: 'completed',
-    created_at: new Date().toISOString(),
+    member_id: memberId,
+    amount,
+    currency: (session.currency || 'usd').toLowerCase(),
+    stripe_payment_intent_id: session.payment_intent as string | null,
+    donation_type: isRecurring ? 'recurring' : 'one_time',
+    designation,
+    is_anonymous: isAnonymous,
+    status: 'succeeded',
+    is_recurring: isRecurring,
   }
 
   const { error } = await supabase.from('donations').insert(donationData)
 
   if (error) {
-    console.error('Error recording donation:', error)
+    console.error('Error recording donation:', error, donationData)
     throw error
   }
 
-  console.log('Donation recorded:', donationData)
+  console.log('Donation recorded:', { amount, designation, member: memberId })
 
-  // Auto-upgrade giver to partner role
-  await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
+  await upgradeGiverToPartner(supabase, userId, donorEmail, amount)
 
-  // Fire thank-you email (best-effort, never blocks webhook ack)
   await sendDonationReceipt({
-    donorName: donationData.donor_name,
-    email: donationData.donor_email,
-    amount: donationData.amount,
-    donationType: donationData.type,
-    transactionId: donationData.stripe_session_id,
+    donorName,
+    email: donorEmail,
+    amount,
+    donationType: designation,
+    transactionId: session.id,
     isRecurring: false,
   })
 }
 
 async function recordRecurringDonation(invoice: Stripe.Invoice) {
-  const supabase = await createClient()
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
+  const supabase = createAdminClient()
+  const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string)
+
+  const userId = subscription.metadata?.user_id && subscription.metadata.user_id !== 'anonymous'
+    ? subscription.metadata.user_id : null
+  const donorEmail = invoice.customer_email
+    || (invoice as any).customer_details?.email
+    || null
+  const donorName = subscription.metadata?.donor_name || 'Anonymous'
+  const amount = ((invoice as any).amount_paid || 0) / 100
+  const designation = subscription.metadata?.type || 'general'
+  const isAnonymous = !userId && (!donorName || donorName === 'Anonymous')
+
+  const memberId = await resolveMemberId(supabase, userId, donorEmail)
 
   const donationData = {
-    amount: (invoice.amount_paid || 0) / 100,
-    type: subscription.metadata?.type || 'general',
-    frequency: 'monthly',
-    user_id: subscription.metadata?.user_id !== 'anonymous' ? subscription.metadata?.user_id : null,
-    donor_email: invoice.customer_email,
-    donor_name: subscription.metadata?.donor_name || 'Anonymous',
-    stripe_invoice_id: invoice.id,
-    stripe_subscription_id: invoice.subscription as string,
-    status: 'completed',
-    created_at: new Date().toISOString(),
+    member_id: memberId,
+    amount,
+    currency: (invoice.currency || 'usd').toLowerCase(),
+    stripe_payment_intent_id: (invoice as any).payment_intent as string | null,
+    donation_type: 'recurring',
+    designation,
+    is_anonymous: isAnonymous,
+    status: 'succeeded',
+    is_recurring: true,
   }
 
-  const { error} = await supabase.from('donations').insert(donationData)
+  const { error } = await supabase.from('donations').insert(donationData)
 
   if (error) {
-    console.error('Error recording recurring donation:', error)
+    console.error('Error recording recurring donation:', error, donationData)
     throw error
   }
 
-  console.log('Recurring donation recorded:', donationData)
+  console.log('Recurring donation recorded:', { amount, designation, member: memberId })
 
-  // Auto-upgrade giver to partner role
-  await upgradeGiverToPartner(supabase, donationData.user_id, donationData.donor_email, donationData.amount)
+  await upgradeGiverToPartner(supabase, userId, donorEmail, amount)
 
-  // Fire monthly receipt email
   await sendDonationReceipt({
-    donorName: donationData.donor_name,
-    email: donationData.donor_email,
-    amount: donationData.amount,
-    donationType: donationData.type,
-    transactionId: donationData.stripe_invoice_id,
+    donorName,
+    email: donorEmail,
+    amount,
+    donationType: designation,
+    transactionId: invoice.id,
     isRecurring: true,
   })
 }
@@ -343,18 +361,10 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
     return
   }
 
-  // Legacy donation-subscription path.
-  const { error } = await supabase
-    .from('donations')
-    .update({ subscription_status: 'canceled', updated_at: new Date().toISOString() })
-    .eq('stripe_subscription_id', subscription.id)
-
-  if (error) {
-    console.error('Error updating subscription status:', error)
-    throw error
-  }
-
-  console.log('Subscription canceled:', subscription.id)
+  // Non-membership subscription canceled (e.g., monthly donation): no DB
+  // mutation needed — Stripe is canonical for active subscription state and
+  // donations rows are per-charge receipts, not per-subscription.
+  console.log('Subscription canceled (no DB write needed):', subscription.id)
 }
 
 // ── Membership: initial checkout completed ──
