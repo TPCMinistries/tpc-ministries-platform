@@ -1,7 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { MEMBERSHIP_TIERS, isMembershipTier, type BillingCycle } from '@/lib/membership/tiers'
+import { getBaseUrl } from '@/lib/base-url'
+import {
+  MEMBERSHIP_TIERS,
+  isMembershipTier,
+  getStripePriceId,
+  type BillingCycle,
+} from '@/lib/membership/tiers'
 
 export const runtime = 'nodejs'
 
@@ -33,26 +39,32 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'
+    const baseUrl = getBaseUrl()
     const stripe = getStripe()
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
+    // Prefer a real Stripe Price ID if the env var is set — catalog price gives
+    // better analytics + Customer Portal support. Otherwise build the price
+    // inline so the flow works in any env without configuration.
+    const priceId = getStripePriceId(tier_slug, billing_cycle)
+    const lineItem = priceId
+      ? { price: priceId, quantity: 1 }
+      : {
           price_data: {
-            currency: 'usd',
+            currency: 'usd' as const,
             product_data: {
               name: `${tier.name} Membership`,
               description: tier.description,
             },
-            recurring: { interval },
+            recurring: { interval: interval as 'month' | 'year' },
             unit_amount: Math.round(amount * 100),
           },
           quantity: 1,
-        },
-      ],
+        }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [lineItem as any],
       customer_email: member?.email || user.email,
       client_reference_id: user.id,
       metadata: {

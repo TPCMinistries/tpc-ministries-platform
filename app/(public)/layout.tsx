@@ -1,6 +1,6 @@
 import { Navigation } from '@/components/layout/navigation'
 import { Footer } from '@/components/layout/footer'
-import { AskProphetWidget } from '@/components/ai/ask-prophet-widget'
+import { AskProphetWidgetLazy } from '@/components/ai/ask-prophet-widget-lazy'
 
 export default function PublicLayout({
   children,
@@ -12,7 +12,7 @@ export default function PublicLayout({
       <Navigation />
       <main>{children}</main>
       <Footer />
-      <AskProphetWidget />
+      <AskProphetWidgetLazy />
     </>
   )
 }

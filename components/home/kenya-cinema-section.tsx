@@ -169,7 +169,7 @@ function TeaserCard({ teaser }: { teaser: (typeof TEASERS)[number] }) {
         muted={muted}
         playsInline
         loop
-        preload="metadata"
+        preload="none"
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/10 to-transparent" />
