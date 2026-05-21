@@ -4,6 +4,21 @@
 
 ---
 
+## ⚡ Session 5 highlights (2026-05-21 — shipping the audit)
+
+Final pre-push hardening + the actual ship of everything from sessions 1–4:
+
+1. **Compressed timeline-2.mp4** (122 MB → 15 MB) so it fits under GitHub's 100 MB hard limit. Re-encoded at h.264 CRF 32 + 720px width + AAC 96k. **Stripped the original 122 MB blob from git history via `git filter-repo --strip-blobs-bigger-than 100M`.** Backup tag at `backup/pre-filter-repo-2026-05-20`.
+2. **Compressed 6 more referenced videos** (day-11/13/12/cinema/reel-033/video-03) from 272 MB → 143 MB (~129 MB saved). Deleted 5 unreferenced .mp4s (v5, teaser-01, teaser-02, video-01, video-02). Total repo size: 549 MB → 228 MB. All remaining videos under GitHub's 50 MB warning threshold.
+3. **Revoked EXECUTE on 23 SECURITY DEFINER functions** from PUBLIC role (anon + authenticated inherit via PUBLIC). 48 advisor warnings (24× anon + 24× authenticated) reduce to ~3 (just check_email_exists, which is needed for the signup form). The first revoke attempt used `FROM anon, authenticated` which didn't take — both inherited via PUBLIC. Fixed in follow-up migration. Re-granted EXECUTE to authenticated on 3 RLS helpers (is_admin, is_tpc_admin, current_user_has_role) so Kenya admin policies + member staff-update policy keep evaluating.
+4. **Audit-closeout commits + Stripe + RLS work from sessions 1–4 still pending push** (origin/main is at the pre-audit `6f1feda`; my local has 30+ rewritten-history commits ready). Once pushed, all DB migrations already applied via MCP take effect site-wide.
+
+**Open advisor follow-ups** (not security-critical):
+- `auth_leaked_password_protection` (1) — toggle HIBP password check in Supabase Auth dashboard
+- `public_bucket_allows_listing` (1) — Ebooks + tpc-media intentionally public; bucket listing flag is low risk but can be tightened in Storage settings
+- `rls_policy_always_true: 44` — mostly intentional public-read on reference tables, would need per-policy review
+- `rls_enabled_no_policy: 17` — RLS-on but no policies = service-role only; defensive by default, usually OK
+
 ## ⚡ Session 4 highlights (2026-05-20, later)
 
 After session 3, knocked out the non-Stripe punch list:
@@ -341,6 +356,15 @@ May need to add to Vercel later:
 ---
 
 ## 🔑 Commits worth knowing
+
+Session 5 (2026-05-21, pre-ship hardening):
+```
+16d9206  fix(security): actually revoke function EXECUTE — REVOKE from PUBLIC
+f73546d  fix(security): revoke EXECUTE from anon+authenticated on 23 SECURITY DEFINER funcs
+ea580d2  fix(media): compress 6 referenced videos + remove 5 unused; repo 549MB → 228MB
+c14e5ea  fix(media): compress timeline-2.mp4 (122MB → 15MB) for GitHub push limit
+```
+(Note: SHAs from `b9f12dc` onward were rewritten by `git filter-repo`. The post-filter SHAs starting at `c14e5ea` are what shipped.)
 
 Session 4 (2026-05-20):
 ```
