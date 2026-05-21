@@ -2,24 +2,31 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Heart, Plane, BellRing } from 'lucide-react'
+import { ArrowRight, Heart, Plane, BellRing, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Section } from '@/components/ui/section'
 
 const CARDS = [
   {
-    icon: Plane,
-    title: 'Join the next mission',
-    blurb: "We're already planning what comes next. If your heart is stirring, this is where you start.",
-    cta: 'Apply to go',
-    href: '/kenya',
+    icon: BarChart3,
+    title: 'See the impact',
+    blurb: 'By the numbers — what 14 days on the ground actually delivered.',
+    cta: 'Read the report',
+    href: '/kenya-2026/impact',
   },
   {
     icon: Heart,
-    title: 'Support the work',
-    blurb: 'Every gift carries us further. Fund the work that started here.',
+    title: 'Support the next mission',
+    blurb: 'Kingdom Impact Trips are a rhythm now. Seed the next one.',
     cta: 'Give now',
-    href: '/kenya/give',
+    href: '/giving',
+  },
+  {
+    icon: Plane,
+    title: 'Get on the list to go',
+    blurb: 'Tell us your heart is stirring for the next trip. We pick from those who say yes early.',
+    cta: 'Add my name',
+    href: '/connect',
   },
   {
     icon: BellRing,

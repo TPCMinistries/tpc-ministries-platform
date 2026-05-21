@@ -58,6 +58,24 @@ export default function KenyaCommandCenter() {
   return (
     <div className="flex-1 p-8">
       <div className="max-w-[1800px] mx-auto">
+        {/* Archive banner — Kenya 2026 completed 2026-05-06. */}
+        <div className="mb-6 rounded-lg border border-gold/30 bg-gradient-to-r from-gold/5 via-amber-50 to-gold/5 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gold/15">
+              <Plane className="h-4 w-4 text-navy" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-navy">Archive view — Kenya 2026 is complete</p>
+              <p className="mt-0.5 text-sm text-gray-600">
+                Trip ended May 6, 2026. The data below is preserved for impact
+                reporting and future trip-template work. Public funnels are
+                retired (310-redirected to <a href="/kenya-2026" className="underline">the recap</a>).
+                Edit with care — this is the canonical historical record.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>

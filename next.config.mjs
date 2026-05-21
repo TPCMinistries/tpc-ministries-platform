@@ -195,6 +195,20 @@ const nextConfig = {
         destination: '/dashboard',
         permanent: true,
       },
+
+      // Kenya 2026 funnels — retired post-trip 2026-05-21. The trip is complete;
+      // the recap lives at /kenya-2026. Generic donations route to /giving.
+      // These are 308 permanent redirects so search engines + bookmarks clear.
+      { source: '/kenya/give',             destination: '/giving',     permanent: true },
+      { source: '/kenya/health-safety',    destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/live',             destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/pack-the-mission', destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/partner-info',     destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/pay',              destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/support',          destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/support/:slug*',   destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/team',             destination: '/kenya-2026', permanent: true },
+      { source: '/kenya/travel',           destination: '/kenya-2026', permanent: true },
     ]
   },
 };
