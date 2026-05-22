@@ -1,8 +1,57 @@
 # TPC Ministries Platform — Handoff
 
-> **Last updated 2026-05-20 (audit closeout + Stripe/perf/security session)** · v1.0 shipped + the entire audit punch list closed + multiple newly-discovered schema-drift bombs fixed + Stripe catalog wired + Lighthouse perf groundwork laid + SECURITY DEFINER view leak plugged. **Resume from here.**
+> **Last updated 2026-05-22 (session 6 — Kenya archive + impact page + advisor cleanup)** · v1.0 audit punch list 100% closed across 6 sessions. **35 local commits ready to ship, gated on the force-push from your terminal.** Supabase advisor: 175 → 69 lints (-60%), ERROR-level 8 → 1 (intentional). Resume from here.
+
+## 🚀 First thing to do in the next session
+
+```
+cd ~/tpc-ministries-platform && git push --force-with-lease origin main
+```
+
+This pushes 35 commits (the entire audit closeout + Stripe catalog + RLS lockdowns + video compression + Kenya archive + `/kenya-2026/impact` page). The DB migrations are already applied to live via MCP; the push just gets the code in sync. My session hook hard-blocks force-push to main; only your terminal can do it.
+
+Once it lands, verify in Vercel deploy logs that the build succeeds, then continue from one of the open threads below.
 
 ---
+
+---
+
+## ⚡ Session 6 highlights (2026-05-22 — Kenya archive + advisor cleanup)
+
+Kenya 2026 retired post-trip + the `/kenya-2026/impact` aggregate page shipped + the function-EXECUTE lockdown actually took effect.
+
+**Phase A — Retire Kenya 2026 funnels** (`4cafcee`)
+- `next.config.mjs`: 10 permanent 308 redirects from `/kenya/{give, health-safety, live, pack-the-mission, partner-info, pay, support, support/:slug, team, travel}` → `/kenya-2026` (or `/giving` for the donate route). Search engines + cached bookmarks land on the recap instead of dead funnels.
+- `/api/kenya/pack-the-mission/pledge` returns HTTP 410 Gone.
+- Dropped 2 SECURITY DEFINER views (`kenya_trip_fundraising_public`, `kenya_supply_pledge_stats`) — closed 2 of the 3 ERROR-level advisor items.
+- Added ARCHIVE comments to all 42 `kenya_*` tables with PII guidance for participant data.
+- `/admin/kenya-command-center` shows a read-only archive banner so admins know the trip is complete + data is canonical historical record.
+
+**Phase B — `/kenya-2026/impact` aggregate page** (`4cafcee`)
+- Storytelling-led page: hero ("Kingdom imprint") → big-number grid → 5 service-track cards → 2 conference spotlights → "Kenya was the first, not the last" CTA → links to `/giving` + `/connect` for the next mission.
+- Stats locked from kenya_trip_* queries (no live DB fetch since trip is past): 14 servants, 5 service tracks (ministry/healthcare/education/business/media), 14 days, 28 conference sessions, 2 conferences (Nairobi Apr 24 + Mombasa May 3), 4 mission bases, 27 applications, 21 waitlist, 8 supply funds.
+- **No PII** — participant-quote section is a documented TODO awaiting consent re-confirmation with the 23 alumni.
+- Linked from `KenyaWhatsNext` on the main `/kenya-2026` recap (also fixed that component's stale `/kenya/give` link → `/giving`).
+
+**Phase C — Mission-Trips infrastructure scoped for v1.1** (`bec9a9f`)
+- Added Theme I to `.planning/v1.1-DRAFT-best-site-ever.md` (~6-8h scope): `/missions` public hub, trip-agnostic `/admin/trips/[trip-id]` admin reusing existing `kenya_trip_*` tables (they already have `trip_id` FKs — name stays for now to avoid massive churn), templated public trip pages, per-trip impact pages.
+- Kenya being a regular rhythm = good ROI for this infrastructure investment.
+
+**Advisor cleanup — function EXECUTE actually revoked** (`f73546d` + `16d9206`)
+- First attempt revoked from `anon, authenticated` directly — didn't take effect (both inherit EXECUTE via `PUBLIC` role membership). `has_function_privilege()` showed unchanged.
+- Fix: revoke from `PUBLIC`, grant explicit EXECUTE to `service_role`. Re-granted to `authenticated` on 3 RLS helpers (`is_admin`, `is_tpc_admin`, `current_user_has_role`) so Kenya admin + member staff-update policies still evaluate.
+- Net: 23 SECURITY DEFINER functions locked to service_role; `check_email_exists` (signup form RPC) stays public.
+
+**Advisor scoreboard across the journey:**
+
+| | Start of audit | End of session 6 |
+|---|---|---|
+| Total lints | 175 | 69 |
+| ERROR-level | 8 | 1 (intentional — `conversation_participants`) |
+| `function_search_path_mutable` | 61 | 0 |
+| `anon_security_definer_function_executable` | 24 | 1 (check_email_exists, intentional) |
+| `authenticated_security_definer_function_executable` | 24 | 4 (3 RLS helpers + check_email_exists, intentional) |
+| `rls_disabled_in_public` | 11 | 1 (intentional) |
 
 ## ⚡ Session 5 highlights (2026-05-21 — shipping the audit)
 
@@ -356,6 +405,15 @@ May need to add to Vercel later:
 ---
 
 ## 🔑 Commits worth knowing
+
+Session 6 (2026-05-22 — Kenya archive + advisor cleanup):
+```
+815bbf3  chore: park upload-kenya-videos.mjs for future CDN migration
+bec9a9f  docs: add Theme I (Mission-Trips infrastructure) to v1.1 draft
+4cafcee  feat(missions): archive Kenya 2026 + ship /kenya-2026/impact aggregate page
+16d9206  fix(security): actually revoke function EXECUTE — from PUBLIC, not anon/authenticated
+f73546d  fix(security): revoke EXECUTE from anon+authenticated on 23 SECURITY DEFINER funcs
+```
 
 Session 5 (2026-05-21, pre-ship hardening):
 ```
