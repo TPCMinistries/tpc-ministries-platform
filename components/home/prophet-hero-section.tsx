@@ -137,15 +137,11 @@ export function ProphetHeroSection() {
               ))}
             </motion.h1>
 
-            {/* Sub */}
-            <motion.p
-              className="mb-8 max-w-xl text-body-lg text-white/65 sm:text-body-xl"
-              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
-              animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.0 }}
-            >
+            {/* Sub — LCP element; plain <p> so text paints immediately. Prior
+                framer-motion fade-in with 1s delay blocked LCP for ~1.6s. */}
+            <p className="mb-8 max-w-xl text-body-lg text-white/65 sm:text-body-xl">
               A prophetic ministry for the <strong className="font-semibold text-white/85">digital age</strong> — meeting people where they are, across the US and around the world. Wherever you scroll, the Word can find you.
-            </motion.p>
+            </p>
 
             {/* CTAs */}
             <motion.div
