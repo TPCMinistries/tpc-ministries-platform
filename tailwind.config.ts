@@ -110,7 +110,7 @@ const config: Config = {
   		fontFamily: {
   			sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
   			display: ['var(--font-playfair)', 'Georgia', 'serif'],
-  			serif: ['var(--font-lora)', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+  			serif: ['var(--font-playfair)', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
   			mono: ['var(--font-geist-mono)', 'monospace'],
   		},
   		fontSize: {
