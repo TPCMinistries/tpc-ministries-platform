@@ -1,7 +1,7 @@
 import { getRecentTeachings, getPublicEbooks } from '@/lib/db/queries'
 import { ProphetHeroSection } from '@/components/home/prophet-hero-section'
-import { ReelsSectionLazy } from '@/components/home/reels-section-lazy'
-import { KenyaCinemaSectionLazy } from '@/components/home/kenya-cinema-section-lazy'
+import { ReelsSection } from '@/components/home/reels-section'
+import { KenyaCinemaSection } from '@/components/home/kenya-cinema-section'
 import { MissionSection } from '@/components/home/mission-section'
 import { MinistryCardsSection } from '@/components/home/ministry-cards-section'
 import { LiveSectionLazy } from '@/components/home/live-section-lazy'
@@ -23,8 +23,8 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <ProphetHeroSection />
-      <ReelsSectionLazy />
-      <KenyaCinemaSectionLazy />
+      <ReelsSection />
+      <KenyaCinemaSection />
       <MissionSection />
       <MinistryCardsSection />
       <LiveSectionLazy />
