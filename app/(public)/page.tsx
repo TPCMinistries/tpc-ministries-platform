@@ -1,11 +1,11 @@
 import { getRecentTeachings, getPublicEbooks } from '@/lib/db/queries'
 import { ProphetHeroSection } from '@/components/home/prophet-hero-section'
-import { ReelsSection } from '@/components/home/reels-section'
-import { KenyaCinemaSection } from '@/components/home/kenya-cinema-section'
+import { ReelsSectionLazy } from '@/components/home/reels-section-lazy'
+import { KenyaCinemaSectionLazy } from '@/components/home/kenya-cinema-section-lazy'
 import { MissionSection } from '@/components/home/mission-section'
 import { MinistryCardsSection } from '@/components/home/ministry-cards-section'
-import { LiveSection } from '@/components/home/live-section'
-import { VideoSection } from '@/components/home/video-section'
+import { LiveSectionLazy } from '@/components/home/live-section-lazy'
+import { VideoSectionLazy } from '@/components/home/video-section-lazy'
 import { DevotionalSection } from '@/components/home/devotional-section'
 import { EbooksSection } from '@/components/home/ebooks-section'
 import { KenyaSection } from '@/components/home/kenya-section'
@@ -23,12 +23,12 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <ProphetHeroSection />
-      <ReelsSection />
-      <KenyaCinemaSection />
+      <ReelsSectionLazy />
+      <KenyaCinemaSectionLazy />
       <MissionSection />
       <MinistryCardsSection />
-      <LiveSection />
-      <VideoSection />
+      <LiveSectionLazy />
+      <VideoSectionLazy />
       <DevotionalSection />
       <EbooksSection
         ebooks={
