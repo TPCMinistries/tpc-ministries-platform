@@ -146,9 +146,12 @@ const config: Config = {
   				from: { opacity: '0', transform: 'translateY(30px)' },
   				to: { opacity: '1', transform: 'translateY(0)' },
   			},
+  			// Animate `filter: drop-shadow` (compositor-friendly, GPU-only) instead
+  			// of `box-shadow` (paint+layout each frame, causes CLS — Chrome trace
+  			// flagged this as the primary culprit on home page, score 0.4).
   			'glow-pulse': {
-  				'0%, 100%': { boxShadow: '0 0 8px rgba(212, 184, 131, 0.3)' },
-  				'50%': { boxShadow: '0 0 20px rgba(212, 184, 131, 0.6)' },
+  				'0%, 100%': { filter: 'drop-shadow(0 0 8px rgba(212, 184, 131, 0.3))' },
+  				'50%': { filter: 'drop-shadow(0 0 20px rgba(212, 184, 131, 0.6))' },
   			},
   			'shake': {
   				'0%, 100%': { transform: 'translateX(0)' },
