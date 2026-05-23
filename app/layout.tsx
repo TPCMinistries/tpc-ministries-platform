@@ -22,10 +22,15 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+// `display: "optional"` instead of "swap" to prevent web-font-swap CLS.
+// Prior Chrome trace flagged a 0.4 shift at ~540ms with no animated cause —
+// most likely the Playfair font swap on the large display H1. With optional,
+// the browser uses the metric-matched fallback (Next.js adjustFontFallback)
+// permanently if Playfair doesn't arrive in ~100ms, eliminating the reflow.
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
-  display: "swap",
+  display: "optional",
   weight: ["400", "500", "600", "700"],
 });
 
