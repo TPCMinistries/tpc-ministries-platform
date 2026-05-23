@@ -1,7 +1,20 @@
 "use client"
 
 import * as React from "react"
-import { CelebrationModal, CelebrationType } from "@/components/ui/celebration/celebration-modal"
+import dynamic from "next/dynamic"
+import type { CelebrationType } from "@/components/ui/celebration/celebration-modal"
+
+// Modal pulls framer-motion + dialog tree + canvas-confetti. Defer it until
+// a celebration actually fires — the celebrate() trigger flips state.open,
+// React then mounts the dynamic chunk on next render. Brief load before the
+// modal appears is fine since the user just triggered the action.
+const CelebrationModal = dynamic(
+  () =>
+    import("@/components/ui/celebration/celebration-modal").then((m) => ({
+      default: m.CelebrationModal,
+    })),
+  { ssr: false, loading: () => null },
+)
 
 interface CelebrationContextValue {
   celebrate: (type: CelebrationType, metadata?: Record<string, any>) => void
@@ -26,13 +39,15 @@ export function CelebrationProvider({ children }: CelebrationProviderProps) {
     type: CelebrationType
     open: boolean
     metadata?: Record<string, any>
+    everOpened: boolean
   }>({
     type: "milestone",
     open: false,
+    everOpened: false,
   })
 
   const celebrate = React.useCallback((type: CelebrationType, metadata?: Record<string, any>) => {
-    setState({ type, open: true, metadata })
+    setState({ type, open: true, metadata, everOpened: true })
   }, [])
 
   const handleOpenChange = React.useCallback((open: boolean) => {
@@ -42,12 +57,14 @@ export function CelebrationProvider({ children }: CelebrationProviderProps) {
   return (
     <CelebrationContext.Provider value={{ celebrate }}>
       {children}
-      <CelebrationModal
-        type={state.type}
-        open={state.open}
-        onOpenChange={handleOpenChange}
-        metadata={state.metadata}
-      />
+      {state.everOpened && (
+        <CelebrationModal
+          type={state.type}
+          open={state.open}
+          onOpenChange={handleOpenChange}
+          metadata={state.metadata}
+        />
+      )}
     </CelebrationContext.Provider>
   )
 }
