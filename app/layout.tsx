@@ -9,7 +9,7 @@ import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
 import { SkipLink } from "@/components/a11y/skip-link";
 import { Toaster } from "@/components/ui/toaster";
 import { CelebrationProvider } from "@/components/providers/celebration-provider";
-import { CommandMenu } from "@/components/ui/command-menu";
+import { CommandMenuLazy } from "@/components/ui/command-menu-lazy";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -185,7 +185,7 @@ export default function RootLayout({
               <main id="main-content" tabIndex={-1} className="outline-none">
                 {children}
               </main>
-              <CommandMenu />
+              <CommandMenuLazy />
               <Toaster />
             </PWAProvider>
           </CelebrationProvider>
