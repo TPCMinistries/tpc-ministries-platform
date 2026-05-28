@@ -410,7 +410,7 @@ async function generateSuggestedActions(alerts: PastoralAlert[], stats: any): Pr
       title: `Welcome ${newMemberAlerts.length} New Member${newMemberAlerts.length > 1 ? 's' : ''}`,
       description: 'First impressions matter - send personal welcomes',
       action: 'Send welcomes',
-      actionUrl: '/admin-messages'
+      actionUrl: '/communications'
     })
   }
 
@@ -423,7 +423,7 @@ async function generateSuggestedActions(alerts: PastoralAlert[], stats: any): Pr
       title: `${birthdayAlerts.length} Birthday${birthdayAlerts.length > 1 ? 's' : ''} This Week`,
       description: 'Opportunity to show members you care',
       action: 'Send blessings',
-      actionUrl: '/admin-celebrations'
+      actionUrl: '#celebrations'
     })
   }
 

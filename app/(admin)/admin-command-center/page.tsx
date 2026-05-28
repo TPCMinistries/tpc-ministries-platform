@@ -88,30 +88,31 @@ export default function AdminCommandCenter() {
   const [insights, setInsights] = useState<AIInsights | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-	  const [selectedAlert, setSelectedAlert] = useState<PastoralAlert | null>(null)
-	  const [actionDialogOpen, setActionDialogOpen] = useState(false)
-	  const [actionNotes, setActionNotes] = useState('')
-	  const [processingAction, setProcessingAction] = useState(false)
-	  const [error, setError] = useState<string | null>(null)
+  const [selectedAlert, setSelectedAlert] = useState<PastoralAlert | null>(null)
+  const [actionDialogOpen, setActionDialogOpen] = useState(false)
+  const [actionNotes, setActionNotes] = useState('')
+  const [processingAction, setProcessingAction] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('alerts')
 
   useEffect(() => {
     fetchInsights()
   }, [])
 
-	  const fetchInsights = async () => {
-	    try {
-	      setError(null)
-	      const response = await fetch('/api/admin/ai-insights')
-	      if (response.ok) {
-	        const data = await response.json()
-	        setInsights(data)
-	      } else {
-	        setError('The command center could not load the latest ministry intelligence.')
-	      }
-	    } catch (error) {
-	      console.error('Error fetching insights:', error)
-	      setError('The command center could not load the latest ministry intelligence.')
-	    } finally {
+  const fetchInsights = async () => {
+    try {
+      setError(null)
+      const response = await fetch('/api/admin/ai-insights')
+      if (response.ok) {
+        const data = await response.json()
+        setInsights(data)
+      } else {
+        setError('The command center could not load the latest ministry intelligence.')
+      }
+    } catch (error) {
+      console.error('Error fetching insights:', error)
+      setError('The command center could not load the latest ministry intelligence.')
+    } finally {
       setLoading(false)
       setRefreshing(false)
     }
@@ -203,62 +204,109 @@ export default function AdminCommandCenter() {
     )
   }
 
-	  const highPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'high') || []
-	  const mediumPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'medium') || []
-	  const totalMembers = insights?.memberStats.total || 0
-	  const activeRate = insights?.engagementTrends.activeRate || 0
-	  const partnerCount = insights?.memberStats.byTier.partner || 0
-	  const covenantPartnerCount = insights?.memberStats.byTier.covenant || 0
-	  const partnerRate = totalMembers > 0 ? Math.round(((partnerCount + covenantPartnerCount) / totalMembers) * 100) : 0
-	  const revenueThisMonth = insights?.revenueInsights.thisMonth || 0
-	  const readinessScore = Math.min(100, Math.round(
-	    (highPriorityAlerts.length === 0 ? 35 : Math.max(0, 35 - highPriorityAlerts.length * 8)) +
-	    Math.min(35, activeRate * 0.35) +
-	    Math.min(20, partnerRate * 1.2) +
-	    (revenueThisMonth > 0 ? 10 : 0)
-	  ))
-	  const readinessTone = readinessScore >= 80
-	    ? 'text-green-700 bg-green-50 border-green-200'
-	    : readinessScore >= 55
-	    ? 'text-amber-700 bg-amber-50 border-amber-200'
-	    : 'text-red-700 bg-red-50 border-red-200'
-	  const operatingLanes = [
-	    {
-	      title: 'Pastoral Care',
-	      value: highPriorityAlerts.length + mediumPriorityAlerts.length,
-	      label: 'people to review',
-	      href: '/member-care',
-	      icon: Heart,
-	      tone: 'bg-rose-50 text-rose-700 border-rose-100',
-	    },
-	    {
-	      title: 'Covenant Partners',
-	      value: covenantPartnerCount,
-	      label: 'active covenant tier',
-	      href: '/admin-giving',
-	      icon: ShieldCheck,
-	      tone: 'bg-gold/10 text-navy border-gold/20',
-	    },
-	    {
-	      title: 'Communication',
-	      value: insights?.suggestedActions.length || 0,
-	      label: 'recommended moves',
-	      href: '/communications',
-	      icon: Send,
-	      tone: 'bg-blue-50 text-blue-700 border-blue-100',
-	    },
-	    {
-	      title: 'Missions',
-	      value: 'Kenya',
-	      label: 'field operations',
-	      href: '/kenya-command-center',
-	      icon: Globe2,
-	      tone: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-	    },
-	  ]
+  const highPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'high') || []
+  const mediumPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'medium') || []
+  const atRiskCount = insights?.atRiskMembers.length || 0
+  const celebrationCount = insights?.upcomingCelebrations.length || 0
+  const contentGapCount = insights?.contentGaps.length || 0
+  const totalMembers = insights?.memberStats.total || 0
+  const activeRate = insights?.engagementTrends.activeRate || 0
+  const partnerCount = insights?.memberStats.byTier.partner || 0
+  const covenantPartnerCount = insights?.memberStats.byTier.covenant || 0
+  const partnerRate = totalMembers > 0 ? Math.round(((partnerCount + covenantPartnerCount) / totalMembers) * 100) : 0
+  const revenueThisMonth = insights?.revenueInsights.thisMonth || 0
+  const readinessScore = Math.min(100, Math.round(
+    (highPriorityAlerts.length === 0 ? 35 : Math.max(0, 35 - highPriorityAlerts.length * 8)) +
+    Math.min(35, activeRate * 0.35) +
+    Math.min(20, partnerRate * 1.2) +
+    (revenueThisMonth > 0 ? 10 : 0)
+  ))
+  const readinessTone = readinessScore >= 80
+    ? 'text-green-700 bg-green-50 border-green-200'
+    : readinessScore >= 55
+    ? 'text-amber-700 bg-amber-50 border-amber-200'
+    : 'text-red-700 bg-red-50 border-red-200'
+  const operatingLanes = [
+    {
+      title: 'Pastoral Care',
+      value: highPriorityAlerts.length + mediumPriorityAlerts.length,
+      label: 'people to review',
+      href: '/member-care',
+      icon: Heart,
+      tone: 'bg-rose-50 text-rose-700 border-rose-100',
+    },
+    {
+      title: 'Covenant Partners',
+      value: covenantPartnerCount,
+      label: 'active covenant tier',
+      href: '/admin-giving',
+      icon: ShieldCheck,
+      tone: 'bg-gold/10 text-navy border-gold/20',
+    },
+    {
+      title: 'Communication',
+      value: insights?.suggestedActions.length || 0,
+      label: 'recommended moves',
+      href: '/communications',
+      icon: Send,
+      tone: 'bg-blue-50 text-blue-700 border-blue-100',
+    },
+    {
+      title: 'Missions',
+      value: 'Kenya',
+      label: 'field operations',
+      href: '/kenya-command-center',
+      icon: Globe2,
+      tone: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    },
+  ]
+  const dailyPlan = [
+    {
+      title: 'Care first',
+      description: highPriorityAlerts.length > 0
+        ? `Start with ${highPriorityAlerts.length} high-priority pastoral follow-up${highPriorityAlerts.length > 1 ? 's' : ''}.`
+        : 'No urgent pastoral care alerts. Review the medium-priority queue.',
+      metric: highPriorityAlerts.length || mediumPriorityAlerts.length,
+      action: 'Open care queue',
+      tab: 'alerts',
+      icon: Heart,
+      tone: 'border-rose-100 bg-rose-50 text-rose-700',
+    },
+    {
+      title: 'Protect covenant momentum',
+      description: `${partnerCount + covenantPartnerCount} people are currently connected as partners. Keep the monthly partner story visible.`,
+      metric: `${partnerRate}%`,
+      action: 'Review giving',
+      href: '/admin-giving',
+      icon: ShieldCheck,
+      tone: 'border-gold/20 bg-gold/10 text-navy',
+    },
+    {
+      title: 'Strengthen communication',
+      description: insights?.suggestedActions.length
+        ? `${insights.suggestedActions.length} recommended communication move${insights.suggestedActions.length > 1 ? 's' : ''} are ready.`
+        : 'Use the communications hub to prepare the next pastoral touchpoint.',
+      metric: insights?.suggestedActions.length || 0,
+      action: 'Open communications',
+      href: '/communications',
+      icon: Send,
+      tone: 'border-blue-100 bg-blue-50 text-blue-700',
+    },
+    {
+      title: 'Feed future readiness',
+      description: contentGapCount > 0
+        ? `${contentGapCount} content signal${contentGapCount > 1 ? 's' : ''} can shape the next teaching or partner resource.`
+        : 'No content gaps detected. Review the content hub for the next teaching drop.',
+      metric: contentGapCount,
+      action: 'View content signals',
+      tab: 'content',
+      icon: BookOpen,
+      tone: 'border-purple-100 bg-purple-50 text-purple-700',
+    },
+  ]
 
   return (
-    <div className="flex-1 p-8 space-y-6">
+    <div className="flex-1 space-y-6 p-4 md:p-8">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -382,6 +430,68 @@ export default function AdminCommandCenter() {
 	        </div>
 	      </div>
 
+      {/* Today's Plan */}
+      <Card className="border-navy/10">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Target className="h-5 w-5 text-gold" />
+                Today's Ministry Plan
+              </CardTitle>
+              <CardDescription>Four operating priorities for spiritually mature, organized follow-through</CardDescription>
+            </div>
+            <Badge variant="outline" className="w-fit border-navy/10 bg-navy/5 text-navy">
+              {atRiskCount} at-risk, {celebrationCount} celebrations, {contentGapCount} content signals
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {dailyPlan.map((item) => {
+              const Icon = item.icon
+              const content = (
+                <div className={`flex h-full flex-col rounded-xl border p-4 ${item.tone}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/80">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-2xl font-bold">{item.metric}</span>
+                  </div>
+                  <div className="mt-4 flex-1">
+                    <p className="font-semibold">{item.title}</p>
+                    <p className="mt-1 text-sm opacity-80">{item.description}</p>
+                  </div>
+                  <div className="mt-4 inline-flex items-center text-sm font-semibold">
+                    {item.action}
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </div>
+                </div>
+              )
+
+              if (item.href) {
+                return (
+                  <Link key={item.title} href={item.href} className="block h-full">
+                    {content}
+                  </Link>
+                )
+              }
+
+              return (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() => item.tab && setActiveTab(item.tab)}
+                  className="h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                >
+                  {content}
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Stats Row */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -481,9 +591,9 @@ export default function AdminCommandCenter() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-              {insights.suggestedActions.map((action) => (
-                <Link key={action.id} href={action.actionUrl}>
-                  <div className={`p-4 rounded-xl border-2 ${getActionTypeColor(action.type)} hover:shadow-md transition-shadow cursor-pointer`}>
+              {insights.suggestedActions.map((action) => {
+                const card = (
+                  <div className={`h-full p-4 rounded-xl border-2 ${getActionTypeColor(action.type)} hover:shadow-md transition-shadow cursor-pointer`}>
                     <div className="flex items-start gap-3">
                       {getActionTypeIcon(action.type)}
                       <div className="flex-1 min-w-0">
@@ -496,15 +606,35 @@ export default function AdminCommandCenter() {
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </div>
                   </div>
-                </Link>
-              ))}
+                )
+
+                if (action.actionUrl.startsWith('#')) {
+                  const tab = action.actionUrl.replace('#', '') || 'alerts'
+                  return (
+                    <button
+                      key={action.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      className="h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                    >
+                      {card}
+                    </button>
+                  )
+                }
+
+                return (
+                  <Link key={action.id} href={action.actionUrl} className="block h-full">
+                    {card}
+                  </Link>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="alerts" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="alerts" className="gap-2">
             <Bell className="h-4 w-4" />
