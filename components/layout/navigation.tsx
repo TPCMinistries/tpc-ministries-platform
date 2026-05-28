@@ -14,6 +14,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/kenya-2026', label: 'Kenya 2026' },
+  { href: '/partners', label: 'Partners' },
   { href: '/giving', label: 'Give' },
   { href: '/blog', label: 'Blog' },
   { href: '/connect', label: 'Connect' },

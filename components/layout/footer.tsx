@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 const quickLinks = [
   { href: '/about', label: 'About Us' },
   { href: '/missions', label: 'Our Missions' },
+  { href: '/partners', label: 'Covenant Partners' },
   { href: '/teachings', label: 'Teachings' },
   { href: '/giving', label: 'Give' },
   { href: '/assessments', label: 'Assessments' },
