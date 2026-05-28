@@ -85,7 +85,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/admin-dashboard', '/kenya-command-center', '/onboarding']
+  const protectedRoutes = ['/dashboard', '/admin-command-center', '/admin-dashboard', '/kenya-command-center', '/onboarding']
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
   // If accessing a protected route without being logged in, redirect to login
@@ -164,7 +164,7 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith('/auth')) {
         if (member) {
           const url = request.nextUrl.clone()
-          url.pathname = isStaffOrAbove(userRole) ? '/kenya-command-center' : '/dashboard'
+          url.pathname = isStaffOrAbove(userRole) ? '/admin-command-center' : '/dashboard'
           return NextResponse.redirect(url)
         }
       }
@@ -173,7 +173,7 @@ export async function middleware(request: NextRequest) {
       if (pathname === '/onboarding') {
         if (member) {
           const url = request.nextUrl.clone()
-          url.pathname = isStaffOrAbove(userRole) ? '/kenya-command-center' : '/dashboard'
+          url.pathname = isStaffOrAbove(userRole) ? '/admin-command-center' : '/dashboard'
           return NextResponse.redirect(url)
         }
         // User is authenticated but has no member record - let them proceed to onboarding
@@ -190,7 +190,7 @@ export async function middleware(request: NextRequest) {
           // Only admins can access billing/API settings
           if (userRole !== 'admin') {
             const url = request.nextUrl.clone()
-            url.pathname = '/admin-dashboard'
+            url.pathname = '/admin-command-center'
             return NextResponse.redirect(url)
           }
         } else {

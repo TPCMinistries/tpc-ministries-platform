@@ -39,7 +39,7 @@ export default function LoginPage() {
           .maybeSingle()
 
         if (member && (member.role === 'admin' || member.role === 'staff' || member.is_admin)) {
-          window.location.href = '/kenya-command-center'
+          window.location.href = '/admin-command-center'
           return
         }
       } catch (err) {

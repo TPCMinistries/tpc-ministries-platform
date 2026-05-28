@@ -116,7 +116,7 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
     <>
       {/* Logo & Brand */}
       <div className="p-4 border-b border-white/10">
-        <Link href="/admin-dashboard" className="flex items-center gap-3">
+        <Link href="/admin-command-center" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-tpc-gold flex items-center justify-center">
             <span className="text-tpc-navy font-bold text-lg">T</span>
           </div>
@@ -138,8 +138,20 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
         </Button>
       </div>
 
-      {/* Main Dashboard Link */}
+      {/* Primary Operations Links */}
       <div className="p-2 space-y-1">
+        <Link
+          href="/admin-command-center"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+            isActive("/admin-command-center")
+              ? "bg-gold/20 text-gold"
+              : "text-white/70 hover:bg-gold/10 hover:text-gold"
+          )}
+        >
+          <Brain className="h-5 w-5" />
+          <span className="font-medium">Command Center</span>
+        </Link>
         <Link
           href="/admin-dashboard"
           className={cn(

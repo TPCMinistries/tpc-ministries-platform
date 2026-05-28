@@ -77,7 +77,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       title: null,
       items: [
         { name: 'Dashboard', href: '/dashboard', icon: Home },
-        { name: isStaffOrAdmin ? 'Kenya Command Center' : 'Kenya 2026', href: isStaffOrAdmin ? '/kenya-command-center' : '/kenya-trip', icon: Plane, highlight: true },
+        { name: isStaffOrAdmin ? 'Admin Command Center' : 'Kenya 2026', href: isStaffOrAdmin ? '/admin-command-center' : '/kenya-trip', icon: Plane, highlight: true },
         { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
         { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
       ]
@@ -539,7 +539,7 @@ function SidebarContent({
       {/* Admin Portal Link - visible to staff and admins */}
       {canAccessAdmin() && (
         <div className={cn('py-4 border-t border-border', isCollapsed ? 'px-2' : 'px-3')}>
-          <Link href="/admin-dashboard" title={isCollapsed ? 'Admin Portal' : undefined}>
+          <Link href="/admin-command-center" title={isCollapsed ? 'Admin Portal' : undefined}>
             <Button className={cn(
               'bg-navy hover:bg-navy/90 text-white',
               isCollapsed ? 'w-10 h-10 p-0' : 'w-full'

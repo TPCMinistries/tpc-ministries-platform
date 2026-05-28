@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, useReducedMotion } from "framer-motion"
 import {
-  LayoutDashboard, MessageSquare, FileText, Users, Plane
+  Brain, MessageSquare, FileText, Users, Plane
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -28,10 +28,10 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
 
   const navItems: NavItem[] = [
     {
-      label: "Home",
-      href: "/admin-dashboard",
-      icon: LayoutDashboard,
-      matchPaths: ["/admin-dashboard"],
+      label: "Command",
+      href: "/admin-command-center",
+      icon: Brain,
+      matchPaths: ["/admin-command-center", "/admin-dashboard", "/admin-predictive", "/admin-workflows"],
     },
     {
       label: "Comms",

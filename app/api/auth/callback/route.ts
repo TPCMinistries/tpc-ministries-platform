@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    // Staff/admin always lands on admin dashboard, regardless of ?next=
+    // Staff/admin always lands on the command center, regardless of ?next=
     if (member && (member.role === 'staff' || member.role === 'admin' || member.is_admin)) {
-      return NextResponse.redirect(new URL('/admin-dashboard', origin))
+      return NextResponse.redirect(new URL('/admin-command-center', origin))
     }
 
     // Honor ?next= for deep-link signups (AI handoff, post-assessment, etc.)
@@ -50,4 +50,3 @@ export async function GET(request: NextRequest) {
   // No authenticated user — honor next or fall through
   return NextResponse.redirect(new URL(next, origin))
 }
-
