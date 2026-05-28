@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -191,24 +190,23 @@ export default function PartnersPage() {
           </div>
 
           <div id="message" className="rounded-lg border border-white/15 bg-white/10 p-3 shadow-2xl backdrop-blur">
-            <div className="flex aspect-video items-center justify-center rounded-md border border-gold/20 bg-navy-900/80">
-              <div className="px-6 text-center">
-                <Image
-                  src="/images/logos/tpc-logo.png"
-                  alt="TPC Ministries"
-                  width={180}
-                  height={54}
-                  className="mx-auto h-14 w-auto brightness-0 invert"
-                  priority
-                />
-                <div className="mx-auto mt-8 flex h-16 w-16 items-center justify-center rounded-full border border-gold/40 bg-gold/15 text-gold">
-                  <Play className="ml-1 h-7 w-7" />
-                </div>
-                <p className="mt-6 text-body-sm font-medium uppercase tracking-[0.16em] text-gold">
-                  Video message placeholder
+            <div className="overflow-hidden rounded-md border border-gold/20 bg-navy-900/80">
+              <video
+                className="aspect-video w-full bg-navy-950 object-cover"
+                controls
+                preload="metadata"
+                poster="/videos/kenya/posters/highlight-video.jpg"
+                aria-label="Kenya ministry field highlight from TPC Ministries"
+              >
+                <source src="/videos/kenya/highlight-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <div className="border-t border-white/10 bg-navy-950/90 px-5 py-4">
+                <p className="text-body-sm font-medium uppercase tracking-[0.16em] text-gold">
+                  Field highlight
                 </p>
-                <p className="mt-2 text-body-sm text-navy-200">
-                  Add a YouTube, Vimeo, or uploaded ministry video here.
+                <p className="mt-1 text-body-sm text-navy-200">
+                  A glimpse of the ministry, missions, and kingdom work Covenant Partners help sustain.
                 </p>
               </div>
             </div>
