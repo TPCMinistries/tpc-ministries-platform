@@ -63,7 +63,7 @@ export default async function AdminLayout({
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">TPC Ministries</h1>
-                <p className="text-xs text-navy-300">Admin Portal</p>
+                <p className="text-xs text-navy-300">Command Center</p>
               </div>
             </div>
 

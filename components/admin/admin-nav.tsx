@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import {
-  LayoutDashboard,
   MessageSquare,
   Users,
   BookOpen,
@@ -96,10 +95,11 @@ export default function AdminNav() {
   const navSections: NavSection[] = [
     {
       title: 'Main',
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      icon: <Brain className="h-4 w-4" />,
       defaultOpen: true,
       items: [
-        { name: 'Dashboard', href: '/admin-dashboard' },
+        { name: 'Command Center', href: '/admin-command-center' },
+        { name: 'Classic Dashboard', href: '/admin-dashboard' },
         { name: 'Email Inbox', href: '/inbox', badge: unreadCount },
         { name: 'Communications', href: '/communications' },
       ]
@@ -146,23 +146,22 @@ export default function AdminNav() {
       icon: <DollarSign className="h-4 w-4" />,
       items: [
         { name: 'Giving Overview', href: '/admin-giving' },
+        { name: 'Giving Forecast', href: '/admin-giving-forecast' },
       ]
     },
     {
       title: 'Missions',
       icon: <Plane className="h-4 w-4" />,
       items: [
-        { name: 'Kenya Command Center', href: '/kenya-command-center' },
+        { name: 'Kenya 2026 Command', href: '/kenya-command-center' },
       ]
     },
     {
-      title: 'AI Tools',
+      title: 'Intelligence',
       icon: <Brain className="h-4 w-4" />,
       items: [
         { name: 'AI Insights', href: '/ai-insights' },
-        { name: 'Command Center', href: '/admin-command-center' },
         { name: 'Predictions', href: '/admin-predictive' },
-        { name: 'Giving Forecast', href: '/admin-giving-forecast' },
         { name: 'Workflows', href: '/admin-workflows' },
       ]
     },

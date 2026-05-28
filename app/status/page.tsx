@@ -4,9 +4,10 @@ export default function StatusPage() {
     { path: '/auth/login', name: 'Login' },
     { path: '/auth/signup', name: 'Signup' },
     { path: '/member/dashboard', name: 'Member Dashboard' },
-    { path: '/admin-dashboard', name: 'Admin Dashboard' },
-    { path: '/admin/communications', name: 'Communications (Original)' },
-    { path: '/admin/communications-enhanced', name: 'Communications (Enhanced)' },
+    { path: '/admin-command-center', name: 'Admin Command Center' },
+    { path: '/admin-dashboard', name: 'Classic Admin Dashboard' },
+    { path: '/communications', name: 'Communications' },
+    { path: '/admin-giving', name: 'Giving Overview' },
   ]
 
   return (

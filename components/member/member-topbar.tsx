@@ -72,7 +72,9 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notifications': 'Notifications',
   'partner': 'Partner',
   'member-settings': 'Settings',
-  'admin-dashboard': 'Admin Portal',
+  'admin-command-center': 'Admin Command Center',
+  'admin-dashboard': 'Classic Admin Dashboard',
+  'kenya-command-center': 'Kenya 2026 Command',
 }
 
 function getGreeting(): string {

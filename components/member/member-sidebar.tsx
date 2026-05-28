@@ -536,16 +536,16 @@ function SidebarContent({
         </div>
       )}
 
-      {/* Admin Portal Link - visible to staff and admins */}
+      {/* Admin Command Center Link - visible to staff and admins */}
       {canAccessAdmin() && (
         <div className={cn('py-4 border-t border-border', isCollapsed ? 'px-2' : 'px-3')}>
-          <Link href="/admin-command-center" title={isCollapsed ? 'Admin Portal' : undefined}>
+          <Link href="/admin-command-center" title={isCollapsed ? 'Admin Command Center' : undefined}>
             <Button className={cn(
               'bg-navy hover:bg-navy/90 text-white',
               isCollapsed ? 'w-10 h-10 p-0' : 'w-full'
             )}>
               <Shield className={cn('h-4 w-4', !isCollapsed && 'mr-2')} />
-              {!isCollapsed && 'Admin Portal'}
+              {!isCollapsed && 'Admin Command'}
             </Button>
           </Link>
         </div>
