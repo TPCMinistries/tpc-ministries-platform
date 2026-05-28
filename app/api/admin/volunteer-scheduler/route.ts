@@ -3,6 +3,8 @@ import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import OpenAI from 'openai'
 
+export const dynamic = 'force-dynamic'
+
 function getSupabase() {
   return createAdminClient()
 }
