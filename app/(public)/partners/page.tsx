@@ -5,7 +5,6 @@ import {
   BookOpen,
   CalendarDays,
   Check,
-  CircleDollarSign,
   Globe2,
   GraduationCap,
   HeartHandshake,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { CovenantPartnerFlow } from './covenant-partner-flow'
 
 export const metadata: Metadata = {
   title: {
@@ -105,40 +105,6 @@ const motionStories = [
   },
 ]
 
-const partnershipLevels = [
-  {
-    name: 'Builder',
-    amount: '$25',
-    href: '/giving?frequency=monthly&amount=25',
-    description: 'Help sustain the ongoing work of teaching, prayer, and encouragement.',
-  },
-  {
-    name: 'Steward',
-    amount: '$50',
-    href: '/giving?frequency=monthly&amount=50',
-    description: 'Support discipleship resources and monthly partner gatherings.',
-  },
-  {
-    name: 'Kingdom Partner',
-    amount: '$100',
-    href: '/giving?frequency=monthly&amount=100',
-    description: 'Help expand ministry, media, and leadership development.',
-    featured: true,
-  },
-  {
-    name: 'Vision Partner',
-    amount: '$250',
-    href: '/giving?frequency=monthly&amount=250',
-    description: 'Strengthen missions, events, and broader kingdom initiatives.',
-  },
-  {
-    name: 'Legacy Partner',
-    amount: 'Custom',
-    href: '/giving?frequency=monthly',
-    description: 'For those called to make a larger monthly commitment to help build long-term impact.',
-  },
-]
-
 const faqs = [
   {
     question: 'Is partnership required to receive ministry?',
@@ -189,7 +155,7 @@ export default function PartnersPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="xl" variant="gold">
-                <Link href="/giving?frequency=monthly">
+                <Link href="#start-partnership">
                   Become a Monthly Partner
                   <ArrowRight className="h-5 w-5" />
                 </Link>
@@ -368,59 +334,7 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      <section className="bg-navy-950 px-4 py-section-sm text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="text-body-sm font-semibold uppercase tracking-[0.18em] text-gold">
-              Partnership Levels
-            </p>
-            <h2 className="mt-3 font-display text-display-md text-white">Choose a monthly rhythm</h2>
-            <p className="mt-5 text-body-lg text-navy-200">
-              Every level points toward the same work: building a spiritually mature, future-ready
-              community of believers.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-            {partnershipLevels.map((level) => (
-              <article
-                key={level.name}
-                className={`flex rounded-lg border p-5 ${
-                  level.featured
-                    ? 'border-gold bg-gold text-navy-950 shadow-[0_0_34px_rgba(212,184,131,0.26)]'
-                    : 'border-white/15 bg-white/8'
-                }`}
-              >
-                <div className="flex min-h-[260px] w-full flex-col">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-display text-body-xl">{level.name}</h3>
-                    <CircleDollarSign className="h-5 w-5 flex-shrink-0" />
-                  </div>
-                  <p className="mt-5 font-display text-display-sm">
-                    {level.amount}
-                    {level.amount !== 'Custom' && (
-                      <span className="text-body-md font-normal opacity-75">/month</span>
-                    )}
-                  </p>
-                  <p className={`mt-4 text-body-sm ${level.featured ? 'text-navy-900' : 'text-navy-200'}`}>
-                    {level.description}
-                  </p>
-                  <Button
-                    asChild
-                    variant={level.featured ? 'default' : 'outline'}
-                    className={`mt-auto w-full ${
-                      level.featured
-                        ? 'bg-navy text-white hover:bg-navy-800'
-                        : 'border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white'
-                    }`}
-                  >
-                    <Link href={level.href}>Partner Monthly</Link>
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CovenantPartnerFlow />
 
       <section className="px-4 py-section-sm sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
@@ -478,11 +392,18 @@ export default function PartnersPage() {
             If you feel aligned with this assignment, we invite you to become a monthly Covenant Partner today.
           </p>
           <Button asChild size="xl" variant="gold" className="mt-8">
-            <Link href="/giving?frequency=monthly">
+            <Link href="#start-partnership">
               Become a Covenant Partner
               <ArrowRight className="h-5 w-5" />
             </Link>
           </Button>
+          <p className="mt-4 text-body-sm text-navy-200">
+            Prefer to give once instead?{' '}
+            <Link href="/giving" className="font-medium text-gold underline-offset-4 hover:underline">
+              Make a one-time gift
+            </Link>
+            .
+          </p>
         </div>
       </section>
     </div>

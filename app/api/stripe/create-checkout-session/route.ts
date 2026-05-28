@@ -132,6 +132,17 @@ export async function POST(request: NextRequest) {
       missions: 'Global Missions',
       leadership: 'Leadership Support',
     }
+    const campaignKey = campaign ? String(campaign).slice(0, 50) : undefined
+    const isCovenantPartner = campaignKey === 'covenant-partners'
+    const productName = isCovenantPartner
+      ? 'TPC Ministries Covenant Partnership'
+      : frequency === 'monthly'
+        ? 'Monthly Donation'
+        : 'Donation'
+    const successUrl = isCovenantPartner
+      ? `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}&campaign=covenant-partners`
+      : `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`
+    const cancelUrl = isCovenantPartner ? `${baseUrl}/partners#start-partnership` : `${baseUrl}/giving`
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100)
@@ -175,7 +186,7 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: 'Monthly Donation',
+                name: productName,
               },
               recurring: {
                 interval: 'month',
@@ -192,10 +203,10 @@ export async function POST(request: NextRequest) {
           frequency,
           user_id: user?.id || 'anonymous',
           donor_name: donorName || 'Anonymous',
-          ...(campaign ? { campaign: String(campaign).slice(0, 50) } : {}),
+          ...(campaignKey ? { campaign: campaignKey } : {}),
         },
-        success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/giving`,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         })
       } catch (stripeError: any) {
         console.error('Stripe API call failed:', stripeError)
@@ -216,7 +227,7 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: 'Donation',
+                name: productName,
               },
               unit_amount: amountInCents,
             },
@@ -230,10 +241,10 @@ export async function POST(request: NextRequest) {
           frequency,
           user_id: user?.id || 'anonymous',
           donor_name: donorName || 'Anonymous',
-          ...(campaign ? { campaign: String(campaign).slice(0, 50) } : {}),
+          ...(campaignKey ? { campaign: campaignKey } : {}),
         },
-        success_url: `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/giving`,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         })
       } catch (stripeError: any) {
         console.error('Stripe API call failed:', stripeError)
