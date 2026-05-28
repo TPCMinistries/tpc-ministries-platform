@@ -40,11 +40,15 @@ import {
   Mail,
   Phone,
   X,
-  Clock,
-  ArrowUpRight,
-  Cake,
-  Activity
-} from 'lucide-react'
+	  Clock,
+	  ArrowUpRight,
+	  Cake,
+	  Activity,
+	  ShieldCheck,
+	  ClipboardList,
+	  Send,
+	  Globe2
+	} from 'lucide-react'
 
 interface PastoralAlert {
   id: string
@@ -84,25 +88,30 @@ export default function AdminCommandCenter() {
   const [insights, setInsights] = useState<AIInsights | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [selectedAlert, setSelectedAlert] = useState<PastoralAlert | null>(null)
-  const [actionDialogOpen, setActionDialogOpen] = useState(false)
-  const [actionNotes, setActionNotes] = useState('')
-  const [processingAction, setProcessingAction] = useState(false)
+	  const [selectedAlert, setSelectedAlert] = useState<PastoralAlert | null>(null)
+	  const [actionDialogOpen, setActionDialogOpen] = useState(false)
+	  const [actionNotes, setActionNotes] = useState('')
+	  const [processingAction, setProcessingAction] = useState(false)
+	  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchInsights()
   }, [])
 
-  const fetchInsights = async () => {
-    try {
-      const response = await fetch('/api/admin/ai-insights')
-      if (response.ok) {
-        const data = await response.json()
-        setInsights(data)
-      }
-    } catch (error) {
-      console.error('Error fetching insights:', error)
-    } finally {
+	  const fetchInsights = async () => {
+	    try {
+	      setError(null)
+	      const response = await fetch('/api/admin/ai-insights')
+	      if (response.ok) {
+	        const data = await response.json()
+	        setInsights(data)
+	      } else {
+	        setError('The command center could not load the latest ministry intelligence.')
+	      }
+	    } catch (error) {
+	      console.error('Error fetching insights:', error)
+	      setError('The command center could not load the latest ministry intelligence.')
+	    } finally {
       setLoading(false)
       setRefreshing(false)
     }
@@ -194,8 +203,59 @@ export default function AdminCommandCenter() {
     )
   }
 
-  const highPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'high') || []
-  const mediumPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'medium') || []
+	  const highPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'high') || []
+	  const mediumPriorityAlerts = insights?.pastoralAlerts.filter(a => a.priority === 'medium') || []
+	  const totalMembers = insights?.memberStats.total || 0
+	  const activeRate = insights?.engagementTrends.activeRate || 0
+	  const partnerCount = insights?.memberStats.byTier.partner || 0
+	  const covenantPartnerCount = insights?.memberStats.byTier.covenant || 0
+	  const partnerRate = totalMembers > 0 ? Math.round(((partnerCount + covenantPartnerCount) / totalMembers) * 100) : 0
+	  const revenueThisMonth = insights?.revenueInsights.thisMonth || 0
+	  const readinessScore = Math.min(100, Math.round(
+	    (highPriorityAlerts.length === 0 ? 35 : Math.max(0, 35 - highPriorityAlerts.length * 8)) +
+	    Math.min(35, activeRate * 0.35) +
+	    Math.min(20, partnerRate * 1.2) +
+	    (revenueThisMonth > 0 ? 10 : 0)
+	  ))
+	  const readinessTone = readinessScore >= 80
+	    ? 'text-green-700 bg-green-50 border-green-200'
+	    : readinessScore >= 55
+	    ? 'text-amber-700 bg-amber-50 border-amber-200'
+	    : 'text-red-700 bg-red-50 border-red-200'
+	  const operatingLanes = [
+	    {
+	      title: 'Pastoral Care',
+	      value: highPriorityAlerts.length + mediumPriorityAlerts.length,
+	      label: 'people to review',
+	      href: '/member-care',
+	      icon: Heart,
+	      tone: 'bg-rose-50 text-rose-700 border-rose-100',
+	    },
+	    {
+	      title: 'Covenant Partners',
+	      value: covenantPartnerCount,
+	      label: 'active covenant tier',
+	      href: '/admin-giving',
+	      icon: ShieldCheck,
+	      tone: 'bg-gold/10 text-navy border-gold/20',
+	    },
+	    {
+	      title: 'Communication',
+	      value: insights?.suggestedActions.length || 0,
+	      label: 'recommended moves',
+	      href: '/communications',
+	      icon: Send,
+	      tone: 'bg-blue-50 text-blue-700 border-blue-100',
+	    },
+	    {
+	      title: 'Missions',
+	      value: 'Kenya',
+	      label: 'field operations',
+	      href: '/kenya-command-center',
+	      icon: Globe2,
+	      tone: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+	    },
+	  ]
 
   return (
     <div className="flex-1 p-8 space-y-6">
@@ -221,8 +281,8 @@ export default function AdminCommandCenter() {
         </Button>
       </div>
 
-      {/* AI Daily Briefing */}
-      <Card className="bg-gradient-to-r from-navy to-navy-800 text-white border-0">
+	      {/* AI Daily Briefing */}
+	      <Card className="bg-gradient-to-r from-navy to-navy-800 text-white border-0">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-white/10 rounded-xl">
@@ -242,7 +302,85 @@ export default function AdminCommandCenter() {
             </div>
           </div>
         </CardContent>
-      </Card>
+	      </Card>
+
+	      {error && (
+	        <Card className="border-amber-200 bg-amber-50">
+	          <CardContent className="py-4">
+	            <div className="flex items-center gap-3 text-amber-800">
+	              <AlertTriangle className="h-5 w-5" />
+	              <p className="text-sm font-medium">{error}</p>
+	            </div>
+	          </CardContent>
+	        </Card>
+	      )}
+
+	      {/* Daily Operating Snapshot */}
+	      <div className="grid gap-4 xl:grid-cols-[1.1fr_2fr]">
+	        <Card className="border-navy/10">
+	          <CardHeader className="pb-3">
+	            <CardTitle className="flex items-center gap-2 text-lg">
+	              <ClipboardList className="h-5 w-5 text-gold" />
+	              Today's Operating Readiness
+	            </CardTitle>
+	            <CardDescription>Current signal across care, engagement, partners, and giving</CardDescription>
+	          </CardHeader>
+	          <CardContent>
+	            <div className="flex items-end justify-between gap-4">
+	              <div>
+	                <p className="text-5xl font-bold text-navy">{readinessScore}</p>
+	                <p className="text-sm text-gray-500">readiness score</p>
+	              </div>
+	              <Badge variant="outline" className={readinessTone}>
+	                {readinessScore >= 80 ? 'Strong' : readinessScore >= 55 ? 'Needs attention' : 'Intervention needed'}
+	              </Badge>
+	            </div>
+	            <div className="mt-5 h-2 rounded-full bg-gray-100">
+	              <div
+	                className="h-2 rounded-full bg-gradient-to-r from-gold to-green-500"
+	                style={{ width: `${readinessScore}%` }}
+	              />
+	            </div>
+	            <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+	              <div className="rounded-lg bg-gray-50 p-3">
+	                <p className="text-lg font-bold text-navy">{activeRate}%</p>
+	                <p className="text-xs text-gray-500">active</p>
+	              </div>
+	              <div className="rounded-lg bg-gray-50 p-3">
+	                <p className="text-lg font-bold text-navy">{partnerRate}%</p>
+	                <p className="text-xs text-gray-500">partnered</p>
+	              </div>
+	              <div className="rounded-lg bg-gray-50 p-3">
+	                <p className="text-lg font-bold text-navy">{highPriorityAlerts.length}</p>
+	                <p className="text-xs text-gray-500">urgent</p>
+	              </div>
+	            </div>
+	          </CardContent>
+	        </Card>
+
+	        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+	          {operatingLanes.map((lane) => {
+	            const Icon = lane.icon
+	            return (
+	              <Link key={lane.title} href={lane.href}>
+	                <Card className={`h-full border ${lane.tone} transition-shadow hover:shadow-md`}>
+	                  <CardContent className="flex h-full flex-col justify-between p-5">
+	                    <div className="flex items-center justify-between">
+	                      <Icon className="h-6 w-6" />
+	                      <ChevronRight className="h-4 w-4 opacity-70" />
+	                    </div>
+	                    <div className="mt-8">
+	                      <p className="text-sm font-medium opacity-80">{lane.title}</p>
+	                      <p className="mt-1 text-3xl font-bold">{lane.value}</p>
+	                      <p className="text-xs opacity-75">{lane.label}</p>
+	                    </div>
+	                  </CardContent>
+	                </Card>
+	              </Link>
+	            )
+	          })}
+	        </div>
+	      </div>
 
       {/* Quick Stats Row */}
       <div className="grid gap-4 md:grid-cols-4">
