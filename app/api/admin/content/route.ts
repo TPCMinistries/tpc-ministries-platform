@@ -1,25 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET all content for admin
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || member.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -27,6 +17,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const search = searchParams.get('search')
 
+    const supabase = createAdminClient()
     let query = supabase
       .from('teachings')
       .select(`
@@ -79,22 +70,9 @@ export async function GET(request: NextRequest) {
 // POST create new content
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || member.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -124,6 +102,7 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
 
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('teachings')
       .insert({
