@@ -1,29 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Helper to verify admin
-async function verifyAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return null
-
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!member?.is_admin) return null
-  return member
-}
+export const dynamic = 'force-dynamic'
 
 // GET - List/filter/search media
 export async function GET(request: NextRequest) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -33,7 +19,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '40')
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     let query = supabase
       .from('media_library')
       .select('*', { count: 'exact' })
@@ -80,9 +66,9 @@ export async function GET(request: NextRequest) {
 // POST - Upload file + create media record
 export async function POST(request: NextRequest) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const formData = await request.formData()
@@ -144,7 +130,7 @@ export async function POST(request: NextRequest) {
         alt_text: altText || null,
         caption: caption || null,
         folder,
-        uploaded_by: admin.id,
+        uploaded_by: authResult.member.id,
       })
       .select()
       .single()

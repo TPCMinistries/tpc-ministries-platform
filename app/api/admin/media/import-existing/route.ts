@@ -1,21 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-async function verifyAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return null
-
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!member?.is_admin) return null
-  return member
-}
+export const dynamic = 'force-dynamic'
 
 function getMediaTypeFromMime(mime: string): string {
   if (mime.startsWith('image/')) return 'image'
@@ -27,9 +14,9 @@ function getMediaTypeFromMime(mime: string): string {
 // POST - Scan tpc-media bucket and import existing files into media_library
 export async function POST(request: NextRequest) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const adminClient = createAdminClient()
@@ -83,7 +70,7 @@ export async function POST(request: NextRequest) {
             mime_type: mime,
             file_size_bytes: file.metadata?.size || 0,
             folder,
-            uploaded_by: admin.id,
+            uploaded_by: authResult.member.id,
           })
 
         if (insertError) {

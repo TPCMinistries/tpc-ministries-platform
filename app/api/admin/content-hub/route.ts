@@ -1,29 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { getContentType, CONTENT_TYPES, generateSlug } from '@/lib/content/content-types'
 
-async function verifyAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return null
-
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!member?.is_admin) return null
-  return member
-}
+export const dynamic = 'force-dynamic'
 
 // GET - List content by type
 export async function GET(request: NextRequest) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -32,7 +19,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // If type specified, query that table
     if (type) {
@@ -107,9 +94,9 @@ export async function GET(request: NextRequest) {
 // POST - Create content in appropriate table
 export async function POST(request: NextRequest) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()

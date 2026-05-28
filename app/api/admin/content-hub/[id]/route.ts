@@ -1,22 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-import { getContentType, generateSlug } from '@/lib/content/content-types'
+import { getContentType } from '@/lib/content/content-types'
 
-async function verifyAdmin() {
-  const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return null
-
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!member?.is_admin) return null
-  return member
-}
+export const dynamic = 'force-dynamic'
 
 // GET - Get single content item
 export async function GET(
@@ -24,9 +11,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const { id } = await params
@@ -40,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid content type' }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from(config.table)
       .select('*')
@@ -64,9 +51,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const { id } = await params
@@ -120,9 +107,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await verifyAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const { id } = await params
