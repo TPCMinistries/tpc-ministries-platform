@@ -143,6 +143,13 @@ export async function POST(request: NextRequest) {
       ? `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}&campaign=covenant-partners`
       : `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = isCovenantPartner ? `${baseUrl}/partners#start-partnership` : `${baseUrl}/giving`
+    const checkoutMetadata = {
+      type,
+      frequency,
+      user_id: user?.id || 'anonymous',
+      donor_name: donorName || 'Anonymous',
+      ...(campaignKey ? { campaign: campaignKey } : {}),
+    }
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100)
@@ -198,12 +205,9 @@ export async function POST(request: NextRequest) {
         ],
         ...(donorEmail || user?.email ? { customer_email: donorEmail || user?.email } : {}),
         ...(user?.id ? { client_reference_id: user.id } : {}),
-        metadata: {
-          type,
-          frequency,
-          user_id: user?.id || 'anonymous',
-          donor_name: donorName || 'Anonymous',
-          ...(campaignKey ? { campaign: campaignKey } : {}),
+        metadata: checkoutMetadata,
+        subscription_data: {
+          metadata: checkoutMetadata,
         },
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -236,13 +240,7 @@ export async function POST(request: NextRequest) {
         ],
         ...(donorEmail || user?.email ? { customer_email: donorEmail || user?.email } : {}),
         ...(user?.id ? { client_reference_id: user.id } : {}),
-        metadata: {
-          type,
-          frequency,
-          user_id: user?.id || 'anonymous',
-          donor_name: donorName || 'Anonymous',
-          ...(campaignKey ? { campaign: campaignKey } : {}),
-        },
+        metadata: checkoutMetadata,
         success_url: successUrl,
         cancel_url: cancelUrl,
         })

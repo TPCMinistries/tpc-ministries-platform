@@ -146,7 +146,9 @@ async function recordDonation(session: Stripe.Checkout.Session) {
     || session.customer_details?.name
     || 'Anonymous'
   const amount = (session.amount_total || 0) / 100
-  const designation = session.metadata?.type || 'general'
+  const isCovenantPartner = session.metadata?.campaign === 'covenant-partners'
+  const designation = isCovenantPartner ? 'covenant_partner' : session.metadata?.type || 'general'
+  const receiptType = isCovenantPartner ? 'Covenant Partnership' : designation
   const isRecurring = session.metadata?.frequency === 'monthly' || !!session.subscription
   const isAnonymous = !userId && (!donorName || donorName === 'Anonymous')
 
@@ -179,7 +181,7 @@ async function recordDonation(session: Stripe.Checkout.Session) {
     donorName,
     email: donorEmail,
     amount,
-    donationType: designation,
+    donationType: receiptType,
     transactionId: session.id,
     isRecurring: false,
   })
@@ -196,7 +198,9 @@ async function recordRecurringDonation(invoice: Stripe.Invoice) {
     || null
   const donorName = subscription.metadata?.donor_name || 'Anonymous'
   const amount = ((invoice as any).amount_paid || 0) / 100
-  const designation = subscription.metadata?.type || 'general'
+  const isCovenantPartner = subscription.metadata?.campaign === 'covenant-partners'
+  const designation = isCovenantPartner ? 'covenant_partner' : subscription.metadata?.type || 'general'
+  const receiptType = isCovenantPartner ? 'Covenant Partnership' : designation
   const isAnonymous = !userId && (!donorName || donorName === 'Anonymous')
 
   const memberId = await resolveMemberId(supabase, userId, donorEmail)
@@ -228,7 +232,7 @@ async function recordRecurringDonation(invoice: Stripe.Invoice) {
     donorName,
     email: donorEmail,
     amount,
-    donationType: designation,
+    donationType: receiptType,
     transactionId: invoice.id,
     isRecurring: true,
   })
