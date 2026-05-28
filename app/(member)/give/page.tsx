@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,6 +40,20 @@ export default function GivePage() {
     lives_impacted: 45,
     content_supported: 12
   }
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const amountParam = searchParams.get('amount')
+    const frequencyParam = searchParams.get('frequency')
+
+    if (amountParam && Number(amountParam) >= 1) {
+      setAmount(amountParam)
+    }
+
+    if (frequencyParam === 'once' || frequencyParam === 'monthly' || frequencyParam === 'yearly') {
+      setSelectedFrequency(frequencyParam)
+    }
+  }, [])
 
   const funds = [
     {

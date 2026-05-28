@@ -109,32 +109,32 @@ const partnershipLevels = [
   {
     name: 'Builder',
     amount: '$25',
-    href: '/give?frequency=monthly&amount=25',
+    href: '/giving?frequency=monthly&amount=25',
     description: 'Help sustain the ongoing work of teaching, prayer, and encouragement.',
   },
   {
     name: 'Steward',
     amount: '$50',
-    href: '/give?frequency=monthly&amount=50',
+    href: '/giving?frequency=monthly&amount=50',
     description: 'Support discipleship resources and monthly partner gatherings.',
   },
   {
     name: 'Kingdom Partner',
     amount: '$100',
-    href: '/give?frequency=monthly&amount=100',
+    href: '/giving?frequency=monthly&amount=100',
     description: 'Help expand ministry, media, and leadership development.',
     featured: true,
   },
   {
     name: 'Vision Partner',
     amount: '$250',
-    href: '/give?frequency=monthly&amount=250',
+    href: '/giving?frequency=monthly&amount=250',
     description: 'Strengthen missions, events, and broader kingdom initiatives.',
   },
   {
     name: 'Legacy Partner',
     amount: 'Custom',
-    href: '/give?frequency=monthly',
+    href: '/giving?frequency=monthly',
     description: 'For those called to make a larger monthly commitment to help build long-term impact.',
   },
 ]
@@ -189,7 +189,7 @@ export default function PartnersPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="xl" variant="gold">
-                <Link href="/give?frequency=monthly">
+                <Link href="/giving?frequency=monthly">
                   Become a Monthly Partner
                   <ArrowRight className="h-5 w-5" />
                 </Link>
@@ -478,7 +478,7 @@ export default function PartnersPage() {
             If you feel aligned with this assignment, we invite you to become a monthly Covenant Partner today.
           </p>
           <Button asChild size="xl" variant="gold" className="mt-8">
-            <Link href="/give?frequency=monthly">
+            <Link href="/giving?frequency=monthly">
               Become a Covenant Partner
               <ArrowRight className="h-5 w-5" />
             </Link>
