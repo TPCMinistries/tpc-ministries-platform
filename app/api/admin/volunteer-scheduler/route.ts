@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import OpenAI from 'openai'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() {
+  return createAdminClient()
+}
 
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
@@ -12,9 +13,15 @@ function getOpenAI() { return new OpenAI({
 // AI-Optimized Volunteer Scheduling
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
     const { searchParams } = new URL(request.url)
     const eventId = searchParams.get('eventId')
     const date = searchParams.get('date')
+    const supabase = getSupabase()
 
     // Get all volunteer teams
     const { data: teams } = await supabase
@@ -144,7 +151,13 @@ export async function GET(request: NextRequest) {
 // POST - Create optimized schedule or schedule a volunteer
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
     const { action, eventId, memberId, teamId, position, autoSchedule } = await request.json()
+    const supabase = getSupabase()
 
     if (action === 'schedule_volunteer') {
       // Schedule a specific volunteer
@@ -167,7 +180,7 @@ export async function POST(request: NextRequest) {
       if (error) throw error
 
       // Send notification
-      await getSupabase().from('notifications').insert({
+      await supabase.from('notifications').insert({
         user_id: memberId,
         type: 'volunteer',
         title: 'Volunteer Schedule Request',
@@ -224,7 +237,7 @@ export async function POST(request: NextRequest) {
           status: 'pending'
         }))
 
-        await getSupabase().from('volunteer_schedules').insert(scheduleInserts)
+        await supabase.from('volunteer_schedules').insert(scheduleInserts)
 
         // Send notifications
         const notificationInserts = toSchedule.map(memberId => ({
@@ -235,7 +248,7 @@ export async function POST(request: NextRequest) {
           is_read: false
         }))
 
-        await getSupabase().from('notifications').insert(notificationInserts)
+        await supabase.from('notifications').insert(notificationInserts)
       }
 
       return NextResponse.json({

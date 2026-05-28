@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() {
+  return createAdminClient()
+}
 
 interface WorkflowConfig {
   id: string
@@ -25,6 +26,7 @@ interface WorkflowConfig {
 async function getMembersForWorkflow(workflow: WorkflowConfig) {
   const now = new Date()
   const members: any[] = []
+  const supabase = getSupabase()
 
   switch (workflow.trigger_type) {
     case 'birthday': {
@@ -198,7 +200,13 @@ async function sendNotification(memberId: string, message: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
     const { workflowId } = await request.json()
+    const supabase = getSupabase()
 
     if (!workflowId) {
       return NextResponse.json({ error: 'workflowId required' }, { status: 400 })
@@ -255,7 +263,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Log execution
-      await getSupabase().from('workflow_executions').insert({
+      await supabase.from('workflow_executions').insert({
         workflow_id: workflowId,
         workflow_name: workflow.name,
         member_id: member.id,
@@ -298,9 +306,18 @@ export async function POST(request: NextRequest) {
 // Cron endpoint to run all active workflows
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret if needed
     const authHeader = request.headers.get('authorization')
-    // In production, verify: if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) return 401
+    const cronSecret = process.env.CRON_SECRET
+    const isAuthorizedCron = Boolean(cronSecret && authHeader === `Bearer ${cronSecret}`)
+
+    if (!isAuthorizedCron) {
+      const authResult = await requireStaff()
+      if (authResult instanceof NextResponse) {
+        return authResult
+      }
+    }
+
+    const supabase = getSupabase()
 
     // Get all active workflows
     const { data: workflows, error } = await supabase
@@ -336,7 +353,7 @@ export async function GET(request: NextRequest) {
 
           if (success) {
             sent++
-            await getSupabase().from('workflow_executions').insert({
+            await supabase.from('workflow_executions').insert({
               workflow_id: workflow.id,
               workflow_name: workflow.name,
               member_id: member.id,
