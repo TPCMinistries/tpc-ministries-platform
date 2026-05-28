@@ -35,9 +35,9 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
     },
     {
       label: "Comms",
-      href: "/admin-inbox",
+      href: "/inbox",
       icon: MessageSquare,
-      matchPaths: ["/admin-inbox", "/admin-emails", "/admin-sms"],
+      matchPaths: ["/inbox", "/email-campaigns", "/sms-campaigns", "/communications"],
       badge: unreadMessages,
     },
     {
@@ -54,9 +54,9 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
     },
     {
       label: "People",
-      href: "/admin-members",
+      href: "/members",
       icon: Users,
-      matchPaths: ["/admin-members", "/admin-groups", "/admin-prayers", "/admin-events"],
+      matchPaths: ["/members", "/admin-groups", "/prayers", "/admin-events", "/member-care"],
     },
   ]
 

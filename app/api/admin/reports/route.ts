@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+export const dynamic = 'force-dynamic'
+
+function getSupabase() { return createAdminClient() }
 
 // Exportable Ministry Reports API
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
+    const supabase = getSupabase()
+
     const { searchParams } = new URL(request.url)
     const reportType = searchParams.get('type') || 'overview'
     const startDate = searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -49,7 +57,7 @@ export async function GET(request: NextRequest) {
         // Revenue
         const { data: donations } = await supabase
           .from('donations')
-          .select('amount, donation_type, fund_name, created_at')
+          .select('amount, donation_type, designation, created_at')
           .gte('created_at', startDate)
           .lte('created_at', endDate)
 
@@ -58,7 +66,7 @@ export async function GET(request: NextRequest) {
 
         const revenueByFund: Record<string, number> = {}
         for (const d of donations || []) {
-          const fund = d.fund_name || 'General'
+          const fund = d.designation || 'General'
           revenueByFund[fund] = (revenueByFund[fund] || 0) + (d.amount || 0)
         }
 
@@ -164,7 +172,7 @@ export async function GET(request: NextRequest) {
         const { data: donations } = await supabase
           .from('donations')
           .select(`
-            id, amount, donation_type, fund_name, created_at, is_recurring,
+            id, amount, donation_type, designation, created_at, is_recurring,
             members (first_name, last_name, email)
           `)
           .gte('created_at', startDate)
@@ -179,7 +187,7 @@ export async function GET(request: NextRequest) {
           donations: donations?.map(d => ({
             amount: d.amount,
             type: d.donation_type,
-            fund: d.fund_name || 'General',
+            fund: d.designation || 'General',
             recurring: d.is_recurring,
             donor: (d.members as any)?.first_name ? `${(d.members as any).first_name} ${(d.members as any).last_name}` : 'Anonymous',
             date: d.created_at

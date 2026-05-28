@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+export const dynamic = 'force-dynamic'
 
 // Lazy initialization to avoid build-time errors
 function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  return createAdminClient()
 }
 
 function getOpenAI() {
@@ -87,6 +87,7 @@ Keep it warm, spiritual, and actionable. Use "your ministry" or "your congregati
 async function generatePastoralAlerts(): Promise<PastoralAlert[]> {
   const alerts: PastoralAlert[] = []
   const now = new Date()
+  const supabase = getSupabase()
 
   // 1. Find inactive members (no activity in 30+ days)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
@@ -259,6 +260,7 @@ async function generatePastoralAlerts(): Promise<PastoralAlert[]> {
 
 // Get content gaps based on search trends
 async function getContentGaps(): Promise<ContentGap[]> {
+  const supabase = getSupabase()
   // This would normally analyze search logs - for now we'll check what topics are searched but have limited content
   const { data: searchLogs } = await supabase
     .from('search_logs')
@@ -319,6 +321,7 @@ async function getContentGaps(): Promise<ContentGap[]> {
 
 // Get member statistics
 async function getMemberStats() {
+  const supabase = getSupabase()
   const now = new Date()
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -353,6 +356,7 @@ async function getMemberStats() {
 
 // Get revenue insights
 async function getRevenueInsights() {
+  const supabase = getSupabase()
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -453,6 +457,13 @@ async function generateSuggestedActions(alerts: PastoralAlert[], stats: any): Pr
 
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
+    const supabase = getSupabase()
+
     // Gather all data in parallel
     const [
       memberStats,
@@ -530,6 +541,11 @@ export async function GET(request: NextRequest) {
 // POST endpoint for taking action on alerts
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
     const { action, alertId, memberId, data } = await request.json()
 
     switch (action) {

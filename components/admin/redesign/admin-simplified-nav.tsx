@@ -38,10 +38,10 @@ const navSections: NavSection[] = [
     label: "Communicate",
     icon: MessageSquare,
     items: [
-      { label: "Inbox", href: "/admin-inbox", icon: Inbox },
-      { label: "Email Campaigns", href: "/admin-emails", icon: Mail },
-      { label: "SMS Campaigns", href: "/admin-sms", icon: Send },
-      { label: "Announcements", href: "/admin-announcements", icon: Megaphone },
+      { label: "Inbox", href: "/inbox", icon: Inbox },
+      { label: "Email Campaigns", href: "/email-campaigns", icon: Mail },
+      { label: "SMS Campaigns", href: "/sms-campaigns", icon: Send },
+      { label: "Communications", href: "/communications", icon: Megaphone },
     ]
   },
   {
@@ -54,7 +54,7 @@ const navSections: NavSection[] = [
       { label: "Resources", href: "/admin-resources", icon: FileDown },
       { label: "Prophecy Hub", href: "/admin-prophecy", icon: Sparkles },
       { label: "Gallery", href: "/admin-gallery", icon: Image },
-      { label: "Blog", href: "/admin-blog", icon: BookOpen },
+      { label: "Daily Content", href: "/daily-content", icon: BookOpen },
     ]
   },
   {
@@ -62,9 +62,9 @@ const navSections: NavSection[] = [
     label: "People",
     icon: Users,
     items: [
-      { label: "Members", href: "/admin-members", icon: UsersRound },
+      { label: "Members", href: "/members", icon: UsersRound },
       { label: "Groups", href: "/admin-groups", icon: Users },
-      { label: "Prayer Requests", href: "/admin-prayers", icon: Heart },
+      { label: "Prayer Requests", href: "/prayers", icon: Heart },
       { label: "Events", href: "/admin-events", icon: Calendar },
       { label: "Kenya 2026", href: "/kenya-command-center", icon: UserPlus },
     ]
@@ -76,7 +76,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Analytics", href: "/analytics", icon: TrendingUp },
       { label: "Giving", href: "/admin-giving", icon: DollarSign },
-      { label: "AI Insights", href: "/admin-ai-insights", icon: Brain },
+      { label: "AI Insights", href: "/ai-insights", icon: Brain },
       { label: "Reports", href: "/admin-reports", icon: BarChart3 },
     ]
   },
@@ -217,7 +217,7 @@ export function AdminSimplifiedNav({ unreadMessages = 0, newLeads = 0 }: AdminSi
                       <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-4">
                         {section.items.map((item) => {
                           const ItemIcon = item.icon
-                          const itemBadge = item.href === "/admin-inbox" ? unreadMessages : 0
+                          const itemBadge = item.href === "/inbox" ? unreadMessages : 0
                           
                           return (
                             <Link

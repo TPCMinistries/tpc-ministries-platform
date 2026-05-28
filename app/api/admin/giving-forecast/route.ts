@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+export const dynamic = 'force-dynamic'
+
+function getSupabase() { return createAdminClient() }
 
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
@@ -12,6 +13,13 @@ function getOpenAI() { return new OpenAI({
 // AI-Powered Giving Forecasting
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
+    const supabase = getSupabase()
+
     const { searchParams } = new URL(request.url)
     const months = parseInt(searchParams.get('months') || '6') // Forecast months ahead
 
@@ -22,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const { data: donations } = await supabase
       .from('donations')
-      .select('amount, created_at, is_recurring, member_id, fund_name')
+      .select('amount, created_at, is_recurring, member_id, designation')
       .gte('created_at', twelveMonthsAgo.toISOString())
       .order('created_at', { ascending: true })
 
@@ -74,7 +82,7 @@ export async function GET(request: NextRequest) {
       .from('donations')
       .select('amount')
       .eq('is_recurring', true)
-      .eq('status', 'active')
+      .eq('status', 'succeeded')
 
     const currentMRR = activeRecurring?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0
 
@@ -145,7 +153,7 @@ export async function GET(request: NextRequest) {
     // Get giving by fund for pie chart
     const fundTotals: Record<string, number> = {}
     for (const d of donations || []) {
-      const fund = d.fund_name || 'General'
+      const fund = d.designation || 'General'
       fundTotals[fund] = (fundTotals[fund] || 0) + (d.amount || 0)
     }
 

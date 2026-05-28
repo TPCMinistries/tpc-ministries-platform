@@ -45,11 +45,14 @@ interface GivingStats {
 
 interface Donation {
   id: string
-  member_id: string
+  member_id: string | null
   member_name?: string
   amount: number
-  category: string
-  payment_method: string
+  category?: string
+  designation?: string
+  donation_type?: string
+  payment_method?: string
+  stripe_payment_intent_id?: string | null
   transaction_id: string | null
   status: string
   created_at: string
@@ -57,7 +60,7 @@ interface Donation {
 
 interface RecurringDonation {
   id: string
-  member_id: string
+  member_id: string | null
   member_name?: string
   amount: number
   frequency: string
@@ -142,7 +145,17 @@ export default function AdminGivingPage() {
   const [memberHistory, setMemberHistory] = useState<MemberGivingHistory | null>(null)
   const [loadingHistory, setLoadingHistory] = useState(false)
 
-  const categories = ['tithe', 'offering', 'missions', 'building', 'benevolence', 'special', 'other']
+  const categories = ['tithe', 'offering', 'missions', 'covenant_partner', 'building', 'benevolence', 'special', 'general', 'other']
+  const successfulDonationStatuses = ['completed', 'succeeded']
+
+  const getDonationCategory = (donation: Donation) =>
+    donation.category || donation.designation || donation.donation_type || 'general'
+
+  const getDonationMethod = (donation: Donation) =>
+    donation.payment_method || (donation.stripe_payment_intent_id ? 'stripe' : 'manual')
+
+  const isSuccessfulDonation = (status: string) =>
+    successfulDonationStatuses.includes(status)
 
   useEffect(() => {
     fetchData()
@@ -184,7 +197,7 @@ export default function AdminGivingPage() {
       .from('donations')
       .select('amount')
       .gte('created_at', startOfMonth)
-      .eq('status', 'completed')
+      .in('status', successfulDonationStatuses)
 
     const totalThisMonth = thisMonthData?.reduce((sum, d) => sum + d.amount, 0) || 0
 
@@ -194,7 +207,7 @@ export default function AdminGivingPage() {
       .select('amount')
       .gte('created_at', startOfLastMonth)
       .lte('created_at', endOfLastMonth)
-      .eq('status', 'completed')
+      .in('status', successfulDonationStatuses)
 
     const totalLastMonth = lastMonthData?.reduce((sum, d) => sum + d.amount, 0) || 0
 
@@ -203,15 +216,17 @@ export default function AdminGivingPage() {
       .from('donations')
       .select('amount')
       .gte('created_at', startOfYear)
-      .eq('status', 'completed')
+      .in('status', successfulDonationStatuses)
 
     const totalThisYear = yearData?.reduce((sum, d) => sum + d.amount, 0) || 0
 
     // Recurring total
     const { data: recurringData } = await supabase
-      .from('recurring_donations')
+      .from('donations')
       .select('amount')
-      .eq('status', 'active')
+      .eq('is_recurring', true)
+      .gte('created_at', startOfMonth)
+      .in('status', successfulDonationStatuses)
 
     const recurringTotal = recurringData?.reduce((sum, d) => sum + d.amount, 0) || 0
 
@@ -227,7 +242,7 @@ export default function AdminGivingPage() {
     const { count: totalDonors } = await supabase
       .from('donations')
       .select('member_id', { count: 'exact', head: true })
-      .eq('status', 'completed')
+      .in('status', successfulDonationStatuses)
 
     const averageGift = thisMonthData && thisMonthData.length > 0
       ? totalThisMonth / thisMonthData.length
@@ -259,6 +274,8 @@ export default function AdminGivingPage() {
     if (data) {
       setDonations(data.map(d => ({
         ...d,
+        category: d.category || d.designation || d.donation_type || 'general',
+        payment_method: d.payment_method || (d.stripe_payment_intent_id ? 'stripe' : 'manual'),
         member_name: d.members ? `${d.members.first_name} ${d.members.last_name}` : 'Anonymous'
       })))
     }
@@ -267,16 +284,25 @@ export default function AdminGivingPage() {
   const fetchRecurringDonations = async () => {
     const supabase = createClient()
     const { data } = await supabase
-      .from('recurring_donations')
+      .from('donations')
       .select(`
         *,
         members(first_name, last_name)
       `)
+      .eq('is_recurring', true)
+      .in('status', successfulDonationStatuses)
       .order('created_at', { ascending: false })
 
     if (data) {
       setRecurringDonations(data.map(d => ({
-        ...d,
+        id: d.id,
+        member_id: d.member_id,
+        amount: d.amount,
+        frequency: d.donation_type === 'recurring' ? 'monthly' : 'recurring',
+        category: d.category || d.designation || 'general',
+        start_date: d.created_at,
+        next_charge_date: null,
+        status: d.status,
         member_name: d.members ? `${d.members.first_name} ${d.members.last_name}` : 'Unknown'
       })))
     }
@@ -323,25 +349,15 @@ export default function AdminGivingPage() {
     const supabase = createClient()
 
     try {
-      const donationData: any = {
+      const donationData = {
+        member_id: newDonation.member_id || null,
         amount: parseFloat(newDonation.amount),
-        category: newDonation.category,
-        payment_method: newDonation.payment_method,
-        status: 'completed',
-        notes: newDonation.notes || null,
+        currency: 'usd',
+        donation_type: 'one_time',
+        designation: newDonation.category,
+        status: 'succeeded',
         is_anonymous: newDonation.is_anonymous,
-      }
-
-      if (newDonation.member_id) {
-        donationData.member_id = newDonation.member_id
-        const member = members.find(m => m.id === newDonation.member_id)
-        if (member) {
-          donationData.donor_name = `${member.first_name} ${member.last_name}`
-          donationData.donor_email = member.email
-        }
-      } else {
-        donationData.donor_name = newDonation.donor_name
-        donationData.donor_email = newDonation.donor_email || null
+        is_recurring: false,
       }
 
       const { error } = await supabase
@@ -411,7 +427,7 @@ export default function AdminGivingPage() {
 
   const filteredDonations = donations.filter(d => {
     const matchesSearch = d.member_name?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = filterCategory === 'all' || d.category === filterCategory
+    const matchesCategory = filterCategory === 'all' || getDonationCategory(d) === filterCategory
     return matchesSearch && matchesCategory
   })
 
@@ -528,7 +544,7 @@ export default function AdminGivingPage() {
                 <div className="space-y-4">
                   {categories.map((cat) => {
                     const catTotal = donations
-                      .filter(d => d.category === cat)
+                      .filter(d => getDonationCategory(d) === cat)
                       .reduce((sum, d) => sum + d.amount, 0)
                     const percent = stats.totalThisMonth > 0
                       ? (catTotal / stats.totalThisMonth * 100).toFixed(0)
@@ -631,7 +647,7 @@ export default function AdminGivingPage() {
                         <td className="p-4 text-sm font-medium">
                           {donation.member_id ? (
                             <button
-                              onClick={() => viewMemberHistory(donation.member_id, donation.member_name || 'Unknown')}
+                              onClick={() => viewMemberHistory(donation.member_id!, donation.member_name || 'Unknown')}
                               className="text-navy hover:text-gold hover:underline flex items-center gap-1"
                             >
                               <User className="h-3 w-3" />
@@ -644,11 +660,11 @@ export default function AdminGivingPage() {
                         <td className="p-4 text-sm font-bold text-navy">
                           ${donation.amount.toLocaleString()}
                         </td>
-                        <td className="p-4 text-sm capitalize">{donation.category}</td>
-                        <td className="p-4 text-sm capitalize">{donation.payment_method || 'card'}</td>
+                        <td className="p-4 text-sm capitalize">{getDonationCategory(donation).replaceAll('_', ' ')}</td>
+                        <td className="p-4 text-sm capitalize">{getDonationMethod(donation)}</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded text-xs ${
-                            donation.status === 'completed'
+                            isSuccessfulDonation(donation.status)
                               ? 'bg-green-100 text-green-800'
                               : donation.status === 'pending'
                               ? 'bg-yellow-100 text-yellow-800'
@@ -996,21 +1012,21 @@ export default function AdminGivingPage() {
                               <DollarSign className="h-5 w-5 text-navy" />
                             </div>
                             <div>
-                              <p className="font-medium text-navy capitalize">{donation.category}</p>
+                              <p className="font-medium text-navy capitalize">{getDonationCategory(donation).replaceAll('_', ' ')}</p>
                               <p className="text-xs text-gray-500">
                                 {new Date(donation.created_at).toLocaleDateString('en-US', {
                                   year: 'numeric',
                                   month: 'long',
                                   day: 'numeric',
                                 })}
-                                {donation.payment_method && ` • ${donation.payment_method}`}
+                                {` • ${getDonationMethod(donation)}`}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-navy">${donation.amount.toLocaleString()}</p>
                             <span className={`text-xs px-2 py-0.5 rounded ${
-                              donation.status === 'completed'
+                              isSuccessfulDonation(donation.status)
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>

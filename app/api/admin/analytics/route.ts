@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const dynamic = 'force-dynamic'
+
+const supabase = createAdminClient()
 
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
     const { searchParams } = new URL(request.url)
     const section = searchParams.get('section') || 'all'
     const view = searchParams.get('view') || 'default' // board, pastoral, ministry
@@ -320,7 +325,7 @@ export async function GET(request: NextRequest) {
       // Donations in period
       const { data: periodDonations } = await supabase
         .from('donations')
-        .select('amount, donation_type, fund_name, created_at')
+        .select('amount, donation_type, designation, created_at')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString())
 
@@ -365,7 +370,7 @@ export async function GET(request: NextRequest) {
         .from('donations')
         .select('amount')
         .eq('is_recurring', true)
-        .eq('status', 'active')
+        .eq('status', 'succeeded')
 
       const mrr = (recurringData || []).reduce((sum, d) => sum + (d.amount || 0), 0)
 
@@ -378,7 +383,7 @@ export async function GET(request: NextRequest) {
       // Donations by mission/fund
       const byMission: Record<string, { amount: number; count: number }> = {}
       for (const d of periodDonations || []) {
-        const fund = d.fund_name || 'General'
+        const fund = d.designation || 'General'
         if (!byMission[fund]) byMission[fund] = { amount: 0, count: 0 }
         byMission[fund].amount += d.amount || 0
         byMission[fund].count += 1

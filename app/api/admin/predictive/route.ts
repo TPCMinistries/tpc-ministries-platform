@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+export const dynamic = 'force-dynamic'
+
+function getSupabase() { return createAdminClient() }
 
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
@@ -165,6 +166,13 @@ function forecastEngagement(
 
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
+    const supabase = getSupabase()
+
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'all'
 
@@ -429,7 +437,7 @@ export async function GET(request: NextRequest) {
         .from('donations')
         .select('amount')
         .eq('is_recurring', true)
-        .eq('status', 'active')
+        .eq('status', 'succeeded')
 
       const currentMRR = (recurringDonations || []).reduce((sum, d) => sum + (d.amount || 0), 0)
 
@@ -517,6 +525,13 @@ Generate strategic recommendations for the next 30 days.`
 // Endpoint to get AI recommendations for a specific member
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
+    }
+
+    const supabase = getSupabase()
+
     const { memberId } = await request.json()
 
     if (!memberId) {

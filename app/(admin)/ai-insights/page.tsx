@@ -82,12 +82,12 @@ export default function AIInsightsPage() {
 
   const fetchAllData = async () => {
     setIsLoading(true)
-    await Promise.all([
+    const [engagement, giving, content] = await Promise.all([
       fetchEngagementMetrics(),
       fetchGivingMetrics(),
       fetchContentMetrics(),
     ])
-    generateInsights()
+    generateInsights(engagement, giving, content)
     setIsLoading(false)
   }
 
@@ -134,7 +134,7 @@ export default function AIInsightsPage() {
         .gt('current_streak', 0)
         .lt('last_activity_at', twentyHoursAgo.toISOString())
 
-      setEngagementMetrics({
+      const metrics = {
         totalMembers: totalMembers || 0,
         activeThisWeek: activeThisWeek || 0,
         newThisMonth: newThisMonth || 0,
@@ -144,9 +144,12 @@ export default function AIInsightsPage() {
           name: `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Member',
           streak: m.current_streak || 0,
         })),
-      })
+      }
+      setEngagementMetrics(metrics)
+      return metrics
     } catch (error) {
       console.error('Error fetching engagement metrics:', error)
+      return null
     }
   }
 
@@ -188,7 +191,7 @@ export default function AIInsightsPage() {
         ? Math.round(((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100)
         : 0
 
-      setGivingMetrics({
+      const metrics = {
         totalThisMonth: thisMonthTotal,
         comparedToLastMonth: percentChange,
         avgDonation: thisMonthDonations?.length
@@ -196,9 +199,12 @@ export default function AIInsightsPage() {
           : 0,
         recurringDonors: recurringDonors || 0,
         newDonorsThisMonth: new Set(newDonors?.map(d => d.member_id)).size,
-      })
+      }
+      setGivingMetrics(metrics)
+      return metrics
     } catch (error) {
       console.error('Error fetching giving metrics:', error)
+      return null
     }
   }
 
@@ -230,7 +236,7 @@ export default function AIInsightsPage() {
         ? Math.round(allTeachings.reduce((sum, t) => sum + (t.view_count || 0), 0) / allTeachings.length)
         : 0
 
-      setContentMetrics({
+      const metrics = {
         totalTeachings: totalTeachings || 0,
         totalDevotionals: totalDevotionals || 0,
         avgViews,
@@ -238,22 +244,29 @@ export default function AIInsightsPage() {
           title: c.title,
           views: c.view_count || 0,
         })),
-      })
+      }
+      setContentMetrics(metrics)
+      return metrics
     } catch (error) {
       console.error('Error fetching content metrics:', error)
+      return null
     }
   }
 
-  const generateInsights = async () => {
+  const generateInsights = async (
+    engagement = engagementMetrics,
+    giving = givingMetrics,
+    content = contentMetrics
+  ) => {
     setIsGenerating(true)
 
     // Generate insights based on the data
     const newInsights: InsightCard[] = []
 
     // Engagement insights
-    if (engagementMetrics) {
-      const engagementRate = engagementMetrics.totalMembers > 0
-        ? (engagementMetrics.activeThisWeek / engagementMetrics.totalMembers) * 100
+    if (engagement) {
+      const engagementRate = engagement.totalMembers > 0
+        ? (engagement.activeThisWeek / engagement.totalMembers) * 100
         : 0
 
       if (engagementRate > 50) {
@@ -262,7 +275,7 @@ export default function AIInsightsPage() {
           type: 'positive',
           title: 'Strong Member Engagement',
           description: `${Math.round(engagementRate)}% of your members were active this week. This is excellent engagement!`,
-          metric: `${engagementMetrics.activeThisWeek}/${engagementMetrics.totalMembers} active`,
+          metric: `${engagement.activeThisWeek}/${engagement.totalMembers} active`,
           trend: 'up',
         })
       } else if (engagementRate < 30) {
@@ -271,81 +284,81 @@ export default function AIInsightsPage() {
           type: 'warning',
           title: 'Low Member Engagement',
           description: `Only ${Math.round(engagementRate)}% of members were active this week. Consider sending a re-engagement campaign.`,
-          metric: `${engagementMetrics.activeThisWeek}/${engagementMetrics.totalMembers} active`,
+          metric: `${engagement.activeThisWeek}/${engagement.totalMembers} active`,
           trend: 'down',
           actionText: 'Send Re-engagement Email',
           actionUrl: '/email-campaigns?tab=quicksend',
         })
       }
 
-      if (engagementMetrics.streaksAtRisk > 0) {
+      if (engagement.streaksAtRisk > 0) {
         newInsights.push({
           id: '3',
           type: 'action',
           title: 'Streaks at Risk',
-          description: `${engagementMetrics.streaksAtRisk} members may lose their streak today. Send a reminder!`,
-          metric: `${engagementMetrics.streaksAtRisk} at risk`,
+          description: `${engagement.streaksAtRisk} members may lose their streak today. Send a reminder!`,
+          metric: `${engagement.streaksAtRisk} at risk`,
           actionText: 'Send Streak Reminder',
           actionUrl: '/sms-campaigns',
         })
       }
 
-      if (engagementMetrics.newThisMonth > 5) {
+      if (engagement.newThisMonth > 5) {
         newInsights.push({
           id: '4',
           type: 'positive',
           title: 'Growing Community',
-          description: `You've welcomed ${engagementMetrics.newThisMonth} new members this month. Great growth!`,
-          metric: `+${engagementMetrics.newThisMonth} new`,
+          description: `You've welcomed ${engagement.newThisMonth} new members this month. Great growth!`,
+          metric: `+${engagement.newThisMonth} new`,
           trend: 'up',
         })
       }
     }
 
     // Giving insights
-    if (givingMetrics) {
-      if (givingMetrics.comparedToLastMonth > 10) {
+    if (giving) {
+      if (giving.comparedToLastMonth > 10) {
         newInsights.push({
           id: '5',
           type: 'positive',
           title: 'Giving is Up!',
-          description: `Donations are ${givingMetrics.comparedToLastMonth}% higher than last month. Keep the momentum going!`,
-          metric: `$${givingMetrics.totalThisMonth.toLocaleString()}`,
+          description: `Donations are ${giving.comparedToLastMonth}% higher than last month. Keep the momentum going!`,
+          metric: `$${giving.totalThisMonth.toLocaleString()}`,
           trend: 'up',
         })
-      } else if (givingMetrics.comparedToLastMonth < -10) {
+      } else if (giving.comparedToLastMonth < -10) {
         newInsights.push({
           id: '6',
           type: 'warning',
           title: 'Giving Decline',
-          description: `Donations are down ${Math.abs(givingMetrics.comparedToLastMonth)}% from last month. Consider a giving campaign.`,
-          metric: `$${givingMetrics.totalThisMonth.toLocaleString()}`,
+          description: `Donations are down ${Math.abs(giving.comparedToLastMonth)}% from last month. Consider a giving campaign.`,
+          metric: `$${giving.totalThisMonth.toLocaleString()}`,
           trend: 'down',
           actionText: 'Create Giving Campaign',
           actionUrl: '/admin-giving',
         })
       }
 
-      if (givingMetrics.newDonorsThisMonth > 0) {
+      if (giving.newDonorsThisMonth > 0) {
         newInsights.push({
           id: '7',
           type: 'positive',
           title: 'New Donors',
-          description: `${givingMetrics.newDonorsThisMonth} new people gave for the first time this month!`,
-          metric: `+${givingMetrics.newDonorsThisMonth} new donors`,
+          description: `${giving.newDonorsThisMonth} new people gave for the first time this month!`,
+          metric: `+${giving.newDonorsThisMonth} new donors`,
           trend: 'up',
         })
       }
     }
 
     // Content insights
-    if (contentMetrics) {
+    if (content) {
       newInsights.push({
         id: '8',
         type: 'neutral',
         title: 'Content Performance',
-        description: `Your teachings average ${contentMetrics.avgViews} views each. Your top content is performing well.`,
-        metric: `${contentMetrics.totalTeachings} teachings`,
+        description: `Your teachings average ${content.avgViews} views each. Your top content is performing well.`,
+        metric: `${content.totalTeachings} teachings`,
       })
     }
 
