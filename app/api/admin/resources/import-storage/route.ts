@@ -1,25 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     // Use admin client with service role to bypass storage RLS

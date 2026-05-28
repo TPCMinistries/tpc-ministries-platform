@@ -1,5 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
@@ -7,24 +10,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('resources')
       .select('*')
@@ -49,22 +40,9 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -74,6 +52,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('resources')
       .update({
@@ -111,24 +90,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const { error } = await supabase
       .from('resources')
       .delete()

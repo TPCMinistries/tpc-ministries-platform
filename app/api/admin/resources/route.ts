@@ -1,24 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     // Get query params
@@ -29,6 +19,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
 
     // Build query
+    const supabase = createAdminClient()
     let query = supabase
       .from('resources')
       .select('*')
@@ -68,22 +59,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Check auth and admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('role, is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || (member.role !== 'admin' && !member.is_admin)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -93,6 +71,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title and file URL are required' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('resources')
       .insert({
