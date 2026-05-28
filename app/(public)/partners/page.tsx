@@ -86,6 +86,25 @@ const supportAreas = [
   'Community events that strengthen the whole person',
 ]
 
+const motionStories = [
+  {
+    title: 'Education Outreach',
+    description:
+      'School children, classroom connection, and practical investment in the next generation through international ministry.',
+    src: '/videos/kenya/education-outreach.mp4',
+    poster: '/videos/kenya/posters/education-outreach.jpg',
+    label: 'Kenya education outreach video from TPC Ministries',
+  },
+  {
+    title: 'Ministry Moments',
+    description:
+      'Prayer, prophetic encouragement, and pastoral ministry moments from the field as believers are strengthened.',
+    src: '/videos/kenya/ministry-moments.mp4',
+    poster: '/videos/kenya/posters/ministry-moments.jpg',
+    label: 'Kenya ministry moments video from TPC Ministries',
+  },
+]
+
 const partnershipLevels = [
   {
     name: 'Builder',
@@ -243,6 +262,49 @@ export default function PartnersPage() {
                 </cite>
               </blockquote>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-4 py-section-sm sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
+            <div>
+              <p className="text-body-sm font-semibold uppercase tracking-[0.18em] text-gold-text">
+                Ministry In Motion
+              </p>
+              <h2 className="mt-3 font-display text-display-md text-navy">
+                The work partners help make possible
+              </h2>
+            </div>
+            <p className="text-body-lg text-muted-foreground">
+              These field moments reflect the spiritual and practical assignment Covenant Partners help
+              sustain: prophetic ministry, education outreach, missions, and whole-person equipping.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            {motionStories.map((story) => (
+              <article
+                key={story.title}
+                className="overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+              >
+                <video
+                  className="aspect-video w-full bg-navy-950 object-cover"
+                  controls
+                  preload="metadata"
+                  poster={story.poster}
+                  aria-label={story.label}
+                >
+                  <source src={story.src} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <div className="p-6">
+                  <h3 className="font-display text-display-xs text-navy">{story.title}</h3>
+                  <p className="mt-3 text-body-md text-muted-foreground">{story.description}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
