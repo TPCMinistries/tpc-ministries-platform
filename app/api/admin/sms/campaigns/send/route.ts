@@ -1,26 +1,17 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendSMS } from '@/lib/sms/twilio'
 import { formatPhoneE164 } from '@/lib/utils/phone'
 
+export const dynamic = 'force-dynamic'
+
 // POST - Send an SMS campaign
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -29,6 +20,8 @@ export async function POST(request: NextRequest) {
     if (!campaign_id) {
       return NextResponse.json({ error: 'Campaign ID is required' }, { status: 400 })
     }
+
+    const supabase = createAdminClient()
 
     // Get campaign
     const { data: campaign, error: campaignError } = await supabase
@@ -136,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: 'send',
       entity_type: 'sms_campaign',
       entity_id: campaign_id,
