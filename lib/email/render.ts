@@ -8,6 +8,7 @@ import AnnouncementEmail from './templates/announcement'
 import NewsletterEmail from './templates/newsletter'
 import EventInvitationEmail from './templates/event-invitation'
 import UrgentEmail from './templates/urgent'
+import CovenantPartnerEmail from './templates/covenant-partner'
 
 export async function renderWelcomeEmail(props: {
   memberName: string
@@ -98,6 +99,20 @@ export async function renderUrgent(props: {
   urgencyLevel?: 'high' | 'medium' | 'low'
 }) {
   return render(UrgentEmail(props))
+}
+
+export async function renderCovenantPartnerEmail(props: {
+  kind?: 'welcome' | 'monthly-update' | 'gathering'
+  memberName?: string
+  partnerHubUrl?: string
+  givingUrl?: string
+  gatheringDate?: string
+  gatheringTime?: string
+  gatheringUrl?: string
+  updateTitle?: string
+  updateBody?: string
+}) {
+  return render(CovenantPartnerEmail(props))
 }
 
 // Personalization helper - replaces {{firstName}}, {{lastName}}, etc in text

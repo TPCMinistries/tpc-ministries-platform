@@ -6,6 +6,7 @@ import {
   renderNewsletter,
   renderEventInvitation,
   renderUrgent,
+  renderCovenantPartnerEmail,
   personalize,
 } from '@/lib/email/render'
 
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       eventTime,
       eventLocation,
       urgencyLevel,
+      partnerEmailKind,
       testEmail,
     } = body
 
@@ -159,6 +161,17 @@ export async function POST(request: NextRequest) {
             actionText: ctaText,
             actionUrl: ctaUrl,
             urgencyLevel: urgencyLevel || 'high',
+          })
+        } else if (template === 'covenant-partner') {
+          html = await renderCovenantPartnerEmail({
+            kind: partnerEmailKind || 'monthly-update',
+            memberName: recipient.first_name,
+            partnerHubUrl: ctaUrl || 'https://tpcmin.org/partner-hub',
+            gatheringUrl: ctaUrl,
+            updateTitle: personalizedTitle,
+            updateBody: personalizedMessage,
+            gatheringDate: eventDate,
+            gatheringTime: eventTime,
           })
         } else {
           // Custom template - simple HTML

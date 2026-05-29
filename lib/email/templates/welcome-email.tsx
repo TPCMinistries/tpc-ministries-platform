@@ -73,9 +73,9 @@ export default function WelcomeEmail({
               </Text>
 
               <Text style={feature}>
-                <strong style={featureTitle}>✨ Personal Prophecy</strong>
+                <strong style={featureTitle}>✨ Prophetic Ministry</strong>
                 <br />
-                Receive personalized prophetic words (Partner & Covenant members)
+                Receive biblical encouragement, teaching, prayer, and prophetic ministry as the Lord leads
               </Text>
 
               <Text style={feature}>

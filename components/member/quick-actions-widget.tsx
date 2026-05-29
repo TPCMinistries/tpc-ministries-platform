@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import {
   Sparkles,
   Sunrise,
-  Heart,
   BookOpen,
   Users,
   ClipboardList,
@@ -18,8 +17,9 @@ import {
   Bot,
   CalendarDays,
   ArrowRight,
-  CheckCircle,
-  Circle
+  Circle,
+  HeartHandshake,
+  MessageSquare
 } from 'lucide-react'
 
 interface QuickAction {
@@ -52,7 +52,7 @@ export default function QuickActionsWidget() {
       // Get member info
       const { data: member } = await supabase
         .from('members')
-        .select('id, avatar_url, bio')
+        .select('id, avatar_url, bio, tier, role')
         .eq('user_id', user.id)
         .single()
 
@@ -81,6 +81,30 @@ export default function QuickActionsWidget() {
         badge: 'Daily'
       })
 
+      if (!todayCheckin) {
+        contextualActions.push({
+          id: 'daily-checkin',
+          label: 'Daily Check-in',
+          description: 'Mark today\'s journey',
+          icon: <Circle className="h-5 w-5 text-orange-500" />,
+          href: '/daily-checkin',
+          priority: 2,
+          badge: 'Today'
+        })
+      }
+
+      const isPartner = ['partner', 'covenant', 'staff', 'admin'].includes(member.role || member.tier || 'free')
+      contextualActions.push({
+        id: isPartner ? 'partner-hub' : 'become-partner',
+        label: isPartner ? 'Partner Hub' : 'Covenant Partners',
+        description: isPartner ? 'Partner updates & rhythm' : 'Build with the ministry',
+        icon: <HeartHandshake className="h-5 w-5 text-gold" />,
+        href: isPartner ? '/partner-hub' : '/partners',
+        priority: 3,
+        highlight: true,
+        badge: isPartner ? 'Partner' : 'Monthly'
+      })
+
       // Check onboarding status
       const { data: onboarding } = await supabase
         .from('member_onboarding')
@@ -96,7 +120,7 @@ export default function QuickActionsWidget() {
           description: 'Add your photo and bio',
           icon: <Circle className="h-5 w-5 text-orange-500" />,
           href: '/account',
-          priority: 2,
+          priority: 4,
           badge: 'Setup'
         })
       }
@@ -109,7 +133,7 @@ export default function QuickActionsWidget() {
           description: 'Take a spiritual assessment',
           icon: <ClipboardList className="h-5 w-5 text-purple-500" />,
           href: '/my-assessments',
-          priority: 3,
+          priority: 5,
           badge: 'New'
         })
       }
@@ -121,6 +145,18 @@ export default function QuickActionsWidget() {
         .eq('recipient_id', user.id)
         .eq('is_read', false)
 
+      if (unreadCount && unreadCount > 0) {
+        contextualActions.push({
+          id: 'messages',
+          label: 'Messages',
+          description: `${unreadCount} unread`,
+          icon: <MessageSquare className="h-5 w-5 text-blue-500" />,
+          href: '/messages',
+          priority: 6,
+          badge: String(unreadCount)
+        })
+      }
+
       // Standard actions
       const standardActions: QuickAction[] = [
         {
@@ -129,7 +165,7 @@ export default function QuickActionsWidget() {
           description: 'Get spiritual guidance',
           icon: <Bot className="h-5 w-5 text-navy" />,
           href: '/ask-prophet-lorenzo',
-          priority: 4,
+          priority: 7,
           highlight: true,
           badge: 'AI'
         },
@@ -139,7 +175,7 @@ export default function QuickActionsWidget() {
           description: 'Discover your gifts',
           icon: <ClipboardList className="h-5 w-5 text-purple-500" />,
           href: '/my-assessments',
-          priority: 5
+          priority: 8
         },
         {
           id: 'journal',
@@ -147,7 +183,7 @@ export default function QuickActionsWidget() {
           description: 'Write your reflections',
           icon: <PenLine className="h-5 w-5 text-blue-500" />,
           href: '/journal',
-          priority: 6
+          priority: 9
         },
         {
           id: 'library',
@@ -155,7 +191,7 @@ export default function QuickActionsWidget() {
           description: 'Browse teachings',
           icon: <BookOpen className="h-5 w-5 text-green-600" />,
           href: '/library',
-          priority: 7
+          priority: 10
         },
         {
           id: 'groups',
@@ -163,7 +199,7 @@ export default function QuickActionsWidget() {
           description: 'Connect with community',
           icon: <Users className="h-5 w-5 text-indigo-500" />,
           href: '/groups',
-          priority: 8
+          priority: 11
         },
         {
           id: 'events',
@@ -171,7 +207,7 @@ export default function QuickActionsWidget() {
           description: 'See what\'s happening',
           icon: <CalendarDays className="h-5 w-5 text-teal-500" />,
           href: '/events',
-          priority: 9
+          priority: 12
         },
         {
           id: 'give',
@@ -179,7 +215,7 @@ export default function QuickActionsWidget() {
           description: 'Support the ministry',
           icon: <Gift className="h-5 w-5 text-gold" />,
           href: '/my-giving',
-          priority: 10
+          priority: 13
         }
       ]
 
@@ -211,12 +247,21 @@ export default function QuickActionsWidget() {
           priority: 2
         },
         {
+          id: 'covenant-partners',
+          label: 'Covenant Partners',
+          description: 'Build with the ministry',
+          icon: <HeartHandshake className="h-5 w-5 text-gold" />,
+          href: '/partners',
+          priority: 3,
+          highlight: true
+        },
+        {
           id: 'library',
           label: 'Library',
           description: 'Browse teachings',
           icon: <BookOpen className="h-5 w-5 text-green-600" />,
           href: '/library',
-          priority: 3
+          priority: 4
         },
         {
           id: 'groups',
@@ -224,7 +269,7 @@ export default function QuickActionsWidget() {
           description: 'Connect with others',
           icon: <Users className="h-5 w-5 text-indigo-500" />,
           href: '/groups',
-          priority: 4
+          priority: 5
         }
       ])
     } finally {
