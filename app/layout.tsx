@@ -50,6 +50,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://tpcmin.org"),
   title: {
     default: "TPC Ministries — A Prophetic Ministry for the Digital Age",
     template: "%s | TPC Ministries"
