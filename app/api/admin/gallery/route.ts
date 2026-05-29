@@ -1,27 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - List all albums (admin view)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { searchParams } = new URL(request.url)
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
+    const { searchParams } = request.nextUrl
 
     const limit = parseInt(searchParams.get('limit') || '20')
     const page = parseInt(searchParams.get('page') || '1')
@@ -98,22 +90,9 @@ export async function GET(request: NextRequest) {
 // POST - Create new album
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -130,6 +109,7 @@ export async function POST(request: NextRequest) {
       .replace(/(^-|-$)/g, '')
 
     // Check for duplicate slug
+    const supabase = createAdminClient()
     const { data: existing } = await supabase
       .from('photo_albums')
       .select('slug')
@@ -152,7 +132,7 @@ export async function POST(request: NextRequest) {
         photographer: photographer || null,
         is_public: is_public ?? false,
         is_featured: is_featured ?? false,
-        created_by: member.id
+        created_by: authResult.member.id
       })
       .select()
       .single()

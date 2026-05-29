@@ -1,5 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -9,23 +12,12 @@ interface Props {
 export async function POST(request: NextRequest, { params }: Props) {
   try {
     const { id: albumId } = await params
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
 
     // Verify album exists
     const { data: album, error: albumError } = await supabase
@@ -83,7 +75,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       file_size: photo.file_size || null,
       mime_type: photo.mime_type || 'image/jpeg',
       sort_order: sortOrder++,
-      uploaded_by: member.id
+      uploaded_by: authResult.member.id
     }))
 
     const { data: insertedPhotos, error: insertError } = await supabase
@@ -121,22 +113,9 @@ export async function POST(request: NextRequest, { params }: Props) {
 export async function PATCH(request: NextRequest, { params }: Props) {
   try {
     const { id: albumId } = await params
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -145,6 +124,8 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     if (!photoOrders || !Array.isArray(photoOrders)) {
       return NextResponse.json({ error: 'photoOrders array is required' }, { status: 400 })
     }
+
+    const supabase = createAdminClient()
 
     // Update each photo's sort order
     for (const { id, sort_order } of photoOrders) {
@@ -166,24 +147,13 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 export async function DELETE(request: NextRequest, { params }: Props) {
   try {
     const { id: albumId } = await params
-    const supabase = await createClient()
-    const { searchParams } = new URL(request.url)
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
+    const { searchParams } = request.nextUrl
 
     const photoIds = searchParams.get('ids')?.split(',') || []
 

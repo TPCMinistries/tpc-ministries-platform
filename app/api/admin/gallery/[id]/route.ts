@@ -1,5 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -9,23 +12,12 @@ interface Props {
 export async function GET(request: NextRequest, { params }: Props) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
 
     // Get album
     const { data: album, error: albumError } = await supabase
@@ -72,22 +64,9 @@ export async function GET(request: NextRequest, { params }: Props) {
 export async function PATCH(request: NextRequest, { params }: Props) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -117,6 +96,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     if (is_featured !== undefined) updateData.is_featured = is_featured
     if (cover_photo_id !== undefined) updateData.cover_photo_id = cover_photo_id
 
+    const supabase = createAdminClient()
     const { data: album, error } = await supabase
       .from('photo_albums')
       .update(updateData)
@@ -140,23 +120,12 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 export async function DELETE(request: NextRequest, { params }: Props) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-
-    // Verify admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('is_admin, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin && member?.role !== 'admin' && member?.role !== 'staff') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
 
     // Get photos to delete from storage
     const { data: photos } = await supabase
