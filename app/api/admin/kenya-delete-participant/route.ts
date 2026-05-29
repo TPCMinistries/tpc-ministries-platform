@@ -1,23 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireStaff } from '@/lib/auth-server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Check admin/staff access
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, is_admin, role')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!member || (!member.is_admin && member.role !== 'admin' && member.role !== 'staff')) {
-    return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
-  }
+  const authResult = await requireStaff()
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const { participantId } = await request.json()
@@ -38,8 +27,9 @@ export async function POST(request: NextRequest) {
     if (error) throw error
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Kenya archive participant error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
