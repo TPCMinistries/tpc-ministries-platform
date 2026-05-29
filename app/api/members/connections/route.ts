@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get current user's connections (followers and following)
 export async function GET(request: NextRequest) {
   try {

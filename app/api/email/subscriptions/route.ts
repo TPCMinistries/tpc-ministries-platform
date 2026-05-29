@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get member's subscriptions or admin get all
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
 
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const memberId = searchParams.get('memberId')
     const stats = searchParams.get('stats')
 

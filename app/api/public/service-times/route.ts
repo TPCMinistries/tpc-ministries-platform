@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get service times and locations
 export async function GET() {
   try {

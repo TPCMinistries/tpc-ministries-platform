@@ -2,10 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { addAccessInfo } from '@/lib/auth/content-access'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
 
     // Get user's role for content access
     let userRole = 'free'

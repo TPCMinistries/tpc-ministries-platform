@@ -1,12 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get volunteer opportunities and shifts
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const ministryArea = searchParams.get('ministry_area')
     const includeShifts = searchParams.get('include_shifts') === 'true'
 

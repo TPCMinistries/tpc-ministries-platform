@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // Activity type to points mapping
 const ACTIVITY_POINTS: Record<string, number> = {
   login: 5,

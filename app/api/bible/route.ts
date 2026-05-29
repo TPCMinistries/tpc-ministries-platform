@@ -11,6 +11,8 @@ import {
   type VerseCategory
 } from '@/lib/bible'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/bible
  *
@@ -32,7 +34,7 @@ import {
  */
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
+    const { searchParams } = req.nextUrl
     const ref = searchParams.get('ref')
     const version = (searchParams.get('version') || 'en-kjv') as EnglishVersion
     const category = searchParams.get('category') as VerseCategory | null

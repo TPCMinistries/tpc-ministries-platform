@@ -9,10 +9,12 @@ function getSupabase() { return createClient(
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
 
+export const dynamic = 'force-dynamic'
+
 // Personalized AI Dashboard for Members
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const memberId = searchParams.get('memberId')
 
     if (!memberId) {

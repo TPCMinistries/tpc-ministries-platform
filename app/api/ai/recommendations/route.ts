@@ -9,10 +9,12 @@ function getSupabase() { return createClient(
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
 
+export const dynamic = 'force-dynamic'
+
 // Smart AI Recommendations for Groups, Events, Content
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const memberId = searchParams.get('memberId')
     const type = searchParams.get('type') || 'all' // groups, events, content, all
 
@@ -22,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     const now = new Date()
     const recommendations: any = {}
+    const supabase = getSupabase()
 
     // Get member profile
     const { data: member } = await supabase

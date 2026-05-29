@@ -13,6 +13,8 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY)
 }
 
+export const dynamic = 'force-dynamic'
+
 interface WeeklyStats {
   prayersAnswered: number
   newMembers: number

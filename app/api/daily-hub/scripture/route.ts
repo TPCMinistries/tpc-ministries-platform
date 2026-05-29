@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Default scriptures if database is empty
 const defaultScriptures = [
   { reference: 'Philippians 4:13', text: 'I can do all things through Christ who strengthens me.', theme: 'Strength' },

@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get current user's onboarding progress
 export async function GET() {
   try {

@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
     const isAdmin = member?.role === 'admin'
 
     // Get query params
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const tab = searchParams.get('tab') || 'all'
     const search = searchParams.get('search') || ''
     const tagFilter = searchParams.get('tag') || ''

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { createAdminClient } from '@/lib/supabase/admin'
 import PackTheMissionClient from './_components/pack-the-mission-client'
 
 export const metadata: Metadata = {
@@ -31,21 +30,9 @@ export const metadata: Metadata = {
 }
 
 async function getPledgeStats() {
-  try {
-    const supabase = createAdminClient()
-    const { data, error } = await supabase
-      .from('kenya_supply_pledge_stats')
-      .select('*')
-
-    if (error) {
-      console.error('Error fetching pledge stats:', error)
-      return []
-    }
-
-    return data || []
-  } catch {
-    return []
-  }
+  // Kenya 2026 pack-the-mission is archived and redirected in next.config.mjs.
+  // The public aggregate view was intentionally dropped after the trip closed.
+  return []
 }
 
 export default async function PackTheMissionPage() {

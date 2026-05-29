@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireStaff, isAuthError } from '@/lib/auth-server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Require staff/admin access

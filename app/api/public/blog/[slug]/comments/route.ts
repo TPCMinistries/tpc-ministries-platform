@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // POST - Submit a comment
 export async function POST(
   request: NextRequest,

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export const dynamic = 'force-dynamic'
+
 // Categories where the ministry deploys funds (counts toward "Deployed")
 const DEPLOYED_CATEGORIES = [
   'flight_credit', 'hotel_credit', 'trip_sponsorship', 'church_gift',
