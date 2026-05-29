@@ -1,27 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireStaff } from '@/lib/auth-server'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/resend'
 
-async function checkStaffOrAdmin(supabase: any, userId: string) {
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, first_name, last_name, is_admin, role')
-    .eq('user_id', userId)
-    .single()
-  if (!member) return null
-  if (member.is_admin || member.role === 'staff' || member.role === 'admin') return member
-  return null
-}
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const staffMember = await checkStaffOrAdmin(supabase, user.id)
-  if (!staffMember) return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
+  const authResult = await requireStaff()
+  if (authResult instanceof NextResponse) return authResult
+  const staffMember = authResult.member
 
   try {
     const { contactId, action, subject, message } = await request.json()
@@ -156,8 +143,9 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Kenya partner send error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

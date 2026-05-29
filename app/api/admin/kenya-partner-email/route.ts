@@ -1,19 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireStaff } from '@/lib/auth-server'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/resend'
 
-// Check if user is staff or admin
-async function checkStaffOrAdmin(supabase: any, userId: string) {
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, first_name, last_name, is_admin, role')
-    .eq('user_id', userId)
-    .single()
-  if (!member) return null
-  if (member.is_admin || member.role === 'staff' || member.role === 'admin') return member
-  return null
-}
+export const dynamic = 'force-dynamic'
 
 function buildPartnerEmailHtml(name: string, contactId: string): string {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tpcmin.org'
@@ -63,13 +53,8 @@ function buildPartnerEmailHtml(name: string, contactId: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const staffMember = await checkStaffOrAdmin(supabase, user.id)
-  if (!staffMember) return NextResponse.json({ error: 'Staff access required' }, { status: 403 })
+  const authResult = await requireStaff()
+  if (authResult instanceof NextResponse) return authResult
 
   try {
     const { contactId } = await request.json()
@@ -105,8 +90,9 @@ export async function POST(request: NextRequest) {
       success: true,
       emailSent: emailResult.success,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Kenya partner email error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
