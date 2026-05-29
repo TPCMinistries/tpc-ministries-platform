@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
 import { MEMBERSHIP_TIERS, isMembershipTier } from '@/lib/membership/tiers'
+import { renderCovenantPartnerEmail } from '@/lib/email/render'
+import { sendEmail } from '@/lib/email/resend'
 
 export const runtime = 'nodejs'
 
@@ -185,6 +187,15 @@ async function recordDonation(session: Stripe.Checkout.Session) {
     transactionId: session.id,
     isRecurring: false,
   })
+
+  if (isCovenantPartner) {
+    await sendCovenantPartnerWelcomeEmail({
+      donorName,
+      email: donorEmail,
+      amount,
+      source: 'checkout',
+    })
+  }
 }
 
 async function recordRecurringDonation(invoice: Stripe.Invoice) {
@@ -266,6 +277,42 @@ async function sendDonationReceipt(params: {
     })
   } catch (err) {
     console.error('Donation receipt send failed (non-fatal):', err)
+  }
+}
+
+async function sendCovenantPartnerWelcomeEmail(params: {
+  donorName: string
+  email: string | null | undefined
+  amount: number
+  source: 'checkout'
+}) {
+  if (!params.email) return
+
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'
+    const html = await renderCovenantPartnerEmail({
+      kind: 'welcome',
+      memberName: params.donorName === 'Anonymous' ? 'Friend' : params.donorName,
+      partnerHubUrl: `${baseUrl}/partner-hub`,
+      givingUrl: `${baseUrl}/my-giving`,
+    })
+
+    const result = await sendEmail({
+      to: params.email,
+      subject: 'Welcome, Covenant Partner',
+      html,
+    })
+
+    if (!result.success) {
+      console.error('Covenant Partner welcome email failed:', {
+        email: params.email,
+        amount: params.amount,
+        source: params.source,
+        error: result.error,
+      })
+    }
+  } catch (err) {
+    console.error('Covenant Partner welcome email failed (non-fatal):', err)
   }
 }
 
