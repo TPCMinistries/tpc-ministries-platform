@@ -1,16 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Helper function to check admin status
-async function checkAdminStatus(supabase: any, userId: string) {
-  const { data: adminMember } = await supabase
-    .from('members')
-    .select('is_admin')
-    .eq('user_id', userId)
-    .single()
-
-  return adminMember?.is_admin === true
-}
+export const dynamic = 'force-dynamic'
 
 // Parse CSV content
 function parseCSV(content: string): { headers: string[]; rows: string[][] } {
@@ -85,18 +77,12 @@ function parseBoolean(value: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const formData = await request.formData()
     const file = formData.get('file') as File
 

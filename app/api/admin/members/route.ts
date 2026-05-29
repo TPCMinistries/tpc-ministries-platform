@@ -1,35 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Helper function to check admin/staff status
-async function checkAdminStatus(supabase: any, userId: string) {
-  const { data: adminMember } = await supabase
-    .from('members')
-    .select('is_admin, role')
-    .eq('user_id', userId)
-    .single()
-
-  // Staff and above can access admin features (admin or staff role)
-  const hasAdminRole = ['admin', 'staff'].includes(adminMember?.role)
-  return adminMember?.is_admin === true || hasAdminRole
-}
+export const dynamic = 'force-dynamic'
 
 // GET - List all members with tags
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    // Check if user is admin
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const search = searchParams.get('search')
     const tier = searchParams.get('tier')
@@ -114,16 +97,9 @@ export async function GET(request: NextRequest) {
 // POST - Create a new member
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -147,6 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
+    const supabase = createAdminClient()
     const { data: existing } = await supabase
       .from('members')
       .select('id')
@@ -202,16 +179,9 @@ export async function POST(request: NextRequest) {
 // PATCH - Update member
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -223,6 +193,8 @@ export async function PATCH(request: NextRequest) {
         error: 'Member ID is required'
       }, { status: 400 })
     }
+
+    const supabase = createAdminClient()
 
     // Update member if there are updates
     if (Object.keys(updates).length > 0) {
@@ -269,19 +241,12 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete member
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
 
     if (!id) {
@@ -292,13 +257,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Don't allow deleting yourself
+    const supabase = createAdminClient()
     const { data: targetMember } = await supabase
       .from('members')
       .select('user_id')
       .eq('id', id)
       .single()
 
-    if (targetMember?.user_id === user.id) {
+    if (targetMember?.user_id === authResult.user.id) {
       return NextResponse.json({
         success: false,
         error: 'You cannot delete your own account'

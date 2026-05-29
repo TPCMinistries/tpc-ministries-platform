@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - Export members to CSV
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const format = searchParams.get('format') || 'csv'
     const role = searchParams.get('role')
@@ -59,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     // Log the export action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: 'export',
       entity_type: 'members',
       details: { count: members?.length || 0, format, filters: { role, tier } }
