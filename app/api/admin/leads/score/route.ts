@@ -1,10 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
+
+export const dynamic = 'force-dynamic'
+
+interface LeadActivity {
+  activity_type: string
+  description: string | null
+  created_at: string
+}
 
 interface LeadData {
   id: string
@@ -18,29 +27,18 @@ interface LeadData {
   status: string
   created_at: string
   last_contacted_at: string | null
-  activities: any[]
+  activities: LeadActivity[]
 }
 
 // POST - Score leads using AI
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const body = await request.json()
     const { lead_id, score_all } = body
 
@@ -124,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: 'ai_score',
       entity_type: 'leads',
       details: { scored: results.length },
@@ -230,22 +228,12 @@ Respond in JSON format:
 // GET - Get lead scores summary
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
 
     // Get leads with scores
     const { data: leads } = await supabase

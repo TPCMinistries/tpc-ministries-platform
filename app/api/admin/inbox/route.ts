@@ -1,33 +1,19 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/resend'
 
-// Helper function to check admin status
-async function checkAdminStatus(supabase: any, userId: string) {
-  const { data: adminMember } = await supabase
-    .from('members')
-    .select('is_admin, id')
-    .eq('user_id', userId)
-    .single()
-
-  return adminMember
-}
+export const dynamic = 'force-dynamic'
 
 // GET - List inbox emails
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const admin = await checkAdminStatus(supabase, user.id)
-    if (!admin?.is_admin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const folder = searchParams.get('folder') || 'inbox'
     const search = searchParams.get('search')
@@ -96,16 +82,9 @@ export async function GET(request: NextRequest) {
 // POST - Send a reply or new email
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const admin = await checkAdminStatus(supabase, user.id)
-    if (!admin?.is_admin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -133,6 +112,9 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
+    const resendData = result.data as { id?: string } | undefined
+    const supabase = createAdminClient()
+
     // Store in sent_emails
     await supabase.from('sent_emails').insert({
       to_emails: Array.isArray(to) ? to : [to],
@@ -140,8 +122,8 @@ export async function POST(request: NextRequest) {
       body_html: html,
       thread_id: threadId || null,
       in_reply_to: replyToId || null,
-      sent_by: admin.id,
-      resend_id: (result.data as any)?.id || null,
+      sent_by: authResult.member.id,
+      resend_id: resendData?.id || null,
       status: 'sent'
     })
 
@@ -166,26 +148,21 @@ export async function POST(request: NextRequest) {
 // PATCH - Update email (mark read, star, archive, etc.)
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const admin = await checkAdminStatus(supabase, user.id)
-    if (!admin?.is_admin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
     const { id, ids, is_read, is_starred, is_archived, folder } = body
 
-    const updates: any = {}
+    const updates: Record<string, boolean | string> = {}
     if (is_read !== undefined) updates.is_read = is_read
     if (is_starred !== undefined) updates.is_starred = is_starred
     if (is_archived !== undefined) updates.is_archived = is_archived
     if (folder !== undefined) updates.folder = folder
+
+    const supabase = createAdminClient()
 
     if (ids && Array.isArray(ids)) {
       // Bulk update
@@ -218,19 +195,13 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete email(s)
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const admin = await checkAdminStatus(supabase, user.id)
-    if (!admin?.is_admin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { searchParams } = new URL(request.url)
+    const supabase = createAdminClient()
+    const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
     const ids = searchParams.get('ids')?.split(',')
 
