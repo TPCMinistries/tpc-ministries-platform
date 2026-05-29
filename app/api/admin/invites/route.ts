@@ -1,17 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/resend'
 
-// Helper function to check admin status
-async function checkAdminStatus(supabase: any, userId: string) {
-  const { data: adminMember } = await supabase
-    .from('members')
-    .select('is_admin, id, first_name, last_name')
-    .eq('user_id', userId)
-    .single()
-
-  return adminMember?.is_admin ? adminMember : null
-}
+export const dynamic = 'force-dynamic'
 
 // Generate random invite code
 function generateInviteCode(): string {
@@ -25,22 +17,13 @@ function generateInviteCode(): string {
 
 // GET - List all invites
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authResult = await requireAdmin()
+  if (authResult instanceof NextResponse) {
+    return authResult
   }
 
-  const adminMember = await checkAdminStatus(supabase, user.id)
-  if (!adminMember) {
-    return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-  }
-
-  const { searchParams } = new URL(request.url)
+  const supabase = createAdminClient()
+  const { searchParams } = request.nextUrl
   const status = searchParams.get('status') || 'all'
 
   try {
@@ -74,20 +57,13 @@ export async function GET(request: NextRequest) {
 
 // POST - Create invite or perform actions
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authResult = await requireAdmin()
+  if (authResult instanceof NextResponse) {
+    return authResult
   }
 
-  const adminMember = await checkAdminStatus(supabase, user.id)
-  if (!adminMember) {
-    return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-  }
+  const supabase = createAdminClient()
+  const adminMember = authResult.member
 
   try {
     const body = await request.json()

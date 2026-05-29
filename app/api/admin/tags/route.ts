@@ -1,32 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Helper function to check admin status
-async function checkAdminStatus(supabase: any, userId: string) {
-  const { data: adminMember } = await supabase
-    .from('members')
-    .select('is_admin')
-    .eq('user_id', userId)
-    .single()
-
-  return adminMember?.is_admin === true
-}
+export const dynamic = 'force-dynamic'
 
 // GET - List all tags
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const { data: tags, error } = await supabase
       .from('tags')
       .select('*, member_tags(count)')
@@ -53,16 +39,9 @@ export async function GET(request: NextRequest) {
 // POST - Create a new tag
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -76,6 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if tag name already exists
+    const supabase = createAdminClient()
     const { data: existing } = await supabase
       .from('tags')
       .select('id')
@@ -110,16 +90,9 @@ export async function POST(request: NextRequest) {
 // PATCH - Update tag
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -132,11 +105,12 @@ export async function PATCH(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const updates: any = {}
+    const updates: Record<string, string> = {}
     if (name !== undefined) updates.name = name
     if (color !== undefined) updates.color = color
     if (description !== undefined) updates.description = description
 
+    const supabase = createAdminClient()
     const { data: updatedTag, error } = await supabase
       .from('tags')
       .update(updates)
@@ -159,19 +133,12 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete tag
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireAdmin()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const isAdmin = await checkAdminStatus(supabase, user.id)
-    if (!isAdmin) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
 
     if (!id) {
@@ -182,6 +149,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete all member_tags associations first
+    const supabase = createAdminClient()
     await supabase.from('member_tags').delete().eq('tag_id', id)
 
     // Delete the tag
