@@ -120,6 +120,7 @@ export default function AdminNav() {
       defaultOpen: true,
       items: [
         { name: 'Members', href: '/members', badge: newLeadsCount },
+        { name: 'Covenant Partners', href: '/admin-covenant-partners' },
         { name: 'Member Care', href: '/member-care' },
         { name: 'Groups', href: '/admin-groups' },
         { name: 'Events', href: '/admin-events' },

@@ -56,7 +56,7 @@ export function AdminBottomNav({ unreadMessages = 0 }: AdminBottomNavProps) {
       label: "People",
       href: "/members",
       icon: Users,
-      matchPaths: ["/members", "/admin-groups", "/prayers", "/admin-events", "/member-care"],
+      matchPaths: ["/members", "/admin-covenant-partners", "/admin-groups", "/prayers", "/admin-events", "/member-care"],
     },
   ]
 

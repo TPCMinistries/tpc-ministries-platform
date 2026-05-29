@@ -1,432 +1,431 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import {
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  CreditCard,
+  DollarSign,
+  HeartHandshake,
+  Loader2,
+  Mail,
+  MessageSquare,
+  RefreshCw,
+  ShieldCheck,
+  User,
+} from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  ChevronLeft,
-  Crown,
-  Sparkles,
-  User,
-  Mail,
-  Calendar,
-  DollarSign,
-  CreditCard,
-  ExternalLink,
-  ArrowUpCircle,
-  Gift,
-  ToggleLeft,
-  ToggleRight,
-} from 'lucide-react'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+
+interface MemberDetail {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string | null
+  tier?: 'free' | 'partner' | 'covenant' | null
+  role?: string | null
+  is_admin?: boolean | null
+  joined_at?: string | null
+  last_active_at?: string | null
+  created_at?: string | null
+  notes?: string | null
+  role_upgrade_reason?: string | null
+}
+
+interface Donation {
+  id: string
+  amount: number
+  status: string | null
+  donation_type: string | null
+  designation: string | null
+  is_recurring: boolean | null
+  created_at: string | null
+}
+
+interface Subscription {
+  id: string
+  tier_slug: string | null
+  status: string | null
+  billing_cycle: string | null
+  current_period_end: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  created_at: string | null
+}
+
+interface Checkin {
+  id: string
+  mood: string | null
+  prayer_focus: string | null
+  notes: string | null
+  created_at: string | null
+}
+
+interface PrayerRequest {
+  id: string
+  title: string
+  description: string
+  status: string | null
+  created_at: string | null
+}
+
+interface MemberPayload {
+  success: boolean
+  member: MemberDetail
+  giving: {
+    donations: Donation[]
+    totalGiven: number
+    covenantGiven: number
+    monthlyRecognized: number
+    donationCount: number
+    recurringDonationCount: number
+    lastGiftAt: string | null
+  }
+  subscriptions: Subscription[]
+  care: {
+    checkins: Checkin[]
+    prayerRequests: PrayerRequest[]
+  }
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(Number(amount || 0))
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return 'Not recorded'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
+function tierLabel(tier?: string | null) {
+  if (tier === 'covenant') return 'Covenant Partner'
+  if (tier === 'partner') return 'Partner'
+  return 'Free Member'
+}
+
+function subscriptionAmount(subscription?: Subscription) {
+  if (!subscription?.tier_slug) return 0
+  if (subscription.tier_slug === 'covenant') {
+    return subscription.billing_cycle === 'annual' ? 1500 : 150
+  }
+  if (subscription.tier_slug === 'partner') {
+    return subscription.billing_cycle === 'annual' ? 500 : 50
+  }
+  return 0
+}
 
 export default function MemberDetailPage({ params }: { params: { id: string } }) {
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
-  const [isCoachingClient, setIsCoachingClient] = useState(false)
+  const [data, setData] = useState<MemberPayload | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data - will be replaced with API calls
-  const memberData = {
-    id: params.id,
-    name: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    tier: 'partner', // 'free', 'partner', 'covenant'
-    tierName: 'Partner',
-    subscriptionStatus: 'active',
-    memberSince: '2023-06-15',
-    lastActivity: '2024-01-20',
-    nextPaymentDate: '2024-02-15',
-    nextPaymentAmount: 50,
-    paymentMethod: '•••• 4242',
-    stripeCustomerId: 'cus_abc123',
-    totalGiving: 650,
-    coachingPackage: null,
-  }
+  const fetchMember = async () => {
+    setLoading(true)
+    setError(null)
 
-  const subscriptionHistory = [
-    {
-      id: '1',
-      date: '2024-01-15',
-      tier: 'partner',
-      amount: 50,
-      status: 'succeeded',
-    },
-    {
-      id: '2',
-      date: '2023-12-15',
-      tier: 'partner',
-      amount: 50,
-      status: 'succeeded',
-    },
-    {
-      id: '3',
-      date: '2023-11-15',
-      tier: 'partner',
-      amount: 50,
-      status: 'succeeded',
-    },
-  ]
+    try {
+      const response = await fetch(`/api/admin/members/${params.id}`, { cache: 'no-store' })
+      const payload = await response.json()
 
-  const getTierBadge = (tier: string) => {
-    switch (tier) {
-      case 'covenant':
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-navy/20 text-navy rounded-full text-sm font-medium">
-            <Crown className="h-4 w-4" />
-            Covenant Partner
-          </span>
-        )
-      case 'partner':
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-gold/20 text-gold rounded-full text-sm font-medium">
-            <Sparkles className="h-4 w-4" />
-            Partner
-          </span>
-        )
-      default:
-        return (
-          <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
-            Free Member
-          </span>
-        )
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || 'Unable to load member')
+      }
+
+      setData(payload)
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : 'Unable to load member')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleManualUpgrade = () => {
-    // TODO: API call to manually upgrade member (comp access)
-    console.log('Manually upgrading member...')
-    setShowUpgradeDialog(false)
-    alert('Member upgraded successfully')
-  }
+  useEffect(() => {
+    fetchMember()
+  }, [params.id])
 
-  const handleViewInStripe = () => {
-    // TODO: Open Stripe dashboard for this customer
-    window.open(`https://dashboard.stripe.com/customers/${memberData.stripeCustomerId}`, '_blank')
-  }
-
-  const handleToggleCoaching = () => {
-    // TODO: API call to toggle coaching client status
-    setIsCoachingClient(!isCoachingClient)
-  }
-
-  return (
-    <div className="flex-1 p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link
-            href="/members"
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Members
-          </Link>
-        </div>
-
-        {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-navy/10 flex items-center justify-center">
-              <User className="h-8 w-8 text-navy" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-navy mb-1">{memberData.name}</h1>
-              <p className="text-gray-600">{memberData.email}</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => alert('Email member')}>
-              <Mail className="mr-2 h-4 w-4" />
-              Email
-            </Button>
-            {memberData.stripeCustomerId && (
-              <Button variant="outline" onClick={handleViewInStripe}>
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View in Stripe
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Membership Card */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-navy">Membership</CardTitle>
-                    <CardDescription>Current tier and subscription details</CardDescription>
-                  </div>
-                  {getTierBadge(memberData.tier)}
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {/* Subscription Status */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Status</p>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium capitalize">
-                      {memberData.subscriptionStatus}
-                    </span>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Member Since</p>
-                    <p className="font-medium text-navy">
-                      {new Date(memberData.memberSince).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-
-                  {memberData.tier !== 'free' && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-600">Next Payment</p>
-                          <p className="font-medium text-navy">
-                            {new Date(memberData.nextPaymentDate).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <DollarSign className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-600">Amount</p>
-                          <p className="font-medium text-navy">${memberData.nextPaymentAmount}/month</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-600">Payment Method</p>
-                          <p className="font-medium text-navy">{memberData.paymentMethod}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="pt-4 border-t flex gap-3">
-                  <Button
-                    onClick={() => setShowUpgradeDialog(true)}
-                    className="bg-gold hover:bg-gold-dark"
-                  >
-                    <Gift className="mr-2 h-4 w-4" />
-                    Manually Upgrade
-                  </Button>
-                  {memberData.tier !== 'covenant' && (
-                    <Button variant="outline">
-                      <ArrowUpCircle className="mr-2 h-4 w-4" />
-                      Send Upgrade Offer
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Subscription History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl text-navy">Subscription History</CardTitle>
-                <CardDescription>Payment and tier change history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {subscriptionHistory.map((record) => (
-                    <div
-                      key={record.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-navy">
-                            {record.tier.charAt(0).toUpperCase() + record.tier.slice(1)} - $
-                            {record.amount}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {new Date(record.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium capitalize">
-                        {record.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-navy">Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Giving</p>
-                  <p className="text-2xl font-bold text-navy">${memberData.totalGiving}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Last Activity</p>
-                  <p className="font-medium text-navy">
-                    {new Date(memberData.lastActivity).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Coaching Client */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-navy">Coaching Client</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="coaching-toggle">Coaching Client</Label>
-                  <button
-                    id="coaching-toggle"
-                    onClick={handleToggleCoaching}
-                    className="relative"
-                  >
-                    {isCoachingClient ? (
-                      <ToggleRight className="h-8 w-8 text-green-600" />
-                    ) : (
-                      <ToggleLeft className="h-8 w-8 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-
-                {isCoachingClient && (
-                  <div className="pt-3 border-t space-y-3">
-                    <div>
-                      <Label htmlFor="package">Package</Label>
-                      <select
-                        id="package"
-                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy"
-                      >
-                        <option>Executive Coaching - 6 months</option>
-                        <option>Leadership Development - 3 months</option>
-                        <option>Business Transformation - 12 months</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label htmlFor="sessions">Sessions Remaining</Label>
-                      <Input id="sessions" type="number" defaultValue={8} className="mt-1" />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Admin Notes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-navy">Admin Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <textarea
-                  className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy resize-none"
-                  placeholder="Private admin notes about this member..."
-                  defaultValue=""
-                />
-                <Button size="sm" className="mt-3 w-full">
-                  Save Notes
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          Loading member profile...
         </div>
       </div>
+    )
+  }
 
-      {/* Manual Upgrade Dialog */}
-      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-xl text-navy">Manually Upgrade Member</DialogTitle>
-            <DialogDescription>
-              Grant complimentary access to a higher tier without payment
-            </DialogDescription>
-          </DialogHeader>
+  if (error || !data) {
+    return (
+      <div className="mx-auto max-w-3xl p-8">
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-700">Member unavailable</CardTitle>
+            <CardDescription className="text-red-600">{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={fetchMember} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="upgrade-tier">Select Tier</Label>
-              <select
-                id="upgrade-tier"
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy"
-              >
-                {memberData.tier !== 'partner' && <option value="partner">Partner ($50/mo)</option>}
-                {memberData.tier !== 'covenant' && (
-                  <option value="covenant">Covenant Partner ($150/mo)</option>
+  const { member, giving, subscriptions, care } = data
+  const fullName = `${member.first_name} ${member.last_name}`.trim()
+  const activeSubscription = subscriptions.find(sub => ['active', 'trialing', 'past_due'].includes(sub.status || ''))
+
+  return (
+    <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <div className="flex items-center justify-between gap-3">
+          <Button asChild variant="ghost">
+            <Link href="/members">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Members
+            </Link>
+          </Button>
+          <Button onClick={fetchMember} variant="outline" size="sm">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
+
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-navy/10 text-navy">
+                <User className="h-8 w-8" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-3xl font-bold text-navy">{fullName}</h1>
+                  <Badge className={member.tier === 'covenant' ? 'bg-navy text-white' : member.tier === 'partner' ? 'bg-gold text-navy' : 'bg-slate-200 text-navy'}>
+                    {tierLabel(member.tier)}
+                  </Badge>
+                  {member.is_admin && <Badge variant="outline">Admin</Badge>}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    {member.email}
+                  </span>
+                  {member.phone && (
+                    <span className="inline-flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      {member.phone}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Joined {formatDate(member.joined_at || member.created_at)}
+                  </span>
+                </div>
+                {member.role_upgrade_reason && (
+                  <p className="mt-3 text-sm text-muted-foreground">{member.role_upgrade_reason}</p>
                 )}
-              </select>
+              </div>
             </div>
-
-            <div>
-              <Label htmlFor="reason">Reason (optional)</Label>
-              <textarea
-                id="reason"
-                className="w-full mt-1 min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy resize-none"
-                placeholder="e.g., Ministry staff, special circumstances, scholarship..."
-              />
-            </div>
-
-            <div className="bg-gold/10 p-3 rounded-lg">
-              <p className="text-sm text-gray-700">
-                This will grant free access to the selected tier. The member will not be charged.
-              </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild className="bg-navy hover:bg-navy/90">
+                <Link href={`/email-campaigns?tab=quicksend`}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/admin-covenant-partners">
+                  <HeartHandshake className="mr-2 h-4 w-4" />
+                  Partner Dashboard
+                </Link>
+              </Button>
             </div>
           </div>
+        </section>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpgradeDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleManualUpgrade} className="bg-gold hover:bg-gold-dark">
-              Grant Access
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Giving</CardTitle>
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-navy">{formatCurrency(giving.totalGiven)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{giving.donationCount} successful gifts</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Covenant Giving</CardTitle>
+              <HeartHandshake className="h-5 w-5 text-gold" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-navy">{formatCurrency(giving.covenantGiven)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{formatCurrency(giving.monthlyRecognized)} recognized this month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Subscription</CardTitle>
+              <CreditCard className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize text-navy">{activeSubscription?.status || 'None'}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {activeSubscription
+                  ? `${formatCurrency(subscriptionAmount(activeSubscription))} / ${activeSubscription.billing_cycle || 'month'}`
+                  : 'No active Stripe subscription found'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Care Signals</CardTitle>
+              <ShieldCheck className="h-5 w-5 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-navy">{care.checkins.length + care.prayerRequests.length}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Recent check-ins and prayer requests</p>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.8fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-navy">Giving History</CardTitle>
+              <CardDescription>Recent successful and pending giving records connected to this member.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Designation</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {giving.donations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                          No giving history found for this member.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      giving.donations.slice(0, 12).map((donation) => (
+                        <TableRow key={donation.id}>
+                          <TableCell>{formatDate(donation.created_at)}</TableCell>
+                          <TableCell className="capitalize">{(donation.designation || 'general').replace(/_/g, ' ')}</TableCell>
+                          <TableCell>{donation.is_recurring || donation.donation_type === 'recurring' ? 'Recurring' : 'One-time'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">{donation.status || 'unknown'}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(donation.amount)}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-navy">Subscription Records</CardTitle>
+                <CardDescription>Stripe-backed membership or recurring subscription records.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {subscriptions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No subscription records found.</p>
+                ) : (
+                  subscriptions.map((subscription) => (
+                    <div key={subscription.id} className="rounded-lg border bg-white p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium capitalize text-navy">{subscription.tier_slug || 'Subscription'}</p>
+                        <Badge className={subscription.status === 'active' ? 'bg-green-600 text-white' : 'bg-slate-200 text-navy'}>
+                          {subscription.status || 'unknown'}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {subscriptionAmount(subscription) ? formatCurrency(subscriptionAmount(subscription)) : 'Amount unknown'} / {subscription.billing_cycle || 'month'}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Current period ends {formatDate(subscription.current_period_end)}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-navy">Recent Care Notes</CardTitle>
+                <CardDescription>Check-ins and prayer requests that may need pastoral awareness.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {care.checkins.length === 0 && care.prayerRequests.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No recent care signals found.</p>
+                ) : (
+                  <>
+                    {care.checkins.map((checkin) => (
+                      <div key={checkin.id} className="rounded-lg border bg-white p-3">
+                        <div className="flex items-center gap-2 text-sm font-medium text-navy">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          Daily check-in · {formatDate(checkin.created_at)}
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {[checkin.mood, checkin.prayer_focus, checkin.notes].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                    ))}
+                    {care.prayerRequests.map((request) => (
+                      <div key={request.id} className="rounded-lg border bg-white p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-navy">{request.title}</p>
+                          <Badge variant="outline">{request.status || 'active'}</Badge>
+                        </div>
+                        <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{request.description}</p>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    </main>
   )
 }

@@ -8,7 +8,7 @@ import {
   LayoutDashboard, MessageSquare, FileText, Users, BarChart3,
   Mail, Inbox, Send, Megaphone,
   Video, BookOpen, Sparkles, Image, FileDown, PenSquare,
-  UserPlus, Heart, Calendar, UsersRound,
+  UserPlus, Heart, Calendar, UsersRound, HeartHandshake,
   DollarSign, TrendingUp, Brain, Settings,
   ChevronDown, ChevronRight, ExternalLink, Bell,
   Home, Menu, X, Plane
@@ -63,6 +63,7 @@ const navSections: NavSection[] = [
     icon: Users,
     items: [
       { label: "Members", href: "/members", icon: UsersRound },
+      { label: "Covenant Partners", href: "/admin-covenant-partners", icon: HeartHandshake },
       { label: "Groups", href: "/admin-groups", icon: Users },
       { label: "Prayer Requests", href: "/prayers", icon: Heart },
       { label: "Events", href: "/admin-events", icon: Calendar },

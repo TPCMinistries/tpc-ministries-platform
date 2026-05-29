@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
+  CheckCircle2,
   Globe2,
   GraduationCap,
   HeartHandshake,
@@ -70,6 +71,28 @@ const upcomingRhythm = [
     title: 'Corporate Prayer and Encouragement',
     note: 'Designated partner moments will be announced through partner communications.',
     icon: Mic2,
+  },
+]
+
+const onboardingSteps = [
+  'Confirm your account and giving settings',
+  'Watch for the next partner email update',
+  'Bring prayer focus to the monthly gathering',
+  'Choose one area of practical growth for this season',
+]
+
+const impactUpdates = [
+  {
+    title: 'Prophetic ministry and prayer',
+    note: 'Partner support helps create space for prayer gatherings, encouragement, and ministry moments.',
+  },
+  {
+    title: 'Education and missions',
+    note: 'Ongoing giving strengthens missions communication, field preparation, and education outreach.',
+  },
+  {
+    title: 'Future-readiness equipping',
+    note: 'Partners help build resources that prepare believers for wisdom, leadership, technology, and purpose.',
   },
 ]
 
@@ -206,6 +229,51 @@ export default async function PartnerHubPage() {
             )
           })}
         </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
+              Partner onboarding
+            </CardTitle>
+            <CardDescription>
+              A simple path for staying connected after becoming a Covenant Partner.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {onboardingSteps.map((step, index) => (
+              <div key={step} className="flex items-start gap-3 rounded-lg border bg-background p-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold/15 text-sm font-semibold text-gold-text">
+                  {index + 1}
+                </div>
+                <p className="text-sm text-foreground/80">{step}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
+              What partnership is helping build
+            </CardTitle>
+            <CardDescription>
+              These impact notes can become dynamic updates as the ministry rhythm matures.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            {impactUpdates.map((update) => (
+              <div key={update.title} className="rounded-lg border bg-background p-4">
+                <div className="mb-2 flex items-center gap-2 font-medium text-navy dark:text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-gold-text" />
+                  {update.title}
+                </div>
+                <p className="text-sm leading-6 text-muted-foreground">{update.note}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </section>
 
       <section>
