@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - Fetch audit log entries
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify admin/staff
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const supabase = createAdminClient()
 
     // Parse query params
     const searchParams = request.nextUrl.searchParams
@@ -87,21 +79,9 @@ export async function GET(request: NextRequest) {
 // POST - Log an admin action
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, first_name, last_name, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -111,6 +91,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
+    const { member } = authResult
     const { error } = await supabase
       .from('admin_audit_log')
       .insert({

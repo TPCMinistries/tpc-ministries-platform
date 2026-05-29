@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - Fetch admin tasks
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
     const assignedTo = searchParams.get('assigned_to')
@@ -40,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (status && status !== 'all') query = query.eq('status', status)
     if (priority) query = query.eq('priority', priority)
     if (assignedTo) query = query.eq('assigned_to', assignedTo)
-    if (myTasks) query = query.eq('assigned_to', member.id)
+    if (myTasks) query = query.eq('assigned_to', authResult.member.id)
 
     const { data: tasks, error } = await query
 
@@ -88,21 +80,9 @@ export async function GET(request: NextRequest) {
 // POST - Create a new task
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -112,6 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
     const { data: task, error } = await supabase
       .from('admin_tasks')
       .insert({
@@ -120,7 +101,7 @@ export async function POST(request: NextRequest) {
         priority: priority || 'medium',
         due_date,
         assigned_to,
-        assigned_by: member.id,
+        assigned_by: authResult.member.id,
         related_entity_type,
         related_entity_id
       })
@@ -134,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: 'create',
       entity_type: 'task',
       entity_id: task.id,
@@ -151,21 +132,9 @@ export async function POST(request: NextRequest) {
 // PATCH - Update a task
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -178,11 +147,12 @@ export async function PATCH(request: NextRequest) {
     // Handle status changes
     if (updates.status === 'completed') {
       updates.completed_at = new Date().toISOString()
-      updates.completed_by = member.id
+      updates.completed_by = authResult.member.id
     }
 
     updates.updated_at = new Date().toISOString()
 
+    const supabase = createAdminClient()
     const { data: task, error } = await supabase
       .from('admin_tasks')
       .update(updates)
@@ -197,7 +167,7 @@ export async function PATCH(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: updates.status === 'completed' ? 'complete' : 'update',
       entity_type: 'task',
       entity_id: id,
@@ -215,21 +185,9 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete a task
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -240,6 +198,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get task info for logging
+    const supabase = createAdminClient()
     const { data: task } = await supabase
       .from('admin_tasks')
       .select('title')
@@ -258,7 +217,7 @@ export async function DELETE(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: member.id,
+      admin_id: authResult.member.id,
       action: 'delete',
       entity_type: 'task',
       entity_id: id,
