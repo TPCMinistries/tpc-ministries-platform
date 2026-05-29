@@ -5,10 +5,6 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const twilioPhone = process.env.TWILIO_PHONE_NUMBER
 
-if (!accountSid || !authToken || !twilioPhone) {
-  console.warn('Twilio credentials not configured. SMS functionality will be disabled.')
-}
-
 const client = accountSid && authToken ? twilio(accountSid, authToken) : null
 
 export async function sendSMS({
