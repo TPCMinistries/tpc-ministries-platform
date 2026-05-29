@@ -1,50 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth-server'
 
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
+export const dynamic = 'force-dynamic'
 
-const getAuthClient = async () => {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    }
-  )
-}
+export async function POST() {
+  const authResult = await requireAdmin()
+  if (authResult instanceof NextResponse) return authResult
 
-export async function POST(request: NextRequest) {
   try {
-    // Verify admin
-    const authClient = await getAuthClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await authClient
-      .from('members')
-      .select('is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member?.is_admin) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
-    const supabase = getAdminClient()
+    const supabase = createAdminClient()
     const results: string[] = []
 
     // ============================================
@@ -446,10 +411,11 @@ export async function POST(request: NextRequest) {
       results
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Quiz creation error:', error)
+    const message = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: message },
       { status: 500 }
     )
   }
