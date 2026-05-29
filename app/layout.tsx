@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import PWAProvider from "@/components/pwa/pwa-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/json-ld";
@@ -185,6 +187,8 @@ export default function RootLayout({
       >
         <SkipLink />
         <GoogleAnalytics />
+        <Analytics />
+        <SpeedInsights />
         <ThemeProvider>
           <CelebrationProvider>
             <PWAProvider>
