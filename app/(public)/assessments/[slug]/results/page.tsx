@@ -379,12 +379,12 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
                   </Card>
                 </Link>
                 {!isLoggedIn && (
-                  <Link href="/partner" className="block">
+                  <Link href="/partners" className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-gold">
                       <CardContent className="pt-6">
                         <h4 className="font-semibold text-navy mb-2">Become a Partner</h4>
                         <p className="text-sm text-gray-600">
-                          Get exclusive teachings and prophetic words for your gifting
+                          Help sustain teachings, discipleship, and practical equipping
                         </p>
                       </CardContent>
                     </Card>

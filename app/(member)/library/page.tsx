@@ -285,7 +285,7 @@ export default function UnifiedLibraryPage() {
     const isLocked = !item.has_access
 
     return (
-      <Link href={isLocked ? '/partner' : item.href}>
+      <Link href={isLocked ? '/partners' : item.href}>
         <Card className={`overflow-hidden transition-all hover:shadow-lg cursor-pointer bg-white dark:bg-gray-800 border-0 shadow-sm group ${
           size === 'large' ? 'w-72' : 'w-56'
         } flex-shrink-0`}>
@@ -546,7 +546,7 @@ export default function UnifiedLibraryPage() {
     const isLocked = !item.has_access
 
     return (
-      <Link href={isLocked ? '/partner' : item.href}>
+      <Link href={isLocked ? '/partners' : item.href}>
         <Card className="overflow-hidden transition-all hover:shadow-xl cursor-pointer h-full bg-white dark:bg-gray-800 border-0 shadow-sm group">
           <div className="relative aspect-video bg-gray-100 dark:bg-gray-700">
             <Image
@@ -967,11 +967,11 @@ export default function UnifiedLibraryPage() {
                 <div>
                   <h3 className="text-xl font-bold mb-1">Unlock All Content</h3>
                   <p className="text-white/70">
-                    Become a Partner to access exclusive teachings, ebooks, and resources.
+                    Become a Covenant Partner to help sustain teachings, ebooks, and ministry resources.
                   </p>
                 </div>
               </div>
-              <Link href="/partner">
+              <Link href="/partners">
                 <Button size="lg" className="bg-gold hover:bg-gold-dark text-white shadow-lg gap-2">
                   <Crown className="h-5 w-5" />
                   Become a Partner
@@ -1105,7 +1105,7 @@ export default function UnifiedLibraryPage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Link href="/partner" className="flex-1">
+                  <Link href="/partners" className="flex-1">
                     <Button className="w-full bg-gold hover:bg-gold-dark text-white" size="lg">
                       <Lock className="h-5 w-5 mr-2" />
                       Unlock with {getTierLabel(previewItem.tier_required)}

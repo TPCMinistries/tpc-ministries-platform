@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         ? 'Monthly Donation'
         : 'Donation'
     const successUrl = isCovenantPartner
-      ? `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}&campaign=covenant-partners`
+      ? `${baseUrl}/partners/welcome?session_id={CHECKOUT_SESSION_ID}&campaign=covenant-partners`
       : `${baseUrl}/giving/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = isCovenantPartner ? `${baseUrl}/partners#start-partnership` : `${baseUrl}/giving`
     const checkoutMetadata = {

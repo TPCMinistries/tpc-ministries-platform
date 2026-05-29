@@ -210,7 +210,7 @@ export default async function EbookDetailPage({ params }: Props) {
                           Ministry Partners enjoy complimentary access to all written works
                           through their member dashboard.
                         </p>
-                        <Link href="/partner" className="text-body-sm font-medium text-gold hover:underline">
+                        <Link href="/partners" className="text-body-sm font-medium text-gold hover:underline">
                           Explore Partnership Benefits
                         </Link>
                       </div>
@@ -235,7 +235,7 @@ export default async function EbookDetailPage({ params }: Props) {
                               Sign In
                             </Button>
                           </Link>
-                          <Link href="/partner">
+                          <Link href="/partners">
                             <Button variant="outline" className="w-full border-gold text-body-sm text-gold hover:bg-gold/10">
                               <Crown className="mr-2 h-4 w-4" />
                               Become a Partner
@@ -318,7 +318,7 @@ export default async function EbookDetailPage({ params }: Props) {
                 View All Ebooks
               </Button>
             </Link>
-            <Link href="/partner">
+            <Link href="/partners">
               <Button variant="glow">
                 <Crown className="mr-2 h-4 w-4" />
                 Explore Partnership

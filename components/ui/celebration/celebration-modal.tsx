@@ -70,9 +70,9 @@ const celebrationConfigs: Record<CelebrationType, CelebrationConfig> = {
   "first-donation": {
     emoji: "💝",
     title: "Thank You for Giving!",
-    description: "Your generosity helps advance the Kingdom. You've been upgraded to Partner status!",
+    description: "Your generosity helps sustain the ministry assignment and strengthen the community.",
     confetti: true,
-    primaryAction: { label: "View Benefits", href: "/partner" },
+    primaryAction: { label: "Partner Hub", href: "/partner-hub" },
   },
   "course-completed": {
     emoji: "🎓",

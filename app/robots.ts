@@ -14,7 +14,8 @@ export default function robots(): MetadataRoute.Robots {
           '/assessments',
           '/missions',
           '/prophecy',
-          '/partner',
+          '/partners',
+          '/covenant-partners',
         ],
         disallow: [
           '/member/',

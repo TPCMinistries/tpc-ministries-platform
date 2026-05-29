@@ -60,7 +60,8 @@ export function TierGate({ requiredTier, currentTier = 'free', children, fallbac
         </h3>
 
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          This content is exclusively available to {info.name} members. Upgrade your membership to unlock this and other exclusive benefits.
+          This content is available to ministry partners. Covenant Partnership helps sustain teaching,
+          discipleship, missions, and practical equipping.
         </p>
 
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${info.bgColor} mb-6`}>
@@ -69,15 +70,15 @@ export function TierGate({ requiredTier, currentTier = 'free', children, fallbac
         </div>
 
         <div className="flex gap-3 justify-center">
-          <Link href={`/partner/upgrade?tier=${requiredTier}`}>
+          <Link href="/partners#start-partnership">
             <Button className={requiredTier === 'partner' ? 'bg-gold hover:bg-gold-dark' : 'bg-navy hover:bg-navy/90'}>
               <ArrowUpCircle className="mr-2 h-4 w-4" />
-              Upgrade to {info.name}
+              Partner Monthly
             </Button>
           </Link>
-          <Link href="/partner">
+          <Link href="/partners">
             <Button variant="outline">
-              View All Tiers
+              Learn More
             </Button>
           </Link>
         </div>

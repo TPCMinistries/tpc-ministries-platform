@@ -253,10 +253,10 @@ export default function ConnectPage() {
                   </div>
                 </div>
                 <p className="mb-6 text-body-md text-muted-foreground">
-                  Partners receive exclusive access to all ebooks, special content,
-                  and join a community of purpose-driven believers.
+                  Covenant Partners help sustain teaching, missions, prayer gatherings,
+                  and practical equipping for the future ahead.
                 </p>
-                <Link href="/partner">
+                <Link href="/partners">
                   <Button variant="outline" className="w-full border-gold/30 text-foreground hover:bg-gold/10">
                     Learn About Partnership
                     <ArrowRight className="ml-2 h-4 w-4" />

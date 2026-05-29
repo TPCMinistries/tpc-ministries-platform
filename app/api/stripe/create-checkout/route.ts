@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
           member_id: member?.id || '',
         },
       },
-      success_url: `${baseUrl}/member/account?tab=membership&success=true&tier=${tier_slug}`,
+      success_url: `${baseUrl}/partner-hub?success=true&tier=${tier_slug}`,
       cancel_url: `${baseUrl}/partner/upgrade?tier=${tier_slug}&canceled=true`,
     })
 

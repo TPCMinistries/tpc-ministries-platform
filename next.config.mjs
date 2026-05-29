@@ -92,6 +92,11 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: '/partner',
+        destination: '/partners',
+        permanent: true,
+      },
       // Specific redirects for member routes (middleware handles these, but this is a fallback)
       {
         source: '/member/dashboard',

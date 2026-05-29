@@ -228,11 +228,11 @@ export function YouTab({
                 <div className="flex-1">
                   <h3 className="font-semibold">Become a Partner</h3>
                   <p className="text-sm text-muted-foreground">
-                    Unlock exclusive content and deeper community access
+                    Help sustain the work and stay connected to ongoing equipping.
                   </p>
                 </div>
                 <Button asChild className="bg-tpc-gold text-tpc-navy hover:bg-tpc-gold-dark">
-                  <Link href="/partner">Upgrade</Link>
+                  <Link href="/partners">Learn More</Link>
                 </Button>
               </div>
             </CardContent>

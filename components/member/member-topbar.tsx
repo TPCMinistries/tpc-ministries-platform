@@ -531,8 +531,11 @@ export default function MemberTopBar({ member }: MemberTopBarProps) {
                 Billing & Subscription
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/partner')}>
-                Upgrade Membership
+              <DropdownMenuItem onClick={() => router.push('/partner-hub')}>
+                Partner Hub
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/partners')}>
+                Covenant Partnership
               </DropdownMenuItem>
               {canInstall && (
                 <>

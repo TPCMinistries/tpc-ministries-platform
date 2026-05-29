@@ -46,7 +46,7 @@ export default function NotFound() {
             <Link href="/missions" className="text-blue-100 hover:text-white underline">
               Missions
             </Link>
-            <Link href="/partner" className="text-blue-100 hover:text-white underline">
+            <Link href="/partners" className="text-blue-100 hover:text-white underline">
               Become a Partner
             </Link>
           </div>

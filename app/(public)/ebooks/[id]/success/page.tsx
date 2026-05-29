@@ -198,7 +198,7 @@ export default async function EbookSuccessPage({ params, searchParams }: Props) 
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/partner">
+            <Link href="/partners">
               <Button variant="outline" className="border-tpc-gold text-tpc-gold hover:bg-tpc-gold hover:text-tpc-navy">
                 Become a Partner
                 <ArrowRight className="ml-2 h-4 w-4" />

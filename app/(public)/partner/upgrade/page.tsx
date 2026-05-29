@@ -19,20 +19,19 @@ const TIER_BENEFITS: Record<MembershipTierSlug, string[]> = {
   partner: [
     'All Free Member benefits',
     'Monthly partner-only teaching/Q&A',
-    'Partner-exclusive prophetic words',
-    'Priority prayer requests',
-    'Monthly personal email update',
-    'Early access to new content',
-    'Partner community network',
+    'Bi-weekly teaching and equipping',
+    'Monthly partner gatherings',
+    'Partner community updates',
+    'Early access to ministry events',
+    'Missions and outreach updates',
   ],
   covenant: [
     'All Partner benefits',
-    'Quarterly 1-on-1 check-in (30 min)',
-    'Personal prophetic word annually',
-    'Direct message access',
-    'Exclusive event invitations',
-    'Input on ministry direction',
-    'Priority coaching booking',
+    'Corporate prophetic ministry opportunities during designated gatherings',
+    'Special AI and future-readiness trainings',
+    'Quarterly books or e-books',
+    'VIP and early access for in-person ministry events',
+    'Early access opportunities for missions and international assignments',
   ],
 }
 
@@ -117,7 +116,7 @@ function UpgradePageInner() {
               Choose a partnership level from the partner page.
             </p>
             <Button asChild>
-              <Link href="/partner">Back to partner tiers</Link>
+              <Link href="/partners">Back to Covenant Partners</Link>
             </Button>
           </CardContent>
         </Card>
@@ -232,7 +231,7 @@ function UpgradePageInner() {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <Link href="/partner" className="underline">Compare tiers</Link>
+          <Link href="/partners" className="underline">View Covenant Partner page</Link>
         </p>
       </div>
     </div>

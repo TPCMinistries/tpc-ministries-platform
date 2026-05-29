@@ -24,6 +24,7 @@ import {
   Sunrise,
   Shield,
   Plane,
+  HeartHandshake,
   ChevronsLeft,
   ChevronsRight,
   type LucideIcon,
@@ -78,6 +79,7 @@ export default function MemberSidebar({ member }: MemberSidebarProps) {
       items: [
         { name: 'Dashboard', href: '/dashboard', icon: Home },
         { name: isStaffOrAdmin ? 'Admin Command Center' : 'Kenya 2026', href: isStaffOrAdmin ? '/admin-command-center' : '/kenya-trip', icon: Plane, highlight: true },
+        { name: 'Partner Hub', href: '/partner-hub', icon: HeartHandshake, highlight: member.role === 'partner' || member.tier === 'covenant' },
         { name: 'Messages', href: '/messages', icon: MessageSquare, badge: unreadCount },
         { name: 'Ask Prophet Lorenzo', href: '/ask-prophet-lorenzo', icon: Bot, highlight: true },
       ]
@@ -557,9 +559,9 @@ function SidebarContent({
           <div className="bg-gradient-to-br from-gold/10 to-navy/10 dark:from-gold/20 dark:to-navy/20 rounded-lg p-4 border border-gold/20 animate-glow-pulse">
             <p className="text-sm font-semibold text-navy dark:text-foreground mb-2 font-display">Upgrade Your Journey</p>
             <p className="text-xs text-muted-foreground mb-3">
-              Unlock exclusive content and prophetic words
+              Become a monthly Covenant Partner and help sustain the work.
             </p>
-            <Link href="/partner">
+            <Link href="/partners">
               <Button size="sm" variant="gold" className="w-full">
                 Become a Partner
               </Button>

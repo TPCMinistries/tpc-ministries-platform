@@ -120,7 +120,7 @@ export default function ResourcesPage() {
       description: 'Learn about becoming a ministry partner',
       type: 'document',
       category: 'Partnership',
-      link: '/partner',
+      link: '/partners',
       downloadable: false,
     },
   ]

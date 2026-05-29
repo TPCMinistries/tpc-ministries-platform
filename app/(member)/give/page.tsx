@@ -304,12 +304,12 @@ export default function GivePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-blue-100">
-                Join our partnership program for exclusive benefits and deeper involvement in ministry.
+                Become a monthly Covenant Partner and help sustain teaching, missions, and equipping.
               </p>
               <Button
                 variant="secondary"
                 className="w-full"
-                onClick={() => window.location.href = '/partner'}
+                onClick={() => window.location.href = '/partners'}
               >
                 Learn More
               </Button>

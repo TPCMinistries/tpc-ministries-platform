@@ -506,7 +506,7 @@ export default function TeachingsPage() {
             Want Access to Premium Content?
           </h2>
           <p className="mb-10 text-body-xl text-white/50">
-            Join our community to unlock exclusive teachings, courses, and resources.
+            Join the community for teachings, courses, and resources that support lasting growth.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/auth/signup">
@@ -515,7 +515,7 @@ export default function TeachingsPage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/partner">
+            <Link href="/partners">
               <Button
                 variant="outline"
                 size="xl"

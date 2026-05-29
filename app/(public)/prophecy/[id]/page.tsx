@@ -231,11 +231,11 @@ export default function PropheticWordPage({ params }: { params: { id: string } }
             {/* CTA */}
             <Card className="bg-navy text-white">
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Receive Personal Prophecy</h3>
+                <h3 className="font-semibold mb-2">Grow With the Ministry</h3>
                 <p className="text-sm text-gray-300 mb-4">
-                  Become a partner to receive personal prophetic words and deeper spiritual guidance.
+                  Become a Covenant Partner to help sustain prophetic ministry, discipleship, and prayer.
                 </p>
-                <Link href="/partner">
+                <Link href="/partners">
                   <Button className="w-full bg-gold hover:bg-gold-dark text-navy">
                     Become a Partner
                   </Button>

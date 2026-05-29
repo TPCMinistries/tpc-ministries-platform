@@ -189,9 +189,9 @@ export default async function PublicEbooksPage() {
             available anytime through their personal member dashboard.
           </p>
           <p className="mb-10 text-body-md text-white/30">
-            Plus exclusive teachings, early event access, and a community of purpose-driven believers.
+            Plus ongoing teaching, early event updates, and a community of purpose-driven believers.
           </p>
-          <Link href="/partner">
+          <Link href="/partners">
             <Button variant="glow" size="xl">
               Explore Partnership
               <ArrowRight className="ml-2 h-5 w-5" />
