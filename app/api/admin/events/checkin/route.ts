@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - Get check-ins for an event
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const eventId = searchParams.get('event_id')
 
@@ -77,21 +69,9 @@ export async function GET(request: NextRequest) {
 // POST - Check in a member or guest
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: staffMember } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!staffMember || !['admin', 'staff'].includes(staffMember.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -114,6 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate check-in
+    const supabase = createAdminClient()
     if (member_id) {
       const { data: existing } = await supabase
         .from('event_checkins')
@@ -135,7 +116,7 @@ export async function POST(request: NextRequest) {
         guest_name,
         guest_email,
         guest_phone,
-        checked_in_by: staffMember.id,
+        checked_in_by: authResult.member.id,
         check_in_method,
         notes
       })
@@ -158,7 +139,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     await supabase.from('admin_audit_log').insert({
-      admin_id: staffMember.id,
+      admin_id: authResult.member.id,
       action: 'checkin',
       entity_type: 'event',
       entity_id: event_id,
@@ -180,21 +161,9 @@ export async function POST(request: NextRequest) {
 // DELETE - Remove a check-in
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -204,6 +173,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Check-in ID is required' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
     const { error } = await supabase
       .from('event_checkins')
       .delete()

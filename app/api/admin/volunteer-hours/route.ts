@@ -1,26 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireStaff } from '@/lib/auth-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 // GET - Fetch volunteer hours
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const { data: member } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!member || !['admin', 'staff'].includes(member.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const supabase = createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const memberId = searchParams.get('member_id')
     const status = searchParams.get('status')
@@ -76,9 +68,10 @@ export async function GET(request: NextRequest) {
 
     const volunteerTotals = new Map<string, { name: string; hours: number }>()
     topVolunteers?.forEach(v => {
+      const volunteerMember = Array.isArray(v.members) ? v.members[0] : v.members
       const current = volunteerTotals.get(v.member_id) || { name: '', hours: 0 }
       volunteerTotals.set(v.member_id, {
-        name: `${(v.members as any)?.first_name} ${(v.members as any)?.last_name}`,
+        name: `${volunteerMember?.first_name || ''} ${volunteerMember?.last_name || ''}`.trim(),
         hours: current.hours + Number(v.hours_worked)
       })
     })
@@ -102,21 +95,9 @@ export async function GET(request: NextRequest) {
 // POST - Log volunteer hours
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: staffMember } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!staffMember || !['admin', 'staff'].includes(staffMember.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -126,7 +107,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Member, date, and hours are required' }, { status: 400 })
     }
 
-    const insertData: any = {
+    const insertData: Record<string, unknown> = {
       member_id,
       opportunity_id,
       event_id,
@@ -137,10 +118,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (auto_approve) {
-      insertData.approved_by = staffMember.id
+      insertData.approved_by = authResult.member.id
       insertData.approved_at = new Date().toISOString()
     }
 
+    const supabase = createAdminClient()
     const { data: entry, error } = await supabase
       .from('volunteer_hours')
       .insert(insertData)
@@ -157,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: staffMember.id,
+      admin_id: authResult.member.id,
       action: 'create',
       entity_type: 'volunteer_hours',
       entity_id: entry.id,
@@ -174,21 +156,9 @@ export async function POST(request: NextRequest) {
 // PATCH - Approve/reject hours
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: staffMember } = await supabase
-      .from('members')
-      .select('id, role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!staffMember || !['admin', 'staff'].includes(staffMember.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const authResult = await requireStaff()
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
     const body = await request.json()
@@ -202,11 +172,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    const supabase = createAdminClient()
     const { data: entry, error } = await supabase
       .from('volunteer_hours')
       .update({
         status,
-        approved_by: staffMember.id,
+        approved_by: authResult.member.id,
         approved_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -220,7 +191,7 @@ export async function PATCH(request: NextRequest) {
 
     // Log the action
     await supabase.from('admin_audit_log').insert({
-      admin_id: staffMember.id,
+      admin_id: authResult.member.id,
       action: status === 'approved' ? 'approve' : 'reject',
       entity_type: 'volunteer_hours',
       entity_id: id,
