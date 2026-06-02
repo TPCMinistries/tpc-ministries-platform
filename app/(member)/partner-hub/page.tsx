@@ -4,11 +4,14 @@ import {
   BookOpen,
   CalendarDays,
   CheckCircle2,
+  CreditCard,
+  DollarSign,
   Globe2,
   GraduationCap,
   HeartHandshake,
   Mail,
   Mic2,
+  Receipt,
   ShieldCheck,
   Sparkles,
   Users,
@@ -96,6 +99,34 @@ const impactUpdates = [
   },
 ]
 
+const successfulDonationStatuses = ['succeeded', 'completed', 'paid']
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount || 0)
+}
+
+function formatDate(value: string | null) {
+  if (!value) return 'Not recorded'
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
+function partnershipLevel(amount: number) {
+  if (amount >= 250) return 'Vision Partner'
+  if (amount >= 100) return 'Kingdom Partner'
+  if (amount >= 50) return 'Steward'
+  if (amount >= 25) return 'Builder'
+  return 'Covenant Partner'
+}
+
 export default async function PartnerHubPage() {
   const supabase = await createClient()
   const {
@@ -105,17 +136,56 @@ export default async function PartnerHubPage() {
   const { data: member } = user
     ? await supabase
         .from('members')
-        .select('first_name, tier, role, created_at')
+        .select('id, first_name, tier, role, created_at')
         .eq('user_id', user.id)
         .maybeSingle()
     : { data: null }
 
+  const { data: covenantDonations } = member?.id
+    ? await supabase
+        .from('donations')
+        .select('id, amount, donation_type, designation, is_recurring, status, created_at')
+        .eq('member_id', member.id)
+        .eq('designation', 'covenant_partner')
+        .in('status', successfulDonationStatuses)
+        .order('created_at', { ascending: false })
+        .limit(24)
+    : { data: [] }
+
+  const { data: subscriptions } = member?.id
+    ? await supabase
+        .from('member_subscriptions')
+        .select('id, tier_slug, billing_cycle, status, current_period_end, created_at')
+        .eq('member_id', member.id)
+        .order('created_at', { ascending: false })
+        .limit(5)
+    : { data: [] }
+
   const firstName = member?.first_name || 'Friend'
   const role = member?.role || member?.tier || 'free'
-  const isPartner = ['partner', 'covenant', 'staff', 'admin'].includes(role)
+  const isPartner = ['partner', 'covenant', 'covenant_partner', 'staff', 'admin'].includes(role)
   const memberSince = member?.created_at
     ? new Date(member.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : null
+  const donations = covenantDonations || []
+  const activeSubscription = (subscriptions || []).find((subscription) =>
+    ['active', 'trialing', 'past_due'].includes(subscription.status || '')
+  )
+  const totalCovenantGiving = donations.reduce((sum, donation) => sum + Number(donation.amount || 0), 0)
+  const currentMonth = new Date()
+  const monthlyRecognized = donations
+    .filter((donation) => {
+      if (!donation.created_at) return false
+      const createdAt = new Date(donation.created_at)
+      const recurring = donation.is_recurring === true || donation.donation_type === 'recurring'
+      return recurring
+        && createdAt.getFullYear() === currentMonth.getFullYear()
+        && createdAt.getMonth() === currentMonth.getMonth()
+    })
+    .reduce((sum, donation) => sum + Number(donation.amount || 0), 0)
+  const lastGift = donations[0] || null
+  const partnerStanding = activeSubscription?.status === 'active' || monthlyRecognized > 0 || isPartner
+  const level = partnershipLevel(Number(lastGift?.amount || monthlyRecognized || 0))
 
   return (
     <div className="space-y-8 p-4 lg:p-8">
@@ -162,9 +232,13 @@ export default async function PartnerHubPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/10 p-4">
                 <span className="text-sm text-navy-100">Status</span>
-                <Badge className={isPartner ? 'bg-gold text-navy-950' : 'bg-white/15 text-white'}>
-                  {isPartner ? 'Partner Access' : 'Member'}
+                <Badge className={partnerStanding ? 'bg-gold text-navy-950' : 'bg-white/15 text-white'}>
+                  {partnerStanding ? 'Partner Access' : 'Member'}
                 </Badge>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/10 p-4">
+                <span className="text-sm text-navy-100">Partnership Level</span>
+                <span className="font-medium text-white">{level}</span>
               </div>
               {memberSince && (
                 <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/10 p-4">
@@ -172,7 +246,7 @@ export default async function PartnerHubPage() {
                   <span className="font-medium text-white">{memberSince}</span>
                 </div>
               )}
-              {!isPartner && (
+              {!partnerStanding && (
                 <div className="rounded-lg border border-gold/30 bg-gold/10 p-4 text-sm text-gold-100">
                   Covenant Partner access is connected to monthly partnership. You can begin the partner
                   flow when you are ready.
@@ -181,6 +255,140 @@ export default async function PartnerHubPage() {
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
+            <DollarSign className="h-5 w-5 text-gold-text" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-navy dark:text-foreground">
+              {formatCurrency(monthlyRecognized)}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Recurring covenant partnership recognized this month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Covenant Giving</CardTitle>
+            <HeartHandshake className="h-5 w-5 text-gold-text" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-navy dark:text-foreground">
+              {formatCurrency(totalCovenantGiving)}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{donations.length} recorded covenant partner gifts</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Last Gift</CardTitle>
+            <Receipt className="h-5 w-5 text-gold-text" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-navy dark:text-foreground">
+              {lastGift ? formatCurrency(Number(lastGift.amount || 0)) : '$0'}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{formatDate(lastGift?.created_at || null)}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Subscription</CardTitle>
+            <CreditCard className="h-5 w-5 text-gold-text" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold capitalize text-navy dark:text-foreground">
+              {activeSubscription?.status || 'Not Found'}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {activeSubscription?.current_period_end
+                ? `Current period ends ${formatDate(activeSubscription.current_period_end)}`
+                : 'Stripe status appears here when available'}
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
+              Partnership record
+            </CardTitle>
+            <CardDescription>
+              Recent Covenant Partner giving connected to your member profile.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {donations.length === 0 ? (
+              <div className="rounded-lg border border-dashed bg-background p-5 text-sm text-muted-foreground">
+                No covenant partner gifts are connected to this account yet. If you recently partnered,
+                Stripe may still be syncing your record.
+              </div>
+            ) : (
+              donations.slice(0, 5).map((donation) => (
+                <div
+                  key={donation.id}
+                  className="flex items-center justify-between gap-4 rounded-lg border bg-background p-4"
+                >
+                  <div>
+                    <p className="font-medium text-navy dark:text-foreground">
+                      {donation.is_recurring || donation.donation_type === 'recurring'
+                        ? 'Recurring Covenant Partnership'
+                        : 'Covenant Partner Gift'}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatDate(donation.created_at)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-navy dark:text-foreground">
+                      {formatCurrency(Number(donation.amount || 0))}
+                    </p>
+                    <Badge variant="outline" className="mt-1 capitalize">
+                      {donation.status || 'recorded'}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
+              Your next best step
+            </CardTitle>
+            <CardDescription>
+              Keep the partnership rhythm simple and steady.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border border-gold/30 bg-gold/10 p-4">
+              <div className="mb-2 flex items-center gap-2 font-medium text-navy dark:text-foreground">
+                <ShieldCheck className="h-4 w-4 text-gold-text" />
+                Stay connected to the monthly rhythm
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Watch for partner updates, attend the next gathering when scheduled, and keep your giving
+                settings current so the ministry can steward partnership clearly.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <Button asChild variant="gold" className="w-full">
+                <Link href="/my-giving">Review Giving</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/events">View Upcoming Events</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
