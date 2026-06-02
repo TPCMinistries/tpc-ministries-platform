@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,9 +49,12 @@ import {
   File,
   Loader2,
   ExternalLink,
+  HeartHandshake,
   Upload,
   X,
   Tag,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react'
 import FileUpload from '@/components/ui/file-upload'
 import ImageUpload from '@/components/ui/image-upload'
@@ -74,18 +77,93 @@ interface Resource {
   updated_at: string
 }
 
-const defaultFormData = {
+type ResourceType = Resource['type']
+type ResourceTier = Resource['tier_required']
+
+interface ResourceFormData {
+  title: string
+  description: string
+  type: ResourceType
+  file_url: string
+  thumbnail_url: string
+  category: string
+  tags: string[]
+  tier_required: ResourceTier
+  is_published: boolean
+  author: string
+}
+
+interface StorageFile {
+  name: string
+  id?: string | null
+  updated_at?: string | null
+  created_at?: string | null
+  last_accessed_at?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+const defaultFormData: ResourceFormData = {
   title: '',
   description: '',
-  type: 'ebook' as const,
+  type: 'ebook',
   file_url: '',
   thumbnail_url: '',
   category: '',
-  tags: [] as string[],
-  tier_required: 'free' as const,
+  tags: [],
+  tier_required: 'free',
   is_published: false,
   author: '',
 }
+
+const partnerResourcePresets: Array<{
+  label: string
+  description: string
+  icon: typeof HeartHandshake
+  data: Partial<ResourceFormData>
+}> = [
+  {
+    label: 'Partner Gathering Guide',
+    description: 'Notes, replay links, or companion materials from a partner gathering.',
+    icon: HeartHandshake,
+    data: {
+      title: 'Covenant Partner Gathering Notes',
+      description: 'Teaching notes, reflection prompts, and next steps from the latest Covenant Partner gathering.',
+      type: 'guide',
+      category: 'Partner Gatherings',
+      tags: ['covenant-partners', 'gathering', 'teaching'],
+      tier_required: 'partner',
+      author: 'TPC Ministries',
+    },
+  },
+  {
+    label: 'Future-Readiness Training',
+    description: 'AI, practical wisdom, leadership, or future-preparation materials.',
+    icon: Sparkles,
+    data: {
+      title: 'Future-Readiness Training',
+      description: 'Practical equipping to help believers grow spiritually, practically, and prophetically for the future ahead.',
+      type: 'worksheet',
+      category: 'Future Readiness',
+      tags: ['ai', 'future-readiness', 'leadership', 'wisdom'],
+      tier_required: 'partner',
+      author: 'TPC Ministries',
+    },
+  },
+  {
+    label: 'Covenant Partner Ebook',
+    description: 'A deeper covenant-only book, workbook, or special teaching resource.',
+    icon: ShieldCheck,
+    data: {
+      title: 'Covenant Partner Ebook',
+      description: 'A special resource prepared for Covenant Partners and deeper ministry alignment.',
+      type: 'ebook',
+      category: 'Covenant Partners',
+      tags: ['covenant-partners', 'discipleship', 'alignment'],
+      tier_required: 'covenant',
+      author: 'Prophet Lorenzo Chambers',
+    },
+  },
+]
 
 export default function AdminResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([])
@@ -102,23 +180,20 @@ export default function AdminResourcesPage() {
   const [isImportOpen, setIsImportOpen] = useState(false)
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
   const [formData, setFormData] = useState(defaultFormData)
-  const [storageFiles, setStorageFiles] = useState<any[]>([])
+  const [storageFiles, setStorageFiles] = useState<StorageFile[]>([])
   const [loadingStorage, setLoadingStorage] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<{imported: number, skipped: number} | null>(null)
   const [tagInput, setTagInput] = useState('')
 
-  useEffect(() => {
-    fetchResources()
-  }, [typeFilter, tierFilter, statusFilter])
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async (search = '') => {
     try {
+      setLoading(true)
       const params = new URLSearchParams()
       if (typeFilter !== 'all') params.set('type', typeFilter)
       if (tierFilter !== 'all') params.set('tier', tierFilter)
       if (statusFilter !== 'all') params.set('status', statusFilter)
-      if (searchQuery) params.set('search', searchQuery)
+      if (search) params.set('search', search)
 
       const response = await fetch(`/api/admin/resources?${params}`)
       const result = await response.json()
@@ -131,10 +206,14 @@ export default function AdminResourcesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [typeFilter, tierFilter, statusFilter])
+
+  useEffect(() => {
+    fetchResources()
+  }, [fetchResources])
 
   const handleSearch = () => {
-    fetchResources()
+    fetchResources(searchQuery)
   }
 
   const handleCreate = async () => {
@@ -240,6 +319,13 @@ export default function AdminResourcesPage() {
     setIsDeleteOpen(true)
   }
 
+  const openCreateDialog = (initialData: Partial<ResourceFormData> = {}) => {
+    setSelectedResource(null)
+    setFormData({ ...defaultFormData, ...initialData })
+    setTagInput('')
+    setIsCreateOpen(true)
+  }
+
   const fetchStorageFiles = async () => {
     setLoadingStorage(true)
     try {
@@ -291,7 +377,7 @@ export default function AdminResourcesPage() {
     }
   }
 
-  const importFile = (file: any) => {
+  const importFile = (file: StorageFile) => {
     const url = `https://naulwwnzrznslvhhxfed.supabase.co/storage/v1/object/public/tpc-media/ebooks/${file.name}`
     const title = file.name
       .replace(/\.[^/.]+$/, '')
@@ -353,6 +439,8 @@ export default function AdminResourcesPage() {
     published: resources.filter(r => r.published).length,
     ebooks: resources.filter(r => r.type === 'ebook').length,
     downloads: resources.reduce((sum, r) => sum + r.download_count, 0),
+    partnerPublished: resources.filter(r => r.published && ['partner', 'covenant'].includes(r.tier_required)).length,
+    covenantOnly: resources.filter(r => r.published && r.tier_required === 'covenant').length,
   }
 
   const filteredResources = resources.filter(resource =>
@@ -373,7 +461,7 @@ export default function AdminResourcesPage() {
             <Upload className="mr-2 h-4 w-4" />
             Import from Storage
           </Button>
-          <Button onClick={() => { setFormData(defaultFormData); setIsCreateOpen(true) }}>
+          <Button onClick={() => openCreateDialog()}>
             <Plus className="mr-2 h-4 w-4" />
             Add Resource
           </Button>
@@ -415,6 +503,55 @@ export default function AdminResourcesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-gold/30 bg-gold/5">
+        <CardHeader>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white px-3 py-1 text-sm font-medium text-navy">
+                <HeartHandshake className="h-4 w-4 text-gold-text" />
+                Partner Hub Publishing
+              </div>
+              <CardTitle className="text-navy">Create resources that feed the Partner Hub</CardTitle>
+              <CardDescription className="mt-2 max-w-3xl">
+                Use these presets for Covenant Partner gatherings, future-readiness trainings, and deeper
+                discipleship materials. Published partner or covenant resources appear in the Partner Hub.
+              </CardDescription>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-right sm:min-w-[220px]">
+              <div className="rounded-lg border bg-white p-3">
+                <div className="text-2xl font-bold text-navy">{stats.partnerPublished}</div>
+                <div className="text-xs text-muted-foreground">Partner published</div>
+              </div>
+              <div className="rounded-lg border bg-white p-3">
+                <div className="text-2xl font-bold text-navy">{stats.covenantOnly}</div>
+                <div className="text-xs text-muted-foreground">Covenant only</div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            {partnerResourcePresets.map((preset) => {
+              const Icon = preset.icon
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => openCreateDialog(preset.data)}
+                  className="rounded-lg border bg-white p-4 text-left transition hover:border-gold/60 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                >
+                  <div className="mb-3 flex items-center gap-2 font-medium text-navy">
+                    <Icon className="h-5 w-5 text-gold-text" />
+                    {preset.label}
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">{preset.description}</p>
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
@@ -480,7 +617,7 @@ export default function AdminResourcesPage() {
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600">No resources found</p>
-              <Button className="mt-4" onClick={() => setIsCreateOpen(true)}>
+              <Button className="mt-4" onClick={() => openCreateDialog()}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Your First Resource
               </Button>
@@ -614,7 +751,7 @@ export default function AdminResourcesPage() {
                 <Label>Type</Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value: any) => setFormData({ ...formData, type: value })}
+                  onValueChange={(value: ResourceType) => setFormData({ ...formData, type: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -633,7 +770,7 @@ export default function AdminResourcesPage() {
                 <Label>Access Tier</Label>
                 <Select
                   value={formData.tier_required}
-                  onValueChange={(value: any) => setFormData({ ...formData, tier_required: value })}
+                  onValueChange={(value: ResourceTier) => setFormData({ ...formData, tier_required: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -732,6 +869,17 @@ export default function AdminResourcesPage() {
               />
               <Label htmlFor="published">Published (visible to members)</Label>
             </div>
+
+            {formData.tier_required !== 'free' && (
+              <div className="rounded-lg border border-gold/30 bg-gold/10 p-4 text-sm text-muted-foreground">
+                <div className="mb-1 flex items-center gap-2 font-medium text-navy">
+                  <ShieldCheck className="h-4 w-4 text-gold-text" />
+                  Partner Hub visibility
+                </div>
+                Published resources marked <strong>{formData.tier_required}</strong> are eligible to appear
+                in the Partner Hub and member library for people with the right access level.
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -758,7 +906,7 @@ export default function AdminResourcesPage() {
           <DialogHeader>
             <DialogTitle>Delete Resource</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedResource?.title}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{selectedResource?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
