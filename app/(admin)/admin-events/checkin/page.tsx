@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,9 +45,6 @@ import {
   ArrowLeft,
   Trash2,
   User,
-  Mail,
-  Phone,
-  QrCode,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -55,7 +52,7 @@ interface Event {
   id: string
   title: string
   start_time: string
-  capacity: number | null
+  max_attendees: number | null
 }
 
 interface CheckIn {
@@ -98,9 +95,18 @@ interface Member {
   avatar_url: string | null
 }
 
+interface CheckinRequestBody {
+  event_id: string | null
+  check_in_method: 'manual' | 'quick'
+  notes?: string
+  member_id?: string
+  guest_name?: string
+  guest_email?: string
+  guest_phone?: string
+}
+
 export default function EventCheckinPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const eventId = searchParams.get('event_id')
 
   const [event, setEvent] = useState<Event | null>(null)
@@ -125,14 +131,7 @@ export default function EventCheckinPage() {
     notes: '',
   })
 
-  useEffect(() => {
-    if (eventId) {
-      fetchCheckins()
-      fetchMembers()
-    }
-  }, [eventId])
-
-  const fetchCheckins = async () => {
+  const fetchCheckins = useCallback(async () => {
     if (!eventId) return
 
     setLoading(true)
@@ -150,9 +149,9 @@ export default function EventCheckinPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [eventId])
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('members')
@@ -160,7 +159,14 @@ export default function EventCheckinPage() {
       .order('first_name')
 
     setMembers(data || [])
-  }
+  }, [])
+
+  useEffect(() => {
+    if (eventId) {
+      fetchCheckins()
+      fetchMembers()
+    }
+  }, [eventId, fetchCheckins, fetchMembers])
 
   const handleCheckin = async () => {
     if (checkinType === 'member' && !formData.member_id) return
@@ -168,7 +174,7 @@ export default function EventCheckinPage() {
 
     setSaving(true)
     try {
-      const body: any = {
+      const body: CheckinRequestBody = {
         event_id: eventId,
         check_in_method: 'manual',
         notes: formData.notes || undefined,

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     // Get event details
     const { data: event } = await supabase
       .from('events')
-      .select('id, title, start_time, capacity')
+      .select('id, title, start_time, max_attendees')
       .eq('id', eventId)
       .single()
 

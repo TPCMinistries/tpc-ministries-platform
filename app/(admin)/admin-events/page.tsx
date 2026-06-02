@@ -1,12 +1,36 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  Edit,
+  Globe2,
+  HeartHandshake,
+  Loader2,
+  MapPin,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Users,
+  Video,
+} from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -15,45 +39,145 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import {
-  Calendar,
-  Loader2,
-  Plus,
-  Edit,
-  Trash2,
-  Users,
-  MapPin,
-  Video,
-  DollarSign,
-  Clock,
-  CheckCircle
-} from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { createClient } from '@/lib/supabase/client'
+
+type EventType = 'in-person' | 'online' | 'hybrid'
+type EventTier = 'free' | 'partner' | 'covenant'
+type EventStatus = 'draft' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
 
 interface Event {
   id: string
   title: string
-  description?: string
-  event_type: string
-  start_date: string
-  end_date: string
-  location?: string
-  is_virtual: boolean
-  virtual_link?: string
-  capacity?: number
-  registration_deadline?: string
-  is_published: boolean
-  price: number
-  tier_access: string[]
+  description?: string | null
+  event_type: EventType
+  location?: string | null
+  virtual_link?: string | null
+  start_time: string
+  end_time: string
+  max_attendees?: number | null
+  registration_required: boolean
+  registration_deadline?: string | null
+  tier_required: EventTier
+  status: EventStatus
   registrations?: { count: number }[]
+}
+
+interface EventFormData {
+  title: string
+  description: string
+  event_type: EventType
+  location: string
+  virtual_link: string
+  start_time: string
+  end_time: string
+  max_attendees: string
+  registration_required: boolean
+  registration_deadline: string
+  tier_required: EventTier
+  status: EventStatus
+}
+
+const defaultEventForm: EventFormData = {
+  title: '',
+  description: '',
+  event_type: 'in-person',
+  location: '',
+  virtual_link: '',
+  start_time: '',
+  end_time: '',
+  max_attendees: '',
+  registration_required: false,
+  registration_deadline: '',
+  tier_required: 'free',
+  status: 'draft',
+}
+
+const partnerEventPresets: Array<{
+  label: string
+  description: string
+  icon: typeof HeartHandshake
+  data: Partial<EventFormData>
+}> = [
+  {
+    label: 'Monthly Partner Gathering',
+    description: 'Alignment, teaching, prayer, and corporate encouragement for Covenant Partners.',
+    icon: HeartHandshake,
+    data: {
+      title: 'Monthly Covenant Partner Gathering',
+      description:
+        'A live partner gathering for alignment, teaching, prayer, and corporate encouragement.',
+      event_type: 'online',
+      tier_required: 'partner',
+      registration_required: true,
+      status: 'draft',
+    },
+  },
+  {
+    label: 'Future-Readiness Training',
+    description: 'AI, leadership, wisdom, business, family, health, and purpose training.',
+    icon: Sparkles,
+    data: {
+      title: 'Partner Future-Readiness Training',
+      description:
+        'A practical equipping session helping believers grow spiritually, practically, and prophetically for the future ahead.',
+      event_type: 'online',
+      tier_required: 'partner',
+      registration_required: true,
+      status: 'draft',
+    },
+  },
+  {
+    label: 'Missions Briefing',
+    description: 'Early updates, prayer points, and preparation for missions and global assignments.',
+    icon: Globe2,
+    data: {
+      title: 'Covenant Partner Missions Briefing',
+      description:
+        'A partner briefing with missions updates, prayer focus, and ways to help sustain international outreach.',
+      event_type: 'hybrid',
+      tier_required: 'covenant',
+      registration_required: true,
+      status: 'draft',
+    },
+  },
+]
+
+function toLocalDateTimeInput(value: string | null | undefined) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const timezoneOffset = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16)
+}
+
+function toIsoOrNull(value: string) {
+  return value ? new Date(value).toISOString() : null
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function getEventTypeLabel(type: EventType) {
+  if (type === 'in-person') return 'In person'
+  if (type === 'online') return 'Online'
+  return 'Hybrid'
+}
+
+function getStatusVariant(status: EventStatus) {
+  if (status === 'upcoming' || status === 'ongoing') return 'default'
+  if (status === 'draft') return 'secondary'
+  return 'outline'
 }
 
 export default function AdminEventsPage() {
@@ -62,29 +186,10 @@ export default function AdminEventsPage() {
   const [saving, setSaving] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [eventForm, setEventForm] = useState<EventFormData>(defaultEventForm)
   const { toast } = useToast()
 
-  const [eventForm, setEventForm] = useState({
-    title: '',
-    description: '',
-    event_type: 'service',
-    start_date: '',
-    end_date: '',
-    location: '',
-    is_virtual: false,
-    virtual_link: '',
-    capacity: '',
-    registration_deadline: '',
-    is_published: false,
-    price: '0',
-    tier_access: ['free', 'partner', 'covenant'],
-  })
-
-  useEffect(() => {
-    fetchEvents()
-  }, [])
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -95,10 +200,10 @@ export default function AdminEventsPage() {
           *,
           registrations:event_registrations(count)
         `)
-        .order('start_date', { ascending: false })
+        .order('start_time', { ascending: true })
 
       if (error) throw error
-      setEvents(data || [])
+      setEvents((data || []) as Event[])
     } catch (error) {
       console.error('Error fetching events:', error)
       toast({
@@ -109,40 +214,80 @@ export default function AdminEventsPage() {
     } finally {
       setLoading(false)
     }
+  }, [toast])
+
+  useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
+
+  const openCreateDialog = (initialData: Partial<EventFormData> = {}) => {
+    setEditingEvent(null)
+    setEventForm({ ...defaultEventForm, ...initialData })
+    setDialogOpen(true)
+  }
+
+  const resetForm = () => {
+    setEventForm(defaultEventForm)
+    setEditingEvent(null)
+  }
+
+  const handleEdit = (event: Event) => {
+    setEditingEvent(event)
+    setEventForm({
+      title: event.title,
+      description: event.description || '',
+      event_type: event.event_type,
+      location: event.location || '',
+      virtual_link: event.virtual_link || '',
+      start_time: toLocalDateTimeInput(event.start_time),
+      end_time: toLocalDateTimeInput(event.end_time),
+      max_attendees: event.max_attendees?.toString() || '',
+      registration_required: event.registration_required,
+      registration_deadline: toLocalDateTimeInput(event.registration_deadline),
+      tier_required: event.tier_required,
+      status: event.status,
+    })
+    setDialogOpen(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!eventForm.title || !eventForm.start_time || !eventForm.end_time) {
+      toast({
+        title: 'Missing details',
+        description: 'Add a title, start time, and end time before saving.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (new Date(eventForm.end_time) <= new Date(eventForm.start_time)) {
+      toast({
+        title: 'Check the schedule',
+        description: 'The event end time must be after the start time.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setSaving(true)
     const supabase = createClient()
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { data: member } = await supabase
-        .from('members')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single()
-
-      if (!member) throw new Error('Member not found')
-
       const eventData = {
         title: eventForm.title,
-        description: eventForm.description,
+        description: eventForm.description || null,
         event_type: eventForm.event_type,
-        start_date: eventForm.start_date,
-        end_date: eventForm.end_date,
-        location: eventForm.location,
-        is_virtual: eventForm.is_virtual,
-        virtual_link: eventForm.virtual_link,
-        capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
-        registration_deadline: eventForm.registration_deadline || null,
-        is_published: eventForm.is_published,
-        price: parseFloat(eventForm.price),
-        tier_access: eventForm.tier_access,
-        created_by: member.id,
+        location: eventForm.location || null,
+        virtual_link: eventForm.virtual_link || null,
+        start_time: new Date(eventForm.start_time).toISOString(),
+        end_time: new Date(eventForm.end_time).toISOString(),
+        max_attendees: eventForm.max_attendees ? Number(eventForm.max_attendees) : null,
+        registration_required: eventForm.registration_required,
+        registration_deadline: toIsoOrNull(eventForm.registration_deadline),
+        tier_required: eventForm.tier_required,
+        status: eventForm.status,
         updated_at: new Date().toISOString(),
       }
 
@@ -155,8 +300,8 @@ export default function AdminEventsPage() {
         if (error) throw error
 
         toast({
-          title: 'Event Updated!',
-          description: 'The event has been updated successfully.',
+          title: 'Event updated',
+          description: 'The gathering has been updated successfully.',
         })
       } else {
         const { error } = await supabase
@@ -166,44 +311,24 @@ export default function AdminEventsPage() {
         if (error) throw error
 
         toast({
-          title: 'Event Created!',
-          description: 'The event has been created successfully.',
+          title: 'Event created',
+          description: 'The gathering has been created successfully.',
         })
       }
 
       setDialogOpen(false)
       resetForm()
       fetchEvents()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving event:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save event',
+        description: error instanceof Error ? error.message : 'Failed to save event',
         variant: 'destructive',
       })
     } finally {
       setSaving(false)
     }
-  }
-
-  const handleEdit = (event: Event) => {
-    setEditingEvent(event)
-    setEventForm({
-      title: event.title,
-      description: event.description || '',
-      event_type: event.event_type,
-      start_date: event.start_date.split('T')[0] + 'T' + event.start_date.split('T')[1].substring(0, 5),
-      end_date: event.end_date.split('T')[0] + 'T' + event.end_date.split('T')[1].substring(0, 5),
-      location: event.location || '',
-      is_virtual: event.is_virtual,
-      virtual_link: event.virtual_link || '',
-      capacity: event.capacity?.toString() || '',
-      registration_deadline: event.registration_deadline?.split('T')[0] || '',
-      is_published: event.is_published,
-      price: event.price.toString(),
-      tier_access: event.tier_access,
-    })
-    setDialogOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -220,7 +345,7 @@ export default function AdminEventsPage() {
       if (error) throw error
 
       toast({
-        title: 'Event Deleted',
+        title: 'Event deleted',
         description: 'The event has been removed.',
       })
 
@@ -235,78 +360,41 @@ export default function AdminEventsPage() {
     }
   }
 
-  const resetForm = () => {
-    setEventForm({
-      title: '',
-      description: '',
-      event_type: 'service',
-      start_date: '',
-      end_date: '',
-      location: '',
-      is_virtual: false,
-      virtual_link: '',
-      capacity: '',
-      registration_deadline: '',
-      is_published: false,
-      price: '0',
-      tier_access: ['free', 'partner', 'covenant'],
-    })
-    setEditingEvent(null)
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    })
-  }
-
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case 'conference': return 'bg-purple-100 text-purple-700'
-      case 'workshop': return 'bg-blue-100 text-blue-700'
-      case 'service': return 'bg-green-100 text-green-700'
-      case 'webinar': return 'bg-orange-100 text-orange-700'
-      case 'retreat': return 'bg-pink-100 text-pink-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
+  const publishedEvents = events.filter((event) => ['upcoming', 'ongoing'].includes(event.status))
+  const partnerEvents = events.filter((event) =>
+    event.status === 'upcoming' && ['partner', 'covenant'].includes(event.tier_required)
+  )
+  const upcomingEvents = events.filter((event) =>
+    event.status === 'upcoming' && new Date(event.start_time) > new Date()
+  )
+  const totalRegistrations = events.reduce((sum, event) => sum + (event.registrations?.[0]?.count || 0), 0)
 
   if (loading) {
     return (
-      <div className="flex-1 p-8 flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-navy" />
       </div>
     )
   }
 
   return (
-    <div className="flex-1 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="flex-1 p-4 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-navy mb-2">Event Management</h1>
-            <p className="text-gray-600">Create and manage ministry events</p>
+            <h1 className="mb-2 text-3xl font-bold text-navy md:text-4xl">Event Management</h1>
+            <p className="text-gray-600">Create gatherings that feed the public calendar and Partner Hub.</p>
           </div>
           <Button
-            onClick={() => {
-              resetForm()
-              setDialogOpen(true)
-            }}
-            className="bg-gold hover:bg-gold/90 text-navy"
+            onClick={() => openCreateDialog()}
+            className="bg-gold text-navy hover:bg-gold/90"
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Event
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Total Events</CardTitle>
@@ -317,12 +405,10 @@ export default function AdminEventsPage() {
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Published</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Visible</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">
-                {events.filter(e => e.is_published).length}
-              </div>
+              <div className="text-3xl font-bold text-green-600">{publishedEvents.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -330,35 +416,70 @@ export default function AdminEventsPage() {
               <CardTitle className="text-sm font-medium text-gray-600">Upcoming</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
-                {events.filter(e => new Date(e.start_date) > new Date()).length}
-              </div>
+              <div className="text-3xl font-bold text-blue-600">{upcomingEvents.length}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Registrations</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Registrations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gold">
-                {events.reduce((sum, e) => sum + (e.registrations?.[0]?.count || 0), 0)}
-              </div>
+              <div className="text-3xl font-bold text-gold">{totalRegistrations}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Events List */}
+        <Card className="border-gold/30 bg-gold/5">
+          <CardHeader>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white px-3 py-1 text-sm font-medium text-navy">
+                  <HeartHandshake className="h-4 w-4 text-gold-text" />
+                  Covenant Partner Gatherings
+                </div>
+                <CardTitle className="text-navy">Publish gatherings into the Partner Hub</CardTitle>
+                <CardDescription className="mt-2 max-w-3xl">
+                  Partner Hub events must be marked <strong>Upcoming</strong> with access set to
+                  <strong> Partner</strong> or <strong>Covenant</strong>. Drafts stay hidden while details are being prepared.
+                </CardDescription>
+              </div>
+              <div className="rounded-lg border bg-white p-3 text-right sm:min-w-[180px]">
+                <div className="text-2xl font-bold text-navy">{partnerEvents.length}</div>
+                <div className="text-xs text-muted-foreground">Partner Hub ready</div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3">
+              {partnerEventPresets.map((preset) => {
+                const Icon = preset.icon
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => openCreateDialog(preset.data)}
+                    className="rounded-lg border bg-white p-4 text-left transition hover:border-gold/60 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+                  >
+                    <div className="mb-3 flex items-center gap-2 font-medium text-navy">
+                      <Icon className="h-5 w-5 text-gold-text" />
+                      {preset.label}
+                    </div>
+                    <p className="text-sm leading-6 text-muted-foreground">{preset.description}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-6">
           {events.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <CardContent className="py-12 text-center">
+                <Calendar className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                 <p className="text-gray-600">No events created yet</p>
                 <Button
-                  onClick={() => {
-                    resetForm()
-                    setDialogOpen(true)
-                  }}
+                  onClick={() => openCreateDialog()}
                   variant="outline"
                   className="mt-4"
                 >
@@ -368,80 +489,63 @@ export default function AdminEventsPage() {
             </Card>
           ) : (
             events.map((event) => (
-              <Card key={event.id} className="hover:shadow-lg transition-shadow">
+              <Card key={event.id} className="transition-shadow hover:shadow-lg">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
                         <h3 className="text-xl font-semibold text-navy">{event.title}</h3>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getEventTypeColor(event.event_type)}`}>
-                          {event.event_type}
-                        </span>
-                        {event.is_published ? (
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
-                            Published
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                            Draft
-                          </span>
+                        <Badge variant="outline">{getEventTypeLabel(event.event_type)}</Badge>
+                        <Badge variant={getStatusVariant(event.status)}>{event.status}</Badge>
+                        <Badge className="bg-navy/10 text-navy hover:bg-navy/10">
+                          {event.tier_required}
+                        </Badge>
+                        {['partner', 'covenant'].includes(event.tier_required) && event.status === 'upcoming' && (
+                          <Badge className="bg-gold/20 text-navy hover:bg-gold/20">
+                            <ShieldCheck className="mr-1 h-3 w-3" />
+                            Partner Hub
+                          </Badge>
                         )}
                       </div>
 
                       {event.description && (
-                        <p className="text-gray-600 mb-4">{event.description}</p>
+                        <p className="mb-4 max-w-3xl text-gray-600">{event.description}</p>
                       )}
 
                       <div className="grid gap-2 text-sm">
                         <div className="flex items-center gap-2 text-gray-700">
                           <Clock className="h-4 w-4" />
-                          <span>{formatDate(event.start_date)} - {formatDate(event.end_date)}</span>
+                          <span>{formatDateTime(event.start_time)} - {formatDateTime(event.end_time)}</span>
                         </div>
-                        {event.is_virtual ? (
+                        {event.event_type === 'online' ? (
                           <div className="flex items-center gap-2 text-gray-700">
                             <Video className="h-4 w-4" />
-                            <span>Virtual Event</span>
+                            <span>{event.virtual_link ? 'Virtual link added' : 'Virtual link pending'}</span>
                           </div>
-                        ) : event.location && (
+                        ) : event.location ? (
                           <div className="flex items-center gap-2 text-gray-700">
                             <MapPin className="h-4 w-4" />
                             <span>{event.location}</span>
                           </div>
-                        )}
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2 text-gray-700">
-                            <Users className="h-4 w-4" />
-                            <span>
-                              {event.registrations?.[0]?.count || 0}
-                              {event.capacity && ` / ${event.capacity}`} registered
-                            </span>
-                          </div>
-                          {event.price > 0 && (
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <DollarSign className="h-4 w-4" />
-                              <span>${event.price}</span>
-                            </div>
-                          )}
+                        ) : null}
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Users className="h-4 w-4" />
+                          <span>
+                            {event.registrations?.[0]?.count || 0}
+                            {event.max_attendees && ` / ${event.max_attendees}`} registered
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Link href={`/admin-events/checkin?event_id=${event.id}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-green-600 hover:bg-green-50"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
+                    <div className="flex flex-wrap gap-2">
+                      <Button asChild variant="outline" size="sm" className="text-green-700 hover:bg-green-50">
+                        <Link href={`/admin-events/checkin?event_id=${event.id}`}>
+                          <CheckCircle className="mr-1 h-4 w-4" />
                           Check-in
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(event)}
-                      >
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
@@ -460,32 +564,29 @@ export default function AdminEventsPage() {
           )}
         </div>
 
-        {/* Create/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl text-navy">
                 {editingEvent ? 'Edit Event' : 'Create New Event'}
               </DialogTitle>
               <DialogDescription>
-                Fill in the event details below
+                Use Draft while planning. Set status to Upcoming when this should appear to the right audience.
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-              {/* Title */}
+            <form onSubmit={handleSubmit} className="mt-4 space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Event Title *</Label>
                 <Input
                   id="title"
                   value={eventForm.title}
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  placeholder="Annual Conference 2024"
+                  placeholder="Monthly Covenant Partner Gathering"
                   required
                 />
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -497,78 +598,92 @@ export default function AdminEventsPage() {
                 />
               </div>
 
-              {/* Event Type & Price */}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="event_type">Event Type *</Label>
+                  <Label>Event Type *</Label>
                   <Select
                     value={eventForm.event_type}
-                    onValueChange={(value) => setEventForm({ ...eventForm, event_type: value })}
+                    onValueChange={(value: EventType) => setEventForm({ ...eventForm, event_type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="conference">Conference</SelectItem>
-                      <SelectItem value="workshop">Workshop</SelectItem>
-                      <SelectItem value="service">Service</SelectItem>
-                      <SelectItem value="webinar">Webinar</SelectItem>
-                      <SelectItem value="retreat">Retreat</SelectItem>
+                      <SelectItem value="in-person">In person</SelectItem>
+                      <SelectItem value="online">Online</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={eventForm.price}
-                    onChange={(e) => setEventForm({ ...eventForm, price: e.target.value })}
-                  />
+                  <Label>Access Tier</Label>
+                  <Select
+                    value={eventForm.tier_required}
+                    onValueChange={(value: EventTier) => setEventForm({ ...eventForm, tier_required: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="partner">Partner</SelectItem>
+                      <SelectItem value="covenant">Covenant</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select
+                    value={eventForm.status}
+                    onValueChange={(value: EventStatus) => setEventForm({ ...eventForm, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="upcoming">Upcoming</SelectItem>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* Dates */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date & Time *</Label>
+                  <Label htmlFor="start_time">Start Date & Time *</Label>
                   <Input
-                    id="start_date"
+                    id="start_time"
                     type="datetime-local"
-                    value={eventForm.start_date}
-                    onChange={(e) => setEventForm({ ...eventForm, start_date: e.target.value })}
+                    value={eventForm.start_time}
+                    onChange={(e) => setEventForm({ ...eventForm, start_time: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date & Time *</Label>
+                  <Label htmlFor="end_time">End Date & Time *</Label>
                   <Input
-                    id="end_date"
+                    id="end_time"
                     type="datetime-local"
-                    value={eventForm.end_date}
-                    onChange={(e) => setEventForm({ ...eventForm, end_date: e.target.value })}
+                    value={eventForm.end_time}
+                    onChange={(e) => setEventForm({ ...eventForm, end_time: e.target.value })}
                     required
                   />
                 </div>
               </div>
 
-              {/* Virtual */}
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="space-y-1">
-                  <div className="font-medium">Virtual Event</div>
-                  <div className="text-sm text-gray-600">
-                    This event will be held online
-                  </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    placeholder="Church, venue, or city"
+                  />
                 </div>
-                <Switch
-                  checked={eventForm.is_virtual}
-                  onCheckedChange={(checked) => setEventForm({ ...eventForm, is_virtual: checked })}
-                />
-              </div>
-
-              {/* Location or Virtual Link */}
-              {eventForm.is_virtual ? (
                 <div className="space-y-2">
                   <Label htmlFor="virtual_link">Virtual Meeting Link</Label>
                   <Input
@@ -579,56 +694,55 @@ export default function AdminEventsPage() {
                     placeholder="https://zoom.us/j/..."
                   />
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={eventForm.location}
-                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                    placeholder="123 Main St, City, State"
-                  />
-                </div>
-              )}
+              </div>
 
-              {/* Capacity & Registration Deadline */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity (leave empty for unlimited)</Label>
+                  <Label htmlFor="max_attendees">Max Attendees</Label>
                   <Input
-                    id="capacity"
+                    id="max_attendees"
                     type="number"
-                    value={eventForm.capacity}
-                    onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
-                    placeholder="100"
+                    min="1"
+                    value={eventForm.max_attendees}
+                    onChange={(e) => setEventForm({ ...eventForm, max_attendees: e.target.value })}
+                    placeholder="Leave empty for unlimited"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="registration_deadline">Registration Deadline</Label>
                   <Input
                     id="registration_deadline"
-                    type="date"
+                    type="datetime-local"
                     value={eventForm.registration_deadline}
                     onChange={(e) => setEventForm({ ...eventForm, registration_deadline: e.target.value })}
                   />
                 </div>
               </div>
 
-              {/* Published */}
-              <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-1">
-                  <div className="font-medium">Publish Event</div>
+                  <div className="font-medium">Registration Required</div>
                   <div className="text-sm text-gray-600">
-                    Make this event visible to members
+                    Track RSVPs and enable check-in for this gathering.
                   </div>
                 </div>
                 <Switch
-                  checked={eventForm.is_published}
-                  onCheckedChange={(checked) => setEventForm({ ...eventForm, is_published: checked })}
+                  checked={eventForm.registration_required}
+                  onCheckedChange={(checked) => setEventForm({ ...eventForm, registration_required: checked })}
                 />
               </div>
 
-              {/* Submit */}
+              {['partner', 'covenant'].includes(eventForm.tier_required) && (
+                <div className="rounded-lg border border-gold/30 bg-gold/10 p-4 text-sm text-muted-foreground">
+                  <div className="mb-1 flex items-center gap-2 font-medium text-navy">
+                    <ShieldCheck className="h-4 w-4 text-gold-text" />
+                    Partner Hub visibility
+                  </div>
+                  Set status to <strong>Upcoming</strong> when this should appear in the Partner Hub.
+                  Draft, completed, and cancelled events stay out of the Hub.
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button
                   type="button"
