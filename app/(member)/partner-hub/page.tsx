@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   CreditCard,
   DollarSign,
+  ExternalLink,
+  FileText,
   Globe2,
   GraduationCap,
   HeartHandshake,
@@ -127,6 +129,18 @@ function partnershipLevel(amount: number) {
   return 'Covenant Partner'
 }
 
+function formatEventDate(value: string | null) {
+  if (!value) return 'Date pending'
+
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
 export default async function PartnerHubPage() {
   const supabase = await createClient()
   const {
@@ -161,6 +175,23 @@ export default async function PartnerHubPage() {
         .limit(5)
     : { data: [] }
 
+  const { data: partnerEvents } = await supabase
+    .from('events')
+    .select('id, title, description, event_type, location, virtual_link, start_time, tier_required')
+    .eq('status', 'upcoming')
+    .gte('start_time', new Date().toISOString())
+    .in('tier_required', ['partner', 'covenant'])
+    .order('start_time', { ascending: true })
+    .limit(3)
+
+  const { data: partnerLibrary } = await supabase
+    .from('resources')
+    .select('id, title, description, type, file_url, category, tier_required, created_at')
+    .eq('published', true)
+    .in('tier_required', ['partner', 'covenant'])
+    .order('created_at', { ascending: false })
+    .limit(4)
+
   const firstName = member?.first_name || 'Friend'
   const role = member?.role || member?.tier || 'free'
   const isPartner = ['partner', 'covenant', 'covenant_partner', 'staff', 'admin'].includes(role)
@@ -186,6 +217,8 @@ export default async function PartnerHubPage() {
   const lastGift = donations[0] || null
   const partnerStanding = activeSubscription?.status === 'active' || monthlyRecognized > 0 || isPartner
   const level = partnershipLevel(Number(lastGift?.amount || monthlyRecognized || 0))
+  const dynamicEvents = partnerEvents || []
+  const dynamicResources = partnerLibrary || []
 
   return (
     <div className="space-y-8 p-4 lg:p-8">
@@ -418,25 +451,59 @@ export default async function PartnerHubPage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {partnerResources.map((resource) => {
-            const Icon = resource.icon
-            return (
-              <Card key={resource.title}>
-                <CardHeader>
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-gold/15">
-                    <Icon className="h-5 w-5 text-gold-text" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
+              Partner library
+            </CardTitle>
+            <CardDescription>
+              Recent partner resources and equipping materials published for this level.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            {dynamicResources.length === 0 ? (
+              partnerResources.map((resource) => {
+                const Icon = resource.icon
+                return (
+                  <div key={resource.title} className="rounded-lg border bg-background p-4">
+                    <div className="mb-2 flex items-center gap-2 font-medium text-navy dark:text-foreground">
+                      <Icon className="h-4 w-4 text-gold-text" />
+                      {resource.title}
+                    </div>
+                    <p className="text-sm leading-6 text-muted-foreground">{resource.description}</p>
+                    <Badge variant="outline" className="mt-3">{resource.status}</Badge>
                   </div>
-                  <CardTitle className="text-lg text-navy dark:text-foreground">{resource.title}</CardTitle>
-                  <CardDescription>{resource.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Badge variant="outline">{resource.status}</Badge>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+                )
+              })
+            ) : (
+              dynamicResources.map((resource) => (
+                <div key={resource.id} className="rounded-lg border bg-background p-4">
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 font-medium text-navy dark:text-foreground">
+                      <FileText className="h-4 w-4 shrink-0 text-gold-text" />
+                      <span>{resource.title}</span>
+                    </div>
+                    <Badge variant="outline" className="capitalize">{resource.type || 'resource'}</Badge>
+                  </div>
+                  {resource.description && (
+                    <p className="text-sm leading-6 text-muted-foreground">{resource.description}</p>
+                  )}
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <span className="text-xs text-muted-foreground">{resource.category || 'Partner Resource'}</span>
+                    {resource.file_url && (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={resource.file_url} target="_blank">
+                          Open
+                          <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -489,7 +556,7 @@ export default async function PartnerHubPage() {
           <div>
             <h2 className="font-display text-2xl text-navy dark:text-foreground">Upcoming partner rhythm</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              These cards will become dynamic as partner gatherings and teachings are scheduled.
+              Partner gatherings, teachings, and ministry moments connected to this level.
             </p>
           </div>
           <Button asChild variant="outline" className="hidden sm:inline-flex">
@@ -497,21 +564,50 @@ export default async function PartnerHubPage() {
           </Button>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {upcomingRhythm.map((item) => {
-            const Icon = item.icon
-            return (
-              <Card key={item.title}>
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-3">
-                    <Badge variant="outline">{item.label}</Badge>
-                    <Icon className="h-5 w-5 text-gold-text" />
-                  </div>
-                  <CardTitle className="text-xl text-navy dark:text-foreground">{item.title}</CardTitle>
-                  <CardDescription>{item.note}</CardDescription>
-                </CardHeader>
-              </Card>
-            )
-          })}
+          {dynamicEvents.length === 0
+            ? upcomingRhythm.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Card key={item.title}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between gap-3">
+                        <Badge variant="outline">{item.label}</Badge>
+                        <Icon className="h-5 w-5 text-gold-text" />
+                      </div>
+                      <CardTitle className="text-xl text-navy dark:text-foreground">{item.title}</CardTitle>
+                      <CardDescription>{item.note}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                )
+              })
+            : dynamicEvents.map((event) => (
+                <Card key={event.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-3">
+                      <Badge variant="outline" className="capitalize">{event.event_type || 'event'}</Badge>
+                      <CalendarDays className="h-5 w-5 text-gold-text" />
+                    </div>
+                    <CardTitle className="text-xl text-navy dark:text-foreground">{event.title}</CardTitle>
+                    <CardDescription>{event.description || 'Partner event details will be updated soon.'}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-sm font-medium text-navy dark:text-foreground">
+                      {formatEventDate(event.start_time)}
+                    </div>
+                    {(event.location || event.virtual_link) && (
+                      <p className="text-sm text-muted-foreground">
+                        {event.location || 'Online gathering'}
+                      </p>
+                    )}
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/events">
+                        View Details
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
         </div>
       </section>
 
