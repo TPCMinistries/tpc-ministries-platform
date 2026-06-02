@@ -7,19 +7,30 @@ import {
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
+  Clock3,
   DollarSign,
   HeartHandshake,
   Loader2,
   Mail,
   RefreshCw,
+  Search,
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  UserPlus,
   Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -76,6 +87,8 @@ interface CovenantPartnerData {
   generatedAt: string
 }
 
+type PartnerStatus = 'active' | 'attention' | 'connect' | 'watch'
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -99,10 +112,58 @@ function tierLabel(tier: string) {
   return 'Member'
 }
 
+function daysSince(value: string | null) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const diff = Date.now() - date.getTime()
+  return Math.floor(diff / (1000 * 60 * 60 * 24))
+}
+
+function partnerStatus(partner: CovenantPartnerRow): {
+  value: PartnerStatus
+  label: string
+  className: string
+} {
+  if (!partner.email) {
+    return {
+      value: 'connect',
+      label: 'Needs account link',
+      className: 'border-amber-300 bg-amber-50 text-amber-800',
+    }
+  }
+
+  if (partner.subscriptionStatus === 'past_due') {
+    return {
+      value: 'attention',
+      label: 'Payment attention',
+      className: 'border-red-300 bg-red-50 text-red-700',
+    }
+  }
+
+  const inactiveDays = daysSince(partner.lastGiftAt || partner.lastActiveAt)
+  if (inactiveDays !== null && inactiveDays > 45 && !partner.recurring) {
+    return {
+      value: 'watch',
+      label: 'Follow-up',
+      className: 'border-blue-300 bg-blue-50 text-blue-700',
+    }
+  }
+
+  return {
+    value: 'active',
+    label: 'Active',
+    className: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+  }
+}
+
 export default function AdminCovenantPartnersPage() {
   const [data, setData] = useState<CovenantPartnerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | PartnerStatus>('all')
+  const [levelFilter, setLevelFilter] = useState('all')
 
   const fetchData = async () => {
     setLoading(true)
@@ -133,6 +194,49 @@ export default function AdminCovenantPartnersPage() {
     return Object.entries(data.levelBreakdown)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
+  }, [data])
+
+  const levelOptions = useMemo(() => {
+    if (!data) return []
+    return Object.keys(data.levelBreakdown).sort()
+  }, [data])
+
+  const filteredPartners = useMemo(() => {
+    if (!data) return []
+    const normalizedSearch = searchQuery.trim().toLowerCase()
+
+    return data.partners.filter((partner) => {
+      const status = partnerStatus(partner)
+      const matchesStatus = statusFilter === 'all' || status.value === statusFilter
+      const matchesLevel = levelFilter === 'all' || partner.level === levelFilter
+      const matchesSearch = !normalizedSearch
+        || partner.name.toLowerCase().includes(normalizedSearch)
+        || (partner.email || '').toLowerCase().includes(normalizedSearch)
+        || (partner.phone || '').toLowerCase().includes(normalizedSearch)
+
+      return matchesStatus && matchesLevel && matchesSearch
+    })
+  }, [data, levelFilter, searchQuery, statusFilter])
+
+  const triage = useMemo(() => {
+    if (!data) {
+      return {
+        active: 0,
+        attention: 0,
+        connect: 0,
+        watch: 0,
+      }
+    }
+
+    return data.partners.reduce<Record<PartnerStatus, number>>((acc, partner) => {
+      acc[partnerStatus(partner).value] += 1
+      return acc
+    }, {
+      active: 0,
+      attention: 0,
+      connect: 0,
+      watch: 0,
+    })
   }, [data])
 
   if (loading) {
@@ -199,6 +303,52 @@ export default function AdminCovenantPartnersPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Card className="border-emerald-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">In Good Standing</CardTitle>
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-navy">{triage.active}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Recurring, recent, or currently connected</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Payment Attention</CardTitle>
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-navy">{triage.attention}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Past-due subscription records</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-amber-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Needs Account Link</CardTitle>
+              <UserPlus className="h-5 w-5 text-amber-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-navy">{triage.connect}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Partner records missing email/contact data</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Follow-Up Watch</CardTitle>
+              <Clock3 className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-navy">{triage.watch}</div>
+              <p className="mt-1 text-xs text-muted-foreground">No recent recurring signal</p>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Partners</CardTitle>
@@ -254,15 +404,53 @@ export default function AdminCovenantPartnersPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
           <Card>
-            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardHeader className="space-y-4">
               <div>
                 <CardTitle className="text-navy">Partner Roster</CardTitle>
                 <CardDescription>Live partner records connected to member tier and covenant giving data.</CardDescription>
               </div>
-              <Button onClick={fetchData} variant="outline" size="sm">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
-              </Button>
+              <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_auto]">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    className="pl-9"
+                    placeholder="Search partners by name, email, or phone"
+                    aria-label="Search covenant partners"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | PartnerStatus)}>
+                  <SelectTrigger aria-label="Filter by partner status">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="attention">Payment attention</SelectItem>
+                    <SelectItem value="connect">Needs account link</SelectItem>
+                    <SelectItem value="watch">Follow-up watch</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={levelFilter} onValueChange={setLevelFilter}>
+                  <SelectTrigger aria-label="Filter by partnership level">
+                    <SelectValue placeholder="All levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All levels</SelectItem>
+                    {levelOptions.map((level) => (
+                      <SelectItem key={level} value={level}>{level}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={fetchData} variant="outline" size="sm">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Showing {filteredPartners.length} of {data.partners.length} partners.
+              </p>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -272,40 +460,79 @@ export default function AdminCovenantPartnersPage() {
                       <TableHead>Partner</TableHead>
                       <TableHead>Level</TableHead>
                       <TableHead>Tier</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">This Month</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                       <TableHead>Last Gift</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.partners.length === 0 ? (
+                    {filteredPartners.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                          No Covenant Partner records are available yet.
+                        <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                          No Covenant Partner records match the current filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data.partners.slice(0, 12).map((partner) => (
-                        <TableRow key={partner.id}>
-                          <TableCell>
-                            <div className="font-medium text-navy">{partner.name}</div>
-                            <div className="text-xs text-muted-foreground">{partner.email || 'No email on file'}</div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="border-gold/50 bg-gold/10 text-navy">
-                              {partner.level}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={partner.tier === 'covenant' ? 'bg-navy text-white' : 'bg-slate-200 text-navy'}>
-                              {tierLabel(partner.tier)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-medium">{formatCurrency(partner.monthlyAmount)}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(partner.totalGiven)}</TableCell>
-                          <TableCell>{formatDate(partner.lastGiftAt)}</TableCell>
-                        </TableRow>
-                      ))
+                      filteredPartners.map((partner) => {
+                        const status = partnerStatus(partner)
+                        return (
+                          <TableRow key={partner.id} className="hover:bg-slate-50">
+                            <TableCell>
+                              <div className="font-medium text-navy">{partner.name}</div>
+                              <div className="text-xs text-muted-foreground">{partner.email || 'No email on file'}</div>
+                              {partner.phone && (
+                                <div className="text-xs text-muted-foreground">{partner.phone}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="border-gold/50 bg-gold/10 text-navy">
+                                {partner.level}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={partner.tier === 'covenant' ? 'bg-navy text-white' : 'bg-slate-200 text-navy'}>
+                                {tierLabel(partner.tier)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={status.className}>
+                                {status.label}
+                              </Badge>
+                              {partner.subscriptionStatus && (
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  Subscription: {partner.subscriptionStatus}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(partner.monthlyAmount)}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(partner.totalGiven)}</TableCell>
+                            <TableCell>
+                              <div>{formatDate(partner.lastGiftAt)}</div>
+                              <div className="text-xs text-muted-foreground">
+                                Joined {formatDate(partner.joinedAt)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button asChild variant="outline" size="sm">
+                                  <Link href={`/members/${partner.id}`}>
+                                    View
+                                  </Link>
+                                </Button>
+                                {partner.email && (
+                                  <Button asChild variant="ghost" size="sm">
+                                    <a href={`mailto:${partner.email}`}>
+                                      Email
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
                     )}
                   </TableBody>
                 </Table>
