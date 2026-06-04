@@ -77,6 +77,22 @@ interface CovenantPartnerActivity {
   createdAt: string | null
 }
 
+interface PartnerEventSummary {
+  id: string
+  title: string
+  description: string | null
+  eventType: string | null
+  location: string | null
+  virtual: boolean
+  startTime: string | null
+  maxAttendees: number | null
+  tierRequired: string | null
+  registeredCount: number
+  inPersonCount: number
+  onlineCount: number
+  sampleRegistrants: string[]
+}
+
 interface CovenantPartnerData {
   success: boolean
   metrics: CovenantPartnerMetrics
@@ -92,6 +108,7 @@ interface CovenantPartnerData {
     followUpWatch: number
     readinessRate: number
   }
+  partnerEvents: PartnerEventSummary[]
   partners: CovenantPartnerRow[]
   recentActivity: CovenantPartnerActivity[]
   generatedAt: string
@@ -113,6 +130,16 @@ function formatDate(value: string | null) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+  }).format(new Date(value))
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return 'Date pending'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(new Date(value))
 }
 
@@ -506,6 +533,118 @@ export default function AdminCovenantPartnersPage() {
                   Send Monthly Update
                 </Link>
               </Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <Card>
+            <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-navy">
+                  <CalendarDays className="h-5 w-5 text-gold-text" />
+                  Partner Gathering RSVP Board
+                </CardTitle>
+                <CardDescription>
+                  Upcoming partner-only gatherings, RSVP counts, and staff action links.
+                </CardDescription>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin-events">
+                  Manage Events
+                  <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {data.partnerEvents.length === 0 ? (
+                <div className="rounded-lg border border-dashed bg-slate-50 p-6 text-sm text-muted-foreground">
+                  No upcoming partner gatherings are scheduled. Create one in Admin Events with a partner or
+                  covenant tier requirement to activate RSVP tracking here.
+                </div>
+              ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {data.partnerEvents.map((event) => {
+                    const capacity = event.maxAttendees || 0
+                    const capacityLabel = capacity > 0
+                      ? `${event.registeredCount}/${capacity}`
+                      : event.registeredCount.toString()
+                    const fillPercent = capacity > 0
+                      ? Math.min(100, Math.round((event.registeredCount / capacity) * 100))
+                      : 0
+
+                    return (
+                      <div key={event.id} className="rounded-xl border bg-white p-4 shadow-sm">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <Badge variant="outline" className="capitalize">
+                                {event.eventType || 'event'}
+                              </Badge>
+                              <Badge variant="outline" className="border-gold/40 bg-gold/10 text-navy">
+                                {event.tierRequired === 'covenant' ? 'Covenant' : 'Partner'}
+                              </Badge>
+                              {event.virtual && (
+                                <Badge variant="secondary">Online available</Badge>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-semibold text-navy">{event.title}</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">{formatDateTime(event.startTime)}</p>
+                            {event.location && (
+                              <p className="mt-1 text-sm text-muted-foreground">{event.location}</p>
+                            )}
+                          </div>
+                          <div className="text-left sm:text-right">
+                            <div className="text-2xl font-bold text-navy">{capacityLabel}</div>
+                            <p className="text-xs text-muted-foreground">registered</p>
+                          </div>
+                        </div>
+
+                        {capacity > 0 && (
+                          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-gold" style={{ width: `${fillPercent}%` }} />
+                          </div>
+                        )}
+
+                        <div className="mt-4 grid grid-cols-2 gap-3">
+                          <div className="rounded-lg border bg-slate-50 p-3">
+                            <div className="text-lg font-semibold text-navy">{event.inPersonCount}</div>
+                            <p className="text-xs text-muted-foreground">in person</p>
+                          </div>
+                          <div className="rounded-lg border bg-slate-50 p-3">
+                            <div className="text-lg font-semibold text-navy">{event.onlineCount}</div>
+                            <p className="text-xs text-muted-foreground">online</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            Recent RSVPs
+                          </p>
+                          <p className="mt-1 text-sm text-navy">
+                            {event.sampleRegistrants.length > 0
+                              ? event.sampleRegistrants.join(', ')
+                              : 'No RSVPs yet'}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                          <Button asChild className="bg-navy hover:bg-navy/90" size="sm">
+                            <Link href={`/admin-events/checkin?event_id=${event.id}`}>
+                              Open Check-In
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href="/email-campaigns?tab=quicksend&partnerTemplate=gathering">
+                              Send Reminder
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>

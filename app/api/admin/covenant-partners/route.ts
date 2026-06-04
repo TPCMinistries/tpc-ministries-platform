@@ -53,6 +53,33 @@ interface SubscriptionRow {
   created_at: string | null
 }
 
+interface PartnerEventRow {
+  id: string
+  title: string
+  description: string | null
+  event_type: string | null
+  location: string | null
+  virtual_link: string | null
+  start_time: string | null
+  max_attendees: number | null
+  tier_required: string | null
+}
+
+interface EventRegistrationMember {
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+}
+
+interface EventRegistrationRow {
+  id: string
+  event_id: string
+  user_id: string | null
+  attendance_type: string | null
+  status: string | null
+  members: EventRegistrationMember | EventRegistrationMember[] | null
+}
+
 function dollars(value: number | string | null | undefined) {
   const amount = Number(value || 0)
   return Number.isFinite(amount) ? amount : 0
@@ -141,6 +168,43 @@ export async function GET() {
     const subscriptions = subscriptionsResult.error
       ? [] as SubscriptionRow[]
       : (subscriptionsResult.data || []) as SubscriptionRow[]
+
+    const { data: upcomingPartnerEvents } = await supabase
+      .from('events')
+      .select('id, title, description, event_type, location, virtual_link, start_time, max_attendees, tier_required')
+      .eq('status', 'upcoming')
+      .gte('start_time', now.toISOString())
+      .in('tier_required', ['partner', 'covenant'])
+      .order('start_time', { ascending: true })
+      .limit(5)
+
+    const partnerEventRows = (upcomingPartnerEvents || []) as PartnerEventRow[]
+    const partnerEventIds = partnerEventRows.map(event => event.id)
+    const { data: eventRegistrationRows } = partnerEventIds.length > 0
+      ? await supabase
+          .from('event_registrations')
+          .select(`
+            id,
+            event_id,
+            user_id,
+            attendance_type,
+            status,
+            members:user_id (
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .in('event_id', partnerEventIds)
+          .in('status', ['registered', 'attended'])
+      : { data: [] }
+
+    const registrationsByEvent = ((eventRegistrationRows || []) as EventRegistrationRow[])
+      .reduce<Record<string, EventRegistrationRow[]>>((acc, registration) => {
+        acc[registration.event_id] = acc[registration.event_id] || []
+        acc[registration.event_id].push(registration)
+        return acc
+      }, {})
 
     const donationsByMember = new Map<string, {
       total: number
@@ -318,6 +382,36 @@ export async function GET() {
       }
     })
 
+    const partnerEvents = partnerEventRows.map(event => {
+      const registrations = registrationsByEvent[event.id] || []
+      const onlineCount = registrations.filter(registration => registration.attendance_type === 'virtual').length
+      const inPersonCount = registrations.length - onlineCount
+      const sampleRegistrants = registrations.slice(0, 5).map(registration => {
+        const member = Array.isArray(registration.members) ? registration.members[0] : registration.members
+        return memberName({
+          first_name: member?.first_name || null,
+          last_name: member?.last_name || null,
+          email: member?.email || null,
+        })
+      })
+
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        eventType: event.event_type,
+        location: event.location,
+        virtual: Boolean(event.virtual_link),
+        startTime: event.start_time,
+        maxAttendees: event.max_attendees,
+        tierRequired: event.tier_required,
+        registeredCount: registrations.length,
+        inPersonCount,
+        onlineCount,
+        sampleRegistrants,
+      }
+    })
+
     return NextResponse.json({
       success: true,
       metrics: {
@@ -334,6 +428,7 @@ export async function GET() {
       tierBreakdown,
       levelBreakdown,
       onboardingSummary,
+      partnerEvents,
       partners: partnerRows,
       recentActivity,
       generatedAt: new Date().toISOString(),
