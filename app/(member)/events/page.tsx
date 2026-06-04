@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, Clock, MapPin, Users, Video, Check, Bell, Lock } from 'lucide-react'
+import { Calendar, CalendarPlus, Clock, MapPin, Users, Video, Check, Bell, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -366,6 +366,14 @@ export default function EventsPage() {
                         {event.meeting_link && event.is_registered && (
                           <Button variant="outline">Join Online</Button>
                         )}
+                        {event.is_registered && (
+                          <Button asChild variant="outline">
+                            <Link href={`/api/events/${event.id}/calendar`} target="_blank">
+                              <CalendarPlus className="h-4 w-4 mr-2" />
+                              Add to Calendar
+                            </Link>
+                          </Button>
+                        )}
                       </>
                     ) : (
                       <Link href="/give">
@@ -430,6 +438,12 @@ export default function EventsPage() {
                     {event.meeting_link && (
                       <Button className="bg-navy hover:bg-navy/90">Join Online</Button>
                     )}
+                    <Button asChild variant="outline">
+                      <Link href={`/api/events/${event.id}/calendar`} target="_blank">
+                        <CalendarPlus className="h-4 w-4 mr-2" />
+                        Add to Calendar
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import {
   ArrowRight,
   BookOpen,
+  CalendarPlus,
   CalendarDays,
   CheckCircle2,
   CreditCard,
@@ -171,7 +172,7 @@ export default async function PartnerHubPage() {
 
   const { data: partnerEvents } = await supabase
     .from('events')
-    .select('id, title, description, event_type, location, virtual_link, start_time, tier_required')
+    .select('id, title, description, event_type, location, virtual_link, start_time, end_time, tier_required')
     .eq('status', 'upcoming')
     .gte('start_time', new Date().toISOString())
     .in('tier_required', ['partner', 'covenant'])
@@ -671,6 +672,12 @@ export default async function PartnerHubPage() {
                       <Link href="/events">
                         View Details
                         <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href={`/api/events/${event.id}/calendar`} target="_blank">
+                        Add to Calendar
+                        <CalendarPlus className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                     <PartnerEventRsvp
