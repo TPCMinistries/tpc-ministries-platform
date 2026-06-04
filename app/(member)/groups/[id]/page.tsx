@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { createClient } from '@/lib/supabase/client'
 import {
   Users,
@@ -13,15 +12,9 @@ import {
   Calendar,
   MapPin,
   Video,
-  Heart,
   MessageCircle,
-  Send,
-  Pin,
-  MoreVertical,
   User,
-  Plus,
   Settings,
-  Link as LinkIcon
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -46,22 +39,6 @@ interface Group {
   }
 }
 
-interface Post {
-  id: string
-  content: string
-  post_type: string
-  image_url?: string
-  likes_count: number
-  comments_count: number
-  is_pinned: boolean
-  created_at: string
-  member?: {
-    first_name: string
-    last_name: string
-  }
-  has_liked?: boolean
-}
-
 interface Member {
   id: string
   role: string
@@ -69,16 +46,22 @@ interface Member {
     id: string
     first_name: string
     last_name: string
-  }
+  } | null
+}
+
+type MemberRelation = Member['member'] | Member['member'][] | null
+
+interface GroupMemberRow {
+  id: string
+  role: string
+  member?: MemberRelation
 }
 
 export default function GroupDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const groupId = params.id as string
 
   const [group, setGroup] = useState<Group | null>(null)
-  const [posts, setPosts] = useState<Post[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [memberId, setMemberId] = useState<string | null>(null)
@@ -86,24 +69,7 @@ export default function GroupDetailPage() {
   const [activeTab, setActiveTab] = useState<'discussions' | 'members'>('discussions')
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(null)
 
-  // New post state
-  const [showPostForm, setShowPostForm] = useState(false)
-  const [newPost, setNewPost] = useState({ content: '', post_type: 'discussion' })
-  const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    fetchMember()
-  }, [])
-
-  useEffect(() => {
-    if (memberId) {
-      fetchGroup()
-      fetchPosts()
-      fetchMembers()
-    }
-  }, [memberId, groupId])
-
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -114,9 +80,9 @@ export default function GroupDetailPage() {
         .single()
       if (member) setMemberId(member.id)
     }
-  }
+  }, [])
 
-  const fetchGroup = async () => {
+  const fetchGroup = useCallback(async () => {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('community_groups')
@@ -132,33 +98,9 @@ export default function GroupDetailPage() {
       setIsLeader(data.leader_id === memberId)
     }
     setLoading(false)
-  }
+  }, [groupId, memberId])
 
-  const fetchPosts = async () => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('group_posts')
-      .select(`
-        *,
-        member:members(first_name, last_name)
-      `)
-      .eq('group_id', groupId)
-      .order('is_pinned', { ascending: false })
-      .order('created_at', { ascending: false })
-
-    if (data && memberId) {
-      // Check likes
-      const { data: likes } = await supabase
-        .from('group_post_likes')
-        .select('post_id')
-        .eq('member_id', memberId)
-
-      const likedIds = new Set(likes?.map(l => l.post_id) || [])
-      setPosts(data.map(p => ({ ...p, has_liked: likedIds.has(p.id) })))
-    }
-  }
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('group_members')
@@ -173,92 +115,25 @@ export default function GroupDetailPage() {
 
     if (data) {
       // Supabase returns nested relations as arrays, extract first item
-      const processedMembers = data.map((m: any) => ({
+      const processedMembers = data.map((m: GroupMemberRow) => ({
         id: m.id,
         role: m.role,
         member: Array.isArray(m.member) ? m.member[0] : m.member
       }))
       setMembers(processedMembers)
     }
-  }
+  }, [groupId])
 
-  const handleCreatePost = async () => {
-    if (!memberId || !newPost.content.trim()) return
+  useEffect(() => {
+    fetchMember()
+  }, [fetchMember])
 
-    setSubmitting(true)
-    const supabase = createClient()
-
-    await supabase.from('group_posts').insert({
-      group_id: groupId,
-      member_id: memberId,
-      content: newPost.content,
-      post_type: newPost.post_type
-    })
-
-    await supabase
-      .from('community_groups')
-      .update({ posts_count: (group?.members_count || 0) + 1 })
-      .eq('id', groupId)
-
-    setNewPost({ content: '', post_type: 'discussion' })
-    setShowPostForm(false)
-    setSubmitting(false)
-    fetchPosts()
-  }
-
-  const handleLikePost = async (postId: string) => {
-    if (!memberId) return
-
-    const supabase = createClient()
-    const post = posts.find(p => p.id === postId)
-
-    if (post?.has_liked) {
-      await supabase
-        .from('group_post_likes')
-        .delete()
-        .eq('post_id', postId)
-        .eq('member_id', memberId)
-
-      await supabase
-        .from('group_posts')
-        .update({ likes_count: post.likes_count - 1 })
-        .eq('id', postId)
-    } else {
-      await supabase.from('group_post_likes').insert({
-        post_id: postId,
-        member_id: memberId
-      })
-
-      await supabase
-        .from('group_posts')
-        .update({ likes_count: (post?.likes_count || 0) + 1 })
-        .eq('id', postId)
+  useEffect(() => {
+    if (memberId) {
+      fetchGroup()
+      fetchMembers()
     }
-
-    fetchPosts()
-  }
-
-  const getPostTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      discussion: 'Discussion',
-      prayer_request: 'Prayer Request',
-      announcement: 'Announcement',
-      testimony: 'Testimony',
-      question: 'Question'
-    }
-    return labels[type] || type
-  }
-
-  const getPostTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      discussion: 'bg-blue-100 text-blue-800',
-      prayer_request: 'bg-purple-100 text-purple-800',
-      announcement: 'bg-gold/20 text-amber-800',
-      testimony: 'bg-green-100 text-green-800',
-      question: 'bg-orange-100 text-orange-800'
-    }
-    return colors[type] || 'bg-gray-100 text-gray-800'
-  }
+  }, [fetchGroup, fetchMembers, memberId])
 
   if (loading) {
     return (
