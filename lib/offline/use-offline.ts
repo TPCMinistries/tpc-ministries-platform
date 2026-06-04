@@ -17,6 +17,11 @@ interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
   }
 }
 
+interface OfflineCacheRecord<TData> {
+  data: TData
+  cached_at: string
+}
+
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -90,7 +95,7 @@ export function useOfflineSync() {
             body: JSON.stringify(prayer)
           })
           if (res.ok) {
-            await offlineDB.put('prayer_requests', { ...prayer, synced: true })
+            await offlineDB.put('prayer_requests', { ...prayer, synced: 1 })
           }
         } catch (e) {
           console.error('Failed to sync prayer request:', e)
@@ -107,7 +112,7 @@ export function useOfflineSync() {
             body: JSON.stringify(checkin)
           })
           if (res.ok) {
-            await offlineDB.put('daily_checkins', { ...checkin, synced: true })
+            await offlineDB.put('daily_checkins', { ...checkin, synced: 1 })
           }
         } catch (e) {
           console.error('Failed to sync check-in:', e)
@@ -214,7 +219,7 @@ export function useOfflineData<T>(
 
       // Fall back to cached data
       if (options?.cacheKey) {
-        const cached = await offlineDB.get<any>(storeName, options.cacheKey)
+        const cached = await offlineDB.get<OfflineCacheRecord<T>>(storeName, options.cacheKey)
         if (cached) {
           // Check if cache is still valid
           if (options.maxAge) {
@@ -242,7 +247,7 @@ export function useOfflineData<T>(
 
       // Try cache as last resort
       if (options?.cacheKey) {
-        const cached = await offlineDB.get<any>(storeName, options.cacheKey)
+        const cached = await offlineDB.get<OfflineCacheRecord<T>>(storeName, options.cacheKey)
         if (cached) {
           setData(cached.data)
           setIsFromCache(true)

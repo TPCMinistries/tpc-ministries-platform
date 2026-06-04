@@ -9,6 +9,40 @@ interface OfflineStore {
   indexes?: { name: string; keyPath: string; unique?: boolean }[]
 }
 
+type OfflinePayload = Record<string, unknown>
+
+interface OfflineJournalEntry extends OfflinePayload {
+  id?: string
+  created_at?: string
+  synced?: number
+}
+
+interface OfflinePrayerRequest extends OfflinePayload {
+  id?: string
+  created_at?: string
+  synced?: number
+}
+
+interface OfflineCheckin extends OfflinePayload {
+  id?: string
+  checkin_date?: string
+  synced?: number
+}
+
+interface PendingAction {
+  id: string
+  action_type: string
+  payload: OfflinePayload
+  created_at: string
+}
+
+interface CachedContent {
+  id: string
+  type: string
+  content: unknown
+  cached_at: string
+}
+
 const STORES: OfflineStore[] = [
   {
     name: 'devotionals',
@@ -210,19 +244,19 @@ export const offlineDB = new OfflineDB()
 
 // Helper functions for specific use cases
 
-export async function cacheDevotional(devotional: any): Promise<void> {
+export async function cacheDevotional(devotional: OfflinePayload): Promise<void> {
   await offlineDB.put('devotionals', {
     ...devotional,
     cached_at: new Date().toISOString()
   })
 }
 
-export async function getCachedDevotional(date: string): Promise<any> {
-  const results = await offlineDB.getByIndex('devotionals', 'date', date)
+export async function getCachedDevotional(date: string): Promise<OfflinePayload | undefined> {
+  const results = await offlineDB.getByIndex<OfflinePayload>('devotionals', 'date', date)
   return results[0]
 }
 
-export async function saveOfflineJournalEntry(entry: any): Promise<IDBValidKey> {
+export async function saveOfflineJournalEntry(entry: OfflineJournalEntry): Promise<IDBValidKey> {
   return offlineDB.put('journal_entries', {
     ...entry,
     id: entry.id || `offline-${Date.now()}`,
@@ -231,18 +265,18 @@ export async function saveOfflineJournalEntry(entry: any): Promise<IDBValidKey> 
   })
 }
 
-export async function getUnsyncedJournalEntries(): Promise<any[]> {
-  return offlineDB.getByIndex('journal_entries', 'synced', 0)
+export async function getUnsyncedJournalEntries(): Promise<Required<OfflineJournalEntry>[]> {
+  return offlineDB.getByIndex<Required<OfflineJournalEntry>>('journal_entries', 'synced', 0)
 }
 
 export async function markJournalEntrySynced(id: string): Promise<void> {
-  const entry = await offlineDB.get('journal_entries', id)
+  const entry = await offlineDB.get<OfflineJournalEntry>('journal_entries', id)
   if (entry) {
     await offlineDB.put('journal_entries', { ...entry, synced: 1 })
   }
 }
 
-export async function saveOfflinePrayerRequest(prayer: any): Promise<IDBValidKey> {
+export async function saveOfflinePrayerRequest(prayer: OfflinePrayerRequest): Promise<IDBValidKey> {
   return offlineDB.put('prayer_requests', {
     ...prayer,
     id: prayer.id || `offline-${Date.now()}`,
@@ -251,11 +285,11 @@ export async function saveOfflinePrayerRequest(prayer: any): Promise<IDBValidKey
   })
 }
 
-export async function getUnsyncedPrayerRequests(): Promise<any[]> {
-  return offlineDB.getByIndex('prayer_requests', 'synced', 0)
+export async function getUnsyncedPrayerRequests(): Promise<Required<OfflinePrayerRequest>[]> {
+  return offlineDB.getByIndex<Required<OfflinePrayerRequest>>('prayer_requests', 'synced', 0)
 }
 
-export async function saveOfflineCheckin(checkin: any): Promise<IDBValidKey> {
+export async function saveOfflineCheckin(checkin: OfflineCheckin): Promise<IDBValidKey> {
   return offlineDB.put('daily_checkins', {
     ...checkin,
     id: checkin.id || `offline-${Date.now()}`,
@@ -264,13 +298,13 @@ export async function saveOfflineCheckin(checkin: any): Promise<IDBValidKey> {
   })
 }
 
-export async function getUnsyncedCheckins(): Promise<any[]> {
-  return offlineDB.getByIndex('daily_checkins', 'synced', 0)
+export async function getUnsyncedCheckins(): Promise<Required<OfflineCheckin>[]> {
+  return offlineDB.getByIndex<Required<OfflineCheckin>>('daily_checkins', 'synced', 0)
 }
 
 export async function queueOfflineAction(
   actionType: string,
-  payload: any
+  payload: OfflinePayload
 ): Promise<IDBValidKey> {
   return offlineDB.add('pending_actions', {
     id: `action-${Date.now()}`,
@@ -280,15 +314,15 @@ export async function queueOfflineAction(
   })
 }
 
-export async function getPendingActions(): Promise<any[]> {
-  return offlineDB.getAll('pending_actions')
+export async function getPendingActions(): Promise<PendingAction[]> {
+  return offlineDB.getAll<PendingAction>('pending_actions')
 }
 
 export async function removePendingAction(id: string): Promise<void> {
   return offlineDB.delete('pending_actions', id)
 }
 
-export async function cacheContent(type: string, id: string, content: any): Promise<void> {
+export async function cacheContent(type: string, id: string, content: unknown): Promise<void> {
   await offlineDB.put('cached_content', {
     id: `${type}-${id}`,
     type,
@@ -297,8 +331,8 @@ export async function cacheContent(type: string, id: string, content: any): Prom
   })
 }
 
-export async function getCachedContent(type: string, id: string): Promise<any> {
-  const result = await offlineDB.get<{ content?: unknown }>('cached_content', `${type}-${id}`)
+export async function getCachedContent(type: string, id: string): Promise<unknown> {
+  const result = await offlineDB.get<CachedContent>('cached_content', `${type}-${id}`)
   return result?.content
 }
 
@@ -306,7 +340,7 @@ export async function clearOldCache(maxAgeDays: number = 7): Promise<void> {
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - maxAgeDays)
 
-  const allCached = await offlineDB.getAll<any>('cached_content')
+  const allCached = await offlineDB.getAll<CachedContent>('cached_content')
   for (const item of allCached) {
     if (new Date(item.cached_at) < cutoffDate) {
       await offlineDB.delete('cached_content', item.id)

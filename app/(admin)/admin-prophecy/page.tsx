@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -39,46 +39,37 @@ import {
   Loader2,
   Plus,
   CheckCircle,
-  UserPlus,
-  Users,
   Send,
   Clock,
   Eye,
-  EyeOff,
   FileAudio,
   FileVideo,
   X,
   MoreHorizontal,
-  Calendar,
-  Filter,
-  Download,
-  Play,
-  Pause,
-  Volume2,
-  Video,
   Globe,
   User,
-  Mail,
-  Bell,
   CheckCheck,
-  AlertCircle,
   ArrowUpDown,
-  ChevronDown,
   RefreshCw,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 // ============ INTERFACES ============
+type ProphecyType = 'broadcast' | 'personal'
+type DeliveryScope = 'all' | 'partners' | 'members' | 'individual'
+type ProphecyStatus = 'draft' | 'scheduled' | 'sent' | 'archived'
+type FilterStatus = 'all' | ProphecyStatus
+
 interface Prophecy {
   id: string
   title: string
   content: string
-  prophecy_type: 'broadcast' | 'personal'
-  delivery_scope: 'all' | 'partners' | 'members' | 'individual'
+  prophecy_type: ProphecyType
+  delivery_scope: DeliveryScope
   prophecy_date: string
   scheduled_date?: string
-  status: 'draft' | 'scheduled' | 'sent' | 'archived'
+  status: ProphecyStatus
   themes?: string
   audio_url?: string
   video_url?: string
@@ -103,18 +94,24 @@ interface Member {
   phone?: string
 }
 
-interface ProphecyDelivery {
-  id: string
-  prophecy_id: string
-  member_id: string
-  status: 'pending' | 'sent' | 'delivered' | 'viewed'
-  sent_at?: string
-  viewed_at?: string
-  member?: Member
-}
-
 type SortField = 'title' | 'prophecy_date' | 'status' | 'prophecy_type'
 type SortDirection = 'asc' | 'desc'
+type SortValue = string | number
+type ProphecyMutationData = {
+  title: string
+  content: string
+  prophecy_type: ProphecyType
+  delivery_scope: DeliveryScope
+  themes: string | null
+  audio_url: string | null
+  video_url: string | null
+  is_featured: boolean
+  prophecy_date?: string
+  scheduled_date?: string | null
+  status?: Exclude<ProphecyStatus, 'archived'>
+  updated_at?: string
+  recipient_id?: string
+}
 
 export default function AdminProphecyPage() {
   // ============ STATE ============
@@ -126,14 +123,13 @@ export default function AdminProphecyPage() {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'broadcast' | 'personal'>('all')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'scheduled' | 'sent' | 'archived'>('all')
+  const [filterStatus] = useState<FilterStatus>('all')
   const [sortField, setSortField] = useState<SortField>('prophecy_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   // Dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false)
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
 
   // Selected items
@@ -144,7 +140,6 @@ export default function AdminProphecyPage() {
   // Form state
   const [submitting, setSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
 
   // File upload
   const [dragActive, setDragActive] = useState(false)
@@ -327,10 +322,8 @@ export default function AdminProphecyPage() {
     const filePath = `prophecies/${fileName}`
 
     setUploading(true)
-    setUploadProgress(0)
-
     try {
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('media')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -352,7 +345,6 @@ export default function AdminProphecyPage() {
         .from('media')
         .getPublicUrl(filePath)
 
-      setUploadProgress(100)
       return urlData.publicUrl
     } catch (error) {
       console.error('Error uploading:', error)
@@ -430,7 +422,7 @@ export default function AdminProphecyPage() {
       }
 
       // Create prophecy
-      const prophecyData: any = {
+      const prophecyData: ProphecyMutationData = {
         title: formData.title,
         content: formData.content,
         prophecy_type: formData.prophecy_type,
@@ -514,7 +506,7 @@ export default function AdminProphecyPage() {
         if (url) videoUrl = url
       }
 
-      const updateData: any = {
+      const updateData: ProphecyMutationData = {
         title: formData.title,
         content: formData.content,
         prophecy_type: formData.prophecy_type,
@@ -750,28 +742,20 @@ export default function AdminProphecyPage() {
       return matchesSearch && matchesType && matchesStatus && matchesTab
     })
     .sort((a, b) => {
-      let aVal: any, bVal: any
-      switch (sortField) {
-        case 'title':
-          aVal = a.title.toLowerCase()
-          bVal = b.title.toLowerCase()
-          break
-        case 'prophecy_date':
-          aVal = new Date(a.prophecy_date).getTime()
-          bVal = new Date(b.prophecy_date).getTime()
-          break
-        case 'status':
-          aVal = a.status
-          bVal = b.status
-          break
-        case 'prophecy_type':
-          aVal = a.prophecy_type
-          bVal = b.prophecy_type
-          break
-        default:
-          aVal = a.prophecy_date
-          bVal = b.prophecy_date
+      const getSortValue = (prophecy: Prophecy): SortValue => {
+        switch (sortField) {
+          case 'title':
+            return prophecy.title.toLowerCase()
+          case 'prophecy_date':
+            return new Date(prophecy.prophecy_date).getTime()
+          case 'status':
+            return prophecy.status
+          case 'prophecy_type':
+            return prophecy.prophecy_type
+        }
       }
+      const aVal = getSortValue(a)
+      const bVal = getSortValue(b)
       if (sortDirection === 'asc') {
         return aVal > bVal ? 1 : -1
       }
@@ -953,7 +937,7 @@ export default function AdminProphecyPage() {
                     className="pl-10"
                   />
                 </div>
-                <Select value={filterType} onValueChange={(v: any) => setFilterType(v)}>
+                <Select value={filterType} onValueChange={(value) => setFilterType(value as typeof filterType)}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
@@ -1219,8 +1203,8 @@ export default function AdminProphecyPage() {
                   <Label>Delivery Type *</Label>
                   <Select
                     value={formData.prophecy_type}
-                    onValueChange={(value: 'broadcast' | 'personal') =>
-                      setFormData({ ...formData, prophecy_type: value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, prophecy_type: value as ProphecyType })
                     }
                   >
                     <SelectTrigger>
@@ -1250,7 +1234,9 @@ export default function AdminProphecyPage() {
                   <Label>Audience *</Label>
                   <Select
                     value={formData.delivery_scope}
-                    onValueChange={(value: any) => setFormData({ ...formData, delivery_scope: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, delivery_scope: value as DeliveryScope })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />

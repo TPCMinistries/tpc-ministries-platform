@@ -86,7 +86,7 @@ export default function VerseCard({
         className
       )}>
         <p className="text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed">
-          "{formattedText}"
+          &ldquo;{formattedText}&rdquo;
         </p>
         <p className="text-xs text-tpc-gold font-semibold mt-2">— {reference}</p>
       </div>
@@ -107,7 +107,7 @@ export default function VerseCard({
           <div className="flex-1 min-w-0">
             <p className="text-xs text-tpc-gold font-medium mb-1">Scripture for this prayer</p>
             <p className="text-sm text-gray-700 dark:text-gray-300 italic leading-relaxed">
-              "{formattedText}"
+              &ldquo;{formattedText}&rdquo;
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">— {reference}</p>
           </div>
@@ -148,7 +148,7 @@ export default function VerseCard({
           </div>
 
           <blockquote className="text-lg font-serif leading-relaxed mb-4">
-            "{formattedText}"
+            &ldquo;{formattedText}&rdquo;
           </blockquote>
 
           <div className="flex items-center justify-between">
@@ -206,7 +206,7 @@ export default function VerseCard({
         </div>
 
         <blockquote className="text-gray-700 dark:text-gray-300 font-serif text-lg leading-relaxed mb-4 italic">
-          "{formattedText}"
+          &ldquo;{formattedText}&rdquo;
         </blockquote>
 
         <div className="flex items-center justify-between">

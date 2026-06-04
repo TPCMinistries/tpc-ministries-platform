@@ -54,7 +54,7 @@ export function useKenyaData() {
 
   // Mission fund state
   const [missionFunds, setMissionFunds] = useState<MissionFund[]>([])
-  const [missionFundSummary, setMissionFundSummary] = useState<MissionFundSummary>({ raised: 0, goal: 60000, deployed: 0, deployedCredits: 0, deployedExpenses: 0, available: 0 })
+  const [missionFundSummary] = useState<MissionFundSummary>({ raised: 0, goal: 60000, deployed: 0, deployedCredits: 0, deployedExpenses: 0, available: 0 })
 
   // Current user role — used to hide financials from non-admin staff (e.g. Kenyan coordinators)
   const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(true)
@@ -285,30 +285,30 @@ export function useKenyaData() {
       } catch { /* mission fund data is supplementary */ }
 
       // Calculate stats
-      const p = participantsRes.data || []
+      const p: Participant[] = participantsRes.data || []
       const tripDate = new Date(tripData.start_date)
       const today = new Date()
       const daysUntil = Math.ceil((tripDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
       // Calculate unified financial stats
-      const totalTripCost = p.reduce((sum: number, x: any) => sum + (Number(x.trip_cost) || 3500), 0)
-      const totalSelfPayments = p.reduce((sum: number, x: any) => sum + (Number(x.amount_paid) || 0), 0)
-      const totalFundraising = p.reduce((sum: number, x: any) => sum + (Number(x.amount_raised) || 0), 0)
-      const totalAdminCredits = p.reduce((sum: number, x: any) => sum + (Number(x.admin_credits_total) || 0), 0)
-      const totalScholarships = p.reduce((sum: number, x: any) => sum + (Number(x.scholarship_amount) || 0), 0)
+      const totalTripCost = p.reduce((sum, participant) => sum + (Number(participant.trip_cost) || 3500), 0)
+      const totalSelfPayments = p.reduce((sum, participant) => sum + (Number(participant.amount_paid) || 0), 0)
+      const totalFundraising = p.reduce((sum, participant) => sum + (Number(participant.amount_raised) || 0), 0)
+      const totalAdminCredits = p.reduce((sum, participant) => sum + (Number(participant.admin_credits_total) || 0), 0)
+      const totalScholarships = p.reduce((sum, participant) => sum + (Number(participant.scholarship_amount) || 0), 0)
       const totalCovered = totalSelfPayments + totalFundraising + totalAdminCredits + totalScholarships
       const totalOutstanding = Math.max(0, totalTripCost - totalCovered)
 
       setStats({
         totalParticipants: p.length,
-        approvedParticipants: p.filter((x: any) => x.application_status === 'approved').length,
-        pendingApplications: p.filter((x: any) => x.application_status === 'pending').length,
-        teamLeaders: p.filter((x: any) => x.team_leader).length,
+        approvedParticipants: p.filter(participant => participant.application_status === 'approved').length,
+        pendingApplications: p.filter(participant => participant.application_status === 'pending').length,
+        teamLeaders: p.filter(participant => participant.team_leader).length,
         totalRaised: totalCovered,
         fundraisingGoal: tripData.fundraising_goal || 60000,
-        passportsVerified: p.filter((x: any) => x.passport_status === 'verified').length,
-        visasApproved: p.filter((x: any) => x.visa_status === 'approved').length,
-        fullyPaid: p.filter((x: any) => x.payment_status === 'paid').length,
+        passportsVerified: p.filter(participant => participant.passport_status === 'verified').length,
+        visasApproved: p.filter(participant => participant.visa_status === 'approved').length,
+        fullyPaid: p.filter(participant => participant.payment_status === 'paid').length,
         daysUntilTrip: daysUntil,
         totalTripCost,
         totalCovered,

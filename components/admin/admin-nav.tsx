@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import {
-  MessageSquare,
   Users,
   BookOpen,
   DollarSign,
@@ -15,15 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
   Brain,
-  Calendar,
-  Heart,
-  Video,
-  FileText,
-  HandHeart,
-  Sparkles,
   Megaphone,
-  Send,
-  Mail,
   Plane,
 } from 'lucide-react'
 

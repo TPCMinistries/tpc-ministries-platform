@@ -48,7 +48,6 @@ import {
   User,
   Eye,
   Mail,
-  Calendar,
   Loader2,
   Users,
   Plus,
@@ -77,7 +76,6 @@ import {
   RefreshCw,
   Link as LinkIcon,
   CheckCircle,
-  Clock,
   XCircle,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -146,6 +144,15 @@ interface Invite {
   used_by_member: { first_name: string; last_name: string; email: string } | null
 }
 
+type MemberRole = Member['role']
+type MemberTier = Member['tier']
+
+const memberRoles: MemberRole[] = ['free', 'member', 'partner', 'staff', 'admin']
+
+const isMemberRole = (value: string): value is MemberRole => memberRoles.includes(value as MemberRole)
+
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : 'Something went wrong'
+
 const interestLabels: Record<string, string> = {
   teachings: 'Teachings & Sermons',
   prayer: 'Prayer Support',
@@ -204,7 +211,7 @@ export default function AdminMembersPage() {
     dateRange: 'all',
   })
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
-  const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([])
+  const [, setLeadActivities] = useState<LeadActivity[]>([])
   const [leadDetailsOpen, setLeadDetailsOpen] = useState(false)
   const [deleteLeadDialogOpen, setDeleteLeadDialogOpen] = useState(false)
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
@@ -265,7 +272,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to load members', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error:', error)
       toast({ title: 'Error', description: 'Failed to load members', variant: 'destructive' })
     } finally {
@@ -294,7 +301,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to add member', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to add member', variant: 'destructive' })
     } finally {
       setSaving(false)
@@ -319,7 +326,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to update member', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update member', variant: 'destructive' })
     } finally {
       setSaving(false)
@@ -337,7 +344,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to delete member', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete member', variant: 'destructive' })
     }
   }
@@ -359,7 +366,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to create tag', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to create tag', variant: 'destructive' })
     }
   }
@@ -374,7 +381,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to delete tag', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete tag', variant: 'destructive' })
     }
   }
@@ -395,7 +402,7 @@ export default function AdminMembersPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to import members', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to import members', variant: 'destructive' })
     } finally {
       setImporting(false)
@@ -453,7 +460,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setShowBulkTagModal(false)
       setSelectedMembers(new Set())
       fetchMembers()
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update some members', variant: 'destructive' })
     } finally {
       setBulkProcessing(false)
@@ -479,7 +486,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setShowBulkTierModal(false)
       setSelectedMembers(new Set())
       fetchMembers()
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update some members', variant: 'destructive' })
     } finally {
       setBulkProcessing(false)
@@ -499,7 +506,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       toast({ title: 'Success', description: `Deleted ${successCount} members` })
       setSelectedMembers(new Set())
       fetchMembers()
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete some members', variant: 'destructive' })
     } finally {
       setBulkProcessing(false)
@@ -523,7 +530,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to send invite', variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to send invite', variant: 'destructive' })
     }
   }
@@ -549,7 +556,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       }
       toast({ title: 'Invites Sent', description: `Sent ${successCount} welcome emails` })
       setSelectedMembers(new Set())
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to send some invites', variant: 'destructive' })
     } finally {
       setBulkProcessing(false)
@@ -564,7 +571,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       last_name: member.last_name,
       email: member.email,
       phone: member.phone || '',
-      role: effectiveRole as any,
+      role: isMemberRole(effectiveRole) ? effectiveRole : 'free',
       tier: member.tier,
       is_admin: member.is_admin,
       notes: member.notes || '',
@@ -592,6 +599,12 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       ...prev,
       tags: prev.tags.includes(tagId) ? prev.tags.filter(id => id !== tagId) : [...prev.tags, tagId]
     }))
+  }
+
+  const handleMemberRoleChange = (role: MemberRole) => {
+    const isAdmin = role === 'admin'
+    const tier: MemberTier = ['partner', 'staff', 'admin'].includes(role) ? 'partner' : 'free'
+    setFormData(prev => ({ ...prev, role, is_admin: isAdmin, tier }))
   }
 
   const getEffectiveRole = (member: Member) => member.role || (member.is_admin ? 'admin' : member.tier || 'free')
@@ -661,7 +674,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       const [leadsData, statsData] = await Promise.all([getLeads(leadFilters), getLeadStats()])
       setLeads(leadsData)
       setLeadStats(statsData)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching leads:', error)
       toast({ title: 'Error', description: 'Failed to load leads', variant: 'destructive' })
     } finally {
@@ -676,7 +689,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
     try {
       const { activities } = await getLeadById(lead.id)
       setLeadActivities(activities)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching lead activities:', error)
     }
   }
@@ -691,7 +704,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       const updated = await getLeadById(selectedLead.id)
       setSelectedLead(updated.lead)
       setLeadActivities(updated.activities)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update status', variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
@@ -708,7 +721,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       const updated = await getLeadById(selectedLead.id)
       setSelectedLead(updated.lead)
       setLeadActivities(updated.activities)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update interest level', variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
@@ -725,7 +738,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       fetchLeads()
       const updated = await getLeadById(selectedLead.id)
       setSelectedLead(updated.lead)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to save notes', variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
@@ -745,7 +758,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       const updated = await getLeadById(selectedLead.id)
       setSelectedLead(updated.lead)
       setLeadActivities(updated.activities)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to mark as contacted', variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
@@ -761,8 +774,8 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setConvertDialogOpen(false)
       setLeadDetailsOpen(false)
       fetchLeads()
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to convert to member', variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
     }
@@ -777,7 +790,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setDeleteLeadDialogOpen(false)
       setLeadDetailsOpen(false)
       fetchLeads()
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete lead', variant: 'destructive' })
     } finally {
       setLeadProcessing(false)
@@ -817,7 +830,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       if (!response.ok) throw new Error('Failed to fetch invites')
       const data = await response.json()
       setInvites(data)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to load invites', variant: 'destructive' })
     } finally {
       setInvitesLoading(false)
@@ -844,8 +857,8 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setCreatedInvite({ code: data.invite.code, url: data.inviteUrl })
       toast({ title: 'Invite Created!', description: data.emailSent ? `Email sent to ${inviteEmail}` : 'Copy the link to share' })
       fetchInvites()
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     } finally {
       setCreatingInvite(false)
     }
@@ -876,8 +889,8 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       setBulkInviteOpen(false)
       setBulkInviteList('')
       fetchInvites()
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     } finally {
       setBulkCreatingInvites(false)
     }
@@ -900,8 +913,8 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
         throw new Error(data.error)
       }
       toast({ title: 'Email Sent!', description: 'Reminder email sent successfully' })
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     }
   }
 
@@ -914,7 +927,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       })
       fetchInvites()
       toast({ title: 'Deactivated', description: 'Invite link has been deactivated' })
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to deactivate invite', variant: 'destructive' })
     }
   }
@@ -929,7 +942,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
       })
       fetchInvites()
       toast({ title: 'Deleted', description: 'Invite has been deleted' })
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete invite', variant: 'destructive' })
     }
   }
@@ -1416,7 +1429,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
               <div><Label>Phone</Label><Input value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} /></div>
               <div>
                 <Label>Role</Label>
-                <Select value={formData.role} onValueChange={(v: any) => { const isAdmin = v === 'admin'; const tier = ['partner', 'staff', 'admin'].includes(v) ? 'partner' : 'free'; setFormData(prev => ({ ...prev, role: v, is_admin: isAdmin, tier })) }}>
+                <Select value={formData.role} onValueChange={(v) => { if (isMemberRole(v)) handleMemberRoleChange(v) }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="free">Free - Limited access</SelectItem>
@@ -1465,7 +1478,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
               <div><Label>Phone</Label><Input value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} /></div>
               <div>
                 <Label>Role</Label>
-                <Select value={formData.role} onValueChange={(v: any) => { const isAdmin = v === 'admin'; const tier = ['partner', 'staff', 'admin'].includes(v) ? 'partner' : 'free'; setFormData(prev => ({ ...prev, role: v, is_admin: isAdmin, tier })) }}>
+                <Select value={formData.role} onValueChange={(v) => { if (isMemberRole(v)) handleMemberRoleChange(v) }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="free">Free</SelectItem>
