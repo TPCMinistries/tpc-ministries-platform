@@ -82,6 +82,16 @@ interface CovenantPartnerData {
   metrics: CovenantPartnerMetrics
   tierBreakdown: Record<string, number>
   levelBreakdown: Record<string, number>
+  onboardingSummary: {
+    joinedLast7: number
+    joinedLast30: number
+    missingEmail: number
+    noGivingRecord: number
+    activeRecurring: number
+    paymentAttention: number
+    followUpWatch: number
+    readinessRate: number
+  }
   partners: CovenantPartnerRow[]
   recentActivity: CovenantPartnerActivity[]
   generatedAt: string
@@ -155,6 +165,16 @@ function partnerStatus(partner: CovenantPartnerRow): {
     label: 'Active',
     className: 'border-emerald-300 bg-emerald-50 text-emerald-700',
   }
+}
+
+function partnerAction(partner: CovenantPartnerRow) {
+  const status = partnerStatus(partner)
+
+  if (status.value === 'connect') return 'Connect profile before sending partner sequence'
+  if (status.value === 'attention') return 'Send payment attention follow-up'
+  if (status.value === 'watch') return 'Invite back into the partner rhythm'
+  if (!partner.recurring) return 'Confirm recurring partnership setup'
+  return 'Keep in normal monthly rhythm'
 }
 
 export default function AdminCovenantPartnersPage() {
@@ -402,6 +422,94 @@ export default function AdminCovenantPartnersPage() {
           </Card>
         </section>
 
+        <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <Card className="border-gold/30 bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-navy">
+                <ShieldCheck className="h-5 w-5 text-gold-text" />
+                Onboarding Pipeline
+              </CardTitle>
+              <CardDescription>
+                Readiness signals for moving new partners from first gift into stable connection.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border bg-slate-50 p-3">
+                  <div className="text-2xl font-bold text-navy">{data.onboardingSummary.joinedLast7}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">Joined in 7 days</p>
+                </div>
+                <div className="rounded-lg border bg-slate-50 p-3">
+                  <div className="text-2xl font-bold text-navy">{data.onboardingSummary.joinedLast30}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">Joined in 30 days</p>
+                </div>
+                <div className="rounded-lg border bg-slate-50 p-3">
+                  <div className="text-2xl font-bold text-navy">{data.onboardingSummary.activeRecurring}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">Recurring records</p>
+                </div>
+                <div className="rounded-lg border bg-slate-50 p-3">
+                  <div className="text-2xl font-bold text-navy">{data.onboardingSummary.readinessRate}%</div>
+                  <p className="mt-1 text-xs text-muted-foreground">Ready for rhythm</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                  <span className="text-sm font-medium text-amber-900">Missing email</span>
+                  <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">
+                    {data.onboardingSummary.missingEmail}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                  <span className="text-sm font-medium text-blue-900">No giving record linked</span>
+                  <Badge variant="outline" className="border-blue-300 bg-white text-blue-800">
+                    {data.onboardingSummary.noGivingRecord}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                  <span className="text-sm font-medium text-red-900">Payment attention</span>
+                  <Badge variant="outline" className="border-red-300 bg-white text-red-700">
+                    {data.onboardingSummary.paymentAttention}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-navy">Next Operating Moves</CardTitle>
+              <CardDescription>Run the partner system with a predictable weekly cadence.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              <Button asChild className="justify-start bg-navy hover:bg-navy/90">
+                <Link href="/admin-workflows">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Review Automations
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/admin-events">
+                  <CalendarDays className="mr-2 h-4 w-4" />
+                  Schedule Gathering
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/admin-resources">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Publish Resource
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/email-campaigns?tab=quicksend&partnerTemplate=monthly-update">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Monthly Update
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
         <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
           <Card>
             <CardHeader className="space-y-4">
@@ -512,6 +620,9 @@ export default function AdminCovenantPartnersPage() {
                               <div>{formatDate(partner.lastGiftAt)}</div>
                               <div className="text-xs text-muted-foreground">
                                 Joined {formatDate(partner.joinedAt)}
+                              </div>
+                              <div className="mt-1 text-xs text-muted-foreground">
+                                {partnerAction(partner)}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">

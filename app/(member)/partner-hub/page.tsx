@@ -79,13 +79,6 @@ const upcomingRhythm = [
   },
 ]
 
-const onboardingSteps = [
-  'Confirm your account and giving settings',
-  'Watch for the next partner email update',
-  'Bring prayer focus to the monthly gathering',
-  'Choose one area of practical growth for this season',
-]
-
 const impactUpdates = [
   {
     title: 'Prophetic ministry and prayer',
@@ -150,7 +143,7 @@ export default async function PartnerHubPage() {
   const { data: member } = user
     ? await supabase
         .from('members')
-        .select('id, first_name, tier, role, created_at')
+        .select('id, first_name, email, tier, role, created_at')
         .eq('user_id', user.id)
         .maybeSingle()
     : { data: null }
@@ -219,6 +212,51 @@ export default async function PartnerHubPage() {
   const level = partnershipLevel(Number(lastGift?.amount || monthlyRecognized || 0))
   const dynamicEvents = partnerEvents || []
   const dynamicResources = partnerLibrary || []
+  const readinessSteps = [
+    {
+      title: 'Confirm your partner profile',
+      description: member?.email
+        ? `Your account is connected through ${member.email}.`
+        : 'Add or confirm your email so partner updates reach the right inbox.',
+      complete: Boolean(member?.email),
+      href: '/account?tab=profile',
+      cta: 'Review Profile',
+      icon: ShieldCheck,
+    },
+    {
+      title: 'Verify your monthly partnership',
+      description: activeSubscription
+        ? `Your subscription is currently ${activeSubscription.status}.`
+        : donations.length > 0
+          ? 'A covenant partner gift is connected to your account.'
+          : 'Confirm your monthly giving settings so partnership stays clear.',
+      complete: Boolean(activeSubscription) || donations.length > 0,
+      href: '/my-giving',
+      cta: 'Review Giving',
+      icon: CreditCard,
+    },
+    {
+      title: 'Receive the current partner resource',
+      description: dynamicResources.length > 0
+        ? 'New partner resources are available in the library section below.'
+        : 'Partner resources will appear here as they are published.',
+      complete: dynamicResources.length > 0,
+      href: dynamicResources[0]?.file_url || '/resources',
+      cta: dynamicResources[0]?.file_url ? 'Open Resource' : 'View Resources',
+      icon: FileText,
+    },
+    {
+      title: 'Prepare for the next gathering',
+      description: dynamicEvents.length > 0
+        ? `${dynamicEvents[0].title} is scheduled for ${formatEventDate(dynamicEvents[0].start_time)}.`
+        : 'The next live partner gathering will appear here once scheduled.',
+      complete: dynamicEvents.length > 0,
+      href: '/events',
+      cta: 'View Events',
+      icon: CalendarDays,
+    },
+  ]
+  const nextReadinessStep = readinessSteps.find((step) => !step.complete) || readinessSteps[0]
 
   return (
     <div className="space-y-8 p-4 lg:p-8">
@@ -408,13 +446,12 @@ export default async function PartnerHubPage() {
                 Stay connected to the monthly rhythm
               </div>
               <p className="text-sm leading-6 text-muted-foreground">
-                Watch for partner updates, attend the next gathering when scheduled, and keep your giving
-                settings current so the ministry can steward partnership clearly.
+                {nextReadinessStep.description}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <Button asChild variant="gold" className="w-full">
-                <Link href="/my-giving">Review Giving</Link>
+                <Link href={nextReadinessStep.href}>{nextReadinessStep.cta}</Link>
               </Button>
               <Button asChild variant="outline" className="w-full">
                 <Link href="/events">View Upcoming Events</Link>
@@ -510,21 +547,37 @@ export default async function PartnerHubPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-display text-2xl text-navy dark:text-foreground">
-              Partner onboarding
+              Partner readiness path
             </CardTitle>
             <CardDescription>
-              A simple path for staying connected after becoming a Covenant Partner.
+              A simple operating rhythm for staying connected after becoming a Covenant Partner.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {onboardingSteps.map((step, index) => (
-              <div key={step} className="flex items-start gap-3 rounded-lg border bg-background p-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold/15 text-sm font-semibold text-gold-text">
-                  {index + 1}
+            {readinessSteps.map((step, index) => {
+              const Icon = step.icon
+              return (
+                <div key={step.title} className="grid gap-3 rounded-lg border bg-background p-4 sm:grid-cols-[auto_1fr_auto] sm:items-start">
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-gold/15 text-gold-text'
+                  }`}>
+                    {step.complete ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-navy dark:text-foreground">{step.title}</p>
+                      <Badge variant="outline" className={step.complete ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : ''}>
+                        {step.complete ? 'Ready' : `Step ${index + 1}`}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{step.description}</p>
+                  </div>
+                  <Button asChild variant={step.complete ? 'outline' : 'gold'} size="sm" className="w-full sm:w-auto">
+                    <Link href={step.href}>{step.cta}</Link>
+                  </Button>
                 </div>
-                <p className="text-sm text-foreground/80">{step}</p>
-              </div>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
 

@@ -269,6 +269,38 @@ export async function GET() {
       return acc
     }, {})
 
+    const joinedWithinDays = (value: string | null, days: number) => {
+      if (!value) return false
+      const joinedAt = new Date(value)
+      if (Number.isNaN(joinedAt.getTime())) return false
+      const cutoff = new Date(now)
+      cutoff.setDate(cutoff.getDate() - days)
+      return joinedAt >= cutoff
+    }
+
+    const inactivePartnerRows = partnerRows.filter(row => {
+      if (row.recurring) return false
+      const lastSignal = row.lastGiftAt || row.lastActiveAt
+      if (!lastSignal) return true
+      const lastSignalAt = new Date(lastSignal)
+      if (Number.isNaN(lastSignalAt.getTime())) return true
+      const diff = now.getTime() - lastSignalAt.getTime()
+      return Math.floor(diff / (1000 * 60 * 60 * 24)) > 45
+    })
+
+    const onboardingSummary = {
+      joinedLast7: partnerRows.filter(row => joinedWithinDays(row.joinedAt, 7)).length,
+      joinedLast30: partnerRows.filter(row => joinedWithinDays(row.joinedAt, 30)).length,
+      missingEmail: partnerRows.filter(row => !row.email).length,
+      noGivingRecord: partnerRows.filter(row => row.totalGiven <= 0).length,
+      activeRecurring: partnerRows.filter(row => row.recurring).length,
+      paymentAttention: partnerRows.filter(row => row.subscriptionStatus === 'past_due').length,
+      followUpWatch: inactivePartnerRows.length,
+      readinessRate: partnerRows.length > 0
+        ? Math.round((partnerRows.filter(row => row.email && (row.recurring || row.totalGiven > 0)).length / partnerRows.length) * 100)
+        : 0,
+    }
+
     const recentActivity = donations.slice(0, 12).map(donation => {
       const nestedMember = getDonationMember(donation)
       return {
@@ -301,6 +333,7 @@ export async function GET() {
       },
       tierBreakdown,
       levelBreakdown,
+      onboardingSummary,
       partners: partnerRows,
       recentActivity,
       generatedAt: new Date().toISOString(),
