@@ -3,6 +3,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+interface PledgeFund {
+  id: string
+  name?: string | null
+  description?: string | null
+}
+
+function getPledgeFund(fund: PledgeFund | PledgeFund[] | null | undefined) {
+  return Array.isArray(fund) ? fund[0] : fund
+}
+
 // GET - Get current user's giving pledges
 export async function GET() {
   try {
@@ -49,6 +59,7 @@ export async function GET() {
     // Calculate progress for each pledge
     const pledgesWithProgress = await Promise.all(
       (pledges || []).map(async (pledge) => {
+        const fund = getPledgeFund(pledge.fund)
         // Get giving history for this pledge's period
         const startDate = new Date(pledge.start_date)
         const endDate = pledge.end_date ? new Date(pledge.end_date) : new Date()
@@ -57,7 +68,7 @@ export async function GET() {
           .from('giving_transactions')
           .select('amount')
           .eq('member_id', member.id)
-          .eq('fund_id', pledge.fund?.id)
+          .eq('fund_id', fund?.id || null)
           .gte('created_at', startDate.toISOString())
           .lte('created_at', endDate.toISOString())
 
@@ -221,7 +232,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Pledge ID is required' }, { status: 400 })
     }
 
-    const updates: any = { updated_at: new Date().toISOString() }
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (amount !== undefined) updates.amount = amount
     if (frequency !== undefined) updates.frequency = frequency
     if (end_date !== undefined) updates.end_date = end_date

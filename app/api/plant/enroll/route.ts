@@ -3,6 +3,19 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+interface PathCourse {
+  course?: {
+    id?: string | null
+  } | Array<{
+    id?: string | null
+  }> | null
+}
+
+function getPathCourseId(pathCourse: PathCourse) {
+  const course = Array.isArray(pathCourse.course) ? pathCourse.course[0] : pathCourse.course
+  return course?.id
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -38,7 +51,7 @@ export async function POST(request: NextRequest) {
       // Check course exists and tier access
       const { data: course } = await supabase
         .from('plant_courses')
-        .select('id, required_tier, name')
+        .select('id, required_tier, name, enrollment_count')
         .eq('id', course_id)
         .eq('status', 'published')
         .single()
@@ -94,16 +107,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to enroll' }, { status: 500 })
       }
 
-      // Update course enrollment count
-      await supabase.rpc('increment_enrollment_count', { course_id_param: course_id })
-        .then(() => {})
-        .catch(() => {
-          // If RPC doesn't exist, update manually
-          supabase
-            .from('plant_courses')
-            .update({ enrollment_count: course.enrollment_count + 1 })
-            .eq('id', course_id)
-        })
+      // Update course enrollment count. If the RPC is unavailable, fall back to a direct update.
+      const { error: incrementError } = await supabase.rpc('increment_enrollment_count', { course_id_param: course_id })
+      if (incrementError) {
+        await supabase
+          .from('plant_courses')
+          .update({ enrollment_count: (course.enrollment_count || 0) + 1 })
+          .eq('id', course_id)
+      }
 
       return NextResponse.json({
         message: 'Enrolled successfully',
@@ -171,7 +182,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Auto-enroll in all path courses
-      const courseIds = path.courses?.map((c: any) => c.course?.id).filter(Boolean) || []
+      const courseIds = (path.courses || [])
+        .map((pathCourse) => getPathCourseId(pathCourse))
+        .filter((courseId): courseId is string => Boolean(courseId))
 
       for (const courseId of courseIds) {
         // Check if already enrolled in course
@@ -209,7 +222,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 

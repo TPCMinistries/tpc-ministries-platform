@@ -147,16 +147,20 @@ export async function middleware(request: NextRequest) {
 
         if (!lastLogin || lastLogin < fiveMinutesAgo) {
           // Update login tracking in background (don't await)
-          supabase
-            .from('members')
-            .update({
-              last_login_at: new Date().toISOString(),
-              login_count: (member.login_count || 0) + 1,
-              last_active_at: new Date().toISOString(),
-            })
-            .eq('id', member.id)
-            .then(() => {})
-            .catch((err) => console.error('[Middleware] Login tracking error:', err))
+          void (async () => {
+            const { error } = await supabase
+              .from('members')
+              .update({
+                last_login_at: new Date().toISOString(),
+                login_count: (member.login_count || 0) + 1,
+                last_active_at: new Date().toISOString(),
+              })
+              .eq('id', member.id)
+
+            if (error) {
+              console.error('[Middleware] Login tracking error:', error)
+            }
+          })()
         }
       }
 

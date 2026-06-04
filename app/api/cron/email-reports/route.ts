@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createAdminClient()
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY)
@@ -24,6 +21,16 @@ interface ReportMetrics {
   answeredPrayers: number
   atRiskMembers: number
   topFeatures: Array<{ name: string; count: number }>
+}
+
+interface ReportMember {
+  email?: string | null
+  first_name?: string | null
+  is_admin?: boolean | null
+}
+
+function normalizeReportMember(member: ReportMember | ReportMember[] | null | undefined) {
+  return Array.isArray(member) ? member[0] : member
 }
 
 export async function GET(request: NextRequest) {
@@ -64,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Gather metrics
-    const metrics = await gatherReportMetrics(startDate, now, reportType)
+    const metrics = await gatherReportMetrics(startDate, now)
 
     // Get subscribers
     const { data: subscribers } = await supabase
@@ -88,10 +95,11 @@ export async function GET(request: NextRequest) {
       }))
     } else {
       recipients = subscribers
-        .filter(s => (s.members as any)?.email && (s.members as any)?.is_admin)
-        .map(s => ({
-          email: (s.members as any).email,
-          firstName: (s.members as any).first_name || 'Admin'
+        .map((subscription) => normalizeReportMember(subscription.members))
+        .filter((member): member is ReportMember => Boolean(member?.email && member.is_admin))
+        .map(member => ({
+          email: member.email || '',
+          firstName: member.first_name || 'Admin'
         }))
     }
 
@@ -122,7 +130,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Log the report
+    // Log the report if the optional history table exists.
     await supabase.from('report_history').insert({
       report_type: reportType,
       period_start: startDate.toISOString(),
@@ -130,7 +138,7 @@ export async function GET(request: NextRequest) {
       recipients_count: recipients.length,
       sent_at: new Date().toISOString(),
       metrics: metrics
-    }).catch(() => {}) // Ignore if table doesn't exist
+    })
 
     return NextResponse.json({
       success: true,
@@ -149,7 +157,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function gatherReportMetrics(startDate: Date, endDate: Date, type: string): Promise<ReportMetrics> {
+async function gatherReportMetrics(startDate: Date, endDate: Date): Promise<ReportMetrics> {
   const periodLength = endDate.getTime() - startDate.getTime()
   const comparisonStart = new Date(startDate.getTime() - periodLength)
 
