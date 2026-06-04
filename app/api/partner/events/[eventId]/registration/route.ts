@@ -19,6 +19,8 @@ interface EventAccess {
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const attendanceTypes = ['in-person', 'virtual'] as const
+type AttendanceType = typeof attendanceTypes[number]
 
 function canAccessEvent(member: MemberAccess, event: EventAccess) {
   if (member.role === 'admin' || member.role === 'staff') return true
@@ -33,6 +35,17 @@ function canAccessEvent(member: MemberAccess, event: EventAccess) {
     default:
       return true
   }
+}
+
+function normalizeAttendanceType(eventType: string | null, requested: unknown): AttendanceType {
+  if (eventType === 'online') return 'virtual'
+  if (eventType === 'in-person') return 'in-person'
+
+  if (typeof requested === 'string' && attendanceTypes.includes(requested as AttendanceType)) {
+    return requested as AttendanceType
+  }
+
+  return 'in-person'
 }
 
 async function getRegistrationContext(eventId: string) {
@@ -92,11 +105,12 @@ async function getRegistrationContext(eventId: string) {
   }
 }
 
-export async function POST(_request: NextRequest, { params }: { params: { eventId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { eventId: string } }) {
   const context = await getRegistrationContext(params.eventId)
   if ('error' in context) return context.error
 
-  const attendanceType = context.event.event_type === 'online' ? 'virtual' : 'in-person'
+  const body = await request.json().catch(() => ({}))
+  const attendanceType = normalizeAttendanceType(context.event.event_type, body?.attendanceType)
   const { data, error } = await context.admin
     .from('event_registrations')
     .upsert({

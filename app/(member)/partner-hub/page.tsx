@@ -191,7 +191,7 @@ export default async function PartnerHubPage() {
   const { data: partnerRegistrations } = member?.id && partnerEventIds.length > 0
     ? await supabase
         .from('event_registrations')
-        .select('event_id, status')
+        .select('event_id, status, attendance_type')
         .eq('user_id', member.id)
         .in('event_id', partnerEventIds)
     : { data: [] }
@@ -227,6 +227,9 @@ export default async function PartnerHubPage() {
     (partnerRegistrations || [])
       .filter((registration) => registration.status === 'registered')
       .map((registration) => registration.event_id)
+  )
+  const registrationsByEventId = new Map(
+    (partnerRegistrations || []).map((registration) => [registration.event_id, registration])
   )
   const readinessSteps = [
     {
@@ -683,6 +686,8 @@ export default async function PartnerHubPage() {
                     <PartnerEventRsvp
                       eventId={event.id}
                       initialRegistered={registeredEventIds.has(event.id)}
+                      initialAttendanceType={registrationsByEventId.get(event.id)?.attendance_type as 'in-person' | 'virtual' | null}
+                      eventType={event.event_type}
                       virtualLink={event.virtual_link}
                     />
                   </CardContent>
