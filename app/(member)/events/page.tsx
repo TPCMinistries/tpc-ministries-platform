@@ -27,6 +27,24 @@ interface Event {
   requiredRole: string
 }
 
+interface MemberProfile {
+  id: string
+  role: string | null
+  tier: string | null
+}
+
+interface EventRow {
+  id: string
+  title: string
+  description: string | null
+  event_type: Event['type']
+  start_time: string
+  location: string | null
+  virtual_link: string | null
+  image_url: string | null
+  tier_required: string | null
+}
+
 // Role hierarchy for access control
 const ROLE_HIERARCHY = ['free', 'member', 'partner', 'staff', 'admin']
 
@@ -49,12 +67,16 @@ function tierToRole(tier: string | null | undefined): string {
   }
 }
 
+function memberAccessRole(member: MemberProfile | null): string {
+  if (member?.role === 'admin' || member?.role === 'staff') return member.role
+  return tierToRole(member?.tier)
+}
+
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('upcoming')
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userRole, setUserRole] = useState<string>('free')
+  const [memberId, setMemberId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchEvents()
@@ -70,17 +92,21 @@ export default function EventsPage() {
         return
       }
 
-      setUserId(user.id)
-
-      // Fetch user's role from members table
+      // Fetch the member profile. Event registrations are keyed by member id.
       const { data: member } = await supabase
         .from('members')
-        .select('role')
+        .select('id, role, tier')
         .eq('user_id', user.id)
         .single()
 
-      const memberRole = member?.role || 'free'
-      setUserRole(memberRole)
+      if (!member?.id) {
+        setLoading(false)
+        return
+      }
+
+      setMemberId(member.id)
+
+      const memberRole = memberAccessRole(member)
 
       // Fetch all upcoming events
       const { data: eventsData, error: eventsError } = await supabase
@@ -94,7 +120,7 @@ export default function EventsPage() {
       const { data: registrations } = await supabase
         .from('event_registrations')
         .select('event_id, status')
-        .eq('user_id', user.id)
+        .eq('user_id', member.id)
 
       const registeredEventIds = new Set(
         registrations?.filter(r => r.status === 'registered').map(r => r.event_id) || []
@@ -104,7 +130,7 @@ export default function EventsPage() {
         console.error('Error fetching events:', eventsError)
       } else if (eventsData) {
         setEvents(
-          eventsData.map((event: any) => {
+          (eventsData as EventRow[]).map((event) => {
             const requiredRole = tierToRole(event.tier_required)
             return {
               id: event.id,
@@ -134,7 +160,7 @@ export default function EventsPage() {
   }
 
   const toggleRegistration = async (eventId: string) => {
-    if (!userId) return
+    if (!memberId) return
 
     const supabase = createClient()
     const event = events.find(e => e.id === eventId)
@@ -147,18 +173,20 @@ export default function EventsPage() {
           .from('event_registrations')
           .update({ status: 'cancelled' })
           .eq('event_id', eventId)
-          .eq('user_id', userId)
+          .eq('user_id', memberId)
 
         if (error) console.error('Error canceling registration:', error)
       } else {
         // Register for event
         const { error } = await supabase
           .from('event_registrations')
-          .insert({
+          .upsert({
             event_id: eventId,
-            user_id: userId,
+            user_id: memberId,
             attendance_type: event.type === 'online' ? 'virtual' : 'in-person',
             status: 'registered',
+          }, {
+            onConflict: 'event_id,user_id',
           })
 
         if (error) console.error('Error registering:', error)
@@ -360,7 +388,7 @@ export default function EventsPage() {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Bell className="h-12 w-12 text-gray-400 mb-4" />
                 <p className="text-gray-600 text-center mb-4">
-                  You haven't registered for any events yet.
+                  You have not registered for any events yet.
                 </p>
                 <Button onClick={() => setActiveTab('upcoming')} className="bg-navy hover:bg-navy/90">
                   Browse Upcoming Events

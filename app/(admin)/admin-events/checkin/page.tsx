@@ -81,9 +81,9 @@ interface CheckIn {
 interface Registration {
   member_id: string
   members: {
-    first_name: string
-    last_name: string
-    email: string
+    first_name: string | null
+    last_name: string | null
+    email: string | null
   }
 }
 
@@ -273,7 +273,7 @@ export default function EventCheckinPage() {
   const availableMembers = members.filter(m => !checkedInMemberIds.has(m.id))
 
   // Filter registrations to show who hasn't checked in yet
-  const notCheckedIn = registrations.filter(r => !checkedInMemberIds.has(r.member_id))
+  const notCheckedIn = registrations.filter(r => r.member_id && !checkedInMemberIds.has(r.member_id))
 
   const filteredCheckins = searchQuery
     ? checkins.filter(c =>
@@ -614,9 +614,9 @@ export default function EventCheckinPage() {
                       >
                         <div>
                           <p className="font-medium text-sm">
-                            {reg.members.first_name} {reg.members.last_name}
+                            {[reg.members.first_name, reg.members.last_name].filter(Boolean).join(' ') || reg.members.email || 'Registered Member'}
                           </p>
-                          <p className="text-xs text-gray-500">{reg.members.email}</p>
+                          <p className="text-xs text-gray-500">{reg.members.email || 'No email on file'}</p>
                         </div>
                         <Button
                           size="sm"

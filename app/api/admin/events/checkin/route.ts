@@ -4,6 +4,19 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+interface EventRegistrationRow {
+  user_id: string | null
+  members: {
+    first_name: string | null
+    last_name: string | null
+    email: string | null
+  } | Array<{
+    first_name: string | null
+    last_name: string | null
+    email: string | null
+  }> | null
+}
+
 // GET - Get check-ins for an event
 export async function GET(request: NextRequest) {
   try {
@@ -50,15 +63,33 @@ export async function GET(request: NextRequest) {
     // Get registrations for comparison
     const { data: registrations, count: registrationCount } = await supabase
       .from('event_registrations')
-      .select('member_id, members(first_name, last_name, email)', { count: 'exact' })
+      .select('user_id, members:user_id(first_name, last_name, email)', { count: 'exact' })
       .eq('event_id', eventId)
+      .eq('status', 'registered')
+
+    const normalizedRegistrations = ((registrations || []) as EventRegistrationRow[])
+      .filter(registration => Boolean(registration.user_id))
+      .map(registration => {
+        const member = Array.isArray(registration.members)
+          ? registration.members[0]
+          : registration.members
+
+        return {
+          member_id: registration.user_id,
+          members: {
+            first_name: member?.first_name || '',
+            last_name: member?.last_name || '',
+            email: member?.email || '',
+          },
+        }
+      })
 
     return NextResponse.json({
       event,
       checkins: checkins || [],
       checkinCount: checkins?.length || 0,
       registrationCount: registrationCount || 0,
-      registrations: registrations || []
+      registrations: normalizedRegistrations
     })
   } catch (error) {
     console.error('Check-in GET error:', error)
