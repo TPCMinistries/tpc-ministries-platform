@@ -52,11 +52,11 @@ import {
   Loader2,
   CheckCircle,
   AlertCircle,
-  Settings,
-  ChevronRight,
   Gift,
   Target,
-  Users,
+  HeartHandshake,
+  ShieldCheck,
+  DollarSign,
   RefreshCw
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -65,7 +65,7 @@ interface AutomatedWorkflow {
   id: string
   name: string
   description: string
-  trigger_type: 'birthday' | 'anniversary' | 'new_member' | 'inactive' | 'milestone' | 'prayer_answered' | 'schedule'
+  trigger_type: 'birthday' | 'anniversary' | 'new_member' | 'inactive' | 'milestone' | 'prayer_answered' | 'schedule' | 'partner_welcome' | 'partner_hub_reminder' | 'partner_gathering_reminder' | 'payment_attention'
   action_type: 'email' | 'sms' | 'notification' | 'task'
   is_active: boolean
   trigger_config: {
@@ -74,11 +74,14 @@ interface AutomatedWorkflow {
     days_inactive?: number
     milestone_type?: string
     schedule_cron?: string
+    partner_email_kind?: 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
   }
   action_config: {
     subject?: string
     template?: string
     message?: string
+    ctaText?: string
+    ctaUrl?: string
   }
   last_run?: string
   total_sent: number
@@ -167,6 +170,65 @@ const defaultWorkflows: Partial<AutomatedWorkflow>[] = [
   }
 ]
 
+const covenantPartnerWorkflows: Partial<AutomatedWorkflow>[] = [
+  {
+    name: 'Covenant Partner Welcome',
+    description: 'Send the first Covenant Partner welcome email after someone joins.',
+    trigger_type: 'partner_welcome',
+    action_type: 'email',
+    trigger_config: { days_after: 0, partner_email_kind: 'welcome' },
+    action_config: {
+      subject: 'Welcome, Covenant Partner',
+      template: 'covenant-partner',
+      ctaText: 'Open Partner Hub',
+      ctaUrl: 'https://tpcmin.org/partner-hub',
+      message: 'Dear {first_name},\n\nThank you for becoming a Covenant Partner with TPC Ministries. Your monthly partnership helps sustain prophetic ministry, discipleship, missions, leadership development, media, and practical equipping for the future ahead.\n\nYour Partner Hub is where partner updates, resources, gatherings, and next steps will continue to gather.\n\nWith gratitude,\nTPC Ministries',
+    },
+  },
+  {
+    name: 'Partner Hub Reminder',
+    description: 'Remind new partners to visit the Partner Hub after the first few days.',
+    trigger_type: 'partner_hub_reminder',
+    action_type: 'email',
+    trigger_config: { days_after: 3, partner_email_kind: 'monthly-update' },
+    action_config: {
+      subject: 'Your Covenant Partner Hub is ready',
+      template: 'covenant-partner',
+      ctaText: 'Visit Partner Hub',
+      ctaUrl: 'https://tpcmin.org/partner-hub',
+      message: 'Dear {first_name},\n\nYour Covenant Partner Hub is the home base for partner updates, resources, gatherings, and practical equipping. Take a moment this week to visit the Hub, review the partner rhythm, and watch for upcoming gatherings and resources.\n\nPartner Hub: {partner_hub_url}\n\nWith gratitude,\nTPC Ministries',
+    },
+  },
+  {
+    name: 'Partner Gathering Reminder',
+    description: 'Send a reminder before upcoming Covenant Partner gatherings.',
+    trigger_type: 'partner_gathering_reminder',
+    action_type: 'email',
+    trigger_config: { days_before: 1, partner_email_kind: 'gathering' },
+    action_config: {
+      subject: 'Reminder: {event_title}',
+      template: 'covenant-partner',
+      ctaText: 'View Gathering Details',
+      ctaUrl: 'https://tpcmin.org/partner-hub',
+      message: 'Dear {first_name},\n\nThis is a reminder that {event_title} is coming up on {event_date} at {event_time}.\n\nWe are gathering for teaching, prayer, encouragement, and alignment. You can find the details inside the Partner Hub.\n\nWith gratitude,\nTPC Ministries',
+    },
+  },
+  {
+    name: 'Payment Attention Follow-up',
+    description: 'Follow up with partners whose monthly subscription needs payment attention.',
+    trigger_type: 'payment_attention',
+    action_type: 'email',
+    trigger_config: { partner_email_kind: 'monthly-update' },
+    action_config: {
+      subject: 'A quick note about your Covenant Partnership',
+      template: 'covenant-partner',
+      ctaText: 'Manage Giving',
+      ctaUrl: 'https://tpcmin.org/my-giving',
+      message: 'Dear {first_name},\n\nWe noticed your Covenant Partnership may need payment attention. If your card changed or your bank declined the recent payment, you can update your giving details from your member area.\n\nThis is only an account notice. Prophetic ministry is never for sale, and partnership is never payment for prophecy.\n\nManage giving: {giving_url}\n\nWith gratitude,\nTPC Ministries',
+    },
+  },
+]
+
 export default function AdminWorkflowsPage() {
   const [workflows, setWorkflows] = useState<AutomatedWorkflow[]>([])
   const [executions, setExecutions] = useState<WorkflowExecution[]>([])
@@ -186,7 +248,10 @@ export default function AdminWorkflowsPage() {
     days_after: 0,
     days_inactive: 30,
     subject: '',
-    message: ''
+    message: '',
+    partner_email_kind: 'monthly-update' as NonNullable<AutomatedWorkflow['trigger_config']['partner_email_kind']>,
+    ctaText: '',
+    ctaUrl: ''
   })
 
   useEffect(() => {
@@ -252,7 +317,10 @@ export default function AdminWorkflowsPage() {
       days_after: 0,
       days_inactive: 30,
       subject: '',
-      message: ''
+      message: '',
+      partner_email_kind: 'monthly-update',
+      ctaText: '',
+      ctaUrl: ''
     })
     setDialogOpen(true)
   }
@@ -269,7 +337,10 @@ export default function AdminWorkflowsPage() {
       days_after: workflow.trigger_config?.days_after || 0,
       days_inactive: workflow.trigger_config?.days_inactive || 30,
       subject: workflow.action_config?.subject || '',
-      message: workflow.action_config?.message || ''
+      message: workflow.action_config?.message || '',
+      partner_email_kind: workflow.trigger_config?.partner_email_kind || 'monthly-update',
+      ctaText: workflow.action_config?.ctaText || '',
+      ctaUrl: workflow.action_config?.ctaUrl || ''
     })
     setDialogOpen(true)
   }
@@ -288,11 +359,17 @@ export default function AdminWorkflowsPage() {
         trigger_config: {
           days_before: formData.days_before,
           days_after: formData.days_after,
-          days_inactive: formData.days_inactive
+          days_inactive: formData.days_inactive,
+          partner_email_kind: formData.partner_email_kind
         },
         action_config: {
           subject: formData.subject,
-          message: formData.message
+          message: formData.message,
+          template: formData.trigger_type.startsWith('partner_') || formData.trigger_type === 'payment_attention'
+            ? 'covenant-partner'
+            : undefined,
+          ctaText: formData.ctaText || undefined,
+          ctaUrl: formData.ctaUrl || undefined,
         }
       }
 
@@ -385,6 +462,32 @@ export default function AdminWorkflowsPage() {
     }
   }
 
+  const handleSetupCovenantPartnerWorkflows = async () => {
+    const supabase = createClient()
+    setSaving(true)
+
+    try {
+      for (const workflow of covenantPartnerWorkflows) {
+        const { error } = await supabase
+          .from('automated_workflows')
+          .insert({
+            ...workflow,
+            is_active: false,
+            total_sent: 0
+          })
+        if (error) console.error('Error creating covenant partner workflow:', error)
+      }
+
+      setNotification({ type: 'success', message: 'Covenant Partner workflows created. Review and activate them.' })
+      fetchWorkflows()
+    } catch (error) {
+      console.error('Error setting up covenant partner workflows:', error)
+      setNotification({ type: 'error', message: 'Failed to create Covenant Partner workflows' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleRunWorkflow = async (workflow: AutomatedWorkflow) => {
     setNotification({ type: 'success', message: `Running "${workflow.name}" workflow...` })
 
@@ -417,6 +520,10 @@ export default function AdminWorkflowsPage() {
       case 'inactive': return <Clock className="h-5 w-5 text-orange-500" />
       case 'milestone': return <Trophy className="h-5 w-5 text-gold" />
       case 'prayer_answered': return <Heart className="h-5 w-5 text-red-500" />
+      case 'partner_welcome': return <HeartHandshake className="h-5 w-5 text-gold" />
+      case 'partner_hub_reminder': return <ShieldCheck className="h-5 w-5 text-navy" />
+      case 'partner_gathering_reminder': return <Calendar className="h-5 w-5 text-gold" />
+      case 'payment_attention': return <DollarSign className="h-5 w-5 text-orange-600" />
       case 'schedule': return <Calendar className="h-5 w-5 text-gray-500" />
       default: return <Zap className="h-5 w-5 text-gray-500" />
     }
@@ -430,6 +537,10 @@ export default function AdminWorkflowsPage() {
       case 'inactive': return 'Inactive Member'
       case 'milestone': return 'Milestone Achieved'
       case 'prayer_answered': return 'Prayer Answered'
+      case 'partner_welcome': return 'Partner Welcome'
+      case 'partner_hub_reminder': return 'Partner Hub Reminder'
+      case 'partner_gathering_reminder': return 'Partner Gathering Reminder'
+      case 'payment_attention': return 'Payment Attention'
       case 'schedule': return 'Scheduled'
       default: return type
     }
@@ -528,6 +639,42 @@ export default function AdminWorkflowsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-gold/30 bg-gold/5">
+        <CardHeader>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white px-3 py-1 text-sm font-medium text-navy">
+                <HeartHandshake className="h-4 w-4 text-gold-text" />
+                Covenant Partner Automation
+              </div>
+              <CardTitle className="text-navy">Build the partner follow-up rhythm</CardTitle>
+              <CardDescription className="mt-2 max-w-3xl">
+                Seed the welcome email, Partner Hub reminder, gathering reminder, and payment-attention
+                follow-up workflows. They start paused so staff can review before activation.
+              </CardDescription>
+            </div>
+            <Button
+              onClick={handleSetupCovenantPartnerWorkflows}
+              disabled={saving}
+              className="bg-navy hover:bg-navy/90"
+            >
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <HeartHandshake className="mr-2 h-4 w-4" />}
+              Setup Partner Workflows
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-4">
+            {covenantPartnerWorkflows.map((workflow) => (
+              <div key={workflow.name} className="rounded-lg border bg-white p-4">
+                <p className="font-medium text-navy">{workflow.name}</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{workflow.description}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="workflows">
         <TabsList>
@@ -755,7 +902,7 @@ export default function AdminWorkflowsPage() {
                 <Label>Trigger</Label>
                 <Select
                   value={formData.trigger_type}
-                  onValueChange={(v: any) => setFormData({ ...formData, trigger_type: v })}
+                  onValueChange={(v: AutomatedWorkflow['trigger_type']) => setFormData({ ...formData, trigger_type: v })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -765,6 +912,10 @@ export default function AdminWorkflowsPage() {
                     <SelectItem value="inactive">Inactive Member</SelectItem>
                     <SelectItem value="milestone">Milestone Achieved</SelectItem>
                     <SelectItem value="prayer_answered">Prayer Answered</SelectItem>
+                    <SelectItem value="partner_welcome">Partner Welcome</SelectItem>
+                    <SelectItem value="partner_hub_reminder">Partner Hub Reminder</SelectItem>
+                    <SelectItem value="partner_gathering_reminder">Partner Gathering Reminder</SelectItem>
+                    <SelectItem value="payment_attention">Payment Attention</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -772,7 +923,7 @@ export default function AdminWorkflowsPage() {
                 <Label>Action</Label>
                 <Select
                   value={formData.action_type}
-                  onValueChange={(v: any) => setFormData({ ...formData, action_type: v })}
+                  onValueChange={(v: AutomatedWorkflow['action_type']) => setFormData({ ...formData, action_type: v })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -793,7 +944,7 @@ export default function AdminWorkflowsPage() {
                   onChange={(e) => setFormData({ ...formData, days_inactive: parseInt(e.target.value) })}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Trigger when member hasn't been active for this many days
+                  Trigger when member has not been active for this many days
                 </p>
               </div>
             )}
@@ -812,6 +963,34 @@ export default function AdminWorkflowsPage() {
               </div>
             )}
 
+            {(formData.trigger_type === 'partner_welcome' || formData.trigger_type === 'partner_hub_reminder') && (
+              <div>
+                <Label>Days After Partner Joins</Label>
+                <Input
+                  type="number"
+                  value={formData.days_after}
+                  onChange={(e) => setFormData({ ...formData, days_after: parseInt(e.target.value) })}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  0 = same day, 3 = three days after becoming a partner.
+                </p>
+              </div>
+            )}
+
+            {formData.trigger_type === 'partner_gathering_reminder' && (
+              <div>
+                <Label>Days Before Gathering</Label>
+                <Input
+                  type="number"
+                  value={formData.days_before}
+                  onChange={(e) => setFormData({ ...formData, days_before: parseInt(e.target.value) })}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Sends to partners when an upcoming partner/covenant event matches this date.
+                </p>
+              </div>
+            )}
+
             {formData.action_type === 'email' && (
               <div>
                 <Label>Email Subject</Label>
@@ -826,6 +1005,45 @@ export default function AdminWorkflowsPage() {
               </div>
             )}
 
+            {(formData.trigger_type.startsWith('partner_') || formData.trigger_type === 'payment_attention') && (
+              <div className="grid gap-4 md:grid-cols-3 rounded-lg border border-gold/30 bg-gold/5 p-4">
+                <div>
+                  <Label>Partner Email Type</Label>
+                  <Select
+                    value={formData.partner_email_kind}
+                    onValueChange={(v: NonNullable<AutomatedWorkflow['trigger_config']['partner_email_kind']>) =>
+                      setFormData({ ...formData, partner_email_kind: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="welcome">Welcome</SelectItem>
+                      <SelectItem value="monthly-update">Monthly Update</SelectItem>
+                      <SelectItem value="gathering">Gathering</SelectItem>
+                      <SelectItem value="resource">Resource</SelectItem>
+                      <SelectItem value="training">Training</SelectItem>
+                      <SelectItem value="missions">Missions</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>CTA Text</Label>
+                  <Input
+                    value={formData.ctaText}
+                    onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                    placeholder="Open Partner Hub"
+                  />
+                </div>
+                <div>
+                  <Label>CTA URL</Label>
+                  <Input
+                    value={formData.ctaUrl}
+                    onChange={(e) => setFormData({ ...formData, ctaUrl: e.target.value })}
+                    placeholder="https://tpcmin.org/partner-hub"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <Label>Message Content</Label>
               <Textarea
@@ -835,7 +1053,7 @@ export default function AdminWorkflowsPage() {
                 rows={8}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Available variables: {'{first_name}'}, {'{last_name}'}, {'{email}'}, {'{years}'} (for anniversaries)
+                Available variables: {'{first_name}'}, {'{last_name}'}, {'{email}'}, {'{years}'}, {'{event_title}'}, {'{event_date}'}, {'{event_time}'}, {'{partner_hub_url}'}, {'{giving_url}'}
               </p>
             </div>
           </div>

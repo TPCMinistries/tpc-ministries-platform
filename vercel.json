@@ -23,6 +23,10 @@
     {
       "path": "/api/cron/streak-warnings",
       "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/admin/workflows/run",
+      "schedule": "0 13 * * *"
     }
   ]
 }

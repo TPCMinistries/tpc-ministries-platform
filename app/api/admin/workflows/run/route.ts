@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendEmail as sendResendEmail } from '@/lib/email/resend'
+import { renderCovenantPartnerEmail } from '@/lib/email/render'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,17 +19,66 @@ interface WorkflowConfig {
     days_before?: number
     days_after?: number
     days_inactive?: number
+    partner_email_kind?: 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
   }
   action_config: {
     subject?: string
     message?: string
+    ctaText?: string
+    ctaUrl?: string
+    template?: string
   }
+}
+
+interface WorkflowRecipient {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+  years?: number
+  event_title?: string
+  event_date?: string
+  event_time?: string
+  event_url?: string
+  subscription_status?: string | null
+}
+
+interface EventRow {
+  id: string
+  title: string
+  start_time: string
+}
+
+function startOfDay(date: Date) {
+  const clone = new Date(date)
+  clone.setHours(0, 0, 0, 0)
+  return clone
+}
+
+function endOfDay(date: Date) {
+  const clone = new Date(date)
+  clone.setHours(23, 59, 59, 999)
+  return clone
+}
+
+async function hasRecentExecution(workflowId: string, memberId: string, days = 30) {
+  const supabase = getSupabase()
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+  const { data } = await supabase
+    .from('workflow_executions')
+    .select('id')
+    .eq('workflow_id', workflowId)
+    .eq('member_id', memberId)
+    .gte('executed_at', since)
+    .limit(1)
+
+  return Boolean(data?.length)
 }
 
 // Get members matching the workflow trigger
 async function getMembersForWorkflow(workflow: WorkflowConfig) {
   const now = new Date()
-  const members: any[] = []
+  const members: WorkflowRecipient[] = []
   const supabase = getSupabase()
 
   switch (workflow.trigger_type) {
@@ -79,14 +130,11 @@ async function getMembersForWorkflow(workflow: WorkflowConfig) {
     case 'new_member': {
       const daysAfter = workflow.trigger_config.days_after || 0
       const targetDate = new Date(now.getTime() - daysAfter * 24 * 60 * 60 * 1000)
-      const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0))
-      const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999))
-
       const { data } = await supabase
         .from('members')
         .select('id, first_name, last_name, email, created_at')
-        .gte('created_at', startOfDay.toISOString())
-        .lte('created_at', endOfDay.toISOString())
+        .gte('created_at', startOfDay(targetDate).toISOString())
+        .lte('created_at', endOfDay(targetDate).toISOString())
 
       members.push(...(data || []))
       break
@@ -149,34 +197,141 @@ async function getMembersForWorkflow(workflow: WorkflowConfig) {
       }
       break
     }
+
+    case 'partner_welcome':
+    case 'partner_hub_reminder': {
+      const daysAfter = workflow.trigger_config.days_after || 0
+      const targetDate = new Date(now.getTime() - daysAfter * 24 * 60 * 60 * 1000)
+      const { data } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, email, tier, joined_at, created_at')
+        .in('tier', ['partner', 'covenant'])
+
+      for (const member of data || []) {
+        if (!member.email) continue
+        const joinedAt = member.joined_at || member.created_at
+        if (!joinedAt) continue
+        const joinedDate = new Date(joinedAt)
+        if (joinedDate < startOfDay(targetDate) || joinedDate > endOfDay(targetDate)) continue
+        if (await hasRecentExecution(workflow.id, member.id, 60)) continue
+        members.push(member)
+      }
+      break
+    }
+
+    case 'partner_gathering_reminder': {
+      const daysBefore = workflow.trigger_config.days_before ?? 1
+      const targetDate = new Date(now.getTime() + daysBefore * 24 * 60 * 60 * 1000)
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, title, start_time')
+        .eq('status', 'upcoming')
+        .in('tier_required', ['partner', 'covenant'])
+        .gte('start_time', startOfDay(targetDate).toISOString())
+        .lte('start_time', endOfDay(targetDate).toISOString())
+        .order('start_time', { ascending: true })
+
+      if (!events?.length) break
+
+      const nextEvent = events[0] as EventRow
+      const eventDate = new Date(nextEvent.start_time)
+      const eventUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'}/partner-hub`
+
+      const { data: partners } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, email, tier')
+        .in('tier', ['partner', 'covenant'])
+
+      for (const member of partners || []) {
+        if (!member.email) continue
+        if (await hasRecentExecution(workflow.id, member.id, 7)) continue
+        members.push({
+          ...member,
+          event_title: nextEvent.title,
+          event_date: eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+          event_time: eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          event_url: eventUrl,
+        })
+      }
+      break
+    }
+
+    case 'payment_attention': {
+      const { data } = await supabase
+        .from('member_subscriptions')
+        .select(`
+          member_id,
+          status,
+          members:member_id (
+            id,
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .in('status', ['past_due', 'unpaid', 'incomplete'])
+
+      for (const row of data || []) {
+        const member = Array.isArray(row.members) ? row.members[0] : row.members
+        if (!member?.email) continue
+        if (await hasRecentExecution(workflow.id, member.id, 7)) continue
+        members.push({ ...member, subscription_status: row.status })
+      }
+      break
+    }
   }
 
   return members
 }
 
 // Process message template with member data
-function processTemplate(template: string, member: any): string {
+function processTemplate(template: string, member: WorkflowRecipient): string {
   return template
     .replace(/{first_name}/g, member.first_name || 'Friend')
     .replace(/{last_name}/g, member.last_name || '')
     .replace(/{email}/g, member.email || '')
     .replace(/{years}/g, member.years?.toString() || '1')
+    .replace(/{event_title}/g, member.event_title || 'the next Covenant Partner gathering')
+    .replace(/{event_date}/g, member.event_date || '')
+    .replace(/{event_time}/g, member.event_time || '')
+    .replace(/{partner_hub_url}/g, `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'}/partner-hub`)
+    .replace(/{giving_url}/g, `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'}/my-giving`)
 }
 
-// Send email via API
-async function sendEmail(to: string, subject: string, body: string) {
+async function sendWorkflowEmail(workflow: WorkflowConfig, member: WorkflowRecipient, subject: string, body: string) {
+  if (!member.email) return false
+
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/email/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to,
-        subject,
-        html: body.replace(/\n/g, '<br>'),
-        text: body
+    const isPartnerTemplate = workflow.action_config.template === 'covenant-partner'
+      || workflow.trigger_type.startsWith('partner_')
+      || workflow.trigger_type === 'payment_attention'
+
+    const html = isPartnerTemplate
+      ? await renderCovenantPartnerEmail({
+        kind: workflow.trigger_config.partner_email_kind || 'monthly-update',
+        memberName: member.first_name || 'Friend',
+        updateTitle: subject,
+        updateBody: body,
+        partnerHubUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tpcmin.org'}/partner-hub`,
+        gatheringUrl: member.event_url,
+        gatheringDate: member.event_date,
+        gatheringTime: member.event_time,
+        ctaText: workflow.action_config.ctaText,
+        ctaUrl: workflow.action_config.ctaUrl || member.event_url,
       })
-    })
-    return response.ok
+      : `
+        <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
+          <div style="background:#0e1a2e;color:#fff;padding:24px;text-align:center;">
+            <h1 style="margin:0;">TPC Ministries</h1>
+          </div>
+          <div style="padding:28px 22px;color:#374151;line-height:1.6;">
+            ${body.replace(/\n/g, '<br>')}
+          </div>
+        </div>
+      `
+
+    const result = await sendResendEmail({ to: member.email, subject, html })
+    return result.success
   } catch (error) {
     console.error('Error sending email:', error)
     return false
@@ -245,7 +400,7 @@ export async function POST(request: NextRequest) {
           case 'email': {
             const subject = processTemplate(workflow.action_config.subject || '', member)
             const body = processTemplate(workflow.action_config.message || '', member)
-            success = await sendEmail(member.email, subject, body)
+            success = await sendWorkflowEmail(workflow, member, subject, body)
             break
           }
           case 'notification': {
@@ -329,7 +484,12 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    const results: any[] = []
+    const results: Array<{
+      workflow: string
+      matched?: number
+      sent?: number
+      error?: string
+    }> = []
 
     for (const workflow of workflows || []) {
       try {
@@ -343,7 +503,7 @@ export async function GET(request: NextRequest) {
             case 'email': {
               const subject = processTemplate(workflow.action_config.subject || '', member)
               const body = processTemplate(workflow.action_config.message || '', member)
-              success = await sendEmail(member.email, subject, body)
+              success = await sendWorkflowEmail(workflow, member, subject, body)
               break
             }
             case 'notification': {
