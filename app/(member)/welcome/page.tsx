@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -22,7 +20,6 @@ import {
   ArrowRight,
   ArrowLeft,
   CheckCircle,
-  Circle,
   Home,
   Loader2,
   SkipForward,
@@ -63,7 +60,6 @@ interface Group {
 }
 
 export default function WelcomePage() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [memberName, setMemberName] = useState('')
@@ -338,17 +334,17 @@ export default function WelcomePage() {
                   Welcome, {memberName}!
                 </h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-                  Let's set up your account so you can get the most out of your TPC experience.
+                  Let&apos;s set up your account so you can get the most out of your TPC experience.
                 </p>
               </div>
 
               <Card className="text-left dark:bg-gray-800 dark:border-gray-700">
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">
-                    Here's what we'll do:
+                    Here&apos;s what we&apos;ll do:
                   </h3>
                   <div className="space-y-3">
-                    {steps.slice(1).map((step, index) => (
+                    {steps.slice(1).map((step) => (
                       <div key={step.id} className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                           {step.icon}
@@ -371,7 +367,7 @@ export default function WelcomePage() {
                   className="bg-navy hover:bg-navy/90 dark:bg-gold dark:text-navy dark:hover:bg-gold/90"
                   onClick={() => setCurrentStep(1)}
                 >
-                  Let's Go
+                  Let&apos;s Go
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
@@ -426,7 +422,7 @@ export default function WelcomePage() {
                     <Label htmlFor="bio">Tell us about yourself</Label>
                     <Textarea
                       id="bio"
-                      placeholder="Share a bit about your faith journey, interests, or how you'd like to grow..."
+                      placeholder="Share a bit about your faith journey, interests, or how you&apos;d like to grow..."
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={4}
@@ -590,7 +586,7 @@ export default function WelcomePage() {
                   Stay Connected
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Choose what updates you'd like to receive
+                  Choose what updates you&apos;d like to receive
                 </p>
               </div>
 
@@ -610,7 +606,7 @@ export default function WelcomePage() {
                     <div>
                       <Label className="text-base">Streak Reminders</Label>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Don't lose your daily streak
+                        Don&apos;t lose your daily streak
                       </p>
                     </div>
                     <Switch checked={notifyStreak} onCheckedChange={setNotifyStreak} />
@@ -709,7 +705,7 @@ export default function WelcomePage() {
                   <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
                 </div>
                 <h1 className="text-3xl font-bold text-navy dark:text-white">
-                  You're All Set!
+                  You&apos;re All Set!
                 </h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
                   Your account is ready. Welcome to the TPC family!

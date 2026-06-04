@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,12 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   DollarSign,
-  Heart,
-  Globe,
-  Users,
   TrendingUp,
   Download,
   Calendar,
@@ -21,22 +17,60 @@ import {
   Gift,
   Repeat,
   CheckCircle2,
-  Clock,
   Edit2,
-  Trash2,
-  ChevronRight,
   PieChart,
   BarChart3,
   Sparkles,
   Award
 } from 'lucide-react'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+
+type GivingFrequency = 'once' | 'weekly' | 'biweekly' | 'monthly'
+type FundReference = { name: string } | { name: string }[] | null
+
+interface DonationRow {
+  id: string
+  amount: number | string
+  fund_id?: string | null
+  created_at: string
+  is_recurring?: boolean | null
+  status: string
+  fund?: FundReference
+}
+
+interface RecurringDonationRow {
+  id: string
+  fund_id: string
+  amount: number | string
+  frequency: string
+  next_charge_date: string
+  status: string
+  fund?: FundReference
+}
+
+interface GivingPledgeRow {
+  id: string
+  fund_id: string
+  pledge_amount: number | string
+  amount_fulfilled: number | string
+  start_date: string
+  end_date: string
+  status: string
+  fund?: FundReference
+}
+
+const getFundName = (fund?: FundReference) => {
+  if (Array.isArray(fund)) {
+    return fund[0]?.name || 'General'
+  }
+
+  return fund?.name || 'General'
+}
 
 interface GivingHistory {
   id: string
   amount: number
-  fund_id?: string
+  fund_id?: string | null
   fund_name?: string
   date: string
   recurring: boolean
@@ -94,15 +128,11 @@ export default function EnhancedGivingPage() {
   const [selectedAmount, setSelectedAmount] = useState<string>('50')
   const [customAmount, setCustomAmount] = useState<string>('')
   const [selectedFund, setSelectedFund] = useState<string>('')
-  const [frequency, setFrequency] = useState<'once' | 'weekly' | 'biweekly' | 'monthly'>('once')
+  const [frequency, setFrequency] = useState<GivingFrequency>('once')
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [newMonthlyGoal, setNewMonthlyGoal] = useState<string>('')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
 
     try {
@@ -134,13 +164,13 @@ export default function EnhancedGivingPage() {
 
         if (donations) {
           setGivingHistory(
-            donations.map((d: any) => ({
+            donations.map((d: DonationRow) => ({
               id: d.id,
               amount: Number(d.amount),
               fund_id: d.fund_id,
-              fund_name: d.fund?.name || 'General',
+              fund_name: getFundName(d.fund),
               date: d.created_at,
-              recurring: d.is_recurring,
+              recurring: Boolean(d.is_recurring),
               status: d.status
             }))
           )
@@ -158,10 +188,10 @@ export default function EnhancedGivingPage() {
 
         if (recurring) {
           setRecurringGifts(
-            recurring.map((r: any) => ({
+            recurring.map((r: RecurringDonationRow) => ({
               id: r.id,
               fund_id: r.fund_id,
-              fund_name: r.fund?.name || 'General',
+              fund_name: getFundName(r.fund),
               amount: Number(r.amount),
               frequency: r.frequency,
               next_date: r.next_charge_date,
@@ -182,10 +212,10 @@ export default function EnhancedGivingPage() {
 
         if (pledgeData) {
           setPledges(
-            pledgeData.map((p: any) => ({
+            pledgeData.map((p: GivingPledgeRow) => ({
               id: p.id,
               fund_id: p.fund_id,
-              fund_name: p.fund?.name || 'General',
+              fund_name: getFundName(p.fund),
               pledge_amount: Number(p.pledge_amount),
               amount_fulfilled: Number(p.amount_fulfilled),
               start_date: p.start_date,
@@ -222,7 +252,7 @@ export default function EnhancedGivingPage() {
         .order('is_featured', { ascending: false })
 
       if (fundsData) {
-        setFunds(fundsData as any)
+        setFunds(fundsData as GivingFund[])
         if (fundsData.length > 0 && !selectedFund) {
           setSelectedFund(fundsData[0].id)
         }
@@ -232,7 +262,11 @@ export default function EnhancedGivingPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedFund])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const saveGoal = async () => {
     if (!memberId || !newMonthlyGoal) return
@@ -583,7 +617,7 @@ export default function EnhancedGivingPage() {
                         ].map((f) => (
                           <button
                             key={f.value}
-                            onClick={() => setFrequency(f.value as any)}
+                            onClick={() => setFrequency(f.value as GivingFrequency)}
                             className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${
                               frequency === f.value
                                 ? 'border-navy bg-navy text-white'
