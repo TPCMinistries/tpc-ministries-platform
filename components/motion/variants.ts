@@ -20,14 +20,14 @@ export const springGentle: Transition = {
 }
 
 // === Easing ===
-export const revealEase = [0.25, 0.46, 0.45, 0.94] as const
+export const revealEase: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94]
 
 // === Fade Variants ===
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.4, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.4, ease: revealEase },
   },
 }
 
@@ -37,7 +37,7 @@ export const fadeInUp: Variants = {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.5, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.5, ease: revealEase },
   },
 }
 
@@ -47,7 +47,7 @@ export const fadeInDown: Variants = {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.5, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.5, ease: revealEase },
   },
 }
 
@@ -57,7 +57,7 @@ export const fadeInScale: Variants = {
     opacity: 1,
     scale: 1,
     filter: "blur(0px)",
-    transition: { duration: 0.4, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.4, ease: revealEase },
   },
 }
 
@@ -67,7 +67,7 @@ export const fadeInLeft: Variants = {
     opacity: 1,
     x: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.5, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.5, ease: revealEase },
   },
 }
 
@@ -77,7 +77,7 @@ export const fadeInRight: Variants = {
     opacity: 1,
     x: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.5, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.5, ease: revealEase },
   },
 }
 
@@ -135,7 +135,7 @@ export const pageTransition: Variants = {
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: revealEase as unknown as number[] },
+    transition: { duration: 0.4, ease: revealEase },
   },
   exit: {
     opacity: 0,

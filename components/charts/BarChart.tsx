@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
+import type { ValueType } from 'recharts/types/component/DefaultTooltipContent'
 
 interface DataPoint {
   [key: string]: string | number
@@ -46,6 +47,14 @@ const COLORS = {
 }
 
 const colorPalette = [COLORS.navy, COLORS.gold, COLORS.green, COLORS.purple, COLORS.blue, COLORS.red]
+
+function formatTooltipValue(value: ValueType | undefined, formatter?: (value: number) => string) {
+  if (typeof value === 'number') {
+    return formatter ? formatter(value) : value
+  }
+
+  return value ?? ''
+}
 
 export function BarChart({
   data,
@@ -103,7 +112,7 @@ export function BarChart({
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
           }}
-          formatter={(value: number) => [formatTooltip ? formatTooltip(value) : value]}
+          formatter={(value) => [formatTooltipValue(value, formatTooltip)]}
         />
         {showLegend && bars.length > 1 && (
           <Legend

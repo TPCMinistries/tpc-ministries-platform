@@ -8,8 +8,11 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 
 interface DataPoint {
+  [key: string]: string | number | undefined
   name: string
   value: number
   color?: string
@@ -37,6 +40,14 @@ const COLORS = {
 
 const colorPalette = [COLORS.navy, COLORS.gold, COLORS.green, COLORS.purple, COLORS.blue, COLORS.red, COLORS.gray]
 
+function formatTooltipValue(value: ValueType | undefined, formatter?: (value: number) => string) {
+  if (typeof value === 'number') {
+    return formatter ? formatter(value) : value
+  }
+
+  return value ?? ''
+}
+
 export function PieChart({
   data,
   height = 300,
@@ -48,9 +59,9 @@ export function PieChart({
 }: PieChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0)
 
-  const renderLabel = ({ name, value, percent }: { name: string; value: number; percent: number }) => {
+  const renderLabel = ({ name, percent }: PieLabelRenderProps) => {
     if (!showLabels) return null
-    return `${name}: ${(percent * 100).toFixed(0)}%`
+    return `${name || 'Item'}: ${((percent || 0) * 100).toFixed(0)}%`
   }
 
   return (
@@ -81,9 +92,9 @@ export function PieChart({
             borderRadius: '8px',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
           }}
-          formatter={(value: number, name: string) => [
-            formatValue ? formatValue(value) : value,
-            name
+          formatter={(value: ValueType | undefined, name: NameType | undefined) => [
+            formatTooltipValue(value, formatValue),
+            name || ''
           ]}
         />
         {showLegend && (
@@ -92,7 +103,7 @@ export function PieChart({
             align="right"
             verticalAlign="middle"
             wrapperStyle={{ fontSize: '12px' }}
-            formatter={(value, entry) => {
+            formatter={(value) => {
               const item = data.find(d => d.name === value)
               const percent = item ? ((item.value / total) * 100).toFixed(1) : 0
               return `${value} (${percent}%)`
