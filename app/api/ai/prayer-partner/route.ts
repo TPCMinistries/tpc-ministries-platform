@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() { return createAdminClient() }
 
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
@@ -25,7 +23,6 @@ function calculateCompatibility(member1: MemberProfile, member2: MemberProfile):
   let score = 50 // Base score
 
   // Gift complementarity (different gifts complement each other)
-  const gifts = ['prophecy', 'teaching', 'encouragement', 'giving', 'leadership', 'mercy', 'service', 'wisdom', 'faith', 'healing']
   if (member1.primary_gift && member2.primary_gift) {
     if (member1.primary_gift !== member2.primary_gift) {
       score += 15 // Different gifts complement
@@ -55,6 +52,7 @@ function calculateCompatibility(member1: MemberProfile, member2: MemberProfile):
 // Find prayer partner matches for a member
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
     const memberId = searchParams.get('memberId')
     const limit = parseInt(searchParams.get('limit') || '5')
@@ -125,7 +123,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate compatibility and rank matches
     const matches = potentialPartners.map(partner => {
-      const profile = (partner as any).member_spiritual_profiles?.[0] || {}
+      const joinedProfile = partner.member_spiritual_profiles
+      const profile = Array.isArray(joinedProfile) ? joinedProfile[0] || {} : joinedProfile || {}
       const partnerData: MemberProfile = {
         id: partner.id,
         first_name: partner.first_name,
@@ -213,6 +212,7 @@ Compatibility: ${topMatches[0].compatibility}%`
 // POST - Create a prayer partnership
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { memberId, partnerId } = await request.json()
 
     if (!memberId || !partnerId) {

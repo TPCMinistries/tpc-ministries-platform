@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() { return createAdminClient() }
 
 function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
@@ -12,6 +10,7 @@ function getOpenAI() { return new OpenAI({
 // Generate AI sermon notes from transcript or audio
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { sermonId, transcript, title, speaker } = await request.json()
 
     if (!transcript && !sermonId) {
@@ -112,7 +111,7 @@ ${sermonTranscript.substring(0, 15000)}` // Limit transcript length
 
 // Parse the AI-generated notes into structured sections
 function parseSermonNotes(content: string) {
-  const sections: Record<string, any> = {}
+  const sections: Record<string, string | string[]> = {}
 
   // Extract main scripture
   const scriptureMatch = content.match(/\*\*Main Scripture\*\*:?\s*([^\n]+)/i)
@@ -172,6 +171,7 @@ function parseSermonNotes(content: string) {
 // GET - Retrieve saved sermon notes
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
     const sermonId = searchParams.get('sermonId')
 

@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-function getSupabase() { return createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+function getSupabase() { return createAdminClient() }
+
+type BadgeId = keyof typeof BADGES
+
+interface RecentAchievement {
+  badge_id: string
+  earned_at: string | null
+  members: {
+    first_name?: string | null
+    last_name?: string | null
+  } | Array<{
+    first_name?: string | null
+    last_name?: string | null
+  }> | null
+}
 
 // Badge definitions
 const BADGES = {
@@ -62,6 +74,7 @@ function getLevel(points: number) {
 // GET - Get member's gamification data
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { searchParams } = new URL(request.url)
     const memberId = searchParams.get('memberId')
 
@@ -144,11 +157,14 @@ export async function GET(request: NextRequest) {
         isTop10: position < 10,
         isTop100: position < 100
       },
-      recentCommunityAchievements: recentAchievements?.map(a => ({
-        badge: BADGES[a.badge_id as keyof typeof BADGES],
-        memberName: `${(a.members as any)?.first_name} ${((a.members as any)?.last_name || '').charAt(0)}.`,
-        earnedAt: a.earned_at
-      })) || []
+      recentCommunityAchievements: ((recentAchievements || []) as RecentAchievement[]).map((achievement) => {
+        const member = Array.isArray(achievement.members) ? achievement.members[0] : achievement.members
+        return {
+          badge: BADGES[achievement.badge_id as BadgeId],
+          memberName: `${member?.first_name || 'Member'} ${(member?.last_name || '').charAt(0)}.`,
+          earnedAt: achievement.earned_at
+        }
+      }) || []
     })
 
   } catch (error) {
@@ -160,6 +176,7 @@ export async function GET(request: NextRequest) {
 // POST - Award points or check for new badges
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase()
     const { memberId, action, points: customPoints } = await request.json()
 
     if (!memberId || !action) {

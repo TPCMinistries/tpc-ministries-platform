@@ -5,6 +5,12 @@ import { getContentType, CONTENT_TYPES, generateSlug } from '@/lib/content/conte
 
 export const dynamic = 'force-dynamic'
 
+type ContentHubRow = Record<string, unknown> & {
+  id: string
+  created_at?: string | null
+  updated_at?: string | null
+}
+
 // GET - List content by type
 export async function GET(request: NextRequest) {
   try {
@@ -60,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     // If no type, fetch recent from all types
-    const allContent: any[] = []
+    const allContent: ContentHubRow[] = []
     for (const config of CONTENT_TYPES) {
       const { data } = await supabase
         .from(config.table)
@@ -69,17 +75,17 @@ export async function GET(request: NextRequest) {
         .limit(10)
 
       if (data) {
-        allContent.push(...data.map(item => ({
+        allContent.push(...(data as unknown as ContentHubRow[]).map(item => ({
           ...item,
           _type: config.id,
-          _title: item[config.titleField],
+          _title: String(item[config.titleField] || ''),
           _table: config.table,
         })))
       }
     }
 
     // Sort by created_at desc
-    allContent.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    allContent.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
     return NextResponse.json({
       data: allContent.slice(0, 50),
@@ -108,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build insert data from config fields
-    const insertData: Record<string, any> = {}
+    const insertData: Record<string, unknown> = {}
     for (const field of config.fields) {
       if (fields[field.name] !== undefined) {
         insertData[field.name] = fields[field.name]
@@ -125,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // Auto-generate slug
     if (config.slugField && !insertData[config.slugField] && insertData[config.titleField]) {
-      insertData[config.slugField] = generateSlug(insertData[config.titleField])
+      insertData[config.slugField] = generateSlug(String(insertData[config.titleField]))
     }
 
     // Set published date

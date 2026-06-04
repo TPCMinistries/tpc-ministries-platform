@@ -43,6 +43,10 @@ interface WorkflowRecipient {
   subscription_status?: string | null
 }
 
+function normalizeRecipient(row: WorkflowRecipient | WorkflowRecipient[] | null | undefined) {
+  return Array.isArray(row) ? row[0] : row
+}
+
 interface EventRow {
   id: string
   title: string
@@ -191,8 +195,9 @@ async function getMembersForWorkflow(workflow: WorkflowConfig) {
         .gte('updated_at', yesterday.toISOString())
 
       for (const prayer of data || []) {
-        if (prayer.members) {
-          members.push(prayer.members)
+        const member = normalizeRecipient(prayer.members as WorkflowRecipient | WorkflowRecipient[] | null)
+        if (member) {
+          members.push(member)
         }
       }
       break

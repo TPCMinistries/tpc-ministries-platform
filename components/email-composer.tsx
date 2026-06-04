@@ -21,6 +21,27 @@ export type EmailTemplate =
   | 'event'
   | 'urgent'
 
+type RecipientType = 'all' | 'tier' | 'individual'
+type RecipientTier = 'free' | 'partner' | 'covenant'
+type UrgencyLevel = 'high' | 'medium' | 'low'
+
+export interface EmailComposerData {
+  template: EmailTemplate
+  recipientType: RecipientType
+  recipientTier: RecipientTier
+  recipientIds: string[]
+  subject: string
+  title: string
+  message: string
+  ctaText: string
+  ctaUrl: string
+  imageUrl: string
+  eventDate: string
+  eventTime: string
+  eventLocation: string
+  urgencyLevel: UrgencyLevel
+}
+
 interface EmailComposerProps {
   members: Array<{
     id: string
@@ -29,9 +50,9 @@ interface EmailComposerProps {
     email: string
     tier: string
   }>
-  onSend: (data: any) => Promise<void>
-  onPreview: (data: any) => void
-  onTestEmail: (data: any) => Promise<void>
+  onSend: (data: EmailComposerData) => Promise<void>
+  onPreview: (data: EmailComposerData) => void
+  onTestEmail: (data: EmailComposerData) => Promise<void>
 }
 
 export function EmailComposer({ members, onSend, onPreview, onTestEmail }: EmailComposerProps) {
@@ -40,8 +61,8 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
   const [testingSending, setTestSending] = useState(false)
 
   // Common fields
-  const [recipientType, setRecipientType] = useState<'all' | 'tier' | 'individual'>('all')
-  const [recipientTier, setRecipientTier] = useState<'free' | 'partner' | 'covenant'>('free')
+  const [recipientType, setRecipientType] = useState<RecipientType>('all')
+  const [recipientTier, setRecipientTier] = useState<RecipientTier>('free')
   const [recipientIds, setRecipientIds] = useState<string[]>([])
   const [subject, setSubject] = useState('')
 
@@ -58,7 +79,7 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
   const [eventLocation, setEventLocation] = useState('')
 
   // Urgent fields
-  const [urgencyLevel, setUrgencyLevel] = useState<'high' | 'medium' | 'low'>('high')
+  const [urgencyLevel, setUrgencyLevel] = useState<UrgencyLevel>('high')
 
   const getRecipientCount = () => {
     if (recipientType === 'all') return members.length
@@ -75,7 +96,7 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
     )
   }
 
-  const getEmailData = () => {
+  const getEmailData = (): EmailComposerData => {
     return {
       template,
       recipientType,
@@ -168,8 +189,8 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
         <CardContent className="p-6">
           <div className="space-y-4">
             <Label>Recipients</Label>
-            <Select value={recipientType} onValueChange={(v: any) => {
-              setRecipientType(v)
+            <Select value={recipientType} onValueChange={(v) => {
+              setRecipientType(v as RecipientType)
               setRecipientIds([])
             }}>
               <SelectTrigger>
@@ -183,7 +204,7 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
             </Select>
 
             {recipientType === 'tier' && (
-              <Select value={recipientTier} onValueChange={(v: any) => setRecipientTier(v)}>
+              <Select value={recipientTier} onValueChange={(v) => setRecipientTier(v as RecipientTier)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -317,7 +338,7 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
             {template === 'urgent' && (
               <div>
                 <Label>Urgency Level</Label>
-                <Select value={urgencyLevel} onValueChange={(v: any) => setUrgencyLevel(v)}>
+                <Select value={urgencyLevel} onValueChange={(v) => setUrgencyLevel(v as UrgencyLevel)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -385,9 +406,9 @@ export function EmailComposer({ members, onSend, onPreview, onTestEmail }: Email
           onClick={handleTestEmail}
           variant="outline"
           className="flex-1"
-          disabled={!subject || !title || !message || testSending}
+          disabled={!subject || !title || !message || testingSending}
         >
-          {testSending ? (
+          {testingSending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Sending Test...
