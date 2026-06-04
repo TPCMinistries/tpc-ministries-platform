@@ -1,6 +1,15 @@
 // Admin-specific database queries
 import { createClient } from '@/lib/supabase/server'
 
+type RecentActivityMember = {
+  first_name: string | null
+  last_name: string | null
+}
+
+function firstJoinedRow<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value ?? null
+}
+
 // =====================================================
 // DASHBOARD STATS
 // =====================================================
@@ -98,13 +107,17 @@ export async function getRecentActivity(limit: number = 10) {
       subtitle: d.type,
       timestamp: d.created_at,
     })) || []),
-    ...(recentPrayers?.map(p => ({
-      type: 'prayer',
-      id: p.id,
-      title: `New prayer: ${p.title}`,
-      subtitle: p.member ? `${p.member.first_name} ${p.member.last_name}` : 'Anonymous',
-      timestamp: p.created_at,
-    })) || []),
+    ...(recentPrayers?.map(p => {
+      const member = firstJoinedRow(p.member as RecentActivityMember | RecentActivityMember[] | null)
+
+      return {
+        type: 'prayer',
+        id: p.id,
+        title: `New prayer: ${p.title}`,
+        subtitle: member ? `${member.first_name} ${member.last_name}` : 'Anonymous',
+        timestamp: p.created_at,
+      }
+    }) || []),
     ...(recentMembers?.map(m => ({
       type: 'member',
       id: m.id,
@@ -143,7 +156,7 @@ export async function getAllTeachings(page: number = 1, limit: number = 20) {
   }
 }
 
-export async function createTeaching(teaching: any) {
+export async function createTeaching(teaching: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -156,7 +169,7 @@ export async function createTeaching(teaching: any) {
   return data
 }
 
-export async function updateTeaching(id: string, updates: any) {
+export async function updateTeaching(id: string, updates: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -205,7 +218,7 @@ export async function getAllProphecies(page: number = 1, limit: number = 20) {
   }
 }
 
-export async function createProphecy(prophecy: any) {
+export async function createProphecy(prophecy: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -218,7 +231,7 @@ export async function createProphecy(prophecy: any) {
   return data
 }
 
-export async function updateProphecy(id: string, updates: any) {
+export async function updateProphecy(id: string, updates: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { data, error } = await supabase

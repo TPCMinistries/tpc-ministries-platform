@@ -24,6 +24,23 @@ const baseStyles = `
   .divider { height: 1px; background: linear-gradient(90deg, transparent, #d4af37, transparent); margin: 30px 0; }
 `
 
+interface DigestStats {
+  devotionalsRead: number
+  prayersSubmitted: number
+  teachingsWatched: number
+}
+
+type EmailTemplateArgs = {
+  birthday: [firstName: string, specialMessage?: string]
+  welcome: [firstName: string, tier: string]
+  reengagement: [firstName: string, daysInactive: number]
+  prayerAnswered: [firstName: string, prayerTitle: string]
+  anniversary: [firstName: string, years: number]
+  weeklyDigest: [firstName: string, stats: DigestStats, highlights: string[]]
+  propheticWord: [firstName: string, wordTitle: string, excerpt: string]
+  eventInvitation: [firstName: string, eventName: string, eventDate: string, eventDescription: string]
+}
+
 export const emailTemplates = {
   // Birthday Greeting
   birthday: (firstName: string, specialMessage?: string) => `
@@ -253,7 +270,7 @@ export const emailTemplates = {
 `,
 
   // Weekly Digest
-  weeklyDigest: (firstName: string, stats: { devotionalsRead: number; prayersSubmitted: number; teachingsWatched: number }, highlights: string[]) => `
+  weeklyDigest: (firstName: string, stats: DigestStats, highlights: string[]) => `
 <!DOCTYPE html>
 <html>
 <head><style>${baseStyles}</style></head>
@@ -388,14 +405,14 @@ export const emailTemplates = {
 </body>
 </html>
 `
-}
+} satisfies { [K in keyof EmailTemplateArgs]: (...args: EmailTemplateArgs[K]) => string }
 
 // Helper function to send email using the template
-export async function sendTemplatedEmail(
+export async function sendTemplatedEmail<TTemplate extends keyof EmailTemplateArgs>(
   to: string,
   subject: string,
-  templateName: keyof typeof emailTemplates,
-  templateData: any
+  templateName: TTemplate,
+  templateData: EmailTemplateArgs[TTemplate]
 ): Promise<boolean> {
   try {
     const template = emailTemplates[templateName]
@@ -404,7 +421,8 @@ export async function sendTemplatedEmail(
       return false
     }
 
-    const html = typeof template === 'function' ? template(...Object.values(templateData)) : template
+    const typedTemplate = template as (...args: EmailTemplateArgs[TTemplate]) => string
+    const html = typedTemplate(...templateData)
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/email/send`, {
       method: 'POST',

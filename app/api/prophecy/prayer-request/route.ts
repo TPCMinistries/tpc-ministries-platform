@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type JoinedMember = {
+  id: string
+  email: string | null
+  raw_user_meta_data: Record<string, unknown> | null
+}
+
+function firstJoinedRow<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value ?? null
+}
+
+function getFullName(metadata: Record<string, unknown> | null | undefined): string | null {
+  const fullName = metadata?.full_name
+  return typeof fullName === 'string' && fullName.trim() ? fullName : null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -110,12 +125,16 @@ export async function GET(request: NextRequest) {
       }
 
       // Transform data
-      const transformedData = data.map((request) => ({
-        ...request,
-        member_name: request.members?.raw_user_meta_data?.full_name || 'Unknown',
-        member_email: request.members?.email || 'Unknown',
-        members: undefined,
-      }))
+      const transformedData = data.map((request) => {
+        const member = firstJoinedRow(request.members as JoinedMember | JoinedMember[] | null)
+
+        return {
+          ...request,
+          member_name: getFullName(member?.raw_user_meta_data) || 'Unknown',
+          member_email: member?.email || 'Unknown',
+          members: undefined,
+        }
+      })
 
       return NextResponse.json(
         { requests: transformedData || [] },
@@ -184,7 +203,10 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const updates: any = {}
+    const updates: {
+      status?: string
+      admin_response?: string | null
+    } = {}
     if (status) updates.status = status
     if (admin_response !== undefined) updates.admin_response = admin_response
 

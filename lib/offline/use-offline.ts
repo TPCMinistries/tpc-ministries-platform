@@ -11,6 +11,12 @@ import {
   markJournalEntrySynced
 } from './indexed-db'
 
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  sync?: {
+    register: (tag: string) => Promise<void>
+  }
+}
+
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -150,8 +156,9 @@ export function useOfflineSync() {
   useEffect(() => {
     if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then((registration) => {
+        const syncRegistration = registration as ServiceWorkerRegistrationWithSync
         // Register sync tags
-        registration.sync?.register('sync-all').catch(console.error)
+        syncRegistration.sync?.register('sync-all').catch(console.error)
       })
     }
   }, [])

@@ -1,17 +1,49 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!)
 }
 
 // Use service role for webhook (no user context)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createAdminClient()
+
+type LegacyInvoice = Stripe.Invoice & {
+  subscription_details?: {
+    metadata?: Stripe.Metadata | null
+    subscription?: string | Stripe.Subscription
+  } | null
+  payment_intent?: string | Stripe.PaymentIntent | null
+  subscription?: string | Stripe.Subscription | null
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error'
+}
+
+function getInvoiceSubscriptionDetails(invoice: Stripe.Invoice) {
+  const legacyInvoice = invoice as LegacyInvoice
+  return invoice.parent?.subscription_details || legacyInvoice.subscription_details || null
+}
+
+function getStripeId(value: string | { id: string } | null | undefined) {
+  if (!value) return null
+  return typeof value === 'string' ? value : value.id
+}
+
+function getInvoicePaymentIntentId(invoice: Stripe.Invoice) {
+  const legacyInvoice = invoice as LegacyInvoice
+  const invoicePayment = invoice.payments?.data[0]?.payment
+  return getStripeId(legacyInvoice.payment_intent) || getStripeId(invoicePayment?.payment_intent)
+}
+
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice) {
+  const legacyInvoice = invoice as LegacyInvoice
+  const subscriptionDetails = getInvoiceSubscriptionDetails(invoice)
+  return getStripeId(subscriptionDetails?.subscription) || getStripeId(legacyInvoice.subscription)
+}
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -30,8 +62,8 @@ export async function POST(request: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+  } catch (err: unknown) {
+    console.error('Webhook signature verification failed:', getErrorMessage(err))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -55,7 +87,7 @@ export async function POST(request: Request) {
     const invoice = event.data.object as Stripe.Invoice
 
     // Handle installment plan payments
-    if (invoice.subscription_details?.metadata?.type === 'kenya_trip_installment') {
+    if (getInvoiceSubscriptionDetails(invoice)?.metadata?.type === 'kenya_trip_installment') {
       await handleInstallmentPayment(invoice)
     }
   }
@@ -166,7 +198,7 @@ async function handleDonation(session: Stripe.Checkout.Session) {
 }
 
 async function handleInstallmentPayment(invoice: Stripe.Invoice) {
-  const metadata = invoice.subscription_details?.metadata || {}
+  const metadata = getInvoiceSubscriptionDetails(invoice)?.metadata || {}
   const { participant_id, trip_id, total_payments } = metadata
   const amount = (invoice.amount_paid || 0) / 100
 
@@ -190,7 +222,7 @@ async function handleInstallmentPayment(invoice: Stripe.Invoice) {
       description: `Installment ${paymentNumber} of ${totalPayments}`,
       status: 'paid',
       stripe_invoice_id: invoice.id,
-      stripe_payment_intent_id: invoice.payment_intent as string,
+      stripe_payment_intent_id: getInvoicePaymentIntentId(invoice),
       paid_at: new Date().toISOString(),
     })
 
@@ -218,10 +250,11 @@ async function handleInstallmentPayment(invoice: Stripe.Invoice) {
         .eq('id', participant_id)
 
       // Cancel subscription if fully paid
-      if (remaining <= 0 && invoice.subscription) {
+      const subscriptionId = getInvoiceSubscriptionId(invoice)
+      if (remaining <= 0 && subscriptionId) {
         try {
           const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-          await stripe.subscriptions.cancel(invoice.subscription as string)
+          await stripe.subscriptions.cancel(subscriptionId)
           console.log(`Auto-canceled subscription for fully paid participant ${participant_id}`)
         } catch (cancelError) {
           console.error('Failed to cancel completed subscription:', cancelError)

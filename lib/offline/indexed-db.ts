@@ -226,19 +226,19 @@ export async function saveOfflineJournalEntry(entry: any): Promise<IDBValidKey> 
   return offlineDB.put('journal_entries', {
     ...entry,
     id: entry.id || `offline-${Date.now()}`,
-    synced: false,
+    synced: 0,
     created_at: entry.created_at || new Date().toISOString()
   })
 }
 
 export async function getUnsyncedJournalEntries(): Promise<any[]> {
-  return offlineDB.getByIndex('journal_entries', 'synced', false)
+  return offlineDB.getByIndex('journal_entries', 'synced', 0)
 }
 
 export async function markJournalEntrySynced(id: string): Promise<void> {
   const entry = await offlineDB.get('journal_entries', id)
   if (entry) {
-    await offlineDB.put('journal_entries', { ...entry, synced: true })
+    await offlineDB.put('journal_entries', { ...entry, synced: 1 })
   }
 }
 
@@ -246,26 +246,26 @@ export async function saveOfflinePrayerRequest(prayer: any): Promise<IDBValidKey
   return offlineDB.put('prayer_requests', {
     ...prayer,
     id: prayer.id || `offline-${Date.now()}`,
-    synced: false,
+    synced: 0,
     created_at: prayer.created_at || new Date().toISOString()
   })
 }
 
 export async function getUnsyncedPrayerRequests(): Promise<any[]> {
-  return offlineDB.getByIndex('prayer_requests', 'synced', false)
+  return offlineDB.getByIndex('prayer_requests', 'synced', 0)
 }
 
 export async function saveOfflineCheckin(checkin: any): Promise<IDBValidKey> {
   return offlineDB.put('daily_checkins', {
     ...checkin,
     id: checkin.id || `offline-${Date.now()}`,
-    synced: false,
+    synced: 0,
     checkin_date: checkin.checkin_date || new Date().toISOString().split('T')[0]
   })
 }
 
 export async function getUnsyncedCheckins(): Promise<any[]> {
-  return offlineDB.getByIndex('daily_checkins', 'synced', false)
+  return offlineDB.getByIndex('daily_checkins', 'synced', 0)
 }
 
 export async function queueOfflineAction(
@@ -298,7 +298,7 @@ export async function cacheContent(type: string, id: string, content: any): Prom
 }
 
 export async function getCachedContent(type: string, id: string): Promise<any> {
-  const result = await offlineDB.get('cached_content', `${type}-${id}`)
+  const result = await offlineDB.get<{ content?: unknown }>('cached_content', `${type}-${id}`)
   return result?.content
 }
 

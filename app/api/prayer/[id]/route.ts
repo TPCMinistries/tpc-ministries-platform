@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type JoinedMember = {
+  id: string
+  email: string | null
+  raw_user_meta_data: Record<string, unknown> | null
+}
+
+function firstJoinedRow<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value ?? null
+}
+
+function getFullName(metadata: Record<string, unknown> | null | undefined): string | null {
+  const fullName = metadata?.full_name
+  return typeof fullName === 'string' && fullName.trim() ? fullName : null
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -42,13 +57,14 @@ export async function GET(
     // Check if current user is the owner
     const { data: { user } } = await supabase.auth.getUser()
     const isOwner = user?.id === data.member_id
+    const member = firstJoinedRow(data.members as JoinedMember | JoinedMember[] | null)
 
     // Transform data
     const transformedData = {
       ...data,
       requester: data.is_anonymous
         ? 'Anonymous'
-        : data.members?.raw_user_meta_data?.full_name || 'Member',
+        : getFullName(member?.raw_user_meta_data) || 'Member',
       isOwner,
       members: undefined,
       member_id: isOwner ? data.member_id : undefined,
@@ -107,13 +123,16 @@ export async function PUT(
     const body = await request.json()
     const { is_answered, answered_testimony } = body
 
-    const updates: any = {}
+    const updates: {
+      is_answered?: boolean
+      answered_testimony?: string
+    } = {}
 
     if (typeof is_answered === 'boolean') {
       updates.is_answered = is_answered
     }
 
-    if (answered_testimony) {
+    if (typeof answered_testimony === 'string' && answered_testimony) {
       updates.answered_testimony = answered_testimony
     }
 

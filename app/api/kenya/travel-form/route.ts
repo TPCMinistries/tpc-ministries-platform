@@ -66,16 +66,17 @@ export async function POST(_request: NextRequest) {
 
     // Upload passport photo if provided
     let passportPhotoUrl: string | null = null
-    if (passportPhoto && passportPhoto.size > 0) {
-      const fileExt = passportPhoto.name.split('.').pop()
+    if ((passportPhoto?.size ?? 0) > 0) {
+      const passportPhotoFile = passportPhoto as File
+      const fileExt = passportPhotoFile.name.split('.').pop()
       const fileName = `passport_${displayFirstName.toLowerCase()}_${displayLastName.toLowerCase()}_${Date.now()}.${fileExt}`
       const filePath = `kenya-travel/${fileName}`
 
-      const arrayBuffer = await passportPhoto.arrayBuffer()
+      const arrayBuffer = await passportPhotoFile.arrayBuffer()
       const { error: uploadError } = await supabase.storage
         .from('kenya-trip-documents')
         .upload(filePath, arrayBuffer, {
-          contentType: passportPhoto.type,
+          contentType: passportPhotoFile.type,
           upsert: false,
         })
 
@@ -135,11 +136,12 @@ export async function POST(_request: NextRequest) {
     let dbError = null
 
     if (existing) {
+      const existingParticipant = existing as NonNullable<typeof existing>
       // Update existing participant record
       const { error } = await supabase
         .from('kenya_trip_participants')
         .update(travelData)
-        .eq('id', existing.id)
+        .eq('id', existingParticipant.id)
       dbError = error
     } else {
       // Create new participant record (travel form submitted without interest form first)

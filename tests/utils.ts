@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { expect } from 'vitest'
 
 /**
  * Create a mock NextRequest for API route testing
@@ -7,7 +8,7 @@ export function createMockRequest(
   url: string,
   options: {
     method?: string
-    body?: any
+    body?: unknown
     headers?: Record<string, string>
     searchParams?: Record<string, string>
   } = {}
@@ -20,7 +21,7 @@ export function createMockRequest(
     urlObj.searchParams.set(key, value)
   })
 
-  const requestInit: RequestInit = {
+  const requestInit: ConstructorParameters<typeof NextRequest>[1] = {
     method,
     headers: {
       'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import webpush from 'web-push'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Configure web-push with VAPID keys
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -11,18 +11,18 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   )
 }
 
-interface PushSubscription {
-  id: string
-  user_id: string
-  endpoint: string
-  p256dh: string
-  auth: string
-  member: {
-    first_name: string
-  }
-  streak: {
-    current_streak: number
-  } | null
+interface StreakMember {
+  first_name?: string | null
+}
+
+function normalizeStreakMember(member: StreakMember | StreakMember[] | null | undefined) {
+  return Array.isArray(member) ? member[0] : member
+}
+
+function getStatusCode(error: unknown) {
+  return typeof error === 'object' && error !== null && 'statusCode' in error
+    ? Number(error.statusCode)
+    : null
 }
 
 // This endpoint should be called by a cron job (e.g., Vercel Cron, Supabase Edge Function)
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // Get all users with active streaks who haven't checked in today
     // and whose last activity was 20+ hours ago
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
       if (subError || !subscriptions?.length) continue
 
-      const member = user.members as any
+      const member = normalizeStreakMember(user.members)
       const firstName = member?.first_name || 'Friend'
       const streak = user.current_streak
 
@@ -122,9 +122,10 @@ export async function POST(request: Request) {
             category: 'streak_warning',
             sent_at: new Date().toISOString()
           })
-        } catch (pushError: any) {
+        } catch (pushError: unknown) {
           // If subscription is invalid, mark it as inactive
-          if (pushError.statusCode === 410 || pushError.statusCode === 404) {
+          const statusCode = getStatusCode(pushError)
+          if (statusCode === 410 || statusCode === 404) {
             await supabase
               .from('push_subscriptions')
               .update({ is_active: false })
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
 
 // GET endpoint to check the status (for debugging)
 export async function GET() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const twentyHoursAgo = new Date()
   twentyHoursAgo.setHours(twentyHoursAgo.getHours() - 20)

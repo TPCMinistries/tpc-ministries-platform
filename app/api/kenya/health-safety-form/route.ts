@@ -59,6 +59,7 @@ export async function POST(_request: NextRequest) {
         { status: 404 }
       )
     }
+    const participantRecord = participant as NonNullable<typeof participant>
 
     const healthData = {
       gender: gender || null,
@@ -87,7 +88,7 @@ export async function POST(_request: NextRequest) {
     const { error: dbError } = await supabase
       .from('kenya_trip_participants')
       .update(healthData)
-      .eq('id', participant.id)
+      .eq('id', participantRecord.id)
 
     if (dbError) {
       console.error('Error saving health & safety form:', dbError)
@@ -98,7 +99,7 @@ export async function POST(_request: NextRequest) {
     try {
       await sendEmail({
         to: 'info@tpcmin.org',
-        subject: `Health & Safety Form: ${participant.first_name} ${participant.last_name}`,
+        subject: `Health & Safety Form: ${participantRecord.first_name} ${participantRecord.last_name}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: linear-gradient(135deg, #006600, #004d00); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -106,7 +107,7 @@ export async function POST(_request: NextRequest) {
               <p style="margin: 5px 0 0 0; opacity: 0.9;">Kenya Kingdom Impact Trip 2026</p>
             </div>
             <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none;">
-              <p><strong>${participant.first_name} ${participant.last_name}</strong> (${email}) has submitted their Health & Safety form.</p>
+              <p><strong>${participantRecord.first_name} ${participantRecord.last_name}</strong> (${email}) has submitted their Health & Safety form.</p>
               <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr><td style="padding: 6px 8px; border: 1px solid #e5e7eb; font-weight: bold; background: #f9fafb;">Yellow Fever</td><td style="padding: 6px 8px; border: 1px solid #e5e7eb;">${yellowFeverStatus}</td></tr>
                 <tr><td style="padding: 6px 8px; border: 1px solid #e5e7eb; font-weight: bold; background: #f9fafb;">Travel Insurance</td><td style="padding: 6px 8px; border: 1px solid #e5e7eb;">${travelInsuranceStatus}</td></tr>
@@ -135,7 +136,7 @@ export async function POST(_request: NextRequest) {
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Kenya Kingdom Impact Trip 2026</p>
             </div>
             <div style="padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
-              <p>Dear ${participant.first_name},</p>
+              <p>Dear ${participantRecord.first_name},</p>
               <p>Thank you for completing your Health & Safety form! Our team now has your emergency contact, medical, and vaccination information on file.</p>
               ${yellowFeverStatus === 'need_to_schedule' ? `
                 <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">

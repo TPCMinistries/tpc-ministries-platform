@@ -18,7 +18,7 @@ interface ProphecyAssignedProps {
 
 export default function ProphecyAssigned({
   memberName = 'Friend',
-  prophecyTitle = 'A Personal Word',
+  prophecyTitle: assignedProphecyTitle = 'A Personal Word',
   viewUrl = 'https://tpcmin.org/member/prophecy',
 }: ProphecyAssignedProps) {
   return (
@@ -49,7 +49,7 @@ export default function ProphecyAssigned({
 
             <Section style={prophecyBox}>
               <Text style={prophecyLabel}>Prophecy Title:</Text>
-              <Text style={prophecyTitle}>{prophecyTitle}</Text>
+              <Text style={prophecyTitle}>{assignedProphecyTitle}</Text>
             </Section>
 
             <Text style={text}>

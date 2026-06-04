@@ -7,12 +7,17 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   Plane, Download, Search, Check, X, ChevronDown, ChevronRight,
-  Users, UserX, Save, Filter,
+  Users, UserX, Save,
 } from 'lucide-react'
 import type { Participant } from './types'
 
+type TravelParticipant = Participant & {
+  gender?: string | null
+  preferred_name?: string | null
+}
+
 interface TabTravelProps {
-  participants: Participant[]
+  participants: TravelParticipant[]
   updateParticipantField: (id: string, field: string, value: string) => void
   saveStatus: 'idle' | 'saving' | 'saved' | 'error'
 }
@@ -50,7 +55,7 @@ export function TabTravel({ participants, updateParticipantField, saveStatus }: 
   const needsAttention = traveling.filter(p => !p.travel_booked && p.travel_needed !== false).length
 
   // Sort + filter
-  const sortAndFilter = useCallback((list: Participant[]) => {
+  const sortAndFilter = useCallback((list: TravelParticipant[]) => {
     let filtered = list
     if (search) {
       const q = search.toLowerCase()
@@ -378,7 +383,7 @@ export function TabTravel({ participants, updateParticipantField, saveStatus }: 
                       </td>
                       <td className="px-2 py-1.5 text-gray-600">{p.email}</td>
                       <td className="px-2 py-1.5">
-                        <EditableCell value={p.preferred_name || ''} onSave={(v) => updateField(p.id, 'preferred_name', v)} placeholder="Name tag..." />
+                        <EditableCell value={p.preferred_name || ''} onSave={(v) => updateParticipantField(p.id, 'preferred_name', v)} placeholder="Name tag..." />
                       </td>
                       <td className="px-2 py-1.5 text-gray-600">{p.phone || '—'}</td>
                       <td className="px-2 py-1.5">
@@ -387,10 +392,10 @@ export function TabTravel({ participants, updateParticipantField, saveStatus }: 
                         )}
                       </td>
                       <td className="px-2 py-1.5">
-                        <EditableCell value={p.admin_travel_notes || ''} onSave={(v) => updateField(p.id, 'admin_travel_notes', v)} placeholder="Admin notes..." />
+                        <EditableCell value={p.admin_travel_notes || ''} onSave={(v) => updateParticipantField(p.id, 'admin_travel_notes', v)} placeholder="Admin notes..." />
                       </td>
                       <td className="px-2 py-1.5">
-                        <EditableCell value={p.team_accommodation_notes || ''} onSave={(v) => updateField(p.id, 'team_accommodation_notes', v)} placeholder="Notes..." />
+                        <EditableCell value={p.team_accommodation_notes || ''} onSave={(v) => updateParticipantField(p.id, 'team_accommodation_notes', v)} placeholder="Notes..." />
                       </td>
                     </tr>
                   ))}
@@ -449,7 +454,7 @@ function EditableCell({ value, onSave, placeholder, type = 'text' }: {
 // ============ Travel Row ============
 
 function TravelRow({ p, updateField, toggleBool }: {
-  p: Participant
+  p: TravelParticipant
   updateField: (id: string, field: string, value: string) => void
   toggleBool: (id: string, field: string, current: boolean | undefined) => void
 }) {

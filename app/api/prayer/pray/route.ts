@@ -76,9 +76,23 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       // If RPC doesn't exist, do manual update
+      const { data: prayerRequest, error: fetchError } = await supabase
+        .from('prayer_requests')
+        .select('prayer_count')
+        .eq('id', prayer_request_id)
+        .single()
+
+      if (fetchError || !prayerRequest) {
+        console.error('Error fetching prayer count:', fetchError)
+        return NextResponse.json(
+          { error: 'Failed to update prayer count' },
+          { status: 500 }
+        )
+      }
+
       const { error: manualUpdateError } = await supabase
         .from('prayer_requests')
-        .update({ prayer_count: supabase.sql`prayer_count + 1` })
+        .update({ prayer_count: (prayerRequest.prayer_count || 0) + 1 })
         .eq('id', prayer_request_id)
 
       if (manualUpdateError) {

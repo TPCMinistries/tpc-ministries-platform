@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type JoinedMember = {
+  id: string
+  email: string | null
+  raw_user_meta_data: Record<string, unknown> | null
+}
+
+function firstJoinedRow<T>(value: T | T[] | null | undefined): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value ?? null
+}
+
+function getFullName(metadata: Record<string, unknown> | null | undefined): string | null {
+  const fullName = metadata?.full_name
+  return typeof fullName === 'string' && fullName.trim() ? fullName : null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -75,14 +90,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data to hide member details for anonymous requests
-    const transformedData = data?.map(prayer => ({
-      ...prayer,
-      requester: prayer.is_anonymous
-        ? 'Anonymous'
-        : prayer.members?.raw_user_meta_data?.full_name || 'Member',
-      members: undefined, // Remove member data from response
-      member_id: undefined, // Remove member_id for privacy
-    }))
+    const transformedData = data?.map(prayer => {
+      const member = firstJoinedRow(prayer.members as JoinedMember | JoinedMember[] | null)
+
+      return {
+        ...prayer,
+        requester: prayer.is_anonymous
+          ? 'Anonymous'
+          : getFullName(member?.raw_user_meta_data) || 'Member',
+        members: undefined, // Remove member data from response
+        member_id: undefined, // Remove member_id for privacy
+      }
+    })
 
     return NextResponse.json(
       {
