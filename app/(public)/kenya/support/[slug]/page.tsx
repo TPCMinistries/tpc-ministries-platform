@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -17,10 +18,8 @@ import {
   DollarSign,
   Calendar,
   MapPin,
-  User,
   RefreshCw,
   CheckCircle,
-  Share2,
   Copy,
   ExternalLink,
   Sparkles,
@@ -76,11 +75,7 @@ export default function FundraisingPage() {
   const [processing, setProcessing] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    fetchData()
-  }, [slug])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
 
@@ -90,6 +85,10 @@ export default function FundraisingPage() {
       .select('*')
       .eq('fundraising_slug', slug)
       .single()
+
+    if (error) {
+      console.error('Error fetching fundraising page:', error)
+    }
 
     if (participantData) {
       setParticipant(participantData)
@@ -107,7 +106,11 @@ export default function FundraisingPage() {
     }
 
     setLoading(false)
-  }
+  }, [slug])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const getDonationAmount = () => {
     if (customAmount) return parseFloat(customAmount)
@@ -201,7 +204,7 @@ export default function FundraisingPage() {
           <CardContent className="p-8 text-center">
             <Plane className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <h2 className="text-2xl font-bold text-navy mb-2">Page Not Found</h2>
-            <p className="text-gray-600 mb-4">This fundraising page doesn't exist or is not active.</p>
+            <p className="text-gray-600 mb-4">This fundraising page does not exist or is not active.</p>
             <Link href="/kenya">
               <Button>Learn About Kenya Trip</Button>
             </Link>
@@ -246,11 +249,15 @@ export default function FundraisingPage() {
               <div className="bg-gradient-to-br from-navy to-navy-800 p-6 text-white">
                 <div className="flex items-center gap-4 mb-4">
                   {participant.fundraising_photo_url ? (
-                    <img
-                      src={participant.fundraising_photo_url}
-                      alt={participant.first_name}
-                      className="w-24 h-24 rounded-full object-cover border-4 border-gold shadow-lg"
-                    />
+                    <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-gold shadow-lg">
+                      <Image
+                        src={participant.fundraising_photo_url}
+                        alt={participant.first_name}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="w-24 h-24 rounded-full bg-gold flex items-center justify-center text-navy text-3xl font-bold shadow-lg">
                       {participant.first_name[0]}{participant.last_name[0]}
@@ -342,7 +349,7 @@ export default function FundraisingPage() {
 
                 {participant.fundraising_personal_message && (
                   <div className="mt-6 p-4 bg-gold/10 border-l-4 border-gold rounded-r-lg">
-                    <p className="text-gray-700 italic text-lg">"{participant.fundraising_personal_message}"</p>
+                    <p className="text-gray-700 italic text-lg">&ldquo;{participant.fundraising_personal_message}&rdquo;</p>
                     <p className="text-sm text-gray-500 mt-2">— {participant.first_name}</p>
                   </div>
                 )}
@@ -372,7 +379,7 @@ export default function FundraisingPage() {
                             <span className="text-green-600 font-semibold">${donation.amount}</span>
                           </div>
                           {donation.message && (
-                            <p className="text-sm text-gray-600 mt-1">"{donation.message}"</p>
+                            <p className="text-sm text-gray-600 mt-1">&ldquo;{donation.message}&rdquo;</p>
                           )}
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(donation.created_at).toLocaleDateString()}
@@ -391,7 +398,7 @@ export default function FundraisingPage() {
             <Card className="sticky top-4">
               <CardHeader>
                 <CardTitle>Make a Donation</CardTitle>
-                <CardDescription>Support {participant.first_name}'s mission trip</CardDescription>
+                <CardDescription>Support {participant.first_name}&apos;s mission trip</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Amount Selection */}

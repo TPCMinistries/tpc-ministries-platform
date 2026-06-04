@@ -1,28 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import {
   Brain,
-  TrendingUp,
-  TrendingDown,
   Users,
-  Heart,
   DollarSign,
-  Calendar,
-  MessageSquare,
   Sparkles,
   RefreshCw,
   AlertTriangle,
   CheckCircle,
-  Clock,
   Lightbulb,
-  Target,
   Activity,
   ArrowUpRight,
   ArrowDownRight,
@@ -73,25 +64,9 @@ export default function AIInsightsPage() {
   const [contentMetrics, setContentMetrics] = useState<ContentMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
-  const { toast } = useToast()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
-  useEffect(() => {
-    fetchAllData()
-  }, [])
-
-  const fetchAllData = async () => {
-    setIsLoading(true)
-    const [engagement, giving, content] = await Promise.all([
-      fetchEngagementMetrics(),
-      fetchGivingMetrics(),
-      fetchContentMetrics(),
-    ])
-    generateInsights(engagement, giving, content)
-    setIsLoading(false)
-  }
-
-  const fetchEngagementMetrics = async () => {
+  const fetchEngagementMetrics = useCallback(async () => {
     try {
       const now = new Date()
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -151,9 +126,9 @@ export default function AIInsightsPage() {
       console.error('Error fetching engagement metrics:', error)
       return null
     }
-  }
+  }, [supabase])
 
-  const fetchGivingMetrics = async () => {
+  const fetchGivingMetrics = useCallback(async () => {
     try {
       const now = new Date()
       const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -206,9 +181,9 @@ export default function AIInsightsPage() {
       console.error('Error fetching giving metrics:', error)
       return null
     }
-  }
+  }, [supabase])
 
-  const fetchContentMetrics = async () => {
+  const fetchContentMetrics = useCallback(async () => {
     try {
       const { count: totalTeachings } = await supabase
         .from('teachings')
@@ -251,12 +226,12 @@ export default function AIInsightsPage() {
       console.error('Error fetching content metrics:', error)
       return null
     }
-  }
+  }, [supabase])
 
-  const generateInsights = async (
-    engagement = engagementMetrics,
-    giving = givingMetrics,
-    content = contentMetrics
+  const generateInsights = useCallback(async (
+    engagement: EngagementMetrics | null,
+    giving: GivingMetrics | null,
+    content: ContentMetrics | null
   ) => {
     setIsGenerating(true)
 
@@ -383,7 +358,22 @@ export default function AIInsightsPage() {
 
     setInsights(newInsights)
     setIsGenerating(false)
-  }
+  }, [])
+
+  const fetchAllData = useCallback(async () => {
+    setIsLoading(true)
+    const [engagement, giving, content] = await Promise.all([
+      fetchEngagementMetrics(),
+      fetchGivingMetrics(),
+      fetchContentMetrics(),
+    ])
+    await generateInsights(engagement, giving, content)
+    setIsLoading(false)
+  }, [fetchContentMetrics, fetchEngagementMetrics, fetchGivingMetrics, generateInsights])
+
+  useEffect(() => {
+    fetchAllData()
+  }, [fetchAllData])
 
   const getInsightIcon = (type: string) => {
     switch (type) {

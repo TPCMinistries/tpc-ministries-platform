@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -15,9 +15,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Calendar,
-  Tag,
-  Headphones,
   Edit3,
   CheckCircle,
   Clock,
@@ -25,7 +22,6 @@ import {
   BookOpen,
   Sparkles,
   Loader2,
-  Video,
   FileText,
   Mic,
   ScrollText,
@@ -36,8 +32,7 @@ import {
   Star,
   Quote,
   Volume2,
-  Play,
-  Pause,
+  type LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import AIWritingAssistant from '@/components/member/ai-writing-assistant'
@@ -77,7 +72,7 @@ interface VoiceMessage {
   }
 }
 
-const messageTypeIcons: Record<string, any> = {
+const messageTypeIcons: Record<string, LucideIcon> = {
   prophetic_word: ScrollText,
   prayer: HandHeart,
   sermon: Radio,
@@ -114,12 +109,7 @@ export default function ProphecyVaultPage() {
     memberTags: '',
   })
 
-  useEffect(() => {
-    fetchProphecies()
-    fetchVoiceMessages()
-  }, [selectedTheme, selectedStatus, searchQuery])
-
-  const fetchVoiceMessages = async () => {
+  const fetchVoiceMessages = useCallback(async () => {
     try {
       const res = await fetch('/api/voice/admin-message')
       if (res.ok) {
@@ -129,7 +119,7 @@ export default function ProphecyVaultPage() {
     } catch (error) {
       console.error('Error fetching voice messages:', error)
     }
-  }
+  }, [])
 
   const markVoiceMessageRead = async (messageId: string) => {
     try {
@@ -143,7 +133,7 @@ export default function ProphecyVaultPage() {
     }
   }
 
-  const fetchProphecies = async () => {
+  const fetchProphecies = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -161,7 +151,15 @@ export default function ProphecyVaultPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedTheme, selectedStatus, searchQuery])
+
+  useEffect(() => {
+    fetchVoiceMessages()
+  }, [fetchVoiceMessages])
+
+  useEffect(() => {
+    fetchProphecies()
+  }, [fetchProphecies])
 
   const allThemes = Array.from(
     new Set(prophecies.flatMap((p) => p.themes || []))
