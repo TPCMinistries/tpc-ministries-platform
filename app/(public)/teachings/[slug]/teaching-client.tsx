@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getBaseUrl } from '@/lib/base-url'
@@ -47,12 +46,11 @@ interface TeachingClientProps {
 }
 
 export default function TeachingClient({ slug, initialTeaching }: TeachingClientProps) {
-  const router = useRouter()
   const [teaching, setTeaching] = useState<Teaching | null>(initialTeaching || null)
   const [loading, setLoading] = useState(!initialTeaching)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [progress, setProgress] = useState(0)
+  const [progress] = useState(0)
 
   useEffect(() => {
     if (!initialTeaching) {
@@ -182,11 +180,12 @@ export default function TeachingClient({ slug, initialTeaching }: TeachingClient
       )}
       {teaching.type === 'article' && (
         <ArticleSchema
-          headline={teaching.title}
+          title={teaching.title}
           description={teaching.description}
-          author={teaching.author}
-          datePublished={teaching.published_at}
-          image={teaching.thumbnail}
+          url={`${baseUrl}/teachings/${teaching.slug}`}
+          imageUrl={teaching.thumbnail}
+          authorName={teaching.author}
+          publishedAt={teaching.published_at}
         />
       )}
 

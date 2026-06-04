@@ -23,6 +23,10 @@ interface CalendarEvent {
   status: string | null
 }
 
+type CalendarEventWithStart = CalendarEvent & {
+  start_time: string
+}
+
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function canAccessEvent(member: MemberAccess, event: CalendarEvent) {
@@ -112,7 +116,7 @@ export async function GET(_request: Request, { params }: { params: { eventId: st
     return NextResponse.json({ error: 'Event is not available' }, { status: 404 })
   }
 
-  const calendarEvent = event as CalendarEvent
+  const calendarEvent = event as CalendarEventWithStart
   if (!canAccessEvent(member as MemberAccess, calendarEvent)) {
     return NextResponse.json({ error: 'This event requires partner access' }, { status: 403 })
   }

@@ -5,46 +5,33 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { ScrollReveal } from '@/components/motion/scroll-reveal'
 import { StaggerChildren, StaggerItem } from '@/components/motion/stagger-children'
 import {
   Users,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   Heart,
-  ArrowUpRight,
-  ArrowDownRight,
-  BookOpen,
   Clock,
   CheckCircle,
-  MessageSquare,
   Calendar,
   BarChart3,
-  FileText,
   Send,
-  Loader2,
   Activity,
   Eye,
   RefreshCw,
   AlertTriangle,
   UserPlus,
-  Bell,
   Zap,
   Target,
-  Gift,
   Video,
   ChevronRight,
   Mail,
   UserCheck,
   AlertCircle,
-  Sparkles,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminQuickStats } from '@/components/admin/redesign/admin-quick-stats'
-import { NeedsAttentionPanel } from '@/components/admin/redesign/needs-attention-panel'
 import { SearchTrigger } from '@/components/ui/search-trigger'
 
 interface DashboardStats {
@@ -215,7 +202,7 @@ export default function AdminDashboardPage() {
       const activityItems: ActivityItem[] = []
 
       recentDonations.data?.forEach(d => {
-        const member = d.members as Record<string, string> | null
+        const member = Array.isArray(d.members) ? d.members[0] : d.members
         activityItems.push({
           id: `donation-${d.id}`,
           type: 'donation',
@@ -387,7 +374,6 @@ export default function AdminDashboardPage() {
 
   const memberGrowth = calculateGrowth(stats.membersThisWeek, stats.membersLastWeek)
   const revenueGrowth = calculateGrowth(stats.revenueThisMonth, stats.revenueLastMonth)
-  const engagementRate = stats.totalMembers > 0 ? Math.round((stats.activeMembers / stats.totalMembers) * 100) : 0
 
   if (loading) {
     return (

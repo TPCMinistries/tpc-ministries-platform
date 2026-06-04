@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import {
   Sparkles,
-  Calendar,
   ArrowLeft,
   Play,
   BookOpen,
@@ -41,8 +40,8 @@ interface Teaching {
   published_at: string
   season_id: string
   is_published: boolean
-  progress?: number
-  completed?: boolean
+  progress: number
+  completed: boolean
 }
 
 export default function SeasonDetailPage() {

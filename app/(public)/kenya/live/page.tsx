@@ -254,25 +254,36 @@ export default async function KenyaLivePage() {
             </h2>
 
             {allUpdates.map((update) => {
+              const updateRecord = update as Record<string, unknown>
               const author =
                 update.type === 'post'
-                  ? (update as Record<string, unknown>)
-                      .kenya_trip_participants as {
+                  ? updateRecord.kenya_trip_participants as {
                       first_name?: string
                       last_name?: string
                       service_track?: string
                     } | null
-                  : (update as Record<string, unknown>)
-                      .kenya_trip_participants as {
+                  : updateRecord.kenya_trip_participants as {
                       first_name?: string
                       last_name?: string
                     } | null
 
               const initials = `${author?.first_name?.[0] || ''}${author?.last_name?.[0] || ''}`
+              const createdAt = typeof updateRecord.created_at === 'string'
+                ? updateRecord.created_at
+                : new Date().toISOString()
+              const prompt = typeof updateRecord.prompt === 'string' ? updateRecord.prompt : null
+              const content = typeof updateRecord.content === 'string' ? updateRecord.content : ''
+              const imageUrl = typeof updateRecord.image_url === 'string' ? updateRecord.image_url : null
+              const serviceTrack = update.type === 'post'
+                && author
+                && 'service_track' in author
+                && typeof author.service_track === 'string'
+                ? author.service_track
+                : null
 
               return (
                 <article
-                  key={`${update.type}-${update.id}`}
+                  key={`${update.type}-${String(updateRecord.id)}`}
                   className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-navy/5 hover:shadow-md transition-shadow"
                 >
                   {/* Author row */}
@@ -285,7 +296,7 @@ export default async function KenyaLivePage() {
                         {author?.first_name} {author?.last_name}
                       </p>
                       <p className="text-xs text-navy/40">
-                        {new Date(update.created_at).toLocaleDateString(
+                        {new Date(createdAt).toLocaleDateString(
                           'en-US',
                           {
                             weekday: 'short',
@@ -302,49 +313,33 @@ export default async function KenyaLivePage() {
                         Reflection
                       </span>
                     )}
-                    {update.type === 'post' &&
-                      (
-                        author as {
-                          service_track?: string
-                        } | null
-                      )?.service_track && (
+                    {serviceTrack && (
                         <span className="ml-auto text-xs bg-navy/5 text-navy/60 px-2.5 py-1 rounded-full font-medium flex-shrink-0">
-                          {
-                            (
-                              author as {
-                                service_track?: string
-                              }
-                            ).service_track
-                          }
+                          {serviceTrack}
                         </span>
                       )}
                   </div>
 
                   {/* Reflection prompt */}
-                  {update.type === 'reflection' &&
-                    (update as Record<string, unknown>).prompt && (
+                  {update.type === 'reflection' && prompt && (
                       <p className="text-xs text-gold-700 italic mb-2 bg-gold-50 rounded-lg px-3 py-2 border border-gold-100">
                         &ldquo;
-                        {(update as Record<string, unknown>).prompt as string}
+                        {prompt}
                         &rdquo;
                       </p>
                     )}
 
                   {/* Content */}
                   <p className="text-sm text-navy/80 whitespace-pre-wrap leading-relaxed">
-                    {update.content}
+                    {content}
                   </p>
 
                   {/* Image (for posts with images) */}
-                  {update.type === 'post' &&
-                    (update as Record<string, unknown>).image_url && (
+                  {update.type === 'post' && imageUrl && (
                       <div className="mt-3 rounded-xl overflow-hidden border border-navy/5">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={
-                            (update as Record<string, unknown>)
-                              .image_url as string
-                          }
+                          src={imageUrl}
                           alt="Trip update photo"
                           className="w-full h-auto max-h-96 object-cover"
                         />

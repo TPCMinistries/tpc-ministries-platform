@@ -16,13 +16,13 @@ interface Event {
   type: 'in-person' | 'online' | 'hybrid'
   date: string
   time: string
-  location?: string
-  meeting_link?: string
-  image_url?: string
+  location?: string | null
+  meeting_link?: string | null
+  image_url?: string | null
   attendees_count: number
   is_registered: boolean
   category: string
-  tier_required?: string
+  tier_required?: string | null
   canAccess: boolean
   requiredRole: string
 }

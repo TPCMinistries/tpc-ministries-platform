@@ -985,7 +985,7 @@ export default function AdminResourcesPage() {
                       <div>
                         <p className="font-medium text-sm">{file.name}</p>
                         <p className="text-xs text-gray-500">
-                          {(file.metadata?.size / 1024 / 1024).toFixed(2)} MB
+                          {(Number(file.metadata?.size || 0) / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                     </div>

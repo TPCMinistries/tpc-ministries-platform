@@ -1530,7 +1530,7 @@ function EmailCampaignsContent() {
             <div className="space-y-2">
               <Label>Target Audience</Label>
               <Select
-                value={newCampaign.target_audience.all ? 'all' : 'tier'}
+                value={'all' in newCampaign.target_audience ? 'all' : 'tier'}
                 onValueChange={(value) => {
                   if (value === 'all') {
                     setNewCampaign(prev => ({ ...prev, target_audience: { all: true } }))

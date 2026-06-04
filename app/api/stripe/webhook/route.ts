@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
 import { MEMBERSHIP_TIERS, isMembershipTier } from '@/lib/membership/tiers'
@@ -8,6 +7,45 @@ import { renderCovenantPartnerEmail } from '@/lib/email/render'
 import { sendEmail } from '@/lib/email/resend'
 
 export const runtime = 'nodejs'
+
+type AdminClient = ReturnType<typeof createAdminClient>
+
+type InvoiceWithSubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription | null
+}
+
+type InvoiceWithPaymentDetails = InvoiceWithSubscription & {
+  amount_paid?: number | null
+  customer_details?: {
+    email?: string | null
+  } | null
+  payment_intent?: string | Stripe.PaymentIntent | null
+}
+
+type SubscriptionWithPeriod = Stripe.Subscription & {
+  current_period_start?: number | null
+  current_period_end?: number | null
+}
+
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice) {
+  const subscription = (invoice as InvoiceWithSubscription).subscription
+  if (!subscription) return null
+  return typeof subscription === 'string' ? subscription : subscription.id
+}
+
+function formatStripePeriodDate(value: number | null | undefined) {
+  return value ? new Date(value * 1000).toISOString() : null
+}
+
+function getInvoicePaymentIntentId(invoice: Stripe.Invoice) {
+  const paymentIntent = (invoice as InvoiceWithPaymentDetails).payment_intent
+  if (!paymentIntent) return null
+  return typeof paymentIntent === 'string' ? paymentIntent : paymentIntent.id
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error'
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -28,8 +66,8 @@ export async function POST(request: NextRequest) {
     } else {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     }
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+  } catch (err: unknown) {
+    console.error('Webhook signature verification failed:', errorMessage(err))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -54,11 +92,12 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        if (invoice.subscription) {
+        const subscriptionId = getInvoiceSubscriptionId(invoice)
+        if (subscriptionId) {
           // Skip donation insert for membership invoices — they aren't donations.
-          const sub = await stripe.subscriptions.retrieve(invoice.subscription as string)
+          const sub = await stripe.subscriptions.retrieve(subscriptionId)
           if (sub.metadata?.type === 'membership') {
-            await recordMembershipInvoice(invoice, sub)
+            await recordMembershipInvoice(invoice, sub as SubscriptionWithPeriod)
           } else {
             await recordRecurringDonation(invoice)
           }
@@ -77,9 +116,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ received: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Webhook handler error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(error) }, { status: 500 })
   }
 }
 
@@ -123,7 +162,7 @@ async function recordEbookPurchase(session: Stripe.Checkout.Session) {
 // we pass them to the receipt email in-process below.
 
 async function resolveMemberId(
-  supabase: any,
+  supabase: AdminClient,
   userId: string | null | undefined,
   email: string | null | undefined,
 ): Promise<string | null> {
@@ -200,15 +239,21 @@ async function recordDonation(session: Stripe.Checkout.Session) {
 
 async function recordRecurringDonation(invoice: Stripe.Invoice) {
   const supabase = createAdminClient()
-  const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string)
+  const subscriptionId = getInvoiceSubscriptionId(invoice)
+  if (!subscriptionId) {
+    console.warn('Recurring donation invoice missing subscription id:', invoice.id)
+    return
+  }
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
   const userId = subscription.metadata?.user_id && subscription.metadata.user_id !== 'anonymous'
     ? subscription.metadata.user_id : null
   const donorEmail = invoice.customer_email
-    || (invoice as any).customer_details?.email
+    || (invoice as InvoiceWithPaymentDetails).customer_details?.email
     || null
   const donorName = subscription.metadata?.donor_name || 'Anonymous'
-  const amount = ((invoice as any).amount_paid || 0) / 100
+  const amount = ((invoice as InvoiceWithPaymentDetails).amount_paid || 0) / 100
   const isCovenantPartner = subscription.metadata?.campaign === 'covenant-partners'
   const designation = isCovenantPartner ? 'covenant_partner' : subscription.metadata?.type || 'general'
   const receiptType = isCovenantPartner ? 'Covenant Partnership' : designation
@@ -220,7 +265,7 @@ async function recordRecurringDonation(invoice: Stripe.Invoice) {
     member_id: memberId,
     amount,
     currency: (invoice.currency || 'usd').toLowerCase(),
-    stripe_payment_intent_id: (invoice as any).payment_intent as string | null,
+    stripe_payment_intent_id: getInvoicePaymentIntentId(invoice),
     donation_type: 'recurring',
     designation,
     is_anonymous: isAnonymous,
@@ -318,7 +363,7 @@ async function sendCovenantPartnerWelcomeEmail(params: {
 
 // Auto-upgrade givers to partner role
 async function upgradeGiverToPartner(
-  supabase: any,
+  supabase: AdminClient,
   userId: string | null | undefined,
   email: string | null | undefined,
   amount: number
@@ -462,11 +507,9 @@ async function handleMembershipCheckout(session: Stripe.Checkout.Session) {
   let periodEnd: string | null = null
   if (stripeSubscriptionId) {
     try {
-      const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
-      periodStart = sub.current_period_start
-        ? new Date(sub.current_period_start * 1000).toISOString() : null
-      periodEnd = sub.current_period_end
-        ? new Date(sub.current_period_end * 1000).toISOString() : null
+      const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId) as SubscriptionWithPeriod
+      periodStart = formatStripePeriodDate(sub.current_period_start)
+      periodEnd = formatStripePeriodDate(sub.current_period_end)
     } catch (err) {
       console.error('Failed to fetch subscription for period dates:', err)
     }
@@ -520,14 +563,12 @@ async function handleMembershipCheckout(session: Stripe.Checkout.Session) {
 // ── Membership: recurring invoice paid ──
 async function recordMembershipInvoice(
   invoice: Stripe.Invoice,
-  subscription: Stripe.Subscription,
+  subscription: SubscriptionWithPeriod,
 ) {
   const supabase = createAdminClient()
   const nowIso = new Date().toISOString()
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString() : null
-  const periodStart = subscription.current_period_start
-    ? new Date(subscription.current_period_start * 1000).toISOString() : null
+  const periodEnd = formatStripePeriodDate(subscription.current_period_end)
+  const periodStart = formatStripePeriodDate(subscription.current_period_start)
 
   await supabase
     .from('member_subscriptions')

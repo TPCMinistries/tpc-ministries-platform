@@ -1,9 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Unknown error'
+}
+
+function errorRecord(error: unknown) {
+  return typeof error === 'object' && error !== null
+    ? error as Record<string, unknown>
+    : {}
+}
+
+function stringifyError(error: unknown) {
+  return error
+    ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+    : 'No error object'
+}
 
 // Handle ebook purchases via GET request (from Link component)
 export async function GET(request: NextRequest) {
@@ -78,7 +94,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to Stripe checkout
     return NextResponse.redirect(session.url!)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Ebook checkout error:', error)
     return NextResponse.redirect(new URL('/ebooks', request.url))
   }
@@ -127,11 +143,6 @@ export async function POST(request: NextRequest) {
       console.warn('WARNING: NEXT_PUBLIC_SITE_URL not set, using fallback URL')
     }
 
-    const typeLabels = {
-      general: 'General Ministry',
-      missions: 'Global Missions',
-      leadership: 'Leadership Support',
-    }
     const campaignKey = campaign ? String(campaign).slice(0, 50) : undefined
     const isCovenantPartner = campaignKey === 'covenant-partners'
     const productName = isCovenantPartner
@@ -162,19 +173,18 @@ export async function POST(request: NextRequest) {
     console.log('Creating Stripe session:', { amountInCents, frequency, type })
 
     // Initialize Stripe client
-    let stripe
+    let stripe: Stripe
     try {
       console.log('Initializing Stripe client...')
-      const hasKey = !!process.env.STRIPE_SECRET_KEY
-      console.log('STRIPE_SECRET_KEY exists:', hasKey, hasKey ? `(${process.env.STRIPE_SECRET_KEY.substring(0, 20)}...)` : '')
+      console.log('STRIPE_SECRET_KEY configured:', Boolean(process.env.STRIPE_SECRET_KEY))
       stripe = getStripe()
       console.log('Stripe client initialized successfully')
-    } catch (stripeInitError: any) {
+    } catch (stripeInitError: unknown) {
       console.error('Failed to initialize Stripe:', stripeInitError)
       return NextResponse.json(
         {
           error: 'Stripe configuration error',
-          details: stripeInitError?.message || 'Failed to initialize Stripe client',
+          details: errorMessage(stripeInitError) || 'Failed to initialize Stripe client',
         },
         { status: 500 }
       )
@@ -212,7 +222,7 @@ export async function POST(request: NextRequest) {
         success_url: successUrl,
         cancel_url: cancelUrl,
         })
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         console.error('Stripe API call failed:', stripeError)
         throw stripeError
       }
@@ -244,59 +254,62 @@ export async function POST(request: NextRequest) {
         success_url: successUrl,
         cancel_url: cancelUrl,
         })
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         console.error('Stripe API call failed:', stripeError)
         throw stripeError
       }
 
       return NextResponse.json({ sessionId: session.id, url: session.url })
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorInfo = errorRecord(error)
+    const message = errorMessage(error)
     console.error('=== STRIPE CHECKOUT ERROR ===')
     console.error('Error object:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error type:', error?.type)
-    console.error('Error code:', error?.code)
-    console.error('Error statusCode:', error?.statusCode)
-    console.error('Error raw:', error?.raw)
-    console.error('Stack:', error?.stack)
+    console.error('Error message:', message)
+    console.error('Error type:', errorInfo.type)
+    console.error('Error code:', errorInfo.code)
+    console.error('Error statusCode:', errorInfo.statusCode)
+    console.error('Error raw:', errorInfo.raw)
+    console.error('Stack:', errorInfo.stack)
     console.error('===========================')
 
     // Check if it's a Stripe connection error
-    if (error?.type === 'StripeConnectionError' || error?.message?.includes('connection')) {
+    if (errorInfo.type === 'StripeConnectionError' || message.includes('connection')) {
       return NextResponse.json(
         {
           error: 'Unable to connect to Stripe. Please check your internet connection and try again.',
-          details: `Connection error: ${error.message}`,
+          details: `Connection error: ${message}`,
           stripeError: true,
-          errorType: error?.type,
+          errorType: errorInfo.type,
         },
         { status: 503 } // Service Unavailable
       )
     }
 
     // Check if it's a Stripe error
-    if (error?.type && error?.code) {
+    if (errorInfo.type && errorInfo.code) {
       return NextResponse.json(
         {
-          error: `Stripe error: ${error.message || 'Unknown error'}`,
-          details: `${error.type} - ${error.code}: ${error.message}`,
+          error: `Stripe error: ${message}`,
+          details: `${String(errorInfo.type)} - ${String(errorInfo.code)}: ${message}`,
           stripeError: true,
-          fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+          fullError: stringifyError(error)
         },
         { status: 500 }
       )
     }
 
     // Check if it's a validation or other error
-    const errorMessage = error?.message || 'Failed to create checkout session'
-    const errorDetails = error?.stack || error?.toString() || 'Unknown error occurred'
+    const errorDetails = typeof errorInfo.stack === 'string'
+      ? errorInfo.stack
+      : String(error || 'Unknown error occurred')
     
     return NextResponse.json(
       {
-        error: errorMessage,
+        error: message || 'Failed to create checkout session',
         details: errorDetails,
-        fullError: error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'No error object'
+        fullError: stringifyError(error)
       },
       { status: 500 }
     )

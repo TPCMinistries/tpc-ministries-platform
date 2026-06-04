@@ -89,7 +89,7 @@ export default async function EbookSuccessPage({ params, searchParams }: Props) 
   if (session_id) {
     const result = await verifyPurchase(session_id, id)
     purchaseVerified = result.verified
-    customerEmail = result.customerEmail
+    customerEmail = result.customerEmail ?? null
   }
 
   // If no session_id or purchase not verified, redirect to ebook page
@@ -111,7 +111,7 @@ export default async function EbookSuccessPage({ params, searchParams }: Props) 
             Thank You for Your Purchase!
           </h1>
           <p className="text-xl text-stone-600 mb-8">
-            Your copy of "{ebook.title}" is ready to download.
+            Your copy of &ldquo;{ebook.title}&rdquo; is ready to download.
           </p>
 
           {/* Ebook Card */}
@@ -156,8 +156,8 @@ export default async function EbookSuccessPage({ params, searchParams }: Props) 
                   ) : (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <p className="text-amber-800 text-sm">
-                        The download file is being prepared. You'll receive an email at{' '}
-                        <strong>{customerEmail}</strong> when it's ready.
+                        The download file is being prepared. You&apos;ll receive an email at{' '}
+                        <strong>{customerEmail}</strong> when it&apos;s ready.
                       </p>
                     </div>
                   )}

@@ -9,7 +9,6 @@ import { LineChart, AreaChart, BarChart, DonutChart, CHART_COLORS } from '@/comp
 import {
   Users,
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Activity,
   ArrowUpRight,
@@ -17,13 +16,11 @@ import {
   Play,
   Sparkles,
   Eye,
-  Clock,
   Target,
   RefreshCw,
   Loader2,
   BookOpen,
   Heart,
-  MessageSquare,
   Bot,
   PenLine,
   Calendar,
@@ -507,7 +504,7 @@ export default function AnalyticsPage() {
                           <ArrowDownRight className="h-4 w-4 text-red-500" />
                         )}
                         <span className={`text-sm ${analytics?.members.changePercent && analytics.members.changePercent > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {analytics?.members.changePercent > 0 ? '+' : ''}{analytics?.members.changePercent}% vs prev
+                          {(analytics?.members.changePercent || 0) > 0 ? '+' : ''}{analytics?.members.changePercent || 0}% vs prev
                         </span>
                       </div>
                     </div>
@@ -529,7 +526,7 @@ export default function AnalyticsPage() {
                           <ArrowDownRight className="h-4 w-4 text-red-500" />
                         )}
                         <span className={`text-sm ${analytics?.revenue.changePercent && analytics.revenue.changePercent > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {analytics?.revenue.changePercent > 0 ? '+' : ''}{analytics?.revenue.changePercent}% vs prev
+                          {(analytics?.revenue.changePercent || 0) > 0 ? '+' : ''}{analytics?.revenue.changePercent || 0}% vs prev
                         </span>
                       </div>
                     </div>
@@ -551,7 +548,7 @@ export default function AnalyticsPage() {
                           <ArrowDownRight className="h-4 w-4 text-red-500" />
                         )}
                         <span className={`text-sm ${analytics?.members.engagementChange && analytics.members.engagementChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {analytics?.members.engagementChange > 0 ? '+' : ''}{analytics?.members.engagementChange}% vs prev
+                          {(analytics?.members.engagementChange || 0) > 0 ? '+' : ''}{analytics?.members.engagementChange || 0}% vs prev
                         </span>
                       </div>
                     </div>
@@ -1091,7 +1088,7 @@ export default function AnalyticsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl text-navy">Giving by Fund</CardTitle>
-                  <CardDescription>This period's giving breakdown</CardDescription>
+                  <CardDescription>This period&apos;s giving breakdown</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {analytics?.revenue.fundChartData && analytics.revenue.fundChartData.length > 0 ? (
