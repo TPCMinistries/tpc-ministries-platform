@@ -25,7 +25,7 @@ interface PastoralAlert {
   title: string
   description: string
   suggested_action: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   created_at: string
 }
 
@@ -39,17 +39,98 @@ interface ContentGap {
 interface AIInsights {
   dailyBriefing: string
   pastoralAlerts: PastoralAlert[]
-  atRiskMembers: any[]
-  upcomingCelebrations: any[]
+  atRiskMembers: PastoralAlert[]
+  upcomingCelebrations: PastoralAlert[]
   contentGaps: ContentGap[]
-  engagementTrends: any
-  revenueInsights: any
-  suggestedActions: any[]
-  memberStats: any
+  engagementTrends: EngagementTrends
+  revenueInsights: RevenueInsights
+  suggestedActions: SuggestedAction[]
+  memberStats: MemberStats
+}
+
+interface DailyBriefingData {
+  totalMembers: number
+  newMembersThisWeek: number
+  activeMembers: number
+  pendingPrayers: number
+  revenueThisMonth: number
+  atRiskCount: number
+  upcomingBirthdays: number
+  upcomingAnniversaries: number
+}
+
+interface MemberStats {
+  total: number
+  newThisWeek: number
+  activeThisMonth: number
+  byTier: Record<string, number>
+}
+
+interface RevenueInsights {
+  thisMonth: number
+  lastMonth: number
+  change: number
+  trend: 'up' | 'down'
+}
+
+interface EngagementTrends {
+  activeRate: number
+  newMemberRate: number
+}
+
+interface SuggestedAction {
+  id: string
+  type: 'urgent' | 'opportunity' | 'celebration' | 'strategy' | 'growth'
+  title: string
+  description: string
+  action: string
+  actionUrl: string
+}
+
+interface RelatedMember {
+  id: string
+  first_name: string
+  last_name: string
+  email?: string | null
+}
+
+type RelatedMemberValue = RelatedMember | RelatedMember[] | null
+
+interface PrayerAlertRow {
+  id: string
+  title: string
+  created_at: string
+  members?: RelatedMemberValue
+}
+
+interface SpiritualProfileRow {
+  member_id: string
+  engagement_score: number | null
+  previous_engagement_score: number | null
+  members?: RelatedMemberValue
+}
+
+interface AlertActionRequest {
+  action?: 'dismiss_alert' | 'send_message' | 'mark_contacted'
+  alertId?: string
+  memberId?: string
+  data?: {
+    notes?: string
+    type?: string
+    content?: string
+  }
+}
+
+const getRelatedMember = (member?: RelatedMemberValue) => {
+  if (Array.isArray(member)) {
+    return member[0] || null
+  }
+
+  return member || null
 }
 
 // Generate AI-powered daily briefing
-async function generateDailyBriefing(data: any): Promise<string> {
+async function generateDailyBriefing(data: DailyBriefingData): Promise<string> {
   const prompt = `You are an AI assistant for Prophet Lorenzo at TPC Ministries. Generate a concise, encouraging daily briefing for the ministry admin dashboard.
 
 Current Data:
@@ -200,7 +281,7 @@ async function generatePastoralAlerts(): Promise<PastoralAlert[]> {
     .limit(10)
 
   for (const prayer of unansweredPrayers || []) {
-    const member = prayer.members as any
+    const member = getRelatedMember((prayer as PrayerAlertRow).members)
     if (member) {
       const daysAgo = Math.floor((now.getTime() - new Date(prayer.created_at).getTime()) / (1000 * 60 * 60 * 24))
       alerts.push({
@@ -227,7 +308,7 @@ async function generatePastoralAlerts(): Promise<PastoralAlert[]> {
     `)
 
   for (const profile of memberProfiles || []) {
-    const member = profile.members as any
+    const member = getRelatedMember((profile as SpiritualProfileRow).members)
     if (member && profile.previous_engagement_score && profile.engagement_score) {
       const drop = profile.previous_engagement_score - profile.engagement_score
       if (drop >= 20) {
@@ -276,7 +357,7 @@ async function getContentGaps(): Promise<ContentGap[]> {
   }
 
   // Get content counts by category
-  const { count: teachingsCount } = await supabase
+  await supabase
     .from('teachings')
     .select('*', { count: 'exact', head: true })
 
@@ -320,7 +401,7 @@ async function getContentGaps(): Promise<ContentGap[]> {
 }
 
 // Get member statistics
-async function getMemberStats() {
+async function getMemberStats(): Promise<MemberStats> {
   const supabase = getSupabase()
   const now = new Date()
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
@@ -355,7 +436,7 @@ async function getMemberStats() {
 }
 
 // Get revenue insights
-async function getRevenueInsights() {
+async function getRevenueInsights(): Promise<RevenueInsights> {
   const supabase = getSupabase()
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -372,8 +453,8 @@ async function getRevenueInsights() {
       .lte('created_at', endOfLastMonth.toISOString())
   ])
 
-  const thisMonth = (thisMonthResult.data || []).reduce((sum, d) => sum + (d.amount || 0), 0)
-  const lastMonth = (lastMonthResult.data || []).reduce((sum, d) => sum + (d.amount || 0), 0)
+  const thisMonth = (thisMonthResult.data || []).reduce((sum, d) => sum + Number(d.amount || 0), 0)
+  const lastMonth = (lastMonthResult.data || []).reduce((sum, d) => sum + Number(d.amount || 0), 0)
   const change = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth * 100).toFixed(1) : 0
 
   return {
@@ -385,8 +466,8 @@ async function getRevenueInsights() {
 }
 
 // Generate suggested actions based on data
-async function generateSuggestedActions(alerts: PastoralAlert[], stats: any): Promise<any[]> {
-  const actions: any[] = []
+async function generateSuggestedActions(alerts: PastoralAlert[], stats: MemberStats): Promise<SuggestedAction[]> {
+  const actions: SuggestedAction[] = []
 
   // High priority alerts
   const highPriorityCount = alerts.filter(a => a.priority === 'high').length
@@ -455,7 +536,7 @@ async function generateSuggestedActions(alerts: PastoralAlert[], stats: any): Pr
   return actions
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const authResult = await requireStaff()
     if (authResult instanceof NextResponse) {
@@ -546,7 +627,7 @@ export async function POST(request: NextRequest) {
       return authResult
     }
 
-    const { action, alertId, memberId, data } = await request.json()
+    const { action, alertId, memberId, data } = await request.json() as AlertActionRequest
 
     switch (action) {
       case 'dismiss_alert':
