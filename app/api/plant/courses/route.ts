@@ -1,11 +1,64 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type Tier = 'free' | 'partner' | 'covenant'
+
+interface PlantLesson {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  sequence_order: number
+  content_type: string | null
+  estimated_minutes: number | null
+  is_preview: boolean | null
+}
+
+interface PlantModule {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  sequence_order: number
+  has_quiz: boolean | null
+  lessons?: PlantLesson[] | null
+}
+
+interface PlantCourseDetail {
+  id: string
+  required_tier: Tier | string | null
+  modules?: PlantModule[] | null
+  [key: string]: unknown
+}
+
+interface PlantEnrollment {
+  id: string
+  course_id: string
+  status?: string | null
+  progress_percent?: number | null
+  [key: string]: unknown
+}
+
+interface PlantLessonProgress {
+  lesson_id: string
+  status: string | null
+  progress_percent: number | null
+  completed_at: string | null
+}
+
+const tierOrder: Record<Tier, number> = { free: 0, partner: 1, covenant: 2 }
+
+function getTierLevel(tier: string | null | undefined) {
+  return tierOrder[(tier || 'free') as Tier] ?? 0
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const authClient = await createClient()
+    const supabase = createAdminClient()
     const { searchParams } = new URL(request.url)
 
     const category = searchParams.get('category')
@@ -14,7 +67,7 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get('slug')
 
     // Get current user's membership tier
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await authClient.auth.getUser()
     let memberTier = 'free'
     let memberId: string | null = null
 
@@ -66,7 +119,7 @@ export async function GET(request: NextRequest) {
         `)
         .eq('slug', slug)
         .eq('status', 'published')
-        .single()
+        .single<PlantCourseDetail>()
 
       if (error || !course) {
         return NextResponse.json({ error: 'Course not found' }, { status: 404 })
@@ -74,15 +127,15 @@ export async function GET(request: NextRequest) {
 
       // Sort modules and lessons
       course.modules = course.modules
-        ?.sort((a: any, b: any) => a.sequence_order - b.sequence_order)
-        .map((module: any) => ({
+        ?.sort((a, b) => a.sequence_order - b.sequence_order)
+        .map((module) => ({
           ...module,
-          lessons: module.lessons?.sort((a: any, b: any) => a.sequence_order - b.sequence_order)
+          lessons: module.lessons?.sort((a, b) => a.sequence_order - b.sequence_order)
         }))
 
       // Check enrollment and progress
       let enrollment = null
-      let lessonProgress: Record<string, any> = {}
+      const lessonProgress: Record<string, PlantLessonProgress> = {}
 
       if (memberId) {
         const { data: enrollmentData } = await supabase
@@ -99,6 +152,7 @@ export async function GET(request: NextRequest) {
             .from('plant_lesson_progress')
             .select('lesson_id, status, progress_percent, completed_at')
             .eq('enrollment_id', enrollmentData.id)
+            .returns<PlantLessonProgress[]>()
 
           if (progress) {
             progress.forEach(p => {
@@ -109,9 +163,8 @@ export async function GET(request: NextRequest) {
       }
 
       // Check tier access
-      const tierOrder = { free: 0, partner: 1, covenant: 2 }
-      const requiredTierLevel = tierOrder[course.required_tier as keyof typeof tierOrder] || 0
-      const userTierLevel = tierOrder[memberTier as keyof typeof tierOrder] || 0
+      const requiredTierLevel = getTierLevel(course.required_tier)
+      const userTierLevel = getTierLevel(memberTier)
 
       return NextResponse.json({
         course: {
@@ -176,12 +229,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's enrollments
-    let enrollments: Record<string, any> = {}
+    const enrollments: Record<string, PlantEnrollment> = {}
     if (memberId) {
       const { data: userEnrollments } = await supabase
         .from('plant_enrollments')
         .select('course_id, status, progress_percent')
         .eq('member_id', memberId)
+        .returns<PlantEnrollment[]>()
 
       if (userEnrollments) {
         userEnrollments.forEach(e => {
@@ -192,9 +246,8 @@ export async function GET(request: NextRequest) {
 
     // Add access and enrollment info
     const coursesWithAccess = courses?.map(course => {
-      const tierOrder = { free: 0, partner: 1, covenant: 2 }
-      const requiredTierLevel = tierOrder[course.required_tier as keyof typeof tierOrder] || 0
-      const userTierLevel = tierOrder[memberTier as keyof typeof tierOrder] || 0
+      const requiredTierLevel = getTierLevel(course.required_tier)
+      const userTierLevel = getTierLevel(memberTier)
 
       return {
         ...course,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,9 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
   User,
-  Mail,
   Phone,
-  Calendar,
   Shield,
   Stethoscope,
   DollarSign,
@@ -21,15 +19,11 @@ import {
   Edit,
   Save,
   X,
-  CheckCircle,
   AlertTriangle,
   Briefcase,
-  Heart,
   Star,
-  Plane,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 interface Participant {
   id: string
@@ -45,7 +39,7 @@ interface Participant {
   passport_status: string
   passport_photo_url: string | null
   visa_status: string
-  vaccinations: any[]
+  vaccinations: string[]
   allergies: string | null
   medications: string | null
   medical_conditions: string | null
@@ -69,18 +63,13 @@ interface Participant {
 
 export default function ParticipantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [participant, setParticipant] = useState<Participant | null>(null)
   const [editing, setEditing] = useState(false)
   const [editData, setEditData] = useState<Partial<Participant>>({})
 
-  useEffect(() => {
-    fetchParticipant()
-  }, [resolvedParams.id])
-
-  const fetchParticipant = async () => {
+  const fetchParticipant = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
 
@@ -96,7 +85,11 @@ export default function ParticipantDetailPage({ params }: { params: Promise<{ id
     }
 
     setLoading(false)
-  }
+  }, [resolvedParams.id])
+
+  useEffect(() => {
+    fetchParticipant()
+  }, [fetchParticipant])
 
   const handleSave = async () => {
     if (!participant) return
@@ -117,7 +110,10 @@ export default function ParticipantDetailPage({ params }: { params: Promise<{ id
     setSaving(false)
   }
 
-  const updateField = (field: keyof Participant, value: any) => {
+  const updateField = (
+    field: keyof Participant,
+    value: Participant[keyof Participant]
+  ) => {
     setEditData({ ...editData, [field]: value })
   }
 
