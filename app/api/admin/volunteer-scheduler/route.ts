@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import OpenAI from 'openai'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,20 +8,77 @@ function getSupabase() {
   return createAdminClient()
 }
 
-function getOpenAI() { return new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY }); }
+interface AvailabilitySlot {
+  day: string
+  start: string | null
+  end: string | null
+}
+
+interface AvailabilityRow {
+  member_id: string
+  day_of_week: string
+  start_time: string | null
+  end_time: string | null
+  is_available: boolean
+}
+
+interface VolunteerMemberRow {
+  member_id: string
+  role: string | null
+  members?: {
+    id: string
+    first_name: string
+    last_name: string
+    email: string
+  } | {
+    id: string
+    first_name: string
+    last_name: string
+    email: string
+  }[] | null
+}
+
+interface VolunteerTeamRow {
+  id: string
+  name: string
+  description: string | null
+  required_count: number | null
+  volunteer_members?: VolunteerMemberRow[] | null
+}
+
+interface VolunteerScheduleRow {
+  id?: string
+  event_id: string
+  team_id: string | null
+  member_id: string
+  position?: string | null
+  status: string
+}
+
+interface VolunteerSchedulerRequest {
+  action?: 'schedule_volunteer' | 'auto_schedule'
+  eventId?: string
+  memberId?: string
+  teamId?: string
+  position?: string
+}
+
+const firstRelation = <T,>(value?: T | T[] | null) => {
+  if (Array.isArray(value)) {
+    return value[0] || null
+  }
+
+  return value || null
+}
 
 // AI-Optimized Volunteer Scheduling
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const authResult = await requireStaff()
     if (authResult instanceof NextResponse) {
       return authResult
     }
 
-    const { searchParams } = new URL(request.url)
-    const eventId = searchParams.get('eventId')
-    const date = searchParams.get('date')
     const supabase = getSupabase()
 
     // Get all volunteer teams
@@ -59,8 +115,8 @@ export async function GET(request: NextRequest) {
       `)
 
     // Build availability map
-    const memberAvailability: Record<string, { days: string[], times: any[] }> = {}
-    for (const a of availability || []) {
+    const memberAvailability: Record<string, { days: string[], times: AvailabilitySlot[] }> = {}
+    for (const a of (availability || []) as AvailabilityRow[]) {
       if (!memberAvailability[a.member_id]) {
         memberAvailability[a.member_id] = { days: [], times: [] }
       }
@@ -75,9 +131,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate team statistics
-    const teamStats = (teams || []).map(team => {
-      const members = (team as any).volunteer_members || []
-      const scheduledCount = schedules?.filter(s => s.team_id === team.id && s.status === 'confirmed').length || 0
+    const typedSchedules = (schedules || []) as VolunteerScheduleRow[]
+    const typedTeams = (teams || []) as VolunteerTeamRow[]
+    const teamStats = typedTeams.map(team => {
+      const members = team.volunteer_members || []
+      const scheduledCount = typedSchedules.filter(s => s.team_id === team.id && s.status === 'confirmed').length || 0
 
       return {
         id: team.id,
@@ -86,7 +144,7 @@ export async function GET(request: NextRequest) {
         memberCount: members.length,
         requiredCount: team.required_count || 5,
         scheduledThisMonth: scheduledCount,
-        availableMembers: members.filter((m: any) =>
+        availableMembers: members.filter((m) =>
           memberAvailability[m.member_id]?.days.length > 0
         ).length
       }
@@ -98,10 +156,16 @@ export async function GET(request: NextRequest) {
       const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][eventDate.getDay()]
 
       // Find available volunteers for this day
-      const availableVolunteers: any[] = []
+      const availableVolunteers: Array<{
+        memberId: string
+        memberName: string
+        teamId: string
+        teamName: string
+        role: string | null
+      }> = []
 
-      for (const team of teams || []) {
-        const members = (team as any).volunteer_members || []
+      for (const team of typedTeams) {
+        const members = team.volunteer_members || []
         for (const member of members) {
           const avail = memberAvailability[member.member_id]
           if (avail?.days.includes(dayOfWeek)) {
@@ -110,9 +174,10 @@ export async function GET(request: NextRequest) {
               s.event_id === event.id && s.member_id === member.member_id
             )
             if (!alreadyScheduled) {
+              const memberProfile = firstRelation(member.members)
               availableVolunteers.push({
                 memberId: member.member_id,
-                memberName: `${(member.members as any)?.first_name} ${(member.members as any)?.last_name}`,
+                memberName: `${memberProfile?.first_name || ''} ${memberProfile?.last_name || ''}`.trim() || 'Unknown volunteer',
                 teamId: team.id,
                 teamName: team.name,
                 role: member.role
@@ -132,8 +197,8 @@ export async function GET(request: NextRequest) {
         },
         dayOfWeek,
         availableVolunteers: availableVolunteers.slice(0, 20),
-        currentlyScheduled: schedules?.filter(s => s.event_id === event.id).length || 0,
-        gapToFill: Math.max(0, (event.volunteer_positions_needed || 10) - (schedules?.filter(s => s.event_id === event.id).length || 0))
+        currentlyScheduled: typedSchedules.filter(s => s.event_id === event.id).length || 0,
+        gapToFill: Math.max(0, (event.volunteer_positions_needed || 10) - typedSchedules.filter(s => s.event_id === event.id).length)
       }
     })
 
@@ -141,7 +206,7 @@ export async function GET(request: NextRequest) {
       teams: teamStats,
       upcomingEvents: scheduleSuggestions,
       totalVolunteers: Object.keys(memberAvailability).length,
-      totalScheduledThisMonth: schedules?.filter(s => s.status === 'confirmed').length || 0
+      totalScheduledThisMonth: typedSchedules.filter(s => s.status === 'confirmed').length || 0
     })
 
   } catch (error) {
@@ -158,7 +223,7 @@ export async function POST(request: NextRequest) {
       return authResult
     }
 
-    const { action, eventId, memberId, teamId, position, autoSchedule } = await request.json()
+    const { action, eventId, memberId, teamId, position } = await request.json() as VolunteerSchedulerRequest
     const supabase = getSupabase()
 
     if (action === 'schedule_volunteer') {

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useCallback, useEffect, Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -44,19 +44,13 @@ import {
   MoreVertical,
   Star,
   Archive,
-  Trash2,
-  Users,
   FileText,
   Zap,
   Target,
-  Sparkles,
   Clock,
   CheckCircle2,
-  Filter,
   ChevronRight,
   User,
-  Building,
-  Calendar,
   ArrowRight,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -117,11 +111,35 @@ interface Lead {
   created_at: string
 }
 
+type CommunicationsTab = 'conversations' | 'campaigns' | 'automations' | 'templates' | 'leads'
+type ChannelFilter = 'all' | 'email' | 'sms' | 'internal'
+type LeadFilter = 'all' | 'new' | 'hot' | 'converted'
+
+interface ApiListResponse<T> {
+  success?: boolean
+  campaigns?: T[]
+  templates?: T[]
+}
+
+const communicationTabs: Array<{ key: CommunicationsTab; label: string; icon: typeof MessageSquare }> = [
+  { key: 'conversations', label: 'Conversations', icon: MessageSquare },
+  { key: 'campaigns', label: 'Campaigns', icon: Send },
+  { key: 'automations', label: 'Automations', icon: Zap },
+  { key: 'templates', label: 'Templates', icon: FileText },
+  { key: 'leads', label: 'Leads', icon: Target },
+]
+
+const channelFilters: ChannelFilter[] = ['all', 'email', 'sms']
+const leadFilters: LeadFilter[] = ['all', 'new', 'hot', 'converted']
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Failed to send'
+
 // ============ MAIN COMPONENT ============
 function CommunicationsContent() {
   const searchParams = useSearchParams()
   const urlTab = searchParams.get('tab')
-  const [activeTab, setActiveTab] = useState<'conversations' | 'campaigns' | 'automations' | 'templates' | 'leads'>('conversations')
+  const [activeTab, setActiveTab] = useState<CommunicationsTab>('conversations')
   const { toast } = useToast()
 
   // Handle URL tab parameter
@@ -146,7 +164,7 @@ function CommunicationsContent() {
   const [conversationsLoading, setConversationsLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [channelFilter, setChannelFilter] = useState<'all' | 'email' | 'sms' | 'internal'>('all')
+  const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all')
 
   // Compose state
   const [showCompose, setShowCompose] = useState(false)
@@ -165,17 +183,9 @@ function CommunicationsContent() {
   // Leads state
   const [leads, setLeads] = useState<Lead[]>([])
   const [leadsLoading, setLeadsLoading] = useState(true)
-  const [leadFilter, setLeadFilter] = useState<'all' | 'new' | 'hot' | 'converted'>('all')
+  const [leadFilter, setLeadFilter] = useState<LeadFilter>('all')
 
-  useEffect(() => {
-    fetchConversations()
-    fetchCampaigns()
-    fetchTemplates()
-    fetchLeads()
-    fetchStats()
-  }, [])
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     const supabase = createClient()
     try {
       // Get unread emails
@@ -210,9 +220,9 @@ function CommunicationsContent() {
     } catch (error) {
       console.error('Error fetching stats:', error)
     }
-  }
+  }, [])
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     setConversationsLoading(true)
     const supabase = createClient()
 
@@ -266,7 +276,7 @@ function CommunicationsContent() {
     } finally {
       setConversationsLoading(false)
     }
-  }
+  }, [])
 
   const fetchMessagesForContact = async (contact: Contact) => {
     setMessagesLoading(true)
@@ -354,11 +364,11 @@ function CommunicationsContent() {
     }
   }
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     setCampaignsLoading(true)
     try {
       const res = await fetch('/api/email/campaigns')
-      const data = await res.json()
+      const data = await res.json() as ApiListResponse<Campaign>
       if (data.success) {
         setCampaigns(data.campaigns || [])
       }
@@ -367,13 +377,13 @@ function CommunicationsContent() {
     } finally {
       setCampaignsLoading(false)
     }
-  }
+  }, [])
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     setTemplatesLoading(true)
     try {
       const res = await fetch('/api/email/templates')
-      const data = await res.json()
+      const data = await res.json() as ApiListResponse<Template>
       if (data.success) {
         setTemplates(data.templates || [])
       }
@@ -382,9 +392,9 @@ function CommunicationsContent() {
     } finally {
       setTemplatesLoading(false)
     }
-  }
+  }, [])
 
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     setLeadsLoading(true)
     const supabase = createClient()
     try {
@@ -411,13 +421,21 @@ function CommunicationsContent() {
     } finally {
       setLeadsLoading(false)
     }
-  }
+  }, [leadFilter])
+
+  useEffect(() => {
+    fetchConversations()
+    fetchCampaigns()
+    fetchTemplates()
+    fetchLeads()
+    fetchStats()
+  }, [fetchCampaigns, fetchConversations, fetchLeads, fetchStats, fetchTemplates])
 
   useEffect(() => {
     if (activeTab === 'leads') {
       fetchLeads()
     }
-  }, [leadFilter])
+  }, [activeTab, fetchLeads])
 
   const handleSendReply = async () => {
     if (!selectedContact || !replyMessage.trim()) return
@@ -464,8 +482,8 @@ function CommunicationsContent() {
           throw new Error(data.error)
         }
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send', variant: 'destructive' })
+    } catch (error) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     } finally {
       setSending(false)
     }
@@ -571,16 +589,10 @@ function CommunicationsContent() {
 
       {/* Tab Navigation */}
       <div className="flex gap-2 bg-gray-100 p-1 rounded-lg w-fit">
-        {[
-          { key: 'conversations', label: 'Conversations', icon: MessageSquare },
-          { key: 'campaigns', label: 'Campaigns', icon: Send },
-          { key: 'automations', label: 'Automations', icon: Zap },
-          { key: 'templates', label: 'Templates', icon: FileText },
-          { key: 'leads', label: 'Leads', icon: Target },
-        ].map(tab => (
+        {communicationTabs.map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
               activeTab === tab.key
                 ? 'bg-card shadow-sm text-navy dark:text-foreground font-medium'
@@ -614,13 +626,13 @@ function CommunicationsContent() {
                 </Button>
               </div>
               <div className="flex gap-1 mt-2">
-                {['all', 'email', 'sms'].map(filter => (
+                {channelFilters.map(filter => (
                   <Button
                     key={filter}
                     variant={channelFilter === filter ? 'default' : 'ghost'}
                     size="sm"
                     className={channelFilter === filter ? 'bg-navy' : ''}
-                    onClick={() => setChannelFilter(filter as any)}
+                    onClick={() => setChannelFilter(filter)}
                   >
                     {filter === 'all' ? 'All' : filter === 'email' ? 'Email' : 'SMS'}
                   </Button>
@@ -1054,13 +1066,13 @@ function CommunicationsContent() {
           <CardContent>
             {/* Lead Filters */}
             <div className="flex gap-2 mb-4">
-              {['all', 'new', 'hot', 'converted'].map(filter => (
+              {leadFilters.map(filter => (
                 <Button
                   key={filter}
                   variant={leadFilter === filter ? 'default' : 'outline'}
                   size="sm"
                   className={leadFilter === filter ? 'bg-navy' : ''}
-                  onClick={() => setLeadFilter(filter as any)}
+                  onClick={() => setLeadFilter(filter)}
                 >
                   {filter === 'all' ? 'All' :
                    filter === 'new' ? 'New' :

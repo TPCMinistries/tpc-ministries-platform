@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,17 +12,11 @@ import {
   Plus,
   Edit,
   Trash2,
-  Search,
   Calendar,
   Clock,
-  CheckCircle,
   XCircle,
-  Mail,
-  Award,
-  ChevronDown,
   Save,
   X,
-  UserPlus,
   Building,
 } from 'lucide-react'
 
@@ -78,7 +72,6 @@ export default function AdminVolunteerPage() {
   const [selectedOpportunity, setSelectedOpportunity] = useState<VolunteerOpportunity | null>(null)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [showMembersModal, setShowMembersModal] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [stats, setStats] = useState({
     totalTeams: 0,
     totalVolunteers: 0,
