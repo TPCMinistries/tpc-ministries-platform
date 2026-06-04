@@ -1,25 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   DollarSign,
   TrendingUp,
-  TrendingDown,
-  Users,
   Target,
-  Calendar,
   RefreshCw,
   Download,
   Search,
-  Filter,
-  Eye,
-  CheckCircle,
-  XCircle,
   ArrowUpRight,
   ArrowDownRight,
   CreditCard,
@@ -105,15 +98,16 @@ const paymentMethods = [
   { value: 'other', label: 'Other', icon: DollarSign },
 ]
 
+const categories = ['tithe', 'offering', 'missions', 'covenant_partner', 'building', 'benevolence', 'special', 'general', 'other']
+const successfulDonationStatuses = ['completed', 'succeeded']
+
 export default function AdminGivingPage() {
   const [donations, setDonations] = useState<Donation[]>([])
   const [recurringDonations, setRecurringDonations] = useState<RecurringDonation[]>([])
   const [pledges, setPledges] = useState<Pledge[]>([])
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'donations' | 'recurring' | 'pledges'>('overview')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
-  const [dateRange, setDateRange] = useState('month')
   const [stats, setStats] = useState<GivingStats>({
     totalThisMonth: 0,
     totalLastMonth: 0,
@@ -145,9 +139,6 @@ export default function AdminGivingPage() {
   const [memberHistory, setMemberHistory] = useState<MemberGivingHistory | null>(null)
   const [loadingHistory, setLoadingHistory] = useState(false)
 
-  const categories = ['tithe', 'offering', 'missions', 'covenant_partner', 'building', 'benevolence', 'special', 'general', 'other']
-  const successfulDonationStatuses = ['completed', 'succeeded']
-
   const getDonationCategory = (donation: Donation) =>
     donation.category || donation.designation || donation.donation_type || 'general'
 
@@ -157,22 +148,7 @@ export default function AdminGivingPage() {
   const isSuccessfulDonation = (status: string) =>
     successfulDonationStatuses.includes(status)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
-    await Promise.all([
-      fetchStats(),
-      fetchDonations(),
-      fetchRecurringDonations(),
-      fetchPledges(),
-      fetchMembers(),
-    ])
-    setLoading(false)
-  }
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('members')
@@ -182,9 +158,9 @@ export default function AdminGivingPage() {
     if (data) {
       setMembers(data)
     }
-  }
+  }, [])
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     const supabase = createClient()
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -258,9 +234,9 @@ export default function AdminGivingPage() {
       averageGift,
       totalDonors: totalDonors || 0,
     })
-  }
+  }, [])
 
-  const fetchDonations = async () => {
+  const fetchDonations = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('donations')
@@ -279,9 +255,9 @@ export default function AdminGivingPage() {
         member_name: d.members ? `${d.members.first_name} ${d.members.last_name}` : 'Anonymous'
       })))
     }
-  }
+  }, [])
 
-  const fetchRecurringDonations = async () => {
+  const fetchRecurringDonations = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('donations')
@@ -306,9 +282,9 @@ export default function AdminGivingPage() {
         member_name: d.members ? `${d.members.first_name} ${d.members.last_name}` : 'Unknown'
       })))
     }
-  }
+  }, [])
 
-  const fetchPledges = async () => {
+  const fetchPledges = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('giving_pledges')
@@ -324,7 +300,21 @@ export default function AdminGivingPage() {
         member_name: p.members ? `${p.members.first_name} ${p.members.last_name}` : 'Unknown'
       })))
     }
-  }
+  }, [])
+
+  const fetchData = useCallback(async () => {
+    await Promise.all([
+      fetchStats(),
+      fetchDonations(),
+      fetchRecurringDonations(),
+      fetchPledges(),
+      fetchMembers(),
+    ])
+  }, [fetchDonations, fetchMembers, fetchPledges, fetchRecurringDonations, fetchStats])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const getChangePercent = () => {
     if (stats.totalLastMonth === 0) return stats.totalThisMonth > 0 ? 100 : 0
@@ -388,7 +378,7 @@ export default function AdminGivingPage() {
   }
 
   // View member giving history
-  const viewMemberHistory = async (memberId: string, memberName: string) => {
+  const viewMemberHistory = async (memberId: string) => {
     setLoadingHistory(true)
     setShowMemberHistory(true)
 
@@ -647,7 +637,7 @@ export default function AdminGivingPage() {
                         <td className="p-4 text-sm font-medium">
                           {donation.member_id ? (
                             <button
-                              onClick={() => viewMemberHistory(donation.member_id!, donation.member_name || 'Unknown')}
+                              onClick={() => viewMemberHistory(donation.member_id!)}
                               className="text-navy hover:text-gold hover:underline flex items-center gap-1"
                             >
                               <User className="h-3 w-3" />

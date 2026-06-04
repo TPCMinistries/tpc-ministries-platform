@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -31,7 +31,6 @@ import {
   TrendingUp,
   Activity,
   BookOpen,
-  MessageSquare,
   Search,
   Loader2,
   Eye,
@@ -41,8 +40,6 @@ import {
   Sun,
   Target,
   Cake,
-  Gift,
-  Star,
   PartyPopper,
   Mail,
   Send,
@@ -51,13 +48,10 @@ import {
   Trash2,
   Clock,
   User,
-  Phone,
   CheckCircle,
   XCircle,
-  MapPin,
   Save,
   X,
-  BarChart3,
   HandHeart
 } from 'lucide-react'
 
@@ -120,17 +114,73 @@ interface Appointment {
   created_at: string
 }
 
-interface ActivityStat {
-  activity_type: string
-  count: number
-}
-
 interface RecentActivity {
   id: string
   member_name: string
   activity_type: string
   resource_name: string
   created_at: string
+}
+
+interface SpiritualProfile {
+  primary_gift?: string | null
+  current_season?: string | null
+  total_devotionals_read?: number | null
+  total_journal_entries?: number | null
+  total_prayers_submitted?: number | null
+}
+
+interface MemberInsightRow {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  tier: string
+  created_at: string
+  member_spiritual_profiles?: SpiritualProfile[] | SpiritualProfile | null
+}
+
+interface MemberActivity {
+  id: string
+  activity_type: string
+  resource_name?: string | null
+  created_at: string
+}
+
+type ActivityMemberRelation = {
+  first_name: string
+  last_name: string
+} | {
+  first_name: string
+  last_name: string
+}[] | null
+
+interface RecentActivityRow extends MemberActivity {
+  members?: ActivityMemberRelation
+}
+
+type AppointmentStaffRelation = { name: string } | { name: string }[] | null
+type AppointmentMemberRelation = {
+  first_name: string
+  last_name: string
+  email: string
+} | {
+  first_name: string
+  last_name: string
+  email: string
+}[] | null
+
+interface AppointmentRow extends Appointment {
+  pastoral_staff?: AppointmentStaffRelation
+  members?: AppointmentMemberRelation
+}
+
+const firstRelation = <T,>(value?: T | T[] | null) => {
+  if (Array.isArray(value)) {
+    return value[0] || null
+  }
+
+  return value || null
 }
 
 export default function MemberCarePage() {
@@ -140,11 +190,10 @@ export default function MemberCarePage() {
 
   // Insights state
   const [members, setMembers] = useState<MemberInsight[]>([])
-  const [activityStats, setActivityStats] = useState<ActivityStat[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [filterTier, setFilterTier] = useState('all')
   const [selectedMember, setSelectedMember] = useState<MemberInsight | null>(null)
-  const [memberActivity, setMemberActivity] = useState<any[]>([])
+  const [memberActivity, setMemberActivity] = useState<MemberActivity[]>([])
 
   // Celebrations state
   const [upcomingBirthdays, setUpcomingBirthdays] = useState<(MemberCelebration & { nextDate?: Date })[]>([])
@@ -178,22 +227,8 @@ export default function MemberCarePage() {
     pendingAppointments: 0,
   })
 
-  useEffect(() => {
-    fetchAllData()
-  }, [])
-
-  const fetchAllData = async () => {
-    setLoading(true)
-    await Promise.all([
-      fetchInsightsData(),
-      fetchCelebrationsData(),
-      fetchPastoralData(),
-    ])
-    setLoading(false)
-  }
-
   // ============ INSIGHTS FUNCTIONS ============
-  const fetchInsightsData = async () => {
+  const fetchInsightsData = useCallback(async () => {
     const supabase = createClient()
 
     try {
@@ -209,15 +244,6 @@ export default function MemberCarePage() {
         `)
         .order('created_at', { ascending: false })
 
-      // Fetch activity stats (last 30 days)
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-      const { data: statsData } = await supabase
-        .from('member_activity')
-        .select('activity_type')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-
       // Fetch recent activity
       const { data: recentData } = await supabase
         .from('member_activity')
@@ -229,8 +255,8 @@ export default function MemberCarePage() {
         .limit(50)
 
       // Process members
-      const processedMembers = (membersData || []).map((m: any) => {
-        const profile = m.member_spiritual_profiles?.[0] || {}
+      const processedMembers = (membersData || []).map((m: MemberInsightRow) => {
+        const profile = firstRelation(m.member_spiritual_profiles) || {}
         const engagementScore = calculateEngagementScore(profile)
         return {
           id: m.id,
@@ -239,8 +265,8 @@ export default function MemberCarePage() {
           email: m.email,
           tier: m.tier,
           created_at: m.created_at,
-          primary_gift: profile.primary_gift,
-          current_season: profile.current_season,
+          primary_gift: profile.primary_gift || undefined,
+          current_season: profile.current_season || undefined,
           total_devotionals_read: profile.total_devotionals_read || 0,
           total_journal_entries: profile.total_journal_entries || 0,
           total_prayers_submitted: profile.total_prayers_submitted || 0,
@@ -254,31 +280,25 @@ export default function MemberCarePage() {
       const activeMembers = processedMembers.filter(m => (m.engagement_score || 0) >= 40).length
       setStats(prev => ({ ...prev, totalMembers: processedMembers.length, activeMembers }))
 
-      // Process activity stats
-      const statsCounts: Record<string, number> = {}
-      ;(statsData || []).forEach((a: any) => {
-        statsCounts[a.activity_type] = (statsCounts[a.activity_type] || 0) + 1
-      })
-      setActivityStats(
-        Object.entries(statsCounts).map(([type, count]) => ({ activity_type: type, count }))
-      )
-
       // Process recent activity
       setRecentActivity(
-        (recentData || []).map((a: any) => ({
-          id: a.id,
-          member_name: a.members ? `${a.members.first_name} ${a.members.last_name}` : 'Unknown',
-          activity_type: a.activity_type,
-          resource_name: a.resource_name || '-',
-          created_at: a.created_at
-        }))
+        (recentData || []).map((a: RecentActivityRow) => {
+          const activityMember = firstRelation(a.members)
+          return {
+            id: a.id,
+            member_name: activityMember ? `${activityMember.first_name} ${activityMember.last_name}` : 'Unknown',
+            activity_type: a.activity_type,
+            resource_name: a.resource_name || '-',
+            created_at: a.created_at
+          }
+        })
       )
     } catch (error) {
       console.error('Error fetching insights:', error)
     }
-  }
+  }, [])
 
-  const calculateEngagementScore = (profile: any): number => {
+  const calculateEngagementScore = (profile: SpiritualProfile): number => {
     let score = 0
     score += Math.min((profile.total_devotionals_read || 0) * 5, 30)
     score += Math.min((profile.total_journal_entries || 0) * 10, 30)
@@ -300,7 +320,7 @@ export default function MemberCarePage() {
   }
 
   // ============ CELEBRATIONS FUNCTIONS ============
-  const fetchCelebrationsData = async () => {
+  const fetchCelebrationsData = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('members')
@@ -310,7 +330,7 @@ export default function MemberCarePage() {
     if (data) {
       calculateUpcoming(data)
     }
-  }
+  }, [])
 
   const calculateUpcoming = (memberData: MemberCelebration[]) => {
     const today = new Date()
@@ -416,7 +436,7 @@ export default function MemberCarePage() {
   }
 
   // ============ PASTORAL FUNCTIONS ============
-  const fetchPastoralData = async () => {
+  const fetchPastoralData = useCallback(async () => {
     const supabase = createClient()
 
     // Fetch staff
@@ -440,19 +460,37 @@ export default function MemberCarePage() {
       .order('scheduled_date', { ascending: true })
 
     if (appointmentData) {
-      const processed = appointmentData.map((a: any) => ({
-        ...a,
-        staff_name: a.pastoral_staff?.name,
-        member_name: a.members ? `${a.members.first_name} ${a.members.last_name}` : 'Unknown',
-        member_email: a.members?.email
-      }))
+      const processed = appointmentData.map((a: AppointmentRow) => {
+        const appointmentStaff = firstRelation(a.pastoral_staff)
+        const appointmentMember = firstRelation(a.members)
+        return {
+          ...a,
+          staff_name: appointmentStaff?.name,
+          member_name: appointmentMember ? `${appointmentMember.first_name} ${appointmentMember.last_name}` : 'Unknown',
+          member_email: appointmentMember?.email
+        }
+      })
       setAppointments(processed)
 
       // Count pending
-      const pending = processed.filter((a: any) => a.status === 'pending').length
+      const pending = processed.filter((a) => a.status === 'pending').length
       setStats(prev => ({ ...prev, pendingAppointments: pending }))
     }
-  }
+  }, [])
+
+  const fetchAllData = useCallback(async () => {
+    setLoading(true)
+    await Promise.all([
+      fetchInsightsData(),
+      fetchCelebrationsData(),
+      fetchPastoralData(),
+    ])
+    setLoading(false)
+  }, [fetchCelebrationsData, fetchInsightsData, fetchPastoralData])
+
+  useEffect(() => {
+    fetchAllData()
+  }, [fetchAllData])
 
   const handleCreateStaff = async () => {
     const supabase = createClient()

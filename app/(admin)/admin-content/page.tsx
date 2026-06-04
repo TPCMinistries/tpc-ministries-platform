@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -42,7 +42,6 @@ import {
   Loader2,
   Lock,
   Globe,
-  Users,
   Eye,
   Star,
   MoreVertical,
@@ -50,13 +49,8 @@ import {
   List,
   CheckCircle,
   XCircle,
-  Sparkles,
-  Clock,
-  TrendingUp,
   Image as ImageIcon,
   ExternalLink,
-  Copy,
-  ChevronDown,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -117,11 +111,7 @@ export default function ContentManagementPage() {
   // Get unique series names
   const seriesNames = [...new Set(teachings.filter(t => t.series_name).map(t => t.series_name!))]
 
-  useEffect(() => {
-    fetchTeachings()
-  }, [])
-
-  const fetchTeachings = async () => {
+  const fetchTeachings = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -146,7 +136,11 @@ export default function ContentManagementPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchTeachings()
+  }, [fetchTeachings])
 
   const resetForm = () => {
     setFormData({
@@ -170,7 +164,7 @@ export default function ContentManagementPage() {
     const supabase = createClient()
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('teachings')
         .insert({
           title: formData.title,
@@ -198,7 +192,7 @@ export default function ContentManagementPage() {
         resetForm()
         fetchTeachings()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
     } finally {
       setSubmitting(false)
@@ -240,7 +234,7 @@ export default function ContentManagementPage() {
         resetForm()
         fetchTeachings()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
     } finally {
       setSubmitting(false)
@@ -259,7 +253,7 @@ export default function ContentManagementPage() {
         toast({ title: 'Success', description: 'Teaching deleted successfully' })
         fetchTeachings()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
     }
   }
@@ -277,7 +271,7 @@ export default function ContentManagementPage() {
       } else {
         setTeachings(teachings.map(t => t.id === id ? { ...t, [field]: !currentValue } : t))
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
     }
   }
@@ -311,7 +305,7 @@ export default function ContentManagementPage() {
 
       setSelectedItems(new Set())
       fetchTeachings()
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Bulk action failed', variant: 'destructive' })
     } finally {
       setBulkProcessing(false)
@@ -387,7 +381,7 @@ export default function ContentManagementPage() {
   }
 
   // Form dialog content (shared between add and edit)
-  const FormContent = ({ isEdit = false }: { isEdit?: boolean }) => (
+  const FormContent = () => (
     <div className="space-y-4 py-4">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
@@ -917,7 +911,7 @@ export default function ContentManagementPage() {
               <DialogDescription>Update teaching details</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEdit}>
-              <FormContent isEdit />
+              <FormContent />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => { setIsEditDialogOpen(false); setEditingTeaching(null); resetForm() }} disabled={submitting}>
                   Cancel
