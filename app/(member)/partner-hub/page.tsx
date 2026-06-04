@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/server'
+import { PartnerEventRsvp } from '@/components/partners/partner-event-rsvp'
 
 const partnerResources = [
   {
@@ -185,6 +186,15 @@ export default async function PartnerHubPage() {
     .order('created_at', { ascending: false })
     .limit(4)
 
+  const partnerEventIds = (partnerEvents || []).map((event) => event.id)
+  const { data: partnerRegistrations } = member?.id && partnerEventIds.length > 0
+    ? await supabase
+        .from('event_registrations')
+        .select('event_id, status')
+        .eq('user_id', member.id)
+        .in('event_id', partnerEventIds)
+    : { data: [] }
+
   const firstName = member?.first_name || 'Friend'
   const role = member?.role || member?.tier || 'free'
   const isPartner = ['partner', 'covenant', 'covenant_partner', 'staff', 'admin'].includes(role)
@@ -212,6 +222,11 @@ export default async function PartnerHubPage() {
   const level = partnershipLevel(Number(lastGift?.amount || monthlyRecognized || 0))
   const dynamicEvents = partnerEvents || []
   const dynamicResources = partnerLibrary || []
+  const registeredEventIds = new Set(
+    (partnerRegistrations || [])
+      .filter((registration) => registration.status === 'registered')
+      .map((registration) => registration.event_id)
+  )
   const readinessSteps = [
     {
       title: 'Confirm your partner profile',
@@ -658,6 +673,11 @@ export default async function PartnerHubPage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
+                    <PartnerEventRsvp
+                      eventId={event.id}
+                      initialRegistered={registeredEventIds.has(event.id)}
+                      virtualLink={event.virtual_link}
+                    />
                   </CardContent>
                 </Card>
               ))}
