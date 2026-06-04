@@ -64,16 +64,18 @@ export async function POST(request: NextRequest) {
     let recipients: Array<{ email: string; first_name: string; last_name: string }> = []
 
     if (testEmail) {
-      // Send test email to admin
+      // Send test email to the requested address, personalized with the admin's name.
       const { data: adminMember } = await supabase
         .from('members')
         .select('email, first_name, last_name')
         .eq('user_id', user.id)
         .single()
 
-      if (adminMember) {
-        recipients = [adminMember]
-      }
+      recipients = [{
+        email: testEmail,
+        first_name: adminMember?.first_name || 'Test',
+        last_name: adminMember?.last_name || 'Recipient',
+      }]
     } else {
       // Get actual recipients
       let query = supabase
@@ -172,6 +174,8 @@ export async function POST(request: NextRequest) {
             updateBody: personalizedMessage,
             gatheringDate: eventDate,
             gatheringTime: eventTime,
+            ctaText,
+            ctaUrl,
           })
         } else {
           // Custom template - simple HTML
@@ -239,10 +243,10 @@ export async function POST(request: NextRequest) {
       total: recipients.length,
       isTest: testEmail || false,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Templated email error:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

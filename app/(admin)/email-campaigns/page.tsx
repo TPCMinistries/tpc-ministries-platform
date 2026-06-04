@@ -36,7 +36,6 @@ import {
   Plus,
   Loader2,
   MoreVertical,
-  Edit,
   Trash2,
   Eye,
   Clock,
@@ -47,10 +46,7 @@ import {
   Copy,
   RotateCcw,
   Users,
-  Calendar,
-  BarChart3,
   FileText,
-  Settings,
   RefreshCw,
   BookOpen,
   Scroll,
@@ -105,15 +101,76 @@ interface Member {
   tier: 'free' | 'partner' | 'covenant'
 }
 
+type PartnerEmailKind = 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
+type QuickEmailRecipientType = 'all' | 'tier' | 'partners' | 'active-partners' | 'payment-attention'
+type CampaignTargetAudience = { all: true } | { tier: Array<'partner' | 'covenant'> }
+type EmailCampaignTab = 'campaigns' | 'templates' | 'subscribers' | 'quicksend'
+
+interface CovenantPartnerAudience {
+  id: string
+  email: string | null
+  recurring: boolean
+  monthlyAmount: number
+  subscriptionStatus: string | null
+}
+
+const partnerEmailPresets: Record<PartnerEmailKind, {
+  label: string
+  subject: string
+  message: string
+  ctaText: string
+  ctaUrl: string
+}> = {
+  welcome: {
+    label: 'Welcome',
+    subject: 'Welcome, Covenant Partner',
+    message: 'Thank you for becoming a Covenant Partner with TPC Ministries. We are grateful to walk with you in this season of teaching, prayer, discipleship, missions, and practical equipping.',
+    ctaText: 'Open Partner Hub',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+  'monthly-update': {
+    label: 'Monthly Update',
+    subject: 'Covenant Partner Monthly Update',
+    message: "Here is this month's Covenant Partner update, including what your partnership is helping build and how we are continuing to steward the ministry assignment ahead.",
+    ctaText: 'Open Partner Hub',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+  gathering: {
+    label: 'Gathering Invitation',
+    subject: 'Covenant Partner Gathering Invitation',
+    message: 'You are invited to our next Covenant Partner gathering for teaching, prayer, encouragement, and ministry connection.',
+    ctaText: 'View Gathering Details',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+  resource: {
+    label: 'New Partner Resource',
+    subject: 'New Covenant Partner Resource Available',
+    message: 'A new resource has been added for Covenant Partners to support spiritual maturity, wisdom, leadership, and practical growth.',
+    ctaText: 'Open Resource',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+  training: {
+    label: 'Future-Readiness Training',
+    subject: 'New Future-Readiness Training for Partners',
+    message: 'A new partner training is available to help believers think wisely about technology, vocation, leadership, and the future ahead.',
+    ctaText: 'View Training',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+  missions: {
+    label: 'Missions / Impact Update',
+    subject: 'Covenant Partner Missions & Impact Update',
+    message: 'Here is a ministry and missions update connected to the work your Covenant Partnership helps sustain through prayer, giving, and alignment.',
+    ctaText: 'View Partner Hub',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
+  },
+}
+
 function EmailCampaignsContent() {
   const searchParams = useSearchParams()
   const urlTab = searchParams.get('tab')
   const partnerTemplate = searchParams.get('partnerTemplate')
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'templates' | 'subscribers' | 'quicksend'>('campaigns')
+  const [activeTab, setActiveTab] = useState<EmailCampaignTab>('campaigns')
   const { toast } = useToast()
-
-  // Error state
-  const [pageError, setPageError] = useState<string | null>(null)
 
   // Handle URL tab parameter
   useEffect(() => {
@@ -125,24 +182,10 @@ function EmailCampaignsContent() {
   useEffect(() => {
     if (!partnerTemplate) return
 
-    const templateKind = ['welcome', 'monthly-update', 'gathering'].includes(partnerTemplate)
-      ? partnerTemplate as 'welcome' | 'monthly-update' | 'gathering'
+    const templateKind = Object.keys(partnerEmailPresets).includes(partnerTemplate)
+      ? partnerTemplate as PartnerEmailKind
       : 'monthly-update'
-
-    const presets = {
-      welcome: {
-        subject: 'Welcome, Covenant Partner',
-        message: 'Thank you for becoming a Covenant Partner with TPC Ministries. We are grateful to walk with you in this season of teaching, prayer, discipleship, missions, and practical equipping.',
-      },
-      'monthly-update': {
-        subject: 'Covenant Partner Monthly Update',
-        message: "Here is this month's Covenant Partner update, including what your partnership is helping build and how we are continuing to steward the ministry assignment ahead.",
-      },
-      gathering: {
-        subject: 'Covenant Partner Gathering Invitation',
-        message: 'You are invited to our next Covenant Partner gathering for teaching, prayer, encouragement, and ministry connection.',
-      },
-    }
+    const preset = partnerEmailPresets[templateKind]
 
     setQuickSendType('email')
     setQuickEmailForm(prev => ({
@@ -150,15 +193,16 @@ function EmailCampaignsContent() {
       recipientType: 'partners',
       template: 'covenant-partner',
       partnerEmailKind: templateKind,
-      subject: presets[templateKind].subject,
-      message: presets[templateKind].message,
+      subject: preset.subject,
+      message: preset.message,
+      ctaText: preset.ctaText,
+      ctaUrl: preset.ctaUrl,
     }))
   }, [partnerTemplate])
 
   // Campaigns state
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [campaignsLoading, setCampaignsLoading] = useState(true)
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
 
   // Templates state
   const [templates, setTemplates] = useState<Template[]>([])
@@ -170,16 +214,20 @@ function EmailCampaignsContent() {
 
   // Quick Send state
   const [members, setMembers] = useState<Member[]>([])
-  const [membersLoading, setMembersLoading] = useState(false)
+  const [partnerAudience, setPartnerAudience] = useState<CovenantPartnerAudience[]>([])
   const [quickSendType, setQuickSendType] = useState<'email' | 'sms'>('email')
   const [quickSendSubmitting, setQuickSendSubmitting] = useState(false)
+  const [quickSendTesting, setQuickSendTesting] = useState(false)
+  const [quickTestEmail, setQuickTestEmail] = useState('')
   const [quickEmailForm, setQuickEmailForm] = useState({
-    recipientType: 'all' as 'all' | 'tier' | 'partners',
+    recipientType: 'all' as QuickEmailRecipientType,
     recipientTier: 'free' as 'free' | 'partner' | 'covenant',
     template: 'plain' as 'plain' | 'covenant-partner',
-    partnerEmailKind: 'monthly-update' as 'welcome' | 'monthly-update' | 'gathering',
+    partnerEmailKind: 'monthly-update' as PartnerEmailKind,
     subject: '',
     message: '',
+    ctaText: 'Open Partner Hub',
+    ctaUrl: 'https://tpcmin.org/partner-hub',
   })
   const [quickSmsForm, setQuickSmsForm] = useState({
     recipientType: 'all' as 'all' | 'tier',
@@ -196,11 +244,10 @@ function EmailCampaignsContent() {
     subject: '',
     content: { body: '', ctaText: '', ctaUrl: '' },
     send_type: 'immediate',
-    target_audience: { all: true } as any,
+    target_audience: { all: true } as CampaignTargetAudience,
   })
 
   // AI Assistant state
-  const [showAiPanel, setShowAiPanel] = useState(false)
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [aiField, setAiField] = useState<'subject' | 'body'>('subject')
@@ -221,10 +268,23 @@ function EmailCampaignsContent() {
     fetchTemplates()
     fetchSubscriptionStats()
     fetchMembers()
+    fetchPartnerAudience()
   }, [])
 
+  const fetchPartnerAudience = async () => {
+    try {
+      const response = await fetch('/api/admin/covenant-partners')
+      const data = await response.json()
+      if (data.success) {
+        setPartnerAudience(data.partners || [])
+      }
+    } catch (error) {
+      console.error('Error fetching partner audience:', error)
+      setPartnerAudience([])
+    }
+  }
+
   const fetchMembers = async () => {
-    setMembersLoading(true)
     const supabase = createClient()
     try {
       const { data, error } = await supabase
@@ -241,20 +301,40 @@ function EmailCampaignsContent() {
     } catch (error) {
       console.error('Error fetching members:', error)
       setMembers([])
-    } finally {
-      setMembersLoading(false)
     }
+  }
+
+  const getEmailMembersFor = (type: QuickEmailRecipientType, tier = quickEmailForm.recipientTier) => {
+    if (type === 'all') return members
+    if (type === 'partners') {
+      return members.filter(m => m.tier === 'partner' || m.tier === 'covenant')
+    }
+    if (type === 'active-partners') {
+      const activePartnerIds = new Set(
+        partnerAudience
+          .filter(partner =>
+            partner.recurring || partner.monthlyAmount > 0 || ['active', 'trialing'].includes(partner.subscriptionStatus || '')
+          )
+          .map(partner => partner.id)
+      )
+      return members.filter(member => activePartnerIds.has(member.id))
+    }
+    if (type === 'payment-attention') {
+      const attentionIds = new Set(
+        partnerAudience
+          .filter(partner => ['past_due', 'unpaid', 'incomplete'].includes(partner.subscriptionStatus || ''))
+          .map(partner => partner.id)
+      )
+      return members.filter(member => attentionIds.has(member.id))
+    }
+    return members.filter(m => m.tier === tier)
   }
 
   const getQuickEmailMembers = () => {
-    if (quickEmailForm.recipientType === 'all') return members
-    if (quickEmailForm.recipientType === 'partners') {
-      return members.filter(m => m.tier === 'partner' || m.tier === 'covenant')
-    }
-    return members.filter(m => m.tier === quickEmailForm.recipientTier)
+    return getEmailMembersFor(quickEmailForm.recipientType, quickEmailForm.recipientTier)
   }
 
-  const getQuickRecipientCount = (type: 'all' | 'tier' | 'partners', tier?: string) => {
+  const getQuickRecipientCount = (type: QuickEmailRecipientType | 'tier', tier?: string) => {
     if (type === 'all') {
       return quickSendType === 'sms'
         ? members.filter(m => m.phone).length
@@ -263,6 +343,8 @@ function EmailCampaignsContent() {
       return quickSendType === 'sms'
         ? members.filter(m => (m.tier === 'partner' || m.tier === 'covenant') && m.phone).length
         : members.filter(m => m.tier === 'partner' || m.tier === 'covenant').length
+    } else if (type === 'active-partners' || type === 'payment-attention') {
+      return getEmailMembersFor(type).length
     } else if (type === 'tier' && tier) {
       return quickSendType === 'sms'
         ? members.filter(m => m.tier === tier && m.phone).length
@@ -271,20 +353,24 @@ function EmailCampaignsContent() {
     return 0
   }
 
-  const handleQuickSendEmail = async () => {
+  const handleQuickSendEmail = async (options: { testEmail?: string } = {}) => {
     if (!quickEmailForm.subject || !quickEmailForm.message) {
       toast({ title: 'Error', description: 'Subject and message are required', variant: 'destructive' })
       return
     }
 
-    setQuickSendSubmitting(true)
+    if (options.testEmail) {
+      setQuickSendTesting(true)
+    } else {
+      setQuickSendSubmitting(true)
+    }
+
     try {
       const selectedMembers = getQuickEmailMembers()
       const recipients = selectedMembers.map(m => m.email)
 
-      if (recipients.length === 0) {
+      if (!options.testEmail && recipients.length === 0) {
         toast({ title: 'No Recipients', description: 'No members match your criteria', variant: 'destructive' })
-        setQuickSendSubmitting(false)
         return
       }
 
@@ -297,14 +383,15 @@ function EmailCampaignsContent() {
               partnerEmailKind: quickEmailForm.partnerEmailKind,
               recipientType: 'individual',
               recipientIds: selectedMembers.map(m => m.id),
+              testEmail: options.testEmail,
               subject: quickEmailForm.subject,
               title: quickEmailForm.subject,
               message: quickEmailForm.message,
-              ctaText: 'Open Partner Hub',
-              ctaUrl: 'https://tpcmin.org/partner-hub',
+              ctaText: quickEmailForm.ctaText,
+              ctaUrl: quickEmailForm.ctaUrl,
             }
           : {
-              to: recipients,
+              to: options.testEmail ? [options.testEmail] : recipients,
               subject: quickEmailForm.subject,
               message: quickEmailForm.message,
             }),
@@ -312,22 +399,33 @@ function EmailCampaignsContent() {
 
       const data = await response.json()
       if (data.success) {
-        toast({ title: 'Sent!', description: `Email sent to ${recipients.length} recipients` })
-        setQuickEmailForm({
-          recipientType: 'all',
-          recipientTier: 'free',
-          template: 'plain',
-          partnerEmailKind: 'monthly-update',
-          subject: '',
-          message: '',
-        })
+        if (options.testEmail) {
+          toast({ title: 'Test sent', description: `Preview email sent to ${options.testEmail}` })
+        } else {
+          toast({ title: 'Sent!', description: `Email sent to ${recipients.length} recipients` })
+          setQuickEmailForm({
+            recipientType: 'all',
+            recipientTier: 'free',
+            template: 'plain',
+            partnerEmailKind: 'monthly-update',
+            subject: '',
+            message: '',
+            ctaText: 'Open Partner Hub',
+            ctaUrl: 'https://tpcmin.org/partner-hub',
+          })
+        }
       } else {
         throw new Error(data.error)
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send email', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send email',
+        variant: 'destructive',
+      })
     } finally {
       setQuickSendSubmitting(false)
+      setQuickSendTesting(false)
     }
   }
 
@@ -368,8 +466,12 @@ function EmailCampaignsContent() {
       } else {
         throw new Error(data.error)
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send SMS', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send SMS',
+        variant: 'destructive',
+      })
     } finally {
       setQuickSendSubmitting(false)
     }
@@ -475,8 +577,12 @@ function EmailCampaignsContent() {
       } else {
         throw new Error(data.error)
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to create campaign', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create campaign',
+        variant: 'destructive',
+      })
     } finally {
       setCreating(false)
     }
@@ -492,7 +598,7 @@ function EmailCampaignsContent() {
         toast({ title: 'Deleted', description: 'Campaign deleted' })
         fetchCampaigns()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete campaign', variant: 'destructive' })
     }
   }
@@ -516,8 +622,12 @@ function EmailCampaignsContent() {
       } else {
         throw new Error(data.error)
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send test email', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send test email',
+        variant: 'destructive',
+      })
     } finally {
       setSendingTest(false)
     }
@@ -546,8 +656,12 @@ function EmailCampaignsContent() {
       } else {
         throw new Error(data.error)
       }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send campaign', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send campaign',
+        variant: 'destructive',
+      })
     } finally {
       setSendingCampaign(false)
     }
@@ -591,7 +705,7 @@ function EmailCampaignsContent() {
     }
   }
 
-  const useAiSuggestion = (suggestion: string) => {
+  const applyAiSuggestion = (suggestion: string) => {
     if (aiField === 'subject') {
       setNewCampaign(prev => ({ ...prev, subject: suggestion }))
     } else {
@@ -601,7 +715,6 @@ function EmailCampaignsContent() {
       }))
     }
     setAiSuggestions([])
-    setShowAiPanel(false)
   }
 
   const getStatusBadge = (status: string) => {
@@ -734,7 +847,7 @@ function EmailCampaignsContent() {
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as EmailCampaignTab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
               activeTab === tab.key
                 ? 'bg-card shadow-sm text-navy dark:text-foreground font-medium'
@@ -882,13 +995,21 @@ function EmailCampaignsContent() {
                         ? 'all'
                         : quickEmailForm.recipientType === 'partners'
                           ? 'partners'
-                          : `tier-${quickEmailForm.recipientTier}`
+                          : quickEmailForm.recipientType === 'active-partners'
+                            ? 'active-partners'
+                            : quickEmailForm.recipientType === 'payment-attention'
+                              ? 'payment-attention'
+                              : `tier-${quickEmailForm.recipientTier}`
                     }
                     onValueChange={(value) => {
                       if (value === 'all') {
                         setQuickEmailForm(prev => ({ ...prev, recipientType: 'all' }))
                       } else if (value === 'partners') {
                         setQuickEmailForm(prev => ({ ...prev, recipientType: 'partners' }))
+                      } else if (value === 'active-partners') {
+                        setQuickEmailForm(prev => ({ ...prev, recipientType: 'active-partners' }))
+                      } else if (value === 'payment-attention') {
+                        setQuickEmailForm(prev => ({ ...prev, recipientType: 'payment-attention' }))
                       } else {
                         const tier = value.replace('tier-', '') as 'free' | 'partner' | 'covenant'
                         setQuickEmailForm(prev => ({ ...prev, recipientType: 'tier', recipientTier: tier }))
@@ -902,6 +1023,12 @@ function EmailCampaignsContent() {
                       <SelectItem value="all">All Members ({members.length})</SelectItem>
                       <SelectItem value="partners">
                         All Partners ({members.filter(m => m.tier === 'partner' || m.tier === 'covenant').length})
+                      </SelectItem>
+                      <SelectItem value="active-partners">
+                        Active Monthly Partners ({getQuickRecipientCount('active-partners')})
+                      </SelectItem>
+                      <SelectItem value="payment-attention">
+                        Payment Attention ({getQuickRecipientCount('payment-attention')})
                       </SelectItem>
                       <SelectItem value="tier-free">Free Members ({members.filter(m => m.tier === 'free').length})</SelectItem>
                       <SelectItem value="tier-partner">Partners ({members.filter(m => m.tier === 'partner').length})</SelectItem>
@@ -918,10 +1045,26 @@ function EmailCampaignsContent() {
                     <Label>Email Template</Label>
                     <Select
                       value={quickEmailForm.template}
-                      onValueChange={(value) => setQuickEmailForm(prev => ({
-                        ...prev,
-                        template: value as 'plain' | 'covenant-partner',
-                      }))}
+                      onValueChange={(value) => {
+                        if (value === 'covenant-partner') {
+                          const preset = partnerEmailPresets[quickEmailForm.partnerEmailKind]
+                          setQuickEmailForm(prev => ({
+                            ...prev,
+                            template: 'covenant-partner',
+                            recipientType: prev.recipientType === 'all' ? 'partners' : prev.recipientType,
+                            subject: prev.subject || preset.subject,
+                            message: prev.message || preset.message,
+                            ctaText: preset.ctaText,
+                            ctaUrl: preset.ctaUrl,
+                          }))
+                          return
+                        }
+
+                        setQuickEmailForm(prev => ({
+                          ...prev,
+                          template: 'plain',
+                        }))
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -937,12 +1080,16 @@ function EmailCampaignsContent() {
                     <div className="space-y-2">
                       <Label>Partner Email Type</Label>
                       <Select
-                        value={quickEmailForm.partnerEmailKind}
-                        onValueChange={(value) => setQuickEmailForm(prev => ({
-                          ...prev,
-                          partnerEmailKind: value as 'welcome' | 'monthly-update' | 'gathering',
-                        }))}
-                      >
+                      value={quickEmailForm.partnerEmailKind}
+                      onValueChange={(value) => setQuickEmailForm(prev => ({
+                        ...prev,
+                        partnerEmailKind: value as PartnerEmailKind,
+                        subject: partnerEmailPresets[value as PartnerEmailKind].subject,
+                        message: partnerEmailPresets[value as PartnerEmailKind].message,
+                        ctaText: partnerEmailPresets[value as PartnerEmailKind].ctaText,
+                        ctaUrl: partnerEmailPresets[value as PartnerEmailKind].ctaUrl,
+                      }))}
+                    >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -950,6 +1097,9 @@ function EmailCampaignsContent() {
                           <SelectItem value="welcome">Welcome</SelectItem>
                           <SelectItem value="monthly-update">Monthly Update</SelectItem>
                           <SelectItem value="gathering">Gathering Invitation</SelectItem>
+                          <SelectItem value="resource">New Partner Resource</SelectItem>
+                          <SelectItem value="training">Future-Readiness Training</SelectItem>
+                          <SelectItem value="missions">Missions / Impact Update</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -975,9 +1125,83 @@ function EmailCampaignsContent() {
                   />
                 </div>
 
+                {quickEmailForm.template === 'covenant-partner' && (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>CTA Text</Label>
+                      <Input
+                        placeholder="Open Partner Hub"
+                        value={quickEmailForm.ctaText}
+                        onChange={(e) => setQuickEmailForm(prev => ({ ...prev, ctaText: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CTA URL</Label>
+                      <Input
+                        type="url"
+                        placeholder="https://tpcmin.org/partner-hub"
+                        value={quickEmailForm.ctaUrl}
+                        onChange={(e) => setQuickEmailForm(prev => ({ ...prev, ctaUrl: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {quickEmailForm.template === 'covenant-partner' && (
+                  <div className="rounded-lg border border-gold/30 bg-gold/5 p-4">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-navy">Partner Email Preview</p>
+                        <p className="text-xs text-muted-foreground">
+                          {partnerEmailPresets[quickEmailForm.partnerEmailKind].label} to {getQuickRecipientCount(quickEmailForm.recipientType, quickEmailForm.recipientTier)} selected recipients
+                        </p>
+                      </div>
+                      <Badge className="bg-navy/10 text-navy hover:bg-navy/10">
+                        {quickEmailForm.partnerEmailKind}
+                      </Badge>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gold-text">TPC Ministries</p>
+                      <h3 className="mt-2 text-lg font-semibold text-navy">{quickEmailForm.subject || 'Email subject'}</h3>
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">
+                        {quickEmailForm.message || 'Your message preview will appear here.'}
+                      </p>
+                      <div className="mt-4 inline-flex rounded-md bg-navy px-3 py-2 text-sm font-medium text-white">
+                        {quickEmailForm.ctaText || 'Open Partner Hub'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-lg border p-4">
+                  <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+                    <div className="space-y-2">
+                      <Label>Send Test First</Label>
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={quickTestEmail}
+                        onChange={(e) => setQuickTestEmail(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleQuickSendEmail({ testEmail: quickTestEmail })}
+                      disabled={quickSendTesting || !quickTestEmail || !quickEmailForm.subject || !quickEmailForm.message}
+                    >
+                      {quickSendTesting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Eye className="h-4 w-4 mr-2" />
+                      )}
+                      Send Test
+                    </Button>
+                  </div>
+                </div>
+
                 <Button
                   className="w-full bg-navy hover:bg-navy/90"
-                  onClick={handleQuickSendEmail}
+                  onClick={() => handleQuickSendEmail()}
                   disabled={quickSendSubmitting || !quickEmailForm.subject || !quickEmailForm.message}
                 >
                   {quickSendSubmitting ? (
@@ -1219,7 +1443,7 @@ function EmailCampaignsContent() {
                     <div
                       key={i}
                       className="flex items-center justify-between p-2 bg-card rounded cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                      onClick={() => useAiSuggestion(suggestion)}
+                      onClick={() => applyAiSuggestion(suggestion)}
                     >
                       <span className="text-sm">{suggestion}</span>
                       <Copy className="h-4 w-4 text-purple-600" />
@@ -1268,7 +1492,7 @@ function EmailCampaignsContent() {
                   <Button
                     size="sm"
                     className="mt-2 bg-purple-600 hover:bg-purple-700"
-                    onClick={() => useAiSuggestion(aiSuggestions[0])}
+                    onClick={() => applyAiSuggestion(aiSuggestions[0])}
                   >
                     Use This Content
                   </Button>
@@ -1368,7 +1592,7 @@ function EmailCampaignsContent() {
           <DialogHeader>
             <DialogTitle>Send Campaign</DialogTitle>
             <DialogDescription>
-              Are you sure you want to send "{campaignToSend?.name}" to all recipients?
+              Are you sure you want to send &quot;{campaignToSend?.name}&quot; to all recipients?
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">

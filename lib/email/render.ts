@@ -102,7 +102,7 @@ export async function renderUrgent(props: {
 }
 
 export async function renderCovenantPartnerEmail(props: {
-  kind?: 'welcome' | 'monthly-update' | 'gathering'
+  kind?: 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
   memberName?: string
   partnerHubUrl?: string
   givingUrl?: string
@@ -111,6 +111,8 @@ export async function renderCovenantPartnerEmail(props: {
   gatheringUrl?: string
   updateTitle?: string
   updateBody?: string
+  ctaText?: string
+  ctaUrl?: string
 }) {
   return render(CovenantPartnerEmail(props))
 }

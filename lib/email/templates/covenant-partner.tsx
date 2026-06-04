@@ -10,7 +10,7 @@ import {
   Text,
 } from '@react-email/components'
 
-type PartnerEmailKind = 'welcome' | 'monthly-update' | 'gathering'
+type PartnerEmailKind = 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
 
 interface CovenantPartnerEmailProps {
   kind?: PartnerEmailKind
@@ -22,6 +22,8 @@ interface CovenantPartnerEmailProps {
   gatheringUrl?: string
   updateTitle?: string
   updateBody?: string
+  ctaText?: string
+  ctaUrl?: string
 }
 
 const contentByKind: Record<PartnerEmailKind, {
@@ -55,6 +57,30 @@ const contentByKind: Record<PartnerEmailKind, {
       'We are gathering Covenant Partners for teaching, prayer, alignment, and corporate encouragement. This is a space to be strengthened and stay connected to the assignment.',
     cta: 'View Gathering Details',
   },
+  resource: {
+    preview: 'A new Covenant Partner resource is available.',
+    eyebrow: 'Partner Resource',
+    headline: 'A new resource is ready for you',
+    intro:
+      'A new Covenant Partner resource has been added to support your spiritual growth, practical wisdom, leadership, and alignment in this season.',
+    cta: 'Open Resource',
+  },
+  training: {
+    preview: 'A new future-readiness training is available for Covenant Partners.',
+    eyebrow: 'Future-Readiness',
+    headline: 'Training for the future ahead',
+    intro:
+      'You are invited into practical equipping designed to help believers grow with wisdom, maturity, and discernment for the days ahead.',
+    cta: 'View Training',
+  },
+  missions: {
+    preview: 'A Covenant Partner missions and impact update from TPC Ministries.',
+    eyebrow: 'Missions & Impact',
+    headline: 'What your partnership is helping build',
+    intro:
+      'Here is a ministry and missions update connected to the work your Covenant Partnership helps sustain through prayer, giving, and alignment.',
+    cta: 'View Partner Hub',
+  },
 }
 
 export default function CovenantPartnerEmail({
@@ -67,9 +93,12 @@ export default function CovenantPartnerEmail({
   gatheringUrl,
   updateTitle,
   updateBody,
+  ctaText,
+  ctaUrl,
 }: CovenantPartnerEmailProps) {
   const content = contentByKind[kind]
-  const ctaUrl = kind === 'gathering' && gatheringUrl ? gatheringUrl : partnerHubUrl
+  const resolvedCtaUrl = ctaUrl || (kind === 'gathering' && gatheringUrl ? gatheringUrl : partnerHubUrl)
+  const resolvedCtaText = ctaText || content.cta
 
   return (
     <Html>
@@ -118,8 +147,8 @@ export default function CovenantPartnerEmail({
             </Section>
 
             <Section style={buttonSection}>
-              <Link href={ctaUrl} style={button}>
-                {content.cta}
+              <Link href={resolvedCtaUrl} style={button}>
+                {resolvedCtaText}
               </Link>
             </Section>
 
