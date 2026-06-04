@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Download,
   DollarSign,
   HeartHandshake,
   Loader2,
@@ -637,6 +638,12 @@ export default function AdminCovenantPartnersPage() {
                           <Button asChild variant="outline" size="sm">
                             <Link href="/email-campaigns?tab=quicksend&partnerTemplate=gathering">
                               Send Reminder
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/api/admin/events/${event.id}/registrations/export`} target="_blank">
+                              <Download className="mr-2 h-4 w-4" />
+                              Export CSV
                             </Link>
                           </Button>
                         </div>
