@@ -98,7 +98,7 @@ export default function AnnouncementEmail({
               </Link>
             </Text>
             <Text style={footerDisclaimer}>
-              You're receiving this email because you're a valued member of TPC Ministries.
+              You&apos;re receiving this email because you&apos;re a valued member of TPC Ministries.
             </Text>
           </Section>
         </Container>

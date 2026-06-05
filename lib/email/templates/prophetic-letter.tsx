@@ -57,7 +57,7 @@ export default function PropheticLetterEmail({
           {scriptureReference && scriptureText && (
             <Section style={scriptureCard}>
               <Text style={scriptureRef}>{scriptureReference}</Text>
-              <Text style={scriptureTextStyle}>"{scriptureText}"</Text>
+              <Text style={scriptureTextStyle}>&quot;{scriptureText}&quot;</Text>
             </Section>
           )}
 

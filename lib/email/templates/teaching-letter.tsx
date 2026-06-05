@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -65,6 +66,12 @@ export default function TeachingLetterEmail({
               by {speaker} {duration && `| ${duration}`}
             </Text>
           </Section>
+
+          {thumbnailUrl && (
+            <Section style={thumbnailSection}>
+              <Img src={thumbnailUrl} alt={teachingTitle} style={thumbnailImage} />
+            </Section>
+          )}
 
           {/* Main Content */}
           <Section style={content}>
@@ -145,7 +152,7 @@ export default function TeachingLetterEmail({
             </Section>
 
             <Text style={closingText}>
-              May this teaching bring revelation and transformation to your life. We're honored to partner with you on this journey of faith.
+              May this teaching bring revelation and transformation to your life. We&apos;re honored to partner with you on this journey of faith.
             </Text>
 
             <Text style={signature}>
@@ -216,6 +223,16 @@ const teachingCard = {
   backgroundColor: '#1e3a8a',
   padding: '30px',
   textAlign: 'center' as const,
+}
+
+const thumbnailSection = {
+  padding: '0',
+}
+
+const thumbnailImage = {
+  width: '100%',
+  height: 'auto',
+  display: 'block',
 }
 
 const categoryBadge = {
