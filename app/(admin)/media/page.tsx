@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -36,7 +36,6 @@ import {
   FileText,
   Grid3X3,
   List,
-  RefreshCw,
   Download,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -78,21 +77,19 @@ export default function MediaLibraryPage() {
   const [editCaption, setEditCaption] = useState('')
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const searchQueryRef = useRef(searchQuery)
   const { toast } = useToast()
 
   const folders = ['all', 'teachings', 'prophecies', 'events', 'resources', 'profiles', 'missions', 'blog', 'general']
+  searchQueryRef.current = searchQuery
 
-  useEffect(() => {
-    fetchMedia()
-  }, [page, filterType, filterFolder])
-
-  const fetchMedia = async () => {
+  const fetchMedia = useCallback(async (search = searchQueryRef.current) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (filterType !== 'all') params.set('type', filterType)
       if (filterFolder !== 'all') params.set('folder', filterFolder)
-      if (searchQuery) params.set('search', searchQuery)
+      if (search) params.set('search', search)
       params.set('page', page.toString())
       params.set('limit', '40')
 
@@ -108,11 +105,15 @@ export default function MediaLibraryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filterFolder, filterType, page, toast])
+
+  useEffect(() => {
+    fetchMedia()
+  }, [fetchMedia])
 
   const handleSearch = () => {
     setPage(1)
-    fetchMedia()
+    fetchMedia(searchQuery)
   }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +140,7 @@ export default function MediaLibraryPage() {
       toast({ title: 'Success', description: `${uploaded} file${uploaded > 1 ? 's' : ''} uploaded` })
       fetchMedia()
     } catch (error) {
+      console.error('Media upload failed:', error)
       toast({ title: 'Error', description: 'Upload failed', variant: 'destructive' })
     } finally {
       setUploading(false)
@@ -157,6 +159,7 @@ export default function MediaLibraryPage() {
       })
       fetchMedia()
     } catch (error) {
+      console.error('Media import failed:', error)
       toast({ title: 'Error', description: 'Import failed', variant: 'destructive' })
     } finally {
       setImporting(false)
@@ -177,6 +180,7 @@ export default function MediaLibraryPage() {
         fetchMedia()
       }
     } catch (error) {
+      console.error('Media delete failed:', error)
       toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' })
     } finally {
       setDeleting(false)
@@ -199,6 +203,7 @@ export default function MediaLibraryPage() {
         toast({ title: 'Saved', description: 'Metadata updated' })
       }
     } catch (error) {
+      console.error('Media metadata save failed:', error)
       toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' })
     } finally {
       setSaving(false)

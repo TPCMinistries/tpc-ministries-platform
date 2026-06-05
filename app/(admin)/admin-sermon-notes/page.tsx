@@ -16,7 +16,6 @@ import {
   Copy,
   Download,
   Clock,
-  Target,
   Heart,
   List,
   MessageSquare,
@@ -46,11 +45,9 @@ interface SavedNotes {
 export default function AdminSermonNotesPage() {
   const [transcript, setTranscript] = useState('')
   const [sermonTitle, setSermonTitle] = useState('')
-  const [sermonId, setSermonId] = useState('')
   const [generatedNotes, setGeneratedNotes] = useState<SermonNotes | null>(null)
   const [savedNotes, setSavedNotes] = useState<SavedNotes[]>([])
   const [generating, setGenerating] = useState(false)
-  const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<'generate' | 'saved'>('generate')
 
@@ -83,7 +80,6 @@ export default function AdminSermonNotesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transcript,
-          sermonId: sermonId || undefined,
           save: true
         })
       })
@@ -315,7 +311,7 @@ ${generatedNotes.relatedScriptures.join(', ')}
                         <div className="space-y-2">
                           {generatedNotes.quotes.map((quote, i) => (
                             <div key={i} className="p-3 bg-gold/10 rounded-lg border-l-4 border-gold">
-                              <p className="italic text-gray-700">"{quote}"</p>
+                              <p className="italic text-gray-700">&ldquo;{quote}&rdquo;</p>
                             </div>
                           ))}
                         </div>
@@ -405,7 +401,7 @@ ${generatedNotes.relatedScriptures.join(', ')}
                       No Notes Generated Yet
                     </h3>
                     <p className="text-gray-500 max-w-sm">
-                      Paste a sermon transcript and click "Generate AI Notes" to create structured study notes.
+                      Paste a sermon transcript and click &ldquo;Generate AI Notes&rdquo; to create structured study notes.
                     </p>
                   </CardContent>
                 </Card>
