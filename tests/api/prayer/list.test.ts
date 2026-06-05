@@ -7,8 +7,11 @@ import { createMockSupabaseClient } from '@/tests/__mocks__/supabase'
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
 }))
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(),
+}))
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 describe('GET /api/prayer/list', () => {
   beforeEach(() => {
@@ -64,7 +67,7 @@ describe('GET /api/prayer/list', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as never)
+    vi.mocked(createAdminClient).mockReturnValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/list', {
       method: 'GET',
@@ -112,7 +115,7 @@ describe('GET /api/prayer/list', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as never)
+    vi.mocked(createAdminClient).mockReturnValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/list', {
       method: 'GET',
@@ -139,7 +142,7 @@ describe('GET /api/prayer/list', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as never)
+    vi.mocked(createAdminClient).mockReturnValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/list', {
       method: 'GET',
@@ -164,7 +167,7 @@ describe('GET /api/prayer/list', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as never)
+    vi.mocked(createAdminClient).mockReturnValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/list', {
       method: 'GET',

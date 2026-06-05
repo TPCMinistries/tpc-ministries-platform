@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
+    const authClient = await createClient()
     const { id } = params
 
     const { data, error } = await supabase
@@ -60,8 +62,15 @@ export async function GET(
     }
 
     // Check if current user is the owner
-    const { data: { user } } = await supabase.auth.getUser()
-    const isOwner = user?.id === data.member_id
+    const { data: { user } } = await authClient.auth.getUser()
+    const { data: currentMember } = user
+      ? await authClient
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      : { data: null }
+    const isOwner = currentMember?.id === data.member_id
     const member = firstJoinedRow(data.members as JoinedMember | JoinedMember[] | null)
 
     // Transform data
