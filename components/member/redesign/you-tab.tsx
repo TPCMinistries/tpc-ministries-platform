@@ -3,8 +3,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
-import { 
-  User, Settings, CreditCard, Heart, BookOpen, 
+import {
+  User, Heart, BookOpen,
   Sparkles, Gift, LogOut, ChevronRight, Award,
   Download, Bell, Shield, HelpCircle
 } from "lucide-react"

@@ -1,13 +1,12 @@
 "use client"
 
 import { motion, useReducedMotion, type Variants } from "framer-motion"
-import { staggerContainer, fadeInUp } from "./variants"
+import { fadeInUp } from "./variants"
 
 interface StaggerChildrenProps {
   children: React.ReactNode
   className?: string
   containerVariants?: Variants
-  childVariants?: Variants
   staggerDelay?: number
   once?: boolean
   amount?: number
@@ -18,7 +17,6 @@ export function StaggerChildren({
   children,
   className,
   containerVariants,
-  childVariants = fadeInUp,
   staggerDelay = 0.06,
   once = true,
   amount = 0.15,

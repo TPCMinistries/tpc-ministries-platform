@@ -58,9 +58,9 @@ export default function OfflineIndicator({
           <>
             <WifiOff className="h-5 w-5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="font-medium">You're offline</p>
+              <p className="font-medium">You&apos;re offline</p>
               <p className="text-sm opacity-90">
-                Changes will sync when you're back online
+                Changes will sync when you&apos;re back online
               </p>
             </div>
             {pendingCount > 0 && (

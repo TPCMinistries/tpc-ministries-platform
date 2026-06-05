@@ -39,7 +39,7 @@ export function NewsletterSignupForms() {
       } else {
         setProphecyMessage('❌ ' + (data.error || 'Something went wrong. Please try again.'))
       }
-    } catch (error) {
+    } catch {
       setProphecyMessage('❌ Network error. Please check your connection and try again.')
     } finally {
       setProphecyLoading(false)
@@ -70,7 +70,7 @@ export function NewsletterSignupForms() {
       } else {
         setDevotionalMessage('❌ ' + (data.error || 'Something went wrong. Please try again.'))
       }
-    } catch (error) {
+    } catch {
       setDevotionalMessage('❌ Network error. Please check your connection and try again.')
     } finally {
       setDevotionalLoading(false)
