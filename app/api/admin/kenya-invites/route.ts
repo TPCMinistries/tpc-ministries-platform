@@ -140,7 +140,7 @@ function buildKenyaEmailHtml(name: string, track: string, inviteUrl: string, inv
 }
 
 // GET - List Kenya invites
-export async function GET(request: NextRequest) {
+export async function GET() {
   const authResult = await requireStaff()
   if (authResult instanceof NextResponse) return authResult
 
@@ -387,7 +387,7 @@ export async function POST(request: NextRequest) {
           }
 
           const code = generateInviteCode()
-          const { data: invite, error: invErr } = await adminClient
+          const { error: invErr } = await adminClient
             .from('invite_codes')
             .insert({
               code,

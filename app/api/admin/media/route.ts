@@ -90,14 +90,13 @@ export async function POST(request: NextRequest) {
 
     // Upload to storage
     const adminClient = createAdminClient()
-    const fileExt = file.name.split('.').pop()
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
     const storagePath = `${folder}/${Date.now()}-${safeName}`
 
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const { data: uploadData, error: uploadError } = await adminClient.storage
+    const { error: uploadError } = await adminClient.storage
       .from('tpc-media')
       .upload(storagePath, buffer, {
         contentType: mimeType,

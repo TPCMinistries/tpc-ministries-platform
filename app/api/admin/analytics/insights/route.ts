@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { requireStaff } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -26,7 +26,7 @@ interface Prediction {
   recommendation: string
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const authResult = await requireStaff()
     if (authResult instanceof NextResponse) {
@@ -36,8 +36,6 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-
     const insights: Insight[] = []
     const predictions: Prediction[] = []
 

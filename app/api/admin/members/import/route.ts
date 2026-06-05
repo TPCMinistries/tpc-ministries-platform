@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type MemberImportData = {
+  first_name: string
+  last_name: string
+  email: string
+  joined_at: string
+  created_at: string
+  phone?: string | null
+  tier?: string
+  is_admin?: boolean
+  notes?: string | null
+}
+
 // Parse CSV content
 function parseCSV(content: string): { headers: string[]; rows: string[][] } {
   const lines = content.trim().split('\n')
@@ -159,7 +171,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Build member object
-        const memberData: Record<string, any> = {
+        const memberData: MemberImportData = {
           first_name: firstName,
           last_name: lastName,
           email: email,
@@ -216,7 +228,7 @@ export async function POST(request: NextRequest) {
         }
 
         results.imported++
-      } catch (error) {
+      } catch {
         results.errors.push(`Row ${rowNum}: Unexpected error`)
         results.skipped++
       }
