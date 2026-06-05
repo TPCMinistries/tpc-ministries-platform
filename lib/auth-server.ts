@@ -1,11 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
+import type { User } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export type UserRole = 'free' | 'member' | 'partner' | 'staff' | 'admin'
 
+export interface AuthMember {
+  id: string
+  role: string | null
+  is_admin: boolean | null
+  tier: string | null
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+}
+
 export interface AuthResult {
-  user: any
-  member: any
+  user: User
+  member: AuthMember
   isAdmin: boolean
   isStaff: boolean
   role: UserRole

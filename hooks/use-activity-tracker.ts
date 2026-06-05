@@ -21,7 +21,7 @@ interface TrackActivityParams {
   resourceName?: string
   pagePath?: string
   durationSeconds?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export function useActivityTracker() {
@@ -113,7 +113,7 @@ export function useActivityTracker() {
     memberId: string,
     assessmentId: string,
     assessmentName: string,
-    results: Record<string, any>
+    results: Record<string, unknown>
   ) => {
     trackActivity({
       memberId,

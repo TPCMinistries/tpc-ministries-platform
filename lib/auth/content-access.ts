@@ -38,12 +38,19 @@ export function canAccessContent(
  * @param tierField - The field name containing tier requirement (default: 'tier_required')
  * @returns Items the user can access
  */
-export function filterByAccess<T extends Record<string, any>>(
+type ContentAccessItem = Record<string, unknown>
+
+function getTierValue(item: ContentAccessItem, tierField: string): string | null | undefined {
+  const value = item[tierField]
+  return typeof value === 'string' ? value : undefined
+}
+
+export function filterByAccess<T extends ContentAccessItem>(
   items: T[],
   userRole: string | null | undefined,
   tierField: string = 'tier_required'
 ): T[] {
-  return items.filter(item => canAccessContent(userRole, item[tierField]))
+  return items.filter(item => canAccessContent(userRole, getTierValue(item, tierField)))
 }
 
 /**
@@ -53,16 +60,19 @@ export function filterByAccess<T extends Record<string, any>>(
  * @param tierField - The field name containing tier requirement
  * @returns Items with added `canAccess` and `requiredRole` fields
  */
-export function addAccessInfo<T extends Record<string, any>>(
+export function addAccessInfo<T extends ContentAccessItem>(
   items: T[],
   userRole: string | null | undefined,
   tierField: string = 'tier_required'
 ): (T & { canAccess: boolean; requiredRole: string })[] {
-  return items.map(item => ({
-    ...item,
-    canAccess: canAccessContent(userRole, item[tierField]),
-    requiredRole: tierToRole(item[tierField]),
-  }))
+  return items.map(item => {
+    const tierValue = getTierValue(item, tierField)
+    return {
+      ...item,
+      canAccess: canAccessContent(userRole, tierValue),
+      requiredRole: tierToRole(tierValue),
+    }
+  })
 }
 
 /**

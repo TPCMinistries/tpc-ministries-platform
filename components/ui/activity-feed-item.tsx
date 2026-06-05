@@ -3,8 +3,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
-import { 
-  Heart, BookOpen, Gift, Users, Calendar, 
+import {
+  Heart, BookOpen, Gift, Users, Calendar,
   Sparkles, MessageSquare, Award, CheckCircle
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -32,7 +32,7 @@ interface ActivityFeedItemProps {
     avatar?: string
     initials?: string
   }
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   className?: string
 }
 
@@ -55,7 +55,6 @@ export function ActivityFeedItem({
   timestamp,
   href,
   user,
-  metadata,
   className,
 }: ActivityFeedItemProps) {
   const config = typeConfig[type]
