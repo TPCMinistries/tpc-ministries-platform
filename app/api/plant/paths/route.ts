@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+interface PathEnrollment {
+  learning_path_id: string
+  status: string
+  progress_percent: number
+}
+
+interface PathCourse {
+  sequence_order: number
+  is_required: boolean
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -68,7 +79,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is enrolled in each path
-    let enrollments: Record<string, any> = {}
+    const enrollments: Record<string, PathEnrollment> = {}
     if (user) {
       const { data: member } = await supabase
         .from('members')
@@ -98,7 +109,9 @@ export async function GET(request: NextRequest) {
 
       return {
         ...path,
-        courses: path.courses?.sort((a: any, b: any) => a.sequence_order - b.sequence_order),
+        courses: (path.courses as unknown as PathCourse[] | undefined)?.sort(
+          (a, b) => a.sequence_order - b.sequence_order
+        ),
         enrollment: enrollments[path.id] || null,
         has_access: userTierLevel >= requiredTierLevel,
         is_enrolled: !!enrollments[path.id]

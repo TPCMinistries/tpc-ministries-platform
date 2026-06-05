@@ -35,12 +35,12 @@ export default function EventInvitationEmail({
   return (
     <Html>
       <Head />
-      <Preview>You're invited: {eventTitle}</Preview>
+      <Preview>You&apos;re invited: {eventTitle}</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <div style={invitationBadge}>✨ YOU'RE INVITED ✨</div>
+            <div style={invitationBadge}>✨ YOU&apos;RE INVITED ✨</div>
             <Heading style={headerTitle}>TPC Ministries Event</Heading>
           </Section>
 
@@ -102,7 +102,7 @@ export default function EventInvitationEmail({
             )}
 
             <Text style={footerNote}>
-              We can't wait to see you there! If you have any questions, please don't hesitate to reach out.
+              We can&apos;t wait to see you there! If you have any questions, please don&apos;t hesitate to reach out.
             </Text>
           </Section>
 

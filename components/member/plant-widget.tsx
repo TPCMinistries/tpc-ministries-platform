@@ -3,14 +3,11 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   BookOpen,
-  Clock,
   CheckCircle,
   ArrowRight,
   Leaf,
-  TrendingUp,
   Trophy,
   PlayCircle
 } from 'lucide-react'
@@ -68,13 +65,6 @@ export default function PlantWidget() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
   }
 
   // Get courses in progress

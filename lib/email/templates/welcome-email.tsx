@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -38,7 +37,7 @@ export default function WelcomeEmail({
             <Heading style={h1}>Welcome, {memberName}!</Heading>
 
             <Text style={text}>
-              We are thrilled to have you join the TPC Ministries family! Your spiritual journey with us begins today, and we're honored to walk alongside you.
+              We are thrilled to have you join the TPC Ministries family! Your spiritual journey with us begins today, and we&apos;re honored to walk alongside you.
             </Text>
 
             {temporaryPassword && (
@@ -57,7 +56,7 @@ export default function WelcomeEmail({
               </Link>
             </Section>
 
-            <Heading style={h2}>What's Available to You:</Heading>
+            <Heading style={h2}>What&apos;s Available to You:</Heading>
 
             <Section style={featureList}>
               <Text style={feature}>
@@ -92,7 +91,7 @@ export default function WelcomeEmail({
             </Section>
 
             <Text style={text}>
-              Need help getting started? Reply to this email and we'll be happy to assist you.
+              Need help getting started? Reply to this email and we&apos;ll be happy to assist you.
             </Text>
 
             <Text style={signature}>

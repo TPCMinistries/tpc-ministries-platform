@@ -1,39 +1,48 @@
 import { vi } from 'vitest'
 
+type MockQueryBuilder = Record<string, ReturnType<typeof vi.fn>>
+
+interface MockClientOverrides {
+  auth?: Record<string, unknown>
+  storage?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 // Mock query builder that chains methods
-export const createMockQueryBuilder = (data: any = null, error: any = null) => {
-  const builder: any = {
-    select: vi.fn(() => builder),
-    insert: vi.fn(() => builder),
-    update: vi.fn(() => builder),
-    delete: vi.fn(() => builder),
-    upsert: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    neq: vi.fn(() => builder),
-    gt: vi.fn(() => builder),
-    gte: vi.fn(() => builder),
-    lt: vi.fn(() => builder),
-    lte: vi.fn(() => builder),
-    like: vi.fn(() => builder),
-    ilike: vi.fn(() => builder),
-    is: vi.fn(() => builder),
-    in: vi.fn(() => builder),
-    contains: vi.fn(() => builder),
-    containedBy: vi.fn(() => builder),
-    range: vi.fn(() => builder),
-    order: vi.fn(() => builder),
-    limit: vi.fn(() => builder),
-    offset: vi.fn(() => builder),
-    single: vi.fn(() => Promise.resolve({ data, error })),
-    maybeSingle: vi.fn(() => Promise.resolve({ data, error })),
-    then: vi.fn((resolve) => resolve({ data, error })),
-  }
+export const createMockQueryBuilder = (data: unknown = null, error: unknown = null) => {
+  const builder = {} as MockQueryBuilder
+  builder.select = vi.fn(() => builder)
+  builder.insert = vi.fn(() => builder)
+  builder.update = vi.fn(() => builder)
+  builder.delete = vi.fn(() => builder)
+  builder.upsert = vi.fn(() => builder)
+  builder.eq = vi.fn(() => builder)
+  builder.neq = vi.fn(() => builder)
+  builder.gt = vi.fn(() => builder)
+  builder.gte = vi.fn(() => builder)
+  builder.lt = vi.fn(() => builder)
+  builder.lte = vi.fn(() => builder)
+  builder.like = vi.fn(() => builder)
+  builder.ilike = vi.fn(() => builder)
+  builder.is = vi.fn(() => builder)
+  builder.in = vi.fn(() => builder)
+  builder.contains = vi.fn(() => builder)
+  builder.containedBy = vi.fn(() => builder)
+  builder.range = vi.fn(() => builder)
+  builder.order = vi.fn(() => builder)
+  builder.limit = vi.fn(() => builder)
+  builder.offset = vi.fn(() => builder)
+  builder.single = vi.fn(() => Promise.resolve({ data, error }))
+  builder.maybeSingle = vi.fn(() => Promise.resolve({ data, error }))
+  builder.then = vi.fn((resolve: (value: { data: unknown; error: unknown }) => unknown) =>
+    resolve({ data, error })
+  )
   return builder
 }
 
 // Mock Supabase client
-export const createMockSupabaseClient = (overrides: any = {}) => {
-  const mockFrom = vi.fn(() => createMockQueryBuilder())
+export const createMockSupabaseClient = (overrides: MockClientOverrides = {}) => {
+  const mockFrom: ReturnType<typeof vi.fn> = vi.fn(() => createMockQueryBuilder())
 
   return {
     from: mockFrom,
@@ -43,7 +52,7 @@ export const createMockSupabaseClient = (overrides: any = {}) => {
       signInWithPassword: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      ...overrides.auth,
+      ...(overrides.auth ?? {}),
     },
     storage: {
       from: vi.fn(() => ({
@@ -52,7 +61,7 @@ export const createMockSupabaseClient = (overrides: any = {}) => {
         remove: vi.fn(),
         getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'https://example.com/file.jpg' } })),
       })),
-      ...overrides.storage,
+      ...(overrides.storage ?? {}),
     },
     rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
     ...overrides,

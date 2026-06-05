@@ -15,6 +15,28 @@ function getResend() {
 
 export const dynamic = 'force-dynamic'
 
+interface SubscriptionMember {
+  id: string
+  email: string | null
+  first_name: string | null
+}
+
+interface SubscriptionRow {
+  members: SubscriptionMember | SubscriptionMember[] | null
+}
+
+interface SubscribedMember extends SubscriptionMember {
+  email: string
+}
+
+function getSubscriptionMember(row: SubscriptionRow) {
+  return Array.isArray(row.members) ? row.members[0] : row.members
+}
+
+function hasEmail(member: SubscriptionMember | null | undefined): member is SubscribedMember {
+  return Boolean(member?.email)
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret for security
@@ -83,12 +105,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter out invalid entries and get recipients
-    const recipients = (subscriptions || [])
-      .filter(s => (s.members as any)?.email)
-      .map(s => ({
-        email: (s.members as any).email,
-        firstName: (s.members as any).first_name || 'Friend',
-        memberId: (s.members as any).id
+    const recipients = ((subscriptions || []) as unknown as SubscriptionRow[])
+      .map(getSubscriptionMember)
+      .filter(hasEmail)
+      .map(member => ({
+        email: member.email,
+        firstName: member.first_name || 'Friend',
+        memberId: member.id
       }))
 
     if (recipients.length === 0) {

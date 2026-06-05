@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { 
-  Calculator, Calendar, CreditCard, Settings, Smile, User, 
+import {
+  Calendar, CreditCard, Settings, User,
   BookOpen, Heart, MessageSquare, Gift, Sparkles, Users,
-  Home, Search, PenLine, Music, Video, FileText
+  Home, PenLine, Music, Video, FileText
 } from "lucide-react"
 
 import {
@@ -57,7 +57,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         <CommandGroup heading="Quick Actions">
           <CommandItem onSelect={() => runCommand(() => router.push("/journal/new"))}>
             <PenLine className="mr-2 h-4 w-4" />
-            <span>Start Today's Journal</span>
+            <span>Start Today&apos;s Journal</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/prayer/new"))}>
             <Heart className="mr-2 h-4 w-4" />
