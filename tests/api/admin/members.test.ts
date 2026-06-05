@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { GET, POST, PATCH, DELETE } from '@/app/api/admin/members/route'
+import { GET, POST, DELETE } from '@/app/api/admin/members/route'
 import { createMockRequest, parseJsonResponse } from '@/tests/utils'
 import { createMockSupabaseClient, mockAuthenticatedUser, mockMember, mockAdminMember } from '@/tests/__mocks__/supabase'
 
@@ -23,7 +23,7 @@ describe('Admin Members API', () => {
         },
       })
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members', { method: 'GET' })
       const response = await GET(request)
@@ -59,7 +59,7 @@ describe('Admin Members API', () => {
       })
       mockClient.from = vi.fn(() => mockQueryBuilder)
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members', { method: 'GET' })
       const response = await GET(request)
@@ -96,7 +96,7 @@ describe('Admin Members API', () => {
       })
       mockClient.from = vi.fn(() => mockQueryBuilder)
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members', { method: 'GET' })
       const response = await GET(request)
@@ -131,7 +131,7 @@ describe('Admin Members API', () => {
       })
       mockClient.from = vi.fn(() => mockQueryBuilder)
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members', {
         method: 'POST',
@@ -175,7 +175,7 @@ describe('Admin Members API', () => {
       })
       mockClient.from = vi.fn(() => mockQueryBuilder)
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members', {
         method: 'POST',
@@ -223,7 +223,7 @@ describe('Admin Members API', () => {
       })
       mockClient.from = vi.fn(() => mockQueryBuilder)
 
-      vi.mocked(createClient).mockResolvedValue(mockClient as any)
+      vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
       const request = createMockRequest('/api/admin/members?id=self-id', {
         method: 'DELETE',

@@ -36,7 +36,7 @@ export default function LeadConfirmation({
             <Heading style={h1}>Thank You, {name}!</Heading>
 
             <Text style={text}>
-              We're excited that you've expressed interest in TPC Ministries! Your information
+              We&apos;re excited that you&apos;ve expressed interest in TPC Ministries! Your information
               has been received, and one of our team members will be reaching out to you soon.
             </Text>
 
@@ -74,7 +74,7 @@ export default function LeadConfirmation({
                 <strong style={featureTitle}>🌍 Learn About Our Missions</strong>
                 <br />
                 <Link href="https://tpcmin.org/missions" style={link}>
-                  See how we're impacting lives in Kenya, South Africa, and Grenada
+                  See how we&apos;re impacting lives in Kenya, South Africa, and Grenada
                 </Link>
               </Text>
 
@@ -99,8 +99,8 @@ export default function LeadConfirmation({
               <Text style={contactText}>
                 <strong>Have Questions?</strong>
                 <br />
-                Don't hesitate to reach out! Reply to this email or contact us directly.
-                We're here to help you on your spiritual journey.
+                Don&apos;t hesitate to reach out! Reply to this email or contact us directly.
+                We&apos;re here to help you on your spiritual journey.
               </Text>
             </Section>
 

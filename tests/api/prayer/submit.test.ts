@@ -22,7 +22,7 @@ describe('POST /api/prayer/submit', () => {
       },
     })
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',
@@ -49,7 +49,7 @@ describe('POST /api/prayer/submit', () => {
     })
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',
@@ -75,7 +75,7 @@ describe('POST /api/prayer/submit', () => {
     })
     mockClient.from = vi.fn(() => mockMemberQuery)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',
@@ -102,7 +102,7 @@ describe('POST /api/prayer/submit', () => {
     })
     mockClient.from = vi.fn(() => mockMemberQuery)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',
@@ -128,7 +128,7 @@ describe('POST /api/prayer/submit', () => {
     })
     mockClient.from = vi.fn(() => mockMemberQuery)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',
@@ -179,7 +179,7 @@ describe('POST /api/prayer/submit', () => {
     })
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as never)
 
     const request = createMockRequest('/api/prayer/submit', {
       method: 'POST',

@@ -5,9 +5,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, useReducedMotion } from "framer-motion"
 import { 
-  Sun, BookOpen, Users, User, 
-  Home, Heart, Sparkles, Calendar,
-  MoreHorizontal
+  Sun, BookOpen, User,
+  Heart,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 

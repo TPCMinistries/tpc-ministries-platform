@@ -4,15 +4,14 @@ import * as React from "react"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { 
-  Heart, Users, Calendar, MessageSquare,
-  ChevronRight, Plus, Sparkles, PartyPopper
+  Heart, Users, Calendar,
+  ChevronRight, Plus, PartyPopper
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PrayerButton } from "@/components/ui/prayer-button"
-import { cn } from "@/lib/utils"
 
 interface PrayerRequest {
   id: string

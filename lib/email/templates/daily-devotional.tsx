@@ -52,7 +52,7 @@ export default function DailyDevotionalEmail({
           {/* Scripture Card */}
           <Section style={scriptureCard}>
             <Text style={scriptureReference}>{scripture}</Text>
-            <Text style={scriptureTextStyle}>"{scriptureText}"</Text>
+            <Text style={scriptureTextStyle}>&ldquo;{scriptureText}&rdquo;</Text>
           </Section>
 
           {/* Main Content */}
@@ -70,7 +70,7 @@ export default function DailyDevotionalEmail({
               <>
                 <Hr style={divider} />
                 <Section style={prayerSection}>
-                  <Heading style={prayerTitle}>Today's Prayer</Heading>
+                  <Heading style={prayerTitle}>Today&apos;s Prayer</Heading>
                   <Text style={prayerText}>
                     <em>{prayer}</em>
                   </Text>
@@ -128,7 +128,7 @@ export default function DailyDevotionalEmail({
               <Link href={unsubscribeUrl} style={footerLink}>Unsubscribe</Link>
             </Text>
             <Text style={footerDisclaimer}>
-              You're receiving this because you subscribed to Daily Devotionals.
+              You&apos;re receiving this because you subscribed to Daily Devotionals.
             </Text>
           </Section>
         </Container>
@@ -333,7 +333,8 @@ const footerDisclaimer = {
 }
 
 // Export render function for use with Resend
-export function renderDailyDevotional(props: DailyDevotionalEmailProps): string {
+export function renderDailyDevotional(_props: DailyDevotionalEmailProps): string {
+  void _props
   // This would use react-email's render function
   // For now, return the component for use with Resend's react option
   return ''

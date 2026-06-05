@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -64,18 +64,7 @@ export default function MemberMessagesPage() {
   const [replyVoiceBlob, setReplyVoiceBlob] = useState<Blob | null>(null)
   const [replyVoiceDuration, setReplyVoiceDuration] = useState<number>(0)
 
-  useEffect(() => {
-    fetchConversations()
-  }, [])
-
-  useEffect(() => {
-    if (selectedConversation) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      markConversationAsRead(selectedConversation.conversation_id)
-    }
-  }, [selectedConversation])
-
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -146,9 +135,9 @@ export default function MemberMessagesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
-  const markConversationAsRead = async (conversationId: string) => {
+  const markConversationAsRead = useCallback(async (conversationId: string) => {
     const supabase = createClient()
 
     try {
@@ -175,7 +164,18 @@ export default function MemberMessagesPage() {
     } catch (error) {
       console.error('Error marking as read:', error)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    fetchConversations()
+  }, [fetchConversations])
+
+  useEffect(() => {
+    if (selectedConversation) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      markConversationAsRead(selectedConversation.conversation_id)
+    }
+  }, [markConversationAsRead, selectedConversation])
 
   const uploadVoice = async (blob: Blob): Promise<{ url: string; transcription: string } | null> => {
     try {
@@ -204,7 +204,7 @@ export default function MemberMessagesPage() {
           const data = await transcribeRes.json()
           transcription = data.transcription || ''
         }
-      } catch (e) {
+      } catch {
         console.log('Transcription not available')
       }
 
