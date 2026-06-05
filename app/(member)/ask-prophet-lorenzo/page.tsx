@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sparkles,
@@ -14,7 +13,6 @@ import {
   History,
   Plus,
   User,
-  Bot,
   BookOpen,
   Heart,
   Lightbulb,
@@ -36,6 +34,12 @@ interface Conversation {
   message_count: number
   last_message_at: string
   created_at: string
+}
+
+interface ConversationMessage {
+  role: 'user' | 'assistant'
+  content: string
+  created_at?: string
 }
 
 const SUGGESTED_TOPICS = [
@@ -60,18 +64,13 @@ export default function AskProphetLorenzoPage() {
   const [handoffBanner, setHandoffBanner] = useState(false)
 
   useEffect(() => {
-    initializeMember()
-    consumePublicHandoff()
-  }, [])
-
-  useEffect(() => {
     scrollToBottom()
   }, [messages])
 
   // If the user just signed up from the public Ask-Prophet widget, pull their
   // conversation history out of localStorage and prepend it. Only fires when
   // ?handoff=1 is in the URL and the public widget left a v1 history payload.
-  const consumePublicHandoff = () => {
+  const consumePublicHandoff = useCallback(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     if (params.get('handoff') !== '1') return
@@ -93,13 +92,25 @@ export default function AskProphetLorenzoPage() {
     } catch {
       // Silent fail — handoff is best-effort
     }
-  }
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const initializeMember = async () => {
+  const fetchConversations = useCallback(async (memberId: string) => {
+    try {
+      const response = await fetch(`/api/ai/prophet-lorenzo?memberId=${memberId}`)
+      const data = await response.json()
+      if (data.conversations) {
+        setConversations(data.conversations)
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+    }
+  }, [])
+
+  const initializeMember = useCallback(async () => {
     const supabase = createClient()
 
     try {
@@ -121,19 +132,12 @@ export default function AskProphetLorenzoPage() {
     } finally {
       setLoadingHistory(false)
     }
-  }
+  }, [fetchConversations])
 
-  const fetchConversations = async (memberId: string) => {
-    try {
-      const response = await fetch(`/api/ai/prophet-lorenzo?memberId=${memberId}`)
-      const data = await response.json()
-      if (data.conversations) {
-        setConversations(data.conversations)
-      }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
-    }
-  }
+  useEffect(() => {
+    initializeMember()
+    consumePublicHandoff()
+  }, [consumePublicHandoff, initializeMember])
 
   const loadConversation = async (conversationId: string) => {
     if (!memberId) return
@@ -146,7 +150,7 @@ export default function AskProphetLorenzoPage() {
       const data = await response.json()
 
       if (data.messages) {
-        setMessages(data.messages.map((m: any) => ({
+        setMessages((data.messages as ConversationMessage[]).map((m) => ({
           role: m.role,
           content: m.content,
           created_at: m.created_at
@@ -215,15 +219,6 @@ export default function AskProphetLorenzoPage() {
       e.preventDefault()
       sendMessage()
     }
-  }
-
-  const formatMessageContent = (content: string) => {
-    // Format scripture references in bold
-    const formatted = content.replace(
-      /(\d?\s?[A-Z][a-z]+\s+\d+:\d+(?:-\d+)?)/g,
-      '**$1**'
-    )
-    return formatted
   }
 
   return (
@@ -328,8 +323,8 @@ export default function AskProphetLorenzoPage() {
                     Welcome, Beloved
                   </h2>
                   <p className="text-muted-foreground max-w-md mb-6">
-                    I'm here to provide spiritual guidance, pray with you, and help you grow in your walk with God.
-                    What's on your heart today?
+                    I&apos;m here to provide spiritual guidance, pray with you, and help you grow in your walk with God.
+                    What&apos;s on your heart today?
                   </p>
 
                   {/* Suggested Topics */}

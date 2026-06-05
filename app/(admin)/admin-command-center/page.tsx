@@ -26,7 +26,6 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
-  MessageSquare,
   ChevronRight,
   RefreshCw,
   Loader2,
@@ -59,7 +58,7 @@ interface PastoralAlert {
   title: string
   description: string
   suggested_action: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   created_at: string
 }
 
@@ -72,12 +71,18 @@ interface SuggestedAction {
   actionUrl: string
 }
 
+interface ContentGap {
+  topic: string
+  search_count: number
+  recommendation: string
+}
+
 interface AIInsights {
   dailyBriefing: string
   pastoralAlerts: PastoralAlert[]
   atRiskMembers: PastoralAlert[]
   upcomingCelebrations: PastoralAlert[]
-  contentGaps: any[]
+  contentGaps: ContentGap[]
   engagementTrends: { activeRate: number; newMemberRate: number }
   revenueInsights: { thisMonth: number; lastMonth: number; change: number; trend: string }
   suggestedActions: SuggestedAction[]
@@ -338,7 +343,7 @@ export default function AdminCommandCenter() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-lg font-semibold">Today's AI Briefing</h2>
+                <h2 className="text-lg font-semibold">Today&apos;s AI Briefing</h2>
                 <Badge className="bg-gold/20 text-gold border-gold/30">
                   <Clock className="h-3 w-3 mr-1" />
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
@@ -369,7 +374,7 @@ export default function AdminCommandCenter() {
 	          <CardHeader className="pb-3">
 	            <CardTitle className="flex items-center gap-2 text-lg">
 	              <ClipboardList className="h-5 w-5 text-gold" />
-	              Today's Operating Readiness
+              Today&apos;s Operating Readiness
 	            </CardTitle>
 	            <CardDescription>Current signal across care, engagement, partners, and giving</CardDescription>
 	          </CardHeader>
@@ -437,7 +442,7 @@ export default function AdminCommandCenter() {
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Target className="h-5 w-5 text-gold" />
-                Today's Ministry Plan
+                Today&apos;s Ministry Plan
               </CardTitle>
               <CardDescription>Four operating priorities for spiritually mature, organized follow-through</CardDescription>
             </div>

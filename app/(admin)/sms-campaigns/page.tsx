@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,9 +42,7 @@ import {
   RefreshCw,
   Loader2,
   Users,
-  Sparkles,
   ArrowLeft,
-  AlertCircle,
   FileText,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -109,12 +107,7 @@ export default function SMSCampaignsPage() {
     scheduled_at: '',
   })
 
-  useEffect(() => {
-    fetchCampaigns()
-    fetchTemplates()
-  }, [statusFilter])
-
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -130,9 +123,9 @@ export default function SMSCampaignsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/sms/templates')
       if (res.ok) {
@@ -142,7 +135,12 @@ export default function SMSCampaignsPage() {
     } catch (error) {
       console.error('Error fetching templates:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchCampaigns()
+    fetchTemplates()
+  }, [fetchCampaigns, fetchTemplates])
 
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.message.trim()) {
@@ -173,7 +171,7 @@ export default function SMSCampaignsPage() {
         const data = await res.json()
         toast({ title: 'Error', description: data.error, variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to save campaign', variant: 'destructive' })
     } finally {
       setSaving(false)
@@ -202,7 +200,7 @@ export default function SMSCampaignsPage() {
       } else {
         toast({ title: 'Error', description: data.error, variant: 'destructive' })
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to send campaign', variant: 'destructive' })
     } finally {
       setSending(null)
@@ -218,7 +216,7 @@ export default function SMSCampaignsPage() {
         toast({ title: 'Deleted', description: 'Campaign deleted' })
         fetchCampaigns()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' })
     }
   }
@@ -235,7 +233,7 @@ export default function SMSCampaignsPage() {
     setShowCreateDialog(true)
   }
 
-  const useTemplate = (template: SMSTemplate) => {
+  const applyTemplate = (template: SMSTemplate) => {
     setFormData(prev => ({ ...prev, message: template.message }))
     setShowTemplatesDialog(false)
   }
@@ -402,7 +400,7 @@ export default function SMSCampaignsPage() {
               {templates.map((template) => (
                 <button
                   key={template.id}
-                  onClick={() => useTemplate(template)}
+                  onClick={() => applyTemplate(template)}
                   className="w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
