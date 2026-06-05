@@ -7,10 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  BookOpen,
   Clock,
   CheckCircle,
-  PlayCircle,
   FileText,
   Volume2,
   FileIcon,
@@ -18,7 +16,6 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Leaf,
   BookMarked,
   List
 } from 'lucide-react'
@@ -89,13 +86,22 @@ export default function LessonPage() {
   const [completing, setCompleting] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
 
-  useEffect(() => {
-    if (courseSlug && lessonId) {
-      fetchCourseAndLesson()
+  const updateProgress = useCallback(async (updates: Partial<LessonProgress>) => {
+    try {
+      await fetch('/api/plant/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lesson_id: lessonId,
+          ...updates
+        })
+      })
+    } catch (error) {
+      console.error('Error updating progress:', error)
     }
-  }, [courseSlug, lessonId])
+  }, [lessonId])
 
-  const fetchCourseAndLesson = async () => {
+  const fetchCourseAndLesson = useCallback(async () => {
     try {
       const res = await fetch(`/api/plant/courses?slug=${courseSlug}`)
       if (res.ok) {
@@ -104,11 +110,11 @@ export default function LessonPage() {
         setCourse(courseData)
 
         // Find the lesson and module
-        for (const module of courseData.modules) {
-          const lesson = module.lessons.find((l: Lesson) => l.id === lessonId)
+        for (const courseModule of courseData.modules) {
+          const lesson = courseModule.lessons.find((l: Lesson) => l.id === lessonId)
           if (lesson) {
             setCurrentLesson(lesson)
-            setCurrentModule(module)
+            setCurrentModule(courseModule)
             break
           }
         }
@@ -130,22 +136,13 @@ export default function LessonPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [courseSlug, lessonId, updateProgress])
 
-  const updateProgress = async (updates: Partial<LessonProgress>) => {
-    try {
-      await fetch('/api/plant/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lesson_id: lessonId,
-          ...updates
-        })
-      })
-    } catch (error) {
-      console.error('Error updating progress:', error)
+  useEffect(() => {
+    if (courseSlug && lessonId) {
+      fetchCourseAndLesson()
     }
-  }
+  }, [courseSlug, fetchCourseAndLesson, lessonId])
 
   const handleCompleteLesson = async () => {
     setCompleting(true)

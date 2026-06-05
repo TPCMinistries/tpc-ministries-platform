@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,20 +26,33 @@ const REFLECTION_PROMPTS = [
   'What will you carry home from today\'s experience?',
 ]
 
+interface ImpactLog {
+  id: string
+  category: string
+  description: string
+  people_count: number | null
+  city: string | null
+  created_at: string
+}
+
+interface Reflection {
+  id: string
+  content: string
+  prompt: string | null
+  is_shared: boolean
+  created_at: string
+}
+
 export function ImpactJournal({ tripId, participantId }: { tripId: string; participantId: string }) {
-  const [impactLogs, setImpactLogs] = useState<any[]>([])
-  const [reflections, setReflections] = useState<any[]>([])
+  const [impactLogs, setImpactLogs] = useState<ImpactLog[]>([])
+  const [reflections, setReflections] = useState<Reflection[]>([])
   const [showImpactForm, setShowImpactForm] = useState(false)
   const [showReflectionForm, setShowReflectionForm] = useState(false)
   const [newImpact, setNewImpact] = useState({ category: 'general', description: '', people_count: '', city: '' })
   const [newReflection, setNewReflection] = useState({ content: '', prompt: '', is_shared: false })
   const [activeSection, setActiveSection] = useState<'impact' | 'reflections'>('impact')
 
-  useEffect(() => {
-    fetchData()
-  }, [tripId, participantId])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
     const [impactRes, reflRes] = await Promise.all([
       supabase.from('kenya_trip_impact_logs').select('*').eq('trip_id', tripId).eq('participant_id', participantId).order('created_at', { ascending: false }),
@@ -47,7 +60,11 @@ export function ImpactJournal({ tripId, participantId }: { tripId: string; parti
     ])
     setImpactLogs(impactRes.data || [])
     setReflections(reflRes.data || [])
-  }
+  }, [participantId, tripId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleAddImpact = async () => {
     if (!newImpact.description.trim()) return
@@ -80,7 +97,7 @@ export function ImpactJournal({ tripId, participantId }: { tripId: string; parti
     fetchData()
   }
 
-  const totalPeople = impactLogs.reduce((sum: number, l: any) => sum + (l.people_count || 0), 0)
+  const totalPeople = impactLogs.reduce((sum, log) => sum + (log.people_count || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -168,14 +185,14 @@ export function ImpactJournal({ tripId, participantId }: { tripId: string; parti
                 <p className="text-gray-500 text-center py-6 text-sm">No impact logged yet. Start recording your kingdom work!</p>
               ) : (
                 <div className="space-y-3">
-                  {impactLogs.map((log: any) => (
+                  {impactLogs.map((log) => (
                     <div key={log.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                       <Heart className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
                       <div className="flex-1">
                         <p className="text-sm">{log.description}</p>
                         <div className="flex gap-2 mt-1">
                           <Badge variant="secondary" className="text-[10px]">{log.category}</Badge>
-                          {log.people_count > 0 && <Badge variant="outline" className="text-[10px]">{log.people_count} people</Badge>}
+                          {(log.people_count || 0) > 0 && <Badge variant="outline" className="text-[10px]">{log.people_count} people</Badge>}
                           {log.city && <Badge variant="outline" className="text-[10px]">{log.city}</Badge>}
                         </div>
                       </div>
@@ -237,7 +254,7 @@ export function ImpactJournal({ tripId, participantId }: { tripId: string; parti
               <p className="text-gray-500 text-center py-6 text-sm">Your private journal. Capture your experience before the details fade.</p>
             ) : (
               <div className="space-y-4">
-                {reflections.map((r: any) => (
+                {reflections.map((r) => (
                   <div key={r.id} className="p-4 bg-gray-50 rounded-lg">
                     {r.prompt && <p className="text-xs text-amber-700 italic mb-1">&ldquo;{r.prompt}&rdquo;</p>}
                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{r.content}</p>

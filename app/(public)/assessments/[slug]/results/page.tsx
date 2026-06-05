@@ -38,11 +38,10 @@ interface AssessmentResult {
   next_steps: string[]
 }
 
-export default function AssessmentResultsPage({ params }: { params: { slug: string } }) {
+export default function AssessmentResultsPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [memberTier, setMemberTier] = useState<'free' | 'partner' | 'covenant'>('free')
   const [result, setResult] = useState<AssessmentResult | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -59,16 +58,11 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
         if (user) {
           setIsLoggedIn(true)
 
-          // Get member tier
-          const { data: member } = await supabase
+          await supabase
             .from('members')
             .select('tier')
             .eq('user_id', user.id)
             .single()
-
-          if (member) {
-            setMemberTier(member.tier || 'free')
-          }
         }
 
         // Fetch assessment results
@@ -123,7 +117,7 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              We couldn't find your assessment results. Please complete an assessment first.
+              We couldn&apos;t find your assessment results. Please complete an assessment first.
             </p>
             <Link href="/assessments">
               <Button className="w-full bg-navy hover:bg-navy/90">
@@ -321,14 +315,14 @@ export default function AssessmentResultsPage({ params }: { params: { slug: stri
               variant="outline"
               onClick={async () => {
                 const url = typeof window !== 'undefined' ? window.location.href : ''
-                const title = result?.title ? `${result.title} — TPC Assessment` : 'My TPC Assessment Results'
+                const title = result?.title ? `${result.title} - TPC Assessment` : 'My TPC Assessment Results'
                 const text = result?.description || 'I just took the TPC assessment.'
-                if (typeof navigator !== 'undefined' && (navigator as any).share) {
+                if (typeof navigator !== 'undefined' && navigator.share) {
                   try {
-                    await (navigator as any).share({ title, text, url })
+                    await navigator.share({ title, text, url })
                     return
                   } catch {
-                    // user dismissed — fall through to clipboard
+                    // User dismissed the share sheet; fall through to clipboard.
                   }
                 }
                 try {

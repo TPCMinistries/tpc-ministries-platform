@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { Heart, Globe, Users, DollarSign, CheckCircle, ArrowRight, MapPin } from 'lucide-react'
+import { DollarSign, CheckCircle, ArrowRight } from 'lucide-react'
 
 function MissionsSupportContent() {
   const searchParams = useSearchParams()
@@ -57,7 +57,7 @@ function MissionsSupportContent() {
             Support Global Missions
           </h1>
           <p className="mx-auto max-w-3xl text-body-xl text-white/65">
-            Your partnership funds US digital ministry, on-the-ground missions in Kenya, South Africa, and Grenada, and the global online community we're building.
+            Your partnership funds US digital ministry, on-the-ground missions in Kenya, South Africa, and Grenada, and the global online community we&rsquo;re building.
           </p>
           <div className="mx-auto mt-8 h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
         </div>

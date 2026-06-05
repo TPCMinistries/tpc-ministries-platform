@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import {
   Sparkles,
   Calendar,
@@ -19,8 +18,8 @@ import {
   TreeDeciduous,
   Target,
   TrendingUp,
-  Clock,
-  BookOpen
+  BookOpen,
+  type LucideIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -38,7 +37,7 @@ interface Season {
   progress_percentage?: number
 }
 
-const SEASON_ICONS: { [key: string]: any } = {
+const SEASON_ICONS: Record<string, LucideIcon> = {
   sun: Sun,
   leaf: Leaf,
   snowflake: Snowflake,
@@ -457,7 +456,7 @@ export default function MemberSeasonsPage() {
               <div>
                 <h3 className="text-lg font-bold mb-1">Embrace Every Season</h3>
                 <p className="text-amber-100 text-sm">
-                  "To everything there is a season, and a time for every purpose under heaven." — Ecclesiastes 3:1
+                  &ldquo;To everything there is a season, and a time for every purpose under heaven.&rdquo; - Ecclesiastes 3:1
                 </p>
               </div>
             </div>
