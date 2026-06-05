@@ -9,6 +9,21 @@ function getSupabase() {
   )
 }
 
+interface InviteValidationResponse {
+  valid: true
+  has_existing_account: boolean
+  invite: {
+    code: string
+    name: string | null
+    email: string | null
+    role: string | null
+    invite_type?: string
+    service_track?: string | null
+    participant_id?: string | null
+    trip_id?: string | null
+  }
+}
+
 // GET - Validate an invite code
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -55,7 +70,7 @@ export async function GET(request: NextRequest) {
       hasExistingAccount = !!exists
     }
 
-    const response: any = {
+    const response: InviteValidationResponse = {
       valid: true,
       has_existing_account: hasExistingAccount,
       invite: {
@@ -75,7 +90,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(response)
-  } catch (error: any) {
+  } catch (error) {
     console.error('Invite validation error:', error)
     return NextResponse.json({ valid: false, error: 'Failed to validate invite' }, { status: 500 })
   }
@@ -116,8 +131,8 @@ export async function POST(request: NextRequest) {
     if (updateError) throw updateError
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Invite use error:', error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed to use invite' }, { status: 500 })
   }
 }

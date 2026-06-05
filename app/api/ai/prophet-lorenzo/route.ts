@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
 function getOpenAI() { return new OpenAI({
@@ -10,14 +10,14 @@ function getSupabase() { return createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
 
 // Build dynamic system prompt from database config
-async function buildSystemPrompt(supabase: any): Promise<string> {
+async function buildSystemPrompt(supabase: SupabaseClient): Promise<string> {
   // Fetch AI configuration
   const { data: configs } = await supabase
     .from('ai_config')
     .select('config_key, config_value')
 
   const config: Record<string, string> = {}
-  configs?.forEach((c: any) => {
+  configs?.forEach((c: { config_key: string; config_value: string }) => {
     config[c.config_key] = c.config_value
   })
 
@@ -29,7 +29,7 @@ async function buildSystemPrompt(supabase: any): Promise<string> {
     .order('priority', { ascending: false })
     .limit(20)
 
-  const knowledgeContext = knowledge?.map((k: any) =>
+  const knowledgeContext = knowledge?.map((k: { title: string; content: string; scripture_references: string[] | null }) =>
     `### ${k.title}\n${k.content}${k.scripture_references?.length ? `\nScriptures: ${k.scripture_references.join(', ')}` : ''}`
   ).join('\n\n') || ''
 

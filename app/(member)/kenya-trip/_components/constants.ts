@@ -19,14 +19,14 @@ import {
   HandHeart,
   Utensils,
   Package,
-  Star,
   Truck,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { DelegateTabType, TrackLeadTabType, PartnerTabType, DocumentType } from './types'
 
 // ========== Delegate Tabs ==========
 
-export const delegateTabs: { key: DelegateTabType; label: string; icon: any }[] = [
+export const delegateTabs: { key: DelegateTabType; label: string; icon: LucideIcon }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'prepare', label: 'Prepare', icon: ClipboardCheck },
   { key: 'finances', label: 'Finances', icon: DollarSign },
@@ -39,7 +39,7 @@ export const delegateTabs: { key: DelegateTabType; label: string; icon: any }[] 
 
 // ========== Track Lead Tabs ==========
 
-export const trackLeadTabs: { key: TrackLeadTabType; label: string; icon: any }[] = [
+export const trackLeadTabs: { key: TrackLeadTabType; label: string; icon: LucideIcon }[] = [
   { key: 'overview', label: 'Overview', icon: Target },
   { key: 'roster', label: 'Roster', icon: List },
   { key: 'schedule', label: 'Schedule', icon: CalendarDays },

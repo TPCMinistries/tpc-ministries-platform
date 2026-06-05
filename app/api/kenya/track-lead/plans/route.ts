@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-async function validateTrackLead(admin: any, userId: string) {
+async function validateTrackLead(admin: ReturnType<typeof createAdminClient>, userId: string) {
   const { data: member } = await admin
     .from('members')
     .select('id')
@@ -163,7 +163,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Plan not in your track' }, { status: 403 })
     }
 
-    const updates: Record<string, any> = { updated_at: new Date().toISOString() }
+    const updates: Record<string, string> = { updated_at: new Date().toISOString() }
     if (title !== undefined) updates.title = title
     if (content !== undefined) updates.content = content
     if (plan_type !== undefined) {
@@ -171,7 +171,6 @@ export async function PUT(request: Request) {
       if (validTypes.includes(plan_type)) updates.plan_type = plan_type
     }
     if (status !== undefined) {
-      const validStatuses = ['draft', 'shared', 'approved']
       // Track leads can only set draft or shared — approved is admin-only
       if (['draft', 'shared'].includes(status)) updates.status = status
     }

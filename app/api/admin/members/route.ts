@@ -4,6 +4,19 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+interface MemberTagRow {
+  member_id: string
+  tags: {
+    id: string
+    name: string
+    color: string | null
+  }[] | null
+}
+
+interface MemberWithTags {
+  tags: NonNullable<MemberTagRow['tags']>[number][]
+}
+
 // GET - List all members with tags
 export async function GET(request: NextRequest) {
   try {
@@ -47,13 +60,13 @@ export async function GET(request: NextRequest) {
       .order('name')
 
     // Group tags by member
-    const tagsByMember: Record<string, any[]> = {}
-    memberTags?.forEach((mt: any) => {
+    const tagsByMember: Record<string, NonNullable<MemberTagRow['tags']>[number][]> = {}
+    memberTags?.forEach((mt: MemberTagRow) => {
       if (!tagsByMember[mt.member_id]) {
         tagsByMember[mt.member_id] = []
       }
       if (mt.tags) {
-        tagsByMember[mt.member_id].push(mt.tags)
+        tagsByMember[mt.member_id].push(...mt.tags)
       }
     })
 
@@ -66,7 +79,7 @@ export async function GET(request: NextRequest) {
     // Filter by tag if specified
     if (tag && tag !== 'all') {
       membersWithTags = membersWithTags.filter(m =>
-        m.tags.some((t: any) => t.id === tag)
+        (m as MemberWithTags).tags.some((t) => t?.id === tag)
       )
     }
 

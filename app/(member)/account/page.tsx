@@ -36,7 +36,6 @@ import {
   CreditCard,
   Calendar,
   DollarSign,
-  Download,
   ArrowUpCircle,
   AlertCircle,
   ExternalLink,
@@ -207,7 +206,7 @@ export default function AccountPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const updates: any = {}
+      const updates: Record<string, boolean> = {}
       updates[key] = value
 
       await supabase
@@ -799,7 +798,7 @@ export default function AccountPage() {
                 <div className="flex gap-3">
                   <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gold" />
                   <p className="text-sm text-gray-700">
-                    Tax language and receipting should always match the ministry's current nonprofit and
+                    Tax language and receipting should always match the ministry&apos;s current nonprofit and
                     payment processor setup. This account page now avoids showing sample giving history as
                     if it were live financial data.
                   </p>

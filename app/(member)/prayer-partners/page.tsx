@@ -12,11 +12,9 @@ import {
   UserPlus,
   MessageCircle,
   CheckCircle,
-  Clock,
   Star,
   Gift,
   Loader2,
-  X,
   Mail
 } from 'lucide-react'
 
@@ -37,6 +35,13 @@ interface PotentialMatch {
   spiritualGift: string | null
   currentSeason: string | null
   matchReason: string
+}
+
+interface PrayerPartnerProfile {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  email: string | null
 }
 
 export default function PrayerPartnersPage() {
@@ -78,12 +83,15 @@ export default function PrayerPartnersPage() {
       .single()
 
     if (partnerships && partnerships.partner) {
-      const partner = partnerships.partner as any
+      const partnerRelation = partnerships.partner as PrayerPartnerProfile | PrayerPartnerProfile[]
+      const partner = Array.isArray(partnerRelation) ? partnerRelation[0] : partnerRelation
+      if (!partner) return
+
       setCurrentPartner({
         id: partnerships.id,
         partnerId: partner.id,
-        partnerName: `${partner.first_name} ${partner.last_name}`,
-        partnerEmail: partner.email,
+        partnerName: `${partner.first_name || ''} ${partner.last_name || ''}`.trim() || 'Prayer Partner',
+        partnerEmail: partner.email || '',
         matchedAt: partnerships.matched_at,
         status: partnerships.status
       })

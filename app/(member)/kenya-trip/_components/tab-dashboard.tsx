@@ -1,7 +1,6 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -25,7 +24,7 @@ interface TabDashboardProps {
 }
 
 export function TabDashboard({ data, onNavigate }: TabDashboardProps) {
-  const { trip, participant, member, announcements, dailyFocus, packingItems, packingStatus, donations } = data
+  const { trip, participant, announcements, dailyFocus, packingItems, packingStatus } = data
 
   if (!trip || !participant) return null
 

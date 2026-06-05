@@ -29,13 +29,23 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+
+interface AssessmentResultRow {
+  id: string
+  assessment_type: string
+  created_at: string
+  primary_result: string | null
+  secondary_result: string | null
+  tertiary_result: string | null
+}
 
 interface AssessmentHistory {
   id: string
   slug: string
   title: string
-  icon: any
+  icon: LucideIcon
   lastTaken: string
   timesCompleted: number
   results: {
@@ -46,7 +56,7 @@ interface AssessmentHistory {
   }[]
 }
 
-const ASSESSMENT_CONFIG: { [key: string]: { icon: any, gradient: string, description: string } } = {
+const ASSESSMENT_CONFIG: Record<string, { icon: LucideIcon, gradient: string, description: string }> = {
   'spiritual-gifts': {
     icon: Gift,
     gradient: 'from-purple-400 to-violet-500',
@@ -114,7 +124,7 @@ export default function MemberAssessmentsPage() {
       if (error) throw error
 
       // Group results by assessment type
-      const groupedResults: { [key: string]: any[] } = {}
+      const groupedResults: Record<string, AssessmentResultRow[]> = {}
       results?.forEach((result) => {
         if (!groupedResults[result.assessment_type]) {
           groupedResults[result.assessment_type] = []
@@ -143,7 +153,7 @@ export default function MemberAssessmentsPage() {
               r.primary_result,
               r.secondary_result,
               r.tertiary_result
-            ].filter(Boolean),
+            ].filter((result): result is string => Boolean(result)),
             resultId: r.id
           }))
         }
