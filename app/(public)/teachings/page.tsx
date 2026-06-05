@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -44,17 +45,12 @@ export default function TeachingsPage() {
   const [sortBy, setSortBy] = useState('newest')
   const [teachings, setTeachings] = useState<Teaching[]>([])
   const [topics, setTopics] = useState<string[]>([])
-  const [types, setTypes] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
 
-  useEffect(() => {
-    fetchTeachings()
-  }, [selectedType, selectedTopic, sortBy, page])
-
-  const fetchTeachings = async () => {
+  const fetchTeachings = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -71,7 +67,6 @@ export default function TeachingsPage() {
 
       setTeachings(data.teachings || [])
       setTopics(data.topics || [])
-      setTypes(data.types || [])
       setTotalPages(data.pagination?.totalPages || 1)
       setTotal(data.pagination?.total || 0)
     } catch (error) {
@@ -79,7 +74,11 @@ export default function TeachingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, searchQuery, selectedTopic, selectedType, sortBy])
+
+  useEffect(() => {
+    fetchTeachings()
+  }, [fetchTeachings])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -387,9 +386,11 @@ export default function TeachingsPage() {
                         <div className="group h-full cursor-pointer overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-xl">
                           <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-navy/80 to-navy">
                             {teaching.thumbnail_url ? (
-                              <img
+                              <Image
                                 src={teaching.thumbnail_url}
                                 alt={teaching.title}
+                                fill
+                                sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                             ) : (

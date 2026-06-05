@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -116,13 +117,7 @@ export default function PlantPage() {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [userTier, setUserTier] = useState('free')
-
-  useEffect(() => {
-    fetchData()
-  }, [selectedCategory])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const categoryParam = selectedCategory !== 'all' ? `?category=${selectedCategory}` : ''
 
@@ -135,7 +130,6 @@ export default function PlantPage() {
       if (pathsRes.ok) {
         const data = await pathsRes.json()
         setPaths(data.paths || [])
-        setUserTier(data.user_tier)
       }
 
       if (coursesRes.ok) {
@@ -152,7 +146,11 @@ export default function PlantPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedCategory])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const filteredCourses = courses.filter(course =>
     !searchQuery ||
@@ -408,9 +406,11 @@ export default function PlantPage() {
                 <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                   <div className="aspect-video bg-gradient-to-br from-green-100 to-emerald-100 relative">
                     {course.thumbnail_url ? (
-                      <img
+                      <Image
                         src={course.thumbnail_url}
                         alt={course.name}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                         className="w-full h-full object-cover"
                       />
                     ) : (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +24,6 @@ import {
   Search,
   User
 } from 'lucide-react'
-import Link from 'next/link'
 
 interface Sermon {
   id: string
@@ -99,7 +99,7 @@ export default function SermonsPage() {
         .order('created_at', { ascending: false })
 
       if (notes) {
-        setMyNotes(notes as any)
+        setMyNotes(notes as SermonNote[])
       }
     }
 
@@ -405,9 +405,11 @@ export default function SermonsPage() {
                   <Card key={sermon.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="h-40 bg-gradient-to-br from-navy to-navy/70 relative">
                       {sermon.thumbnail_url ? (
-                        <img
+                        <Image
                           src={sermon.thumbnail_url}
                           alt=""
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="w-full h-full object-cover"
                         />
                       ) : (

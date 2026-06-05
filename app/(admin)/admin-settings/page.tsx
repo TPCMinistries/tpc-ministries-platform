@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -56,11 +56,7 @@ export default function AdminSettingsPage() {
   const [processing, setProcessing] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -99,7 +95,11 @@ export default function AdminSettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const searchMembers = async (query: string) => {
     if (!query.trim()) {
@@ -441,7 +441,7 @@ export default function AdminSettingsPage() {
 
               {!searching && searchQuery && searchResults.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No members found matching "{searchQuery}"</p>
+                  <p>No members found matching &quot;{searchQuery}&quot;</p>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -91,13 +91,7 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
   const [submittingComment, setSubmittingComment] = useState(false)
   const [commentSuccess, setCommentSuccess] = useState('')
 
-  useEffect(() => {
-    if (slug) {
-      fetchPost()
-    }
-  }, [slug])
-
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/public/blog/${slug}`)
@@ -109,12 +103,18 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       setPost(data.post)
       setComments(data.comments || [])
       setRelatedPosts(data.relatedPosts || [])
-    } catch (err) {
+    } catch {
       setError('Failed to load post')
     } finally {
       setLoading(false)
     }
-  }
+  }, [slug])
+
+  useEffect(() => {
+    if (slug) {
+      fetchPost()
+    }
+  }, [fetchPost, slug])
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -142,7 +142,7 @@ export default function BlogPostClient({ slug }: BlogPostClientProps) {
       } else {
         setError(data.error)
       }
-    } catch (err) {
+    } catch {
       setError('Failed to submit comment')
     } finally {
       setSubmittingComment(false)

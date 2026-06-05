@@ -2,17 +2,17 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, useReducedMotion } from "framer-motion"
 import { 
   Sun, Moon, CloudSun, PenLine, Heart, Gift, 
   Sparkles, Calendar, ChevronRight, Play, 
-  Flame, BookOpen, MessageSquare, Users
+  Flame, BookOpen, Users
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
 
 interface TodayDashboardProps {
   member: {
@@ -232,7 +232,13 @@ export function TodayDashboard({
               <div className="flex gap-4 p-4">
                 <div className="relative w-32 h-20 rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0 overflow-hidden">
                   {continueWatching.thumbnail ? (
-                    <img src={continueWatching.thumbnail} alt={continueWatching.title} className="object-cover w-full h-full" />
+                    <Image
+                      src={continueWatching.thumbnail}
+                      alt={continueWatching.title}
+                      fill
+                      sizes="128px"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <Play className="h-8 w-8 text-muted-foreground" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface ShortcutConfig {
@@ -24,7 +24,7 @@ export function useKeyboardShortcuts() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
 
   // Define all shortcuts
-  const shortcuts: ShortcutConfig[] = [
+  const shortcuts: ShortcutConfig[] = useMemo(() => [
     // Navigation shortcuts
     {
       key: 'h',
@@ -136,7 +136,7 @@ export function useKeyboardShortcuts() {
       description: 'Close Modal',
       category: 'general'
     }
-  ]
+  ], [router])
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Don't trigger shortcuts when typing in inputs
@@ -156,8 +156,6 @@ export function useKeyboardShortcuts() {
     // Find matching shortcut
     const matchedShortcut = shortcuts.find(shortcut => {
       const keyMatches = event.key.toLowerCase() === shortcut.key.toLowerCase()
-      const ctrlMatches = shortcut.ctrl ? (event.ctrlKey || event.metaKey) : !event.ctrlKey
-      const metaMatches = shortcut.meta ? event.metaKey : !event.metaKey
       const shiftMatches = shortcut.shift ? event.shiftKey : !event.shiftKey
       const altMatches = shortcut.alt ? event.altKey : !event.altKey
 
