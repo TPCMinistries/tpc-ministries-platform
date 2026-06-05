@@ -3,6 +3,20 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type PlantLessonModule = {
+  course_id?: string | null
+}
+
+type LessonProgressUpdate = {
+  last_accessed_at: string
+  time_spent: number
+  status?: string
+  progress_percent?: number
+  video_position?: number
+  personal_notes?: string | null
+  completed_at?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -53,7 +67,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
     }
 
-    const courseId = (lesson.module as any)?.course_id
+    const courseId = (lesson.module as PlantLessonModule | null)?.course_id
 
     // Get enrollment
     const { data: enrollment } = await supabase
@@ -80,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     if (existingProgress) {
       // Update existing progress
-      const updateData: any = {
+      const updateData: LessonProgressUpdate = {
         last_accessed_at: now,
         time_spent: (existingProgress.time_spent || 0) + (time_spent || 0)
       }

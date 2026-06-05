@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { getBaseUrl } from '@/lib/base-url'
+import type Stripe from 'stripe'
 import {
   MEMBERSHIP_TIERS,
   isMembershipTier,
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     // better analytics + Customer Portal support. Otherwise build the price
     // inline so the flow works in any env without configuration.
     const priceId = getStripePriceId(tier_slug, billing_cycle)
-    const lineItem = priceId
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = priceId
       ? { price: priceId, quantity: 1 }
       : {
           price_data: {
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [lineItem as any],
+      line_items: [lineItem],
       customer_email: member?.email || user.email,
       client_reference_id: user.id,
       metadata: {
@@ -93,10 +94,10 @@ export async function POST(request: NextRequest) {
       tier: tier.name,
       amount,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating membership checkout session:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
