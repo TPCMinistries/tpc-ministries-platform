@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -15,8 +16,7 @@ import {
   CheckCircle2,
   Clock,
   ChevronRight,
-  Star,
-  Trophy
+  Star
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,6 +38,10 @@ interface MyPlan {
   streak_days: number
   last_read_at?: string
   plan: ReadingPlan
+}
+
+interface MyPlanRow extends Omit<MyPlan, 'plan'> {
+  plan: ReadingPlan | ReadingPlan[]
 }
 
 export default function ReadingPlansPage() {
@@ -76,7 +80,10 @@ export default function ReadingPlansPage() {
         .eq('is_active', true)
 
       if (progress) {
-        setMyPlans(progress as any)
+        setMyPlans((progress as MyPlanRow[]).map((item) => ({
+          ...item,
+          plan: Array.isArray(item.plan) ? item.plan[0] : item.plan,
+        })))
       }
     }
 
@@ -148,7 +155,7 @@ export default function ReadingPlansPage() {
             <h1 className="text-3xl font-bold text-navy">Reading Plans</h1>
           </div>
           <p className="text-gray-600">
-            Grow deeper in God's Word with structured daily readings
+            Grow deeper in God&apos;s Word with structured daily readings
           </p>
         </div>
 
@@ -190,10 +197,12 @@ export default function ReadingPlansPage() {
                   <Card key={myPlan.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="h-32 bg-gradient-to-br from-navy to-navy/70 relative">
                       {myPlan.plan.cover_image_url && (
-                        <img
+                        <Image
                           src={myPlan.plan.cover_image_url}
                           alt=""
+                          fill
                           className="w-full h-full object-cover opacity-50"
+                          sizes="(min-width: 768px) 50vw, 100vw"
                         />
                       )}
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -242,7 +251,7 @@ export default function ReadingPlansPage() {
                         ) : (
                           <Badge className="bg-amber-100 text-amber-800">
                             <Clock className="h-3 w-3 mr-1" />
-                            Today's Reading Waiting
+                            Today&apos;s Reading Waiting
                           </Badge>
                         )}
 
@@ -276,10 +285,12 @@ export default function ReadingPlansPage() {
                     <Card key={plan.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                       <div className="h-40 bg-gradient-to-br from-navy to-navy/70 relative">
                         {plan.cover_image_url && (
-                          <img
+                          <Image
                             src={plan.cover_image_url}
                             alt=""
+                            fill
                             className="w-full h-full object-cover opacity-50"
+                            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                           />
                         )}
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60">

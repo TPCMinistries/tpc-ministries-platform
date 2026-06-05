@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,7 +15,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
   const router = useRouter()
   const searchParams = useSearchParams()
   const contentType = searchParams.get('type') || ''
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -23,12 +23,8 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
 
   const config = getContentType(contentType)
 
-  useEffect(() => {
+  const fetchContent = useCallback(async () => {
     if (!config) return
-    fetchContent()
-  }, [id, contentType])
-
-  const fetchContent = async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/content-hub/${id}?type=${contentType}`)
@@ -36,7 +32,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       const json = await res.json()
 
       // Populate form with existing data
-      const data: Record<string, any> = {}
+      const data: Record<string, unknown> = {}
       if (config) {
         for (const field of config.fields) {
           if (json.data[field.name] !== undefined) {
@@ -49,7 +45,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         }
         // Auto-wrap plain text in paragraphs
         if (config.formatField && json.data[config.formatField] !== 'html' && data[config.bodyField]) {
-          const text = data[config.bodyField]
+          const text = String(data[config.bodyField])
           if (!text.startsWith('<')) {
             data[config.bodyField] = text
               .split('\n\n')
@@ -59,14 +55,18 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         }
       }
       setFormData(data)
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to load content', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
-  }
+  }, [config, contentType, id, toast])
 
-  const updateField = (name: string, value: any) => {
+  useEffect(() => {
+    fetchContent()
+  }, [fetchContent])
+
+  const updateField = (name: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -94,8 +94,8 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       }
 
       toast({ title: 'Saved', description: `${config.label} updated successfully` })
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to save', variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to save', variant: 'destructive' })
     } finally {
       setSaving(false)
     }
@@ -111,7 +111,7 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
         toast({ title: 'Deleted', description: `${config.label} deleted` })
         router.push('/content-hub')
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' })
     }
   }
@@ -204,8 +204,8 @@ export default function EditContentPage({ params }: { params: Promise<{ id: stri
       <ContentPreview
         open={showPreview}
         onClose={() => setShowPreview(false)}
-        title={formData[config.titleField] || 'Untitled'}
-        html={formData[config.bodyField] || ''}
+        title={String(formData[config.titleField] || 'Untitled')}
+        html={String(formData[config.bodyField] || '')}
       />
     </div>
   )

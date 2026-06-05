@@ -1,39 +1,54 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
   X, CheckCircle, Clock, XCircle, Send, Mail, Phone,
   Shield, Stethoscope, Users, MapPin, Briefcase, FileText,
-  Loader2, AlertTriangle, Pencil, Save, ChevronDown, ChevronRight,
+  Loader2, Save, ChevronDown, ChevronRight,
   Eye, ExternalLink,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { Participant } from './types'
+
+type ParticipantValue = string | number | boolean | null | undefined
+type EditableParticipant = Participant & Record<string, ParticipantValue>
+type ActionResult = {
+  success?: boolean
+  emailSent?: boolean
+  error?: string
+}
+
+const toFieldText = (value: ParticipantValue): string => {
+  if (value === null || value === undefined) return ''
+  return String(value)
+}
 
 interface ModalParticipantDetailProps {
   participant: Participant | null
   onClose: () => void
   onUpdateStatus?: (id: string, status: string) => void
   onUpdateField?: (id: string, field: string, value: string) => void
-  onRequestMoreInfo?: (id: string, email: string, name: string, message: string) => Promise<any>
-  onSendInvite?: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
-  onSendFormLink?: (participantId: string, formType: string) => Promise<any>
+  onRequestMoreInfo?: (id: string, email: string, name: string, message: string) => Promise<ActionResult>
+  onSendInvite?: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<ActionResult>
+  onSendFormLink?: (participantId: string, formType: string) => Promise<ActionResult>
 }
 
 // Compact editable field
 function Field({ label, value, field, onSave, type = 'text', options, placeholder }: {
-  label: string; value: string; field: string; onSave: (field: string, value: string) => void
+  label: string; value: ParticipantValue; field: string; onSave: (field: string, value: string) => void
   type?: 'text' | 'email' | 'tel' | 'date' | 'select' | 'textarea'
   options?: { value: string; label: string }[]; placeholder?: string
 }) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(value || '')
-  useEffect(() => { setDraft(value || '') }, [value])
+  const [draft, setDraft] = useState(toFieldText(value))
+  useEffect(() => { setDraft(toFieldText(value)) }, [value])
 
   const save = () => {
-    if (draft !== (value || '')) onSave(field, draft)
+    if (draft !== toFieldText(value)) onSave(field, draft)
     setEditing(false)
   }
 
@@ -85,7 +100,7 @@ function Field({ label, value, field, onSave, type = 'text', options, placeholde
 
 // Collapsible section
 function Section({ title, icon: Icon, badge, defaultOpen = true, children }: {
-  title: string; icon: any; badge?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode
+  title: string; icon: LucideIcon; badge?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -133,8 +148,8 @@ export function ModalParticipantDetail({
   const [processing, setProcessing] = useState(false)
 
   if (!participant) return null
-  const p = participant as any
-  const effectiveEmail = localEmail ?? p.email
+  const p = participant as unknown as EditableParticipant
+  const effectiveEmail = localEmail ?? toFieldText(p.email)
   const hasEmail = !!effectiveEmail
   const isPending = p.application_status === 'pending'
 
@@ -154,8 +169,8 @@ export function ModalParticipantDetail({
 
   const handleSendInvite = async () => {
     if (!onSendInvite || !effectiveEmail) return
-    const selectedTrack = inviteTrack || p.service_track || 'Flex'
-    const selectedRole = inviteRole || p.role || 'delegate'
+    const selectedTrack = inviteTrack || toFieldText(p.service_track) || 'Flex'
+    const selectedRole = inviteRole || toFieldText(p.role) || 'delegate'
 
     // Save track and role to participant before sending
     if (selectedTrack !== (p.service_track || 'Flex')) handleSave('service_track', selectedTrack)
@@ -169,7 +184,7 @@ export function ModalParticipantDetail({
         track: selectedTrack, role: 'member', sendEmail: true,
       })
       setInviteResult({
-        success: data.success && data.emailSent,
+        success: !!(data.success && data.emailSent),
         message: data.emailSent ? `Invite sent to ${effectiveEmail} (${selectedTrack} track)` : data.error || 'Email failed',
       })
       if (data.success) setShowInvitePanel(false)
@@ -186,7 +201,7 @@ export function ModalParticipantDetail({
     setFormSendResult(null)
     try {
       const result = await onSendFormLink(p.id, formType)
-      setFormSendResult({ form: formType, success: result?.success && result?.emailSent })
+      setFormSendResult({ form: formType, success: !!(result?.success && result?.emailSent) })
     } catch {
       setFormSendResult({ form: formType, success: false })
     } finally {
@@ -316,7 +331,7 @@ export function ModalParticipantDetail({
 
             return (
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => { setInviteTrack(p.service_track || 'Flex'); setInviteRole(p.role || 'delegate'); setShowInvitePanel(!showInvitePanel) }}>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => { setInviteTrack(toFieldText(p.service_track) || 'Flex'); setInviteRole(toFieldText(p.role) || 'delegate'); setShowInvitePanel(!showInvitePanel) }}>
                   <Send className="mr-1.5 h-3.5 w-3.5" /> Send Trip Invite
                 </Button>
                 {nextForm && onSendFormLink && (
@@ -617,10 +632,13 @@ function PassportViewer({ url, name }: { url: string; name: string }) {
             </div>
           </div>
           {signedUrl && (
-            <img
+            <Image
               src={signedUrl}
               alt={`${name} passport`}
+              width={900}
+              height={600}
               className="w-full max-h-[300px] object-contain rounded-lg border bg-gray-50"
+              sizes="(min-width: 768px) 640px, 100vw"
             />
           )}
         </div>

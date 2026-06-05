@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -35,18 +34,16 @@ interface PrayerRequest {
   }
 }
 
+type PrayerStatusFilter = 'all' | PrayerRequest['status']
+
 export default function PrayerRequestsManagementPage() {
   const [prayers, setPrayers] = useState<PrayerRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'answered' | 'archived'>('all')
+  const [filterStatus, setFilterStatus] = useState<PrayerStatusFilter>('all')
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchPrayers()
-  }, [])
-
-  const fetchPrayers = async () => {
+  const fetchPrayers = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -74,7 +71,11 @@ export default function PrayerRequestsManagementPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchPrayers()
+  }, [fetchPrayers])
 
   const markAsAnswered = async (id: string) => {
     const supabase = createClient()
@@ -276,7 +277,7 @@ export default function PrayerRequestsManagementPage() {
                 </div>
               </div>
               <div className="md:w-48">
-                <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+                <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as PrayerStatusFilter)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
