@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,10 +17,9 @@ import {
   Calendar,
   Star,
   Gift,
-  PartyPopper,
-  User,
-  Mail
+  PartyPopper
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface MemberProfile {
   id: string
@@ -47,6 +47,10 @@ interface Celebration {
     first_name: string
     last_name: string
   }
+}
+
+interface MemberProfileRow extends Omit<MemberProfile, 'profile'> {
+  profile?: MemberProfile['profile'] | MemberProfile['profile'][] | null
 }
 
 export default function DirectoryPage() {
@@ -98,16 +102,15 @@ export default function DirectoryPage() {
 
     if (membersData) {
       // Process to flatten profile array
-      const processed = membersData.map((m: any) => ({
+      const processed = (membersData as MemberProfileRow[]).map((m) => ({
         ...m,
-        profile: Array.isArray(m.profile) ? m.profile[0] : m.profile
+        profile: Array.isArray(m.profile) ? m.profile[0] : m.profile ?? undefined
       }))
       setMembers(processed)
     }
 
     // Fetch upcoming celebrations (birthdays, anniversaries, etc.)
     const today = new Date()
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())
 
     const { data: celebrationsData } = await supabase
       .from('member_celebrations')
@@ -120,7 +123,7 @@ export default function DirectoryPage() {
 
     if (celebrationsData) {
       // Filter to show celebrations in the next 30 days (ignoring year)
-      const upcoming = celebrationsData.filter((c: any) => {
+      const upcoming = (celebrationsData as Celebration[]).filter((c) => {
         const celebDate = new Date(c.celebration_date)
         const thisYearDate = new Date(
           today.getFullYear(),
@@ -137,7 +140,7 @@ export default function DirectoryPage() {
   }
 
   const getCelebrationIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       birthday: Cake,
       spiritual_birthday: Star,
       anniversary: Heart,
@@ -208,7 +211,7 @@ export default function DirectoryPage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <PartyPopper className="h-6 w-6 text-gold" />
-                <h2 className="text-lg font-bold text-navy">Today's Celebrations!</h2>
+                <h2 className="text-lg font-bold text-navy">Today&apos;s Celebrations!</h2>
               </div>
               <div className="flex flex-wrap gap-4">
                 {todayCelebrations.map((c) => {
@@ -262,9 +265,11 @@ export default function DirectoryPage() {
                     <div className="flex items-start gap-4">
                       <div className="w-14 h-14 rounded-full bg-navy/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {member.profile?.profile_photo_url ? (
-                          <img
+                          <Image
                             src={member.profile.profile_photo_url}
                             alt=""
+                            width={56}
+                            height={56}
                             className="w-14 h-14 object-cover"
                           />
                         ) : (

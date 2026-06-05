@@ -4,6 +4,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
+interface TrackDetailRow {
+  id: string
+}
+
+interface TrackMaterialRow {
+  id: string
+  track_detail_id: string
+  [key: string]: unknown
+}
+
+interface TrackLeadNoteRow {
+  participant_id: string
+  [key: string]: unknown
+}
+
 export async function GET() {
   try {
     const supabase = await createClient()
@@ -56,18 +71,6 @@ export async function GET() {
 
     const track = participant.service_track
     const isFlex = track === 'Flex'
-
-    // Build track filter for queries
-    // Flex track leads see ALL tracks
-    const trackFilter = (query: any, column: string) => {
-      if (isFlex) return query
-      return query.eq(column, track)
-    }
-
-    const trackOrAllFilter = (query: any, column: string) => {
-      if (isFlex) return query
-      return query.or(`${column}.eq.${track},${column}.eq.all,${column}.is.null`)
-    }
 
     // Fetch all track-scoped data in parallel
     const [
@@ -164,20 +167,20 @@ export async function GET() {
     ])
 
     // Get track materials for the retrieved track details
-    const trackDetailIds = (trackDetailsRes.data || []).map((d: any) => d.id)
-    let trackMaterials: any[] = []
+    const trackDetailIds = ((trackDetailsRes.data || []) as TrackDetailRow[]).map((d) => d.id)
+    let trackMaterials: TrackMaterialRow[] = []
     if (trackDetailIds.length > 0) {
       const { data: materialsData } = await admin
         .from('kenya_trip_track_materials')
         .select('*')
         .in('track_detail_id', trackDetailIds)
         .order('sort_order')
-      trackMaterials = materialsData || []
+      trackMaterials = (materialsData || []) as TrackMaterialRow[]
     }
 
     // Build notes map keyed by participant_id
-    const notesMap: Record<string, any> = {}
-    for (const note of (trackLeadNotesRes.data || [])) {
+    const notesMap: Record<string, TrackLeadNoteRow> = {}
+    for (const note of ((trackLeadNotesRes.data || []) as TrackLeadNoteRow[])) {
       notesMap[note.participant_id] = note
     }
 

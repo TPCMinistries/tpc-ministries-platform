@@ -2,26 +2,22 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { LineChart, AreaChart, BarChart, DonutChart, CHART_COLORS } from '@/components/charts'
+import { BarChart, DonutChart, CHART_COLORS } from '@/components/charts'
 import {
   FileText,
   Download,
   Users,
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Heart,
   Calendar,
   BarChart3,
   Loader2,
   RefreshCcw,
   ArrowUpRight,
-  ArrowDownRight,
   Activity,
-  Eye,
   BookOpen,
   MessageSquare,
   PenLine
@@ -137,11 +133,6 @@ export default function AdminReportsPage() {
       console.error('Error exporting report:', error)
     }
     setExporting(false)
-  }
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
   const reportTypes = [

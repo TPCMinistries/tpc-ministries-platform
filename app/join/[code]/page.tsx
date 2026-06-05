@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,6 @@ interface InviteData {
 
 export default function JoinPage() {
   const params = useParams()
-  const router = useRouter()
   const code = params.code as string
 
   const [validating, setValidating] = useState(true)
@@ -63,7 +62,7 @@ export default function JoinPage() {
         } else {
           setInviteError(data.error || 'Invalid invite code')
         }
-      } catch (err) {
+      } catch {
         setInviteError('Failed to validate invite code')
       } finally {
         setValidating(false)
@@ -128,8 +127,8 @@ export default function JoinPage() {
 
       setSuccess(true)
       setLoading(false)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create account')
       setLoading(false)
     }
   }
@@ -186,7 +185,7 @@ export default function JoinPage() {
             </div>
             <CardTitle className="text-2xl text-navy">Check Your Email!</CardTitle>
             <CardDescription className="text-gray-600">
-              We've sent a confirmation link to <strong>{email}</strong>
+              We&apos;ve sent a confirmation link to <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -228,7 +227,7 @@ export default function JoinPage() {
                 </div>
                 <CardTitle className="text-2xl font-bold text-navy">Kenya Kingdom Impact Trip</CardTitle>
                 <CardDescription className="text-gray-600">
-                  You've been invited to join the 2026 Kenya delegation
+                  You&apos;ve been invited to join the 2026 Kenya delegation
                 </CardDescription>
               </>
             ) : (
@@ -288,7 +287,7 @@ export default function JoinPage() {
               </div>
               <CardTitle className="text-2xl font-bold text-navy">Kenya Kingdom Impact Trip</CardTitle>
               <CardDescription className="text-gray-600">
-                You've been invited to join the 2026 Kenya delegation
+                You&apos;ve been invited to join the 2026 Kenya delegation
               </CardDescription>
               {inviteData.service_track && (
                 <div className="mt-2">
@@ -303,7 +302,7 @@ export default function JoinPage() {
               <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-gold/20 flex items-center justify-center">
                 <Sparkles className="h-6 w-6 text-gold" />
               </div>
-              <CardTitle className="text-2xl font-bold text-navy">You're Invited!</CardTitle>
+              <CardTitle className="text-2xl font-bold text-navy">You&apos;re Invited!</CardTitle>
               <CardDescription className="text-gray-600">
                 Join TPC Ministries and start your journey of faith
               </CardDescription>
