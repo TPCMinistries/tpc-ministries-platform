@@ -29,7 +29,9 @@ describe('GET /api/prayer/list', () => {
         members: {
           id: 'member-1',
           email: 'test@example.com',
-          raw_user_meta_data: { full_name: 'Test User' },
+          first_name: 'Test',
+          last_name: 'User',
+          avatar_url: null,
         },
       },
       {
@@ -44,7 +46,9 @@ describe('GET /api/prayer/list', () => {
         members: {
           id: 'member-2',
           email: 'another@example.com',
-          raw_user_meta_data: { full_name: 'Another User' },
+          first_name: 'Another',
+          last_name: 'User',
+          avatar_url: null,
         },
       },
     ]
@@ -90,7 +94,9 @@ describe('GET /api/prayer/list', () => {
         members: {
           id: 'member-1',
           email: 'secret@example.com',
-          raw_user_meta_data: { full_name: 'Secret User' },
+          first_name: 'Secret',
+          last_name: 'User',
+          avatar_url: null,
         },
       },
     ]

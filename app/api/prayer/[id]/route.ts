@@ -6,16 +6,19 @@ export const dynamic = 'force-dynamic'
 type JoinedMember = {
   id: string
   email: string | null
-  raw_user_meta_data: Record<string, unknown> | null
+  first_name: string | null
+  last_name: string | null
+  avatar_url?: string | null
 }
 
 function firstJoinedRow<T>(value: T | T[] | null | undefined): T | null {
   return Array.isArray(value) ? value[0] ?? null : value ?? null
 }
 
-function getFullName(metadata: Record<string, unknown> | null | undefined): string | null {
-  const fullName = metadata?.full_name
-  return typeof fullName === 'string' && fullName.trim() ? fullName : null
+function getMemberName(member: JoinedMember | null | undefined): string | null {
+  if (!member) return null
+  const fullName = [member.first_name, member.last_name].filter(Boolean).join(' ').trim()
+  return fullName || member.email?.split('@')[0] || null
 }
 
 export async function GET(
@@ -34,14 +37,16 @@ export async function GET(
         category,
         is_anonymous,
         is_answered,
-        answered_testimony,
+        testimony,
         prayer_count,
         created_at,
         member_id,
         members:member_id (
           id,
           email,
-          raw_user_meta_data
+          first_name,
+          last_name,
+          avatar_url
         )
       `)
       .eq('id', id)
@@ -62,9 +67,11 @@ export async function GET(
     // Transform data
     const transformedData = {
       ...data,
+      answered_testimony: data.testimony,
+      testimony: undefined,
       requester: data.is_anonymous
         ? 'Anonymous'
-        : getFullName(member?.raw_user_meta_data) || 'Member',
+        : getMemberName(member) || 'Member',
       isOwner,
       members: undefined,
       member_id: isOwner ? data.member_id : undefined,
