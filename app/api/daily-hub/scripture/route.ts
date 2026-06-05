@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,13 +14,13 @@ const defaultScriptures = [
   { reference: 'Matthew 11:28', text: 'Come to me, all you who are weary and burdened, and I will give you rest.', theme: 'Rest' },
 ]
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
     const today = new Date().toISOString().split('T')[0]
 
     // Try to get today's scripture from database
-    const { data: scripture, error } = await supabase
+    const { data: scripture } = await supabase
       .from('daily_scriptures')
       .select('*')
       .eq('date', today)

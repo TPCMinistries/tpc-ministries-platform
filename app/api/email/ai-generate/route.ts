@@ -17,7 +17,7 @@ interface GenerateRequest {
     scripture?: string
     theme?: string
     weekHighlights?: string[]
-    topContent?: any[]
+    topContent?: unknown[]
     prophecyTitle?: string
     prophecyExcerpt?: string
     teachingTitle?: string
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     const generatedContent = data.choices?.[0]?.message?.content || ''
 
     // Parse response based on type
-    let result: any
+    let result: { options: string[] } | { content: string }
 
     if (type === 'subject_line' && count > 1) {
       // Split multiple subject lines

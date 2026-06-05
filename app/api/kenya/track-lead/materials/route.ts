@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-async function validateTrackLead(admin: any, userId: string) {
+type AdminClient = ReturnType<typeof createAdminClient>
+
+async function validateTrackLead(admin: AdminClient, userId: string) {
   const { data: member } = await admin
     .from('members')
     .select('id')
@@ -32,7 +34,7 @@ async function validateTrackLead(admin: any, userId: string) {
   return { member, trip, participant }
 }
 
-async function verifyTrackDetailOwnership(admin: any, trackDetailId: string, track: string, isFlex: boolean) {
+async function verifyTrackDetailOwnership(admin: AdminClient, trackDetailId: string, track: string, isFlex: boolean) {
   const { data: detail } = await admin
     .from('kenya_trip_track_details')
     .select('id, track')

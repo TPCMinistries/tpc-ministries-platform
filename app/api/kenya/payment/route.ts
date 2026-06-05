@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { NextRequest, NextResponse } from 'next/server'
+import type Stripe from 'stripe'
 
 const TRIP_COST = 3500
 const DEPOSIT_AMOUNT = 500
@@ -11,6 +12,12 @@ interface PaymentRequest {
   lastName: string
   paymentType: 'full' | 'deposit' | 'installment_4' | 'installment_6' | 'custom'
   customAmount?: number
+}
+
+type CheckoutSessionBase = {
+  mode: Stripe.Checkout.SessionCreateParams.Mode
+  line_items: Stripe.Checkout.SessionCreateParams.LineItem[]
+  subscription_data?: Stripe.Checkout.SessionCreateParams.SubscriptionData
 }
 
 export async function POST(request: NextRequest) {
@@ -75,7 +82,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    let sessionConfig: any
+    let sessionConfig: CheckoutSessionBase
 
     if (paymentType === 'full') {
       // Pay in full — one-time payment
@@ -194,10 +201,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ url: session.url, sessionId: session.id })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Kenya payment error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to create payment session.' },
+      { error: error instanceof Error ? error.message : 'Failed to create payment session.' },
       { status: 500 }
     )
   }
