@@ -16,7 +16,6 @@ import {
   User,
   Search,
   X,
-  Check,
   Loader2,
   ScrollText,
   HandHeart,
@@ -65,7 +64,6 @@ const messageTypes = [
 export default function AdminVoiceMessagesPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [sentMessages, setSentMessages] = useState<VoiceMessage[]>([])
-  const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'create' | 'sent'>('create')
@@ -77,7 +75,6 @@ export default function AdminVoiceMessagesPage() {
   const [messageType, setMessageType] = useState('prophetic_word')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioDuration, setAudioDuration] = useState(0)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [transcription, setTranscription] = useState('')
@@ -107,11 +104,9 @@ export default function AdminVoiceMessagesPage() {
       setSentMessages(data.messages || [])
     }
 
-    setLoading(false)
   }
 
   const handleRecordingComplete = async (blob: Blob, duration: number) => {
-    setAudioBlob(blob)
     setAudioDuration(duration)
 
     // Upload audio
@@ -195,7 +190,6 @@ export default function AdminVoiceMessagesPage() {
         setSelectedMember(null)
         setTitle('')
         setDescription('')
-        setAudioBlob(null)
         setAudioUrl(null)
         setTranscription('')
         setAudioDuration(0)
@@ -480,7 +474,6 @@ export default function AdminVoiceMessagesPage() {
                         size="sm"
                         onClick={() => {
                           setAudioUrl(null)
-                          setAudioBlob(null)
                           setTranscription('')
                         }}
                       >

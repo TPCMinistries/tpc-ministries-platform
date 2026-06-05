@@ -17,13 +17,24 @@ const inputClasses = "bg-transparent border border-gray-200 rounded px-2 py-1 te
 const selectClasses = "bg-transparent border border-gray-200 rounded px-2 py-1 text-[13px] focus:border-navy focus:ring-1 focus:ring-navy focus:outline-none cursor-pointer"
 const thClasses = "text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide"
 
+interface KenyaInviteResult {
+  success?: boolean
+  emailSent?: boolean
+  emailError?: string
+  error?: string
+}
+
+interface ParticipantWithRole extends Participant {
+  role?: string
+}
+
 export interface DelegationTableProps {
   filteredParticipants: Participant[]
   setSelectedParticipant: (p: Participant) => void
   updateParticipantField: (id: string, field: string, value: string) => void
   deleteParticipant: (id: string) => void
   addParticipantDirect: (firstName: string, lastName: string) => void
-  sendKenyaInvite: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<any>
+  sendKenyaInvite: (invite: { firstName: string; lastName: string; email: string; track: string; role: string; sendEmail: boolean }) => Promise<KenyaInviteResult>
   onOpenInviteModal?: () => void
 }
 
@@ -64,7 +75,7 @@ export function DelegationTable({
           const msg = data.emailSent
             ? `Added & invite sent to ${newDelegateEmail.trim()}`
             : `Added but email failed${data.emailError ? ': ' + data.emailError : ''}`
-          setAddDelegateResult({ success: data.emailSent, message: msg })
+          setAddDelegateResult({ success: Boolean(data.emailSent), message: msg })
           setNewDelegateFirst('')
           setNewDelegateLast('')
           setNewDelegateEmail('')
@@ -80,8 +91,8 @@ export function DelegationTable({
         setNewDelegateLast('')
         setNewDelegateTrack('Flex')
       }
-    } catch (err: any) {
-      setAddDelegateResult({ success: false, message: err.message || 'Failed' })
+    } catch (err: unknown) {
+      setAddDelegateResult({ success: false, message: err instanceof Error ? err.message : 'Failed' })
     } finally {
       setAddingDelegate(false)
     }
@@ -226,7 +237,7 @@ export function DelegationTable({
                   {/* Role — select */}
                   <td className="p-2.5">
                     <select
-                      defaultValue={(p as any).role || 'delegate'}
+                      defaultValue={(p as ParticipantWithRole).role || 'delegate'}
                       onChange={(e) => updateParticipantField(p.id, 'role', e.target.value)}
                       className={`w-[110px] ${inputClasses}`}
                     >

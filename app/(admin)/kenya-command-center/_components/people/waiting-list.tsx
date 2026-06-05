@@ -11,13 +11,20 @@ const inputClasses = "bg-transparent border border-gray-200 rounded px-2 py-1 te
 const selectClasses = "bg-transparent border border-gray-200 rounded px-2 py-1 text-[13px] focus:border-navy focus:ring-1 focus:ring-navy focus:outline-none cursor-pointer"
 const thClasses = "text-left p-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wide"
 
+type WaitingListCreateInput = Omit<WaitingListEntry, 'id' | 'trip_id' | 'created_at' | 'promoted_to_participant_id'>
+type WaitingListUpdateInput = Partial<Pick<WaitingListEntry, 'email' | 'phone' | 'source' | 'interest_level' | 'status' | 'notes'>>
+
+interface WaitingListEmailResult {
+  success?: boolean
+}
+
 export interface WaitingListProps {
   waitingList: WaitingListEntry[]
-  addWaitingListEntry: (entry: any) => void
-  updateWaitingListEntry: (id: string, updates: any) => void
+  addWaitingListEntry: (entry: WaitingListCreateInput) => void
+  updateWaitingListEntry: (id: string, updates: WaitingListUpdateInput) => void
   deleteWaitingListEntry: (id: string) => void
   promoteToDelegate: (entry: WaitingListEntry) => void
-  sendWaitingListEmail: (waitingListId: string, action: 'entice' | 'welcome' | 'decline') => Promise<any>
+  sendWaitingListEmail: (waitingListId: string, action: 'entice' | 'welcome' | 'decline') => Promise<WaitingListEmailResult>
 }
 
 export function WaitingList({
@@ -43,6 +50,8 @@ export function WaitingList({
         source: newEntry.source.trim(),
         interest_level: newEntry.track,
         status: '🔄',
+        follow_up_date: null,
+        follow_up_notes: null,
         notes: '',
       })
       setNewEntry({ firstName: '', lastName: '', email: '', phone: '', source: '', track: 'Flex' })

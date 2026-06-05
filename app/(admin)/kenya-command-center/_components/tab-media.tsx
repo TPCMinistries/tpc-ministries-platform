@@ -27,9 +27,8 @@ interface TabMediaProps {
 }
 
 export function TabMedia({
-  trip, mediaCalendar, mediaAssignments, shotList,
+  mediaCalendar, mediaAssignments, shotList,
   addMediaCalendarItem, updateMediaCalendarItem, deleteMediaCalendarItem,
-  addMediaAssignment, deleteMediaAssignment,
   addShotListItem, toggleShotCaptured, deleteShotListItem,
 }: TabMediaProps) {
   const [showCalendarForm, setShowCalendarForm] = useState(false)

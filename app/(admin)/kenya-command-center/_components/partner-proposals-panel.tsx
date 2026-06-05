@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  MessageSquare, CheckCircle, XCircle, Clock, ChevronDown, ChevronRight,
+  MessageSquare, CheckCircle, XCircle, ChevronDown, ChevronRight,
   RefreshCw, Zap, User
 } from 'lucide-react'
 

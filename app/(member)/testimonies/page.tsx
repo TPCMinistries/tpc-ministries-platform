@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,10 +16,10 @@ import {
   Sparkles,
   Send,
   X,
-  Image as ImageIcon,
   Filter,
   User
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface Testimony {
   id: string
@@ -79,12 +79,7 @@ export default function TestimoniesPage() {
     is_anonymous: false
   })
 
-  useEffect(() => {
-    fetchMember()
-    fetchTestimonies()
-  }, [selectedCategory])
-
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -95,9 +90,9 @@ export default function TestimoniesPage() {
         .single()
       if (member) setMemberId(member.id)
     }
-  }
+  }, [])
 
-  const fetchTestimonies = async () => {
+  const fetchTestimonies = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -132,7 +127,12 @@ export default function TestimoniesPage() {
       }
     }
     setLoading(false)
-  }
+  }, [memberId, selectedCategory])
+
+  useEffect(() => {
+    fetchMember()
+    fetchTestimonies()
+  }, [fetchMember, fetchTestimonies])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -259,7 +259,7 @@ export default function TestimoniesPage() {
             <h1 className="text-3xl font-bold text-navy">Testimony Wall</h1>
           </div>
           <p className="text-gray-600">
-            Celebrate God's faithfulness. Share your breakthroughs and encourage others.
+            Celebrate God&apos;s faithfulness. Share your breakthroughs and encourage others.
           </p>
         </div>
 
@@ -451,9 +451,11 @@ export default function TestimoniesPage() {
 
                   {/* Image */}
                   {testimony.image_url && (
-                    <img
+                    <Image
                       src={testimony.image_url}
                       alt=""
+                      width={768}
+                      height={384}
                       className="mt-4 rounded-lg max-h-64 object-cover"
                     />
                   )}

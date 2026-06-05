@@ -123,7 +123,7 @@ export default function PredictiveAnalyticsPage() {
       })
       const result = await response.json()
       setMemberRecommendation(result.recommendation || 'Unable to generate recommendation')
-    } catch (error) {
+    } catch {
       setMemberRecommendation('Error generating recommendation')
     } finally {
       setLoadingRecommendation(false)
@@ -248,7 +248,7 @@ export default function PredictiveAnalyticsPage() {
             </div>
             {data?.content?.gaps?.[0] && (
               <p className="text-xs text-gray-600 mt-3 truncate">
-                Top request: "{data.content.gaps[0].topic}"
+                Top request: &ldquo;{data.content.gaps[0].topic}&rdquo;
               </p>
             )}
           </CardContent>
