@@ -93,7 +93,7 @@ describe('POST /api/public/contact', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const request = createMockRequest('/api/public/contact', {
       method: 'POST',
@@ -118,7 +118,7 @@ describe('POST /api/public/contact', () => {
     const mockClient = createMockSupabaseClient()
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const request = createMockRequest('/api/public/contact', {
       method: 'POST',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -118,13 +118,7 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
 
-  useEffect(() => {
-    if (slug) {
-      fetchCourse()
-    }
-  }, [slug])
-
-  const fetchCourse = async () => {
+  const fetchCourse = useCallback(async () => {
     try {
       const res = await fetch(`/api/plant/courses?slug=${slug}`)
       if (res.ok) {
@@ -136,7 +130,13 @@ export default function CoursePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [slug])
+
+  useEffect(() => {
+    if (slug) {
+      fetchCourse()
+    }
+  }, [fetchCourse, slug])
 
   const handleEnroll = async () => {
     if (!course) return
@@ -179,8 +179,8 @@ export default function CoursePage() {
     if (!course?.modules) return null
 
     for (let i = 0; i < course.modules.length; i++) {
-      const module = course.modules[i]
-      for (const lesson of module.lessons) {
+      const courseModule = course.modules[i]
+      for (const lesson of courseModule.lessons) {
         if (getLessonStatus(lesson.id) !== 'completed') {
           return { moduleIndex: i, lessonId: lesson.id }
         }
@@ -402,22 +402,22 @@ export default function CoursePage() {
         </CardHeader>
         <CardContent>
           <Accordion type="multiple" className="w-full" defaultValue={['module-0']}>
-            {course.modules.map((module, index) => {
-              const completedCount = getCompletedLessonsInModule(module)
-              const totalCount = module.lessons.length
+            {course.modules.map((courseModule, index) => {
+              const completedCount = getCompletedLessonsInModule(courseModule)
+              const totalCount = courseModule.lessons.length
 
               return (
-                <AccordionItem key={module.id} value={`module-${index}`}>
+                <AccordionItem key={courseModule.id} value={`module-${index}`}>
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center gap-4 flex-1 text-left">
                       <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-700 rounded-full font-medium">
                         {index + 1}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium">{module.name}</h4>
+                        <h4 className="font-medium">{courseModule.name}</h4>
                         <p className="text-sm text-gray-500">
-                          {module.lessons.length} lessons
-                          {module.has_quiz && ' • Quiz'}
+                          {courseModule.lessons.length} lessons
+                          {courseModule.has_quiz && ' • Quiz'}
                           {course.is_enrolled && ` • ${completedCount}/${totalCount} completed`}
                         </p>
                       </div>
@@ -428,7 +428,7 @@ export default function CoursePage() {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2 pl-12">
-                      {module.lessons.map((lesson) => {
+                      {courseModule.lessons.map((lesson) => {
                         const status = getLessonStatus(lesson.id)
                         const Icon = contentTypeIcons[lesson.content_type] || FileText
                         const canAccess = course.is_enrolled || lesson.is_preview
@@ -471,7 +471,7 @@ export default function CoursePage() {
                           </div>
                         )
                       })}
-                      {module.has_quiz && (
+                      {courseModule.has_quiz && (
                         <div className="flex items-center gap-3 p-3 rounded-lg border bg-amber-50 border-amber-200">
                           <div className="p-2 bg-amber-100 rounded-lg">
                             <Star className="h-4 w-4 text-amber-600" />

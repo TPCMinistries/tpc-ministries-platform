@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -59,11 +59,7 @@ export default function PodcastPage() {
   const [isMuted, setIsMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  useEffect(() => {
-    fetchEpisodes()
-  }, [currentPage, searchQuery])
-
-  const fetchEpisodes = async () => {
+  const fetchEpisodes = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -84,7 +80,11 @@ export default function PodcastPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, searchQuery])
+
+  useEffect(() => {
+    fetchEpisodes()
+  }, [fetchEpisodes])
 
   const playEpisode = (episode: Episode) => {
     if (currentEpisode?.id === episode.id) {
@@ -215,7 +215,7 @@ export default function PodcastPage() {
             </ScrollReveal>
             <div className="text-center md:text-left">
               <ScrollReveal>
-                <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">In the Prophet's Voice</p>
+                <p className="mb-4 text-body-sm font-semibold uppercase tracking-[0.2em] text-gold">In the Prophet&apos;s Voice</p>
               </ScrollReveal>
               <ScrollReveal delay={0.1}>
                 <h1 className="mb-4 font-display text-display-lg md:text-display-xl text-white">

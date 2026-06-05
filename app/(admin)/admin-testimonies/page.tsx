@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +15,6 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import {
   CheckCircle,
-  XCircle,
   Star,
   Eye,
   Trash2,
@@ -54,12 +53,7 @@ export default function AdminTestimoniesPage() {
     total: 0
   })
 
-  useEffect(() => {
-    fetchTestimonies()
-    fetchStats()
-  }, [filter])
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     const supabase = createClient()
 
     const [pending, approved, featured, total] = await Promise.all([
@@ -75,9 +69,9 @@ export default function AdminTestimoniesPage() {
       featured: featured.count || 0,
       total: total.count || 0
     })
-  }
+  }, [])
 
-  const fetchTestimonies = async () => {
+  const fetchTestimonies = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -101,7 +95,12 @@ export default function AdminTestimoniesPage() {
       setTestimonies(data)
     }
     setLoading(false)
-  }
+  }, [filter])
+
+  useEffect(() => {
+    fetchTestimonies()
+    fetchStats()
+  }, [fetchStats, fetchTestimonies])
 
   const handleApprove = async (id: string) => {
     const supabase = createClient()
