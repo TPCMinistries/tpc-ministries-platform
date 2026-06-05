@@ -20,6 +20,7 @@ import {
   BookOpen,
   Users
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface FastingEvent {
   id: string
@@ -127,7 +128,7 @@ export default function FastingPage() {
   }
 
   const getFastTypeInfo = (type: string) => {
-    const types: Record<string, { label: string; description: string; icon: any }> = {
+    const types: Record<string, { label: string; description: string; icon: LucideIcon }> = {
       full: { label: 'Full Fast', description: 'No food, water only', icon: Target },
       partial: { label: 'Partial Fast', description: 'Specific foods or meals', icon: Utensils },
       daniel: { label: 'Daniel Fast', description: 'Fruits, vegetables, water', icon: Heart },
@@ -234,7 +235,7 @@ export default function FastingPage() {
                 className="bg-gold hover:bg-gold/90 text-navy"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Log Today's Fast
+                Log Today&apos;s Fast
               </Button>
             </CardContent>
           </Card>

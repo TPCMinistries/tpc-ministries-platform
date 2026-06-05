@@ -23,9 +23,7 @@ import ActivityFeed from '@/components/member/activity-feed'
 import QuickActionsWidget from '@/components/member/quick-actions-widget'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StreakDisplay } from '@/components/ui/streak-display'
-import { VerseCard } from '@/components/ui/verse-card'
 import { QuickStats } from '@/components/ui/quick-stats'
-import { useCelebration } from '@/components/ui/celebration'
 import { SkeletonCard } from '@/components/ui/skeleton-card'
 import { NumberCounter } from '@/components/motion/number-counter'
 import { ScrollReveal } from '@/components/motion/scroll-reveal'
@@ -225,8 +223,6 @@ export default function MemberDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [currentSeasons, setCurrentSeasons] = useState<Season[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
-  const { celebrate } = useCelebration()
-
   const { gradient, period } = useMemo(() => getTimeOfDayGradient(), [])
   const isEvening = period === 'evening'
 

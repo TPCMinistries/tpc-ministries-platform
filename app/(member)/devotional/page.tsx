@@ -52,7 +52,7 @@ export default function DevotionalPage() {
         const votd = await getVerseOfTheDay()
         setVerse(votd)
       }
-    } catch (error) {
+    } catch {
       // If manual fetch fails, still try API
       try {
         const votd = await getVerseOfTheDay()
@@ -213,7 +213,7 @@ export default function DevotionalPage() {
                       <Sparkles className="h-4 w-4 text-tpc-gold" />
                     </div>
                     <div>
-                      <p className="text-xs text-tpc-gold font-medium mb-1">Pastor's Note</p>
+                      <p className="text-xs text-tpc-gold font-medium mb-1">Pastor&apos;s Note</p>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         {manualDevotional.author_note}
                       </p>

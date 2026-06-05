@@ -11,7 +11,6 @@ import {
   Star,
   Lock,
   CheckCircle,
-  TrendingUp,
   Calendar,
   BookOpen,
   Heart,
@@ -19,6 +18,7 @@ import {
   Gift,
   Zap
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface Achievement {
   id: string
@@ -129,7 +129,7 @@ export default function AchievementsPage() {
   const progressToNextLevel = ((totalPoints - pointsForCurrentLevel) / (pointsForNextLevel - pointsForCurrentLevel)) * 100
 
   const getStreakIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       devotional: BookOpen,
       prayer: Heart,
       journal: BookOpen,
