@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -237,31 +237,8 @@ export default function AdminMembersPage() {
   const [bulkExpiresInDays, setBulkExpiresInDays] = useState<number | ''>('')
   const [bulkCreatingInvites, setBulkCreatingInvites] = useState(false)
 
-  // ============ EFFECTS ============
-  useEffect(() => {
-    if (activeTab === 'members') {
-      fetchMembers()
-    } else if (activeTab === 'leads') {
-      fetchLeads()
-    } else if (activeTab === 'invites') {
-      fetchInvites()
-    }
-  }, [activeTab])
-
-  useEffect(() => {
-    if (activeTab === 'leads') {
-      fetchLeads()
-    }
-  }, [leadFilters])
-
-  useEffect(() => {
-    if (activeTab === 'invites') {
-      fetchInvites()
-    }
-  }, [inviteFilter])
-
   // ============ MEMBERS FUNCTIONS ============
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     setMembersLoading(true)
     try {
       const res = await fetch('/api/admin/members')
@@ -278,7 +255,7 @@ export default function AdminMembersPage() {
     } finally {
       setMembersLoading(false)
     }
-  }
+  }, [toast])
 
   const handleAddMember = async () => {
     if (!formData.first_name || !formData.last_name || !formData.email) {
@@ -668,7 +645,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
   }
 
   // ============ LEADS FUNCTIONS ============
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     setLeadsLoading(true)
     try {
       const [leadsData, statsData] = await Promise.all([getLeads(leadFilters), getLeadStats()])
@@ -680,7 +657,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
     } finally {
       setLeadsLoading(false)
     }
-  }
+  }, [leadFilters, toast])
 
   const openLeadDetails = async (lead: Lead) => {
     setSelectedLead(lead)
@@ -823,7 +800,7 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
   }
 
   // ============ INVITES FUNCTIONS ============
-  const fetchInvites = async () => {
+  const fetchInvites = useCallback(async () => {
     setInvitesLoading(true)
     try {
       const response = await fetch(`/api/admin/invites?status=${inviteFilter}`)
@@ -835,7 +812,30 @@ John,Doe,john@example.com,555-123-4567,free,false,New Member;Volunteer,Welcome!`
     } finally {
       setInvitesLoading(false)
     }
-  }
+  }, [inviteFilter, toast])
+
+  // ============ EFFECTS ============
+  useEffect(() => {
+    if (activeTab === 'members') {
+      fetchMembers()
+    } else if (activeTab === 'leads') {
+      fetchLeads()
+    } else if (activeTab === 'invites') {
+      fetchInvites()
+    }
+  }, [activeTab, fetchInvites, fetchLeads, fetchMembers])
+
+  useEffect(() => {
+    if (activeTab === 'leads') {
+      fetchLeads()
+    }
+  }, [activeTab, fetchLeads])
+
+  useEffect(() => {
+    if (activeTab === 'invites') {
+      fetchInvites()
+    }
+  }, [activeTab, fetchInvites])
 
   const handleCreateInvite = async () => {
     setCreatingInvite(true)
