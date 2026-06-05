@@ -17,7 +17,7 @@ const CelebrationModal = dynamic(
 )
 
 interface CelebrationContextValue {
-  celebrate: (type: CelebrationType, metadata?: Record<string, any>) => void
+  celebrate: (type: CelebrationType, metadata?: Record<string, unknown>) => void
 }
 
 const CelebrationContext = React.createContext<CelebrationContextValue | null>(null)
@@ -38,7 +38,7 @@ export function CelebrationProvider({ children }: CelebrationProviderProps) {
   const [state, setState] = React.useState<{
     type: CelebrationType
     open: boolean
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
     everOpened: boolean
   }>({
     type: "milestone",
@@ -46,7 +46,7 @@ export function CelebrationProvider({ children }: CelebrationProviderProps) {
     everOpened: false,
   })
 
-  const celebrate = React.useCallback((type: CelebrationType, metadata?: Record<string, any>) => {
+  const celebrate = React.useCallback((type: CelebrationType, metadata?: Record<string, unknown>) => {
     setState({ type, open: true, metadata, everOpened: true })
   }, [])
 

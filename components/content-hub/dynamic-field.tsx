@@ -24,20 +24,21 @@ const TiptapEditor = dynamic(() => import('@/components/editor/tiptap-editor'), 
 
 interface DynamicFieldProps {
   field: FieldConfig
-  value: any
-  onChange: (value: any) => void
+  value: unknown
+  onChange: (value: unknown) => void
   onImagePickerOpen?: (fieldName: string) => void
 }
 
-export default function DynamicField({ field, value, onChange, onImagePickerOpen }: DynamicFieldProps) {
+export default function DynamicField({ field, value, onChange }: DynamicFieldProps) {
   const [tagInput, setTagInput] = useState('')
+  const stringValue = typeof value === 'string' || typeof value === 'number' ? String(value) : ''
 
   const renderField = () => {
     switch (field.type) {
       case 'text':
         return (
           <Input
-            value={value || ''}
+            value={stringValue}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
             required={field.required}
@@ -48,7 +49,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <textarea
             className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy resize-y text-sm"
-            value={value || ''}
+            value={stringValue}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
           />
@@ -57,7 +58,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
       case 'richtext':
         return (
           <TiptapEditor
-            content={value || ''}
+            content={stringValue}
             onChange={onChange}
             placeholder={field.placeholder || 'Start writing...'}
           />
@@ -68,7 +69,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
           <Input
             type="number"
             min="0"
-            value={value || ''}
+            value={stringValue}
             onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : '')}
             placeholder={field.placeholder}
           />
@@ -76,7 +77,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
 
       case 'select':
         return (
-          <Select value={value || ''} onValueChange={onChange}>
+          <Select value={stringValue} onValueChange={onChange}>
             <SelectTrigger>
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
@@ -94,7 +95,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <div className="flex items-center gap-2">
             <Switch
-              checked={value ?? field.defaultValue ?? false}
+              checked={typeof value === 'boolean' ? value : Boolean(field.defaultValue)}
               onCheckedChange={onChange}
             />
             <span className="text-sm text-gray-600">{value ? 'Yes' : 'No'}</span>
@@ -105,7 +106,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <ImageUpload
             folder="general"
-            currentImageUrl={value || undefined}
+            currentImageUrl={stringValue || undefined}
             onUploadComplete={onChange}
           />
         )
@@ -114,7 +115,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <FileUpload
             folder="resources"
-            currentFileUrl={value || undefined}
+            currentFileUrl={stringValue || undefined}
             onUploadComplete={(url) => onChange(url)}
           />
         )
@@ -122,7 +123,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
       case 'video_url':
         return (
           <VideoInput
-            value={value || ''}
+            value={stringValue}
             onChange={onChange}
             placeholder={field.placeholder}
           />
@@ -132,7 +133,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <Input
             type="url"
-            value={value || ''}
+            value={stringValue}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder || 'https://...'}
           />
@@ -195,7 +196,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <Input
             type="date"
-            value={value ? new Date(value).toISOString().split('T')[0] : ''}
+            value={stringValue ? new Date(stringValue).toISOString().split('T')[0] : ''}
             onChange={(e) => onChange(e.target.value)}
           />
         )
@@ -204,7 +205,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
         return (
           <Input
             type="datetime-local"
-            value={value ? new Date(value).toISOString().slice(0, 16) : ''}
+            value={stringValue ? new Date(stringValue).toISOString().slice(0, 16) : ''}
             onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : '')}
           />
         )
@@ -212,7 +213,7 @@ export default function DynamicField({ field, value, onChange, onImagePickerOpen
       default:
         return (
           <Input
-            value={value || ''}
+            value={stringValue}
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.placeholder}
           />

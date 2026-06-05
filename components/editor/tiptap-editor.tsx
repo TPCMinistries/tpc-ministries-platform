@@ -1,6 +1,6 @@
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TiptapImage from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
@@ -84,14 +84,21 @@ export default function TiptapEditor({
 }
 
 // Helper to insert media into the editor from external picker
-export function insertImageIntoEditor(editor: any, url: string, alt?: string) {
+type MediaEditor = Editor & {
+  commands: Editor['commands'] & {
+    setAudioEmbed: (attrs: { src: string }) => boolean
+    setVideoEmbed: (attrs: { src: string }) => boolean
+  }
+}
+
+export function insertImageIntoEditor(editor: Editor | null, url: string, alt?: string) {
   editor?.chain().focus().setImage({ src: url, alt: alt || '' }).run()
 }
 
-export function insertAudioIntoEditor(editor: any, url: string) {
+export function insertAudioIntoEditor(editor: MediaEditor | null, url: string) {
   editor?.commands.setAudioEmbed({ src: url })
 }
 
-export function insertVideoIntoEditor(editor: any, url: string) {
+export function insertVideoIntoEditor(editor: MediaEditor | null, url: string) {
   editor?.commands.setVideoEmbed({ src: url })
 }

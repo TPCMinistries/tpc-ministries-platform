@@ -133,8 +133,8 @@ export interface Assessment {
   category?: 'spiritual' | 'leadership' | 'ministry' | 'personal'
   tier_required: 'free' | 'partner' | 'covenant'
   estimated_minutes?: number
-  questions: any // JSONB
-  results_config?: any // JSONB
+  questions: Record<string, unknown> // JSONB
+  results_config?: Record<string, unknown> // JSONB
   published: boolean
   created_at: string
   updated_at: string
@@ -144,7 +144,7 @@ export interface AssessmentResult {
   id: string
   user_id: string
   assessment_id: string
-  answers: any // JSONB
+  answers: Record<string, unknown> // JSONB
   score?: number
   result_category?: string
   result_description?: string

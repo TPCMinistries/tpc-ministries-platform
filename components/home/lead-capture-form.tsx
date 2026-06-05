@@ -84,7 +84,7 @@ export default function LeadCaptureForm() {
 
       // Reset success state after 5 seconds
       setTimeout(() => setSuccess(false), 5000)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating lead:', error)
       toast({
         title: 'Error',
@@ -107,7 +107,7 @@ export default function LeadCaptureForm() {
               </div>
               <h3 className="text-2xl font-bold text-navy mb-2">Thank You!</h3>
               <p className="text-gray-600 mb-4">
-                We've received your information and will be in touch soon.
+                We&apos;ve received your information and will be in touch soon.
               </p>
               <p className="text-sm text-gray-500">
                 Check your email for a welcome message from TPC Ministries.
@@ -189,7 +189,7 @@ export default function LeadCaptureForm() {
             {/* Interests */}
             <div>
               <Label className="text-navy font-medium mb-3 block">
-                I'm interested in:
+                I&apos;m interested in:
               </Label>
               <div className="grid gap-3 md:grid-cols-2">
                 {interestOptions.map((option) => (

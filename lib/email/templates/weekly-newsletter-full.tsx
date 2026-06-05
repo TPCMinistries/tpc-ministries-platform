@@ -9,7 +9,6 @@ import {
   Section,
   Text,
   Hr,
-  Img,
 } from '@react-email/components'
 
 interface WeeklyNewsletterProps {
@@ -75,7 +74,7 @@ export default function WeeklyNewsletterFull({
 
             {aiSummary && (
               <Section style={summaryCard}>
-                <Text style={summaryLabel}>THIS WEEK'S HIGHLIGHTS</Text>
+                <Text style={summaryLabel}>THIS WEEK&apos;S HIGHLIGHTS</Text>
                 <Text style={summaryText}>{aiSummary}</Text>
               </Section>
             )}
@@ -201,7 +200,7 @@ export default function WeeklyNewsletterFull({
             </Section>
 
             <Text style={closingText}>
-              Thank you for being part of our TPC family. We're grateful for your partnership in ministry.
+              Thank you for being part of our TPC family. We&apos;re grateful for your partnership in ministry.
             </Text>
 
             <Text style={signature}>

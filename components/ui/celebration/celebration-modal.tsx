@@ -100,7 +100,7 @@ interface CelebrationModalProps {
   customEmoji?: string
   onPrimaryAction?: () => void
   onSecondaryAction?: () => void
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export function CelebrationModal({
@@ -118,6 +118,9 @@ export function CelebrationModal({
   const title = customTitle || config.title
   const description = customDescription || config.description
   const emoji = customEmoji || config.emoji
+  const streakDays = typeof metadata?.streakDays === "number" || typeof metadata?.streakDays === "string"
+    ? metadata.streakDays
+    : null
   const shouldReduceMotion = useReducedMotion()
 
   React.useEffect(() => {
@@ -195,14 +198,14 @@ export function CelebrationModal({
           </DialogDescription>
         </DialogHeader>
 
-        {metadata?.streakDays && (
+        {streakDays && (
           <motion.div
             initial={shouldReduceMotion ? undefined : { scale: 0 }}
             animate={shouldReduceMotion ? undefined : { scale: 1 }}
             transition={shouldReduceMotion ? undefined : { delay: 0.3 }}
             className="text-4xl font-bold text-gold-700 py-4"
           >
-            {metadata.streakDays} Days! 🔥
+            {streakDays} Days! 🔥
           </motion.div>
         )}
 
@@ -234,13 +237,13 @@ export function useCelebration() {
   const [celebrationState, setCelebrationState] = React.useState<{
     type: CelebrationType
     open: boolean
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }>({
     type: "milestone",
     open: false,
   })
 
-  const celebrate = React.useCallback((type: CelebrationType, metadata?: Record<string, any>) => {
+  const celebrate = React.useCallback((type: CelebrationType, metadata?: Record<string, unknown>) => {
     setCelebrationState({ type, open: true, metadata })
   }, [])
 

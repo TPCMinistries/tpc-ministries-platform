@@ -3,18 +3,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-interface Permission {
-  id: string
-  name: string
-  description: string
-  category: string
-}
-
 interface PermissionState {
   permissions: string[]
   role: string | null
   loading: boolean
   error: string | null
+}
+
+interface PermissionRelation {
+  permission: { name: string } | { name: string }[] | null
+  granted?: boolean
+}
+
+function getPermissionName(permission: PermissionRelation['permission']) {
+  const relation = Array.isArray(permission) ? permission[0] : permission
+  return relation?.name
 }
 
 /**
@@ -70,19 +73,21 @@ export function usePermissions() {
       const permissions = new Set<string>()
 
       // Add role permissions
-      rolePerms?.forEach((rp: any) => {
-        if (rp.permission?.name) {
-          permissions.add(rp.permission.name)
+      rolePerms?.forEach((rp: PermissionRelation) => {
+        const permissionName = getPermissionName(rp.permission)
+        if (permissionName) {
+          permissions.add(permissionName)
         }
       })
 
       // Apply individual overrides
-      memberPerms?.forEach((mp: any) => {
-        if (mp.permission?.name) {
+      memberPerms?.forEach((mp: PermissionRelation) => {
+        const permissionName = getPermissionName(mp.permission)
+        if (permissionName) {
           if (mp.granted) {
-            permissions.add(mp.permission.name)
+            permissions.add(permissionName)
           } else {
-            permissions.delete(mp.permission.name)
+            permissions.delete(permissionName)
           }
         }
       })
