@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Heart, Cross, Activity, BookOpen, Laptop, ChevronRight, Calendar, Send } from 'lucide-react'
+import { Heart, Cross, Activity, BookOpen, Laptop, ChevronRight, Calendar, Send } from 'lucide-react'
 import { ImagePlaceholder } from '@/components/ui/image-placeholder'
 
 export default function KenyaMissionPage() {
@@ -111,7 +111,7 @@ export default function KenyaMissionPage() {
               sustainable programs that create lasting change.
             </p>
             <p>
-              Through strategic partnerships with indigenous leaders, we're seeing entire communities transformed as the
+              Through strategic partnerships with indigenous leaders, we&apos;re seeing entire communities transformed as the
               Gospel takes root and bears fruit in every area of life.
             </p>
           </div>

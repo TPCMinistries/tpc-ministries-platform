@@ -10,6 +10,15 @@ import { ArrowRight, Check, ChevronLeft, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
+type Assessment = {
+  title: string
+  subtitle: string
+  benefits: string[]
+  questionCount: number
+  estimatedTime: string
+  learnings: string[]
+}
+
 export default function AssessmentLandingPage({ params }: { params: { slug: string } }) {
   const [showEmailCapture, setShowEmailCapture] = useState(false)
   const [email, setEmail] = useState('')
@@ -17,7 +26,7 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
   const { toast } = useToast()
 
   // Mock data - will be replaced with API call
-  const assessmentData: Record<string, any> = {
+  const assessmentData: Record<string, Assessment> = {
     'spiritual-gifts': {
       title: 'Spiritual Gifts Assessment',
       subtitle: 'Discover the unique abilities God has given you to serve His kingdom',
@@ -166,7 +175,7 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
 
       // Redirect to quiz
       window.location.href = `/assessments/${params.slug}/quiz`
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving lead:', error)
       toast({
         title: 'Note',

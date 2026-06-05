@@ -46,7 +46,7 @@ function GivingSuccessContent() {
           </div>
 
           <p className="text-sm text-gray-600">
-            "Give, and it will be given to you... For with the measure you use, it will be measured to you." - Luke 6:38
+            &ldquo;Give, and it will be given to you... For with the measure you use, it will be measured to you.&rdquo; - Luke 6:38
           </p>
 
           <div className="flex flex-col gap-3">

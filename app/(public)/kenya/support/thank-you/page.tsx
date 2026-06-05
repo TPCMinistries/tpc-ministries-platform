@@ -1,15 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Heart, Sparkles, Share2, ArrowRight } from 'lucide-react'
 
 export default function ThankYouPage() {
-  const searchParams = useSearchParams()
-  const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -41,7 +38,7 @@ export default function ThankYouPage() {
                 <Heart className="h-8 w-8 text-gold mx-auto mb-2" />
                 <p className="text-gray-700">
                   Your generosity is helping make the Kenya Kingdom Impact Trip possible.
-                  You're part of something life-changing!
+                  You&apos;re part of something life-changing!
                 </p>
               </div>
 
