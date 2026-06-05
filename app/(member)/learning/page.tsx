@@ -9,7 +9,6 @@ import { Progress } from '@/components/ui/progress'
 import {
   Sparkles,
   Leaf,
-  CheckCircle,
   ArrowRight,
   Loader2,
   Sun,
@@ -22,6 +21,7 @@ import {
   Award,
   Clock
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Course {
@@ -47,7 +47,7 @@ interface Season {
   content_total?: number
 }
 
-const SEASON_ICONS: { [key: string]: any } = {
+const SEASON_ICONS: Record<string, LucideIcon> = {
   sun: Sun,
   leaf: Leaf,
   snowflake: Snowflake,
@@ -392,7 +392,7 @@ export default function LearningPathsPage() {
               <div>
                 <h3 className="text-lg font-bold mb-1">Grow in Grace</h3>
                 <p className="text-green-100 text-sm">
-                  "But grow in the grace and knowledge of our Lord and Savior Jesus Christ." — 2 Peter 3:18
+                  &ldquo;But grow in the grace and knowledge of our Lord and Savior Jesus Christ.&rdquo; — 2 Peter 3:18
                 </p>
               </div>
             </div>

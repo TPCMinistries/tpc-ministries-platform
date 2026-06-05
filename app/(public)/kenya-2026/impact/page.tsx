@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import {
   ArrowLeft,
@@ -101,7 +100,7 @@ export default function KenyaImpactPage() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-balance text-base text-white/70 sm:text-lg">
-            April 22 – May 7, 2026. Five service tracks, two conferences, dozens of locations, and a movement that won't end with the return flights. Here's what God did — by the numbers.
+            April 22 – May 7, 2026. Five service tracks, two conferences, dozens of locations, and a movement that won&apos;t end with the return flights. Here&apos;s what God did — by the numbers.
           </p>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -190,13 +189,13 @@ export default function KenyaImpactPage() {
             city="Nairobi"
             date="April 24, 2026"
             label="Opening Kingdom conference"
-            description="Brought the trip's prophetic and ministry tracks together with hundreds of Nairobi believers. Worship, prophetic words, and equipping for Kenyan leaders."
+            description="Brought the trip&apos;s prophetic and ministry tracks together with hundreds of Nairobi believers. Worship, prophetic words, and equipping for Kenyan leaders."
           />
           <ConferenceCard
             city="Mombasa"
             date="May 3, 2026"
             label="Coastal Kingdom conference"
-            description="Carried the same fire to the coast — a multi-day gathering of pastors, marketplace leaders, and youth on Kenya's eastern shore."
+            description="Carried the same fire to the coast — a multi-day gathering of pastors, marketplace leaders, and youth on Kenya&apos;s eastern shore."
           />
         </div>
       </section>
@@ -215,7 +214,7 @@ export default function KenyaImpactPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,184,131,0.12),transparent_70%)]" />
         <div className="relative mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold/80">
-            What's next
+            What&apos;s next
           </p>
           <h2 className="mt-4 font-display text-4xl text-white sm:text-5xl">
             Kenya was the first.

@@ -12,7 +12,7 @@ import { ArrowLeft, ArrowRight, Save, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { calculateAssessmentResult } from '@/lib/assessments/calculator'
+import { calculateAssessmentResult, type AssessmentResponse } from '@/lib/assessments/calculator'
 
 interface Question {
   id: string
@@ -34,7 +34,7 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
   const router = useRouter()
   const { toast } = useToast()
   const [currentQuestion, setCurrentQuestion] = useState(1)
-  const [responses, setResponses] = useState<{ [key: string]: any }>({})
+  const [responses, setResponses] = useState<AssessmentResponse>({})
   const [showEmailCapture, setShowEmailCapture] = useState(false)
   const [email, setEmail] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -225,7 +225,7 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
   const question = assessment.questions[currentQuestion - 1]
   const progress = (currentQuestion / assessment.totalQuestions) * 100
 
-  const handleResponse = (value: any) => {
+  const handleResponse = (value: AssessmentResponse[string]) => {
     setResponses({
       ...responses,
       [question.id]: value,
@@ -374,7 +374,22 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
       const calculatedResult = calculateAssessmentResult(params.slug, responses)
 
       // 3. Save results to database
-      const resultInsertData: any = {
+      const resultInsertData: {
+        response_id: string | null
+        assessment_type: string
+        primary_result: string
+        secondary_result: string
+        tertiary_result: string
+        scores: Record<string, number>
+        title: string
+        description: string
+        strengths: string[]
+        growth_areas: string[]
+        ministry_recommendations: string[]
+        scripture_references: string[]
+        next_steps: string[]
+        member_id?: string
+      } = {
         response_id: finalResponseId,
         assessment_type: params.slug,
         primary_result: calculatedResult.primary_result,
@@ -412,9 +427,10 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
 
       // 4. Redirect to results page with result ID
       router.push(`/assessments/${params.slug}/results?id=${resultData.id}`)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting assessment:', error)
-      const errorMessage = error?.message || error?.details || 'Failed to submit assessment. Please try again.'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to submit assessment. Please try again.'
       toast({
         title: 'Error',
         description: errorMessage,

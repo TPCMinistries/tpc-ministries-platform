@@ -20,10 +20,8 @@ import {
   Plus,
   Edit,
   Trash2,
-  Eye,
   X,
   Search,
-  UserPlus,
   CheckCircle,
   XCircle,
   Clock
@@ -65,6 +63,13 @@ interface PendingMember {
   }
 }
 
+interface MemberOption {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+}
+
 const groupTypes = [
   { value: 'small_group', label: 'Small Group' },
   { value: 'prayer_group', label: 'Prayer Group' },
@@ -80,7 +85,7 @@ export default function AdminGroupsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [members, setMembers] = useState<any[]>([])
+  const [members, setMembers] = useState<MemberOption[]>([])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -133,7 +138,7 @@ export default function AdminGroupsPage() {
       .eq('status', 'pending')
 
     if (data) {
-      setPendingMembers(data as any)
+      setPendingMembers(data as unknown as PendingMember[])
     }
   }
 

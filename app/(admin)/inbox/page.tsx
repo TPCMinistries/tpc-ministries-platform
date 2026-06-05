@@ -147,7 +147,7 @@ export default function InboxPage() {
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to send email', variant: 'destructive' })
       }
-    } catch (_error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to send email', variant: 'destructive' })
     } finally {
       setSending(false)
@@ -162,7 +162,7 @@ export default function InboxPage() {
         body: JSON.stringify({ ids, is_read: isRead }),
       })
       fetchEmails()
-    } catch (_error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update', variant: 'destructive' })
     }
   }
@@ -175,7 +175,7 @@ export default function InboxPage() {
         body: JSON.stringify({ id, is_starred: !isStarred }),
       })
       setEmails(emails.map(e => e.id === id ? { ...e, is_starred: !isStarred } : e))
-    } catch (_error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to update', variant: 'destructive' })
     }
   }
@@ -187,7 +187,7 @@ export default function InboxPage() {
       setSelectedEmail(null)
       setSelectedIds(new Set())
       toast({ title: 'Success', description: 'Email(s) moved to trash' })
-    } catch (_error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' })
     }
   }

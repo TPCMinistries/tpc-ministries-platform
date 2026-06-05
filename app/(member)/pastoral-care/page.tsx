@@ -14,11 +14,9 @@ import {
   Clock,
   User,
   Video,
-  MapPin,
   Phone,
   MessageCircle,
   CheckCircle2,
-  ChevronRight,
   Shield
 } from 'lucide-react'
 
@@ -97,7 +95,7 @@ export default function PastoralCarePage() {
         .order('scheduled_date', { ascending: true })
 
       if (appointments) {
-        setMyAppointments(appointments as any)
+        setMyAppointments(appointments as unknown as Appointment[])
       }
     }
 
@@ -111,7 +109,7 @@ export default function PastoralCarePage() {
       .eq('is_available', true)
 
     if (staffData) {
-      setStaff(staffData as any)
+      setStaff(staffData as unknown as PastoralStaff[])
     }
 
     setLoading(false)

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Search,
-  Filter,
   Eye,
   ChevronLeft,
   Mail,
@@ -38,7 +37,7 @@ interface Participant {
   passport_status: string
   passport_expiry: string | null
   visa_status: string
-  vaccinations: any[]
+  vaccinations: unknown[]
   allergies: string | null
   medications: string | null
   medical_conditions: string | null
