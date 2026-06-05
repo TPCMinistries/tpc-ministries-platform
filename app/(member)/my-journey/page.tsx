@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -16,13 +16,10 @@ import {
   TrendingUp,
   Calendar,
   BookOpen,
-  Heart,
   Users,
-  Gift,
   Zap,
   Crown,
   Award,
-  ChevronRight,
   Play,
   CheckCircle
 } from 'lucide-react'
@@ -102,17 +99,24 @@ interface Recommendation {
   daysUntil?: number
 }
 
+interface RecommendationsPayload {
+  aiSummary?: string
+  recommendations?: {
+    groups?: Recommendation[]
+    events?: Recommendation[]
+    teachings?: Recommendation[]
+  }
+}
+
+type JourneyTab = 'overview' | 'badges' | 'recommendations'
+
 export default function MyJourneyPage() {
   const [gamification, setGamification] = useState<GamificationData | null>(null)
-  const [recommendations, setRecommendations] = useState<any>(null)
+  const [recommendations, setRecommendations] = useState<RecommendationsPayload | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'badges' | 'recommendations'>('overview')
+  const [activeTab, setActiveTab] = useState<JourneyTab>('overview')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -141,7 +145,11 @@ export default function MyJourneyPage() {
     }
 
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const getLevelIcon = (level: number) => {
     if (level >= 6) return Crown
@@ -161,6 +169,9 @@ export default function MyJourneyPage() {
   }
 
   const LevelIcon = gamification ? getLevelIcon(gamification.level.current) : Target
+  const recommendedGroups = recommendations?.recommendations?.groups || []
+  const recommendedEvents = recommendations?.recommendations?.events || []
+  const recommendedTeachings = recommendations?.recommendations?.teachings || []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 p-6">
@@ -177,13 +188,13 @@ export default function MyJourneyPage() {
         {/* Tabs */}
         <div className="flex justify-center gap-2 mb-8 flex-wrap">
           {[
-            { id: 'overview', label: 'Overview', icon: Target },
-            { id: 'badges', label: 'Achievements', icon: Trophy },
-            { id: 'recommendations', label: 'For You', icon: Sparkles }
+            { id: 'overview' as const, label: 'Overview', icon: Target },
+            { id: 'badges' as const, label: 'Achievements', icon: Trophy },
+            { id: 'recommendations' as const, label: 'For You', icon: Sparkles }
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all ${
                 activeTab === tab.id
                   ? 'bg-navy text-white shadow-lg'
@@ -410,14 +421,14 @@ export default function MyJourneyPage() {
             )}
 
             {/* Recommended Groups */}
-            {recommendations.recommendations?.groups?.length > 0 && (
+            {recommendedGroups.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-navy mb-4 flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   Recommended Groups
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendations.recommendations.groups.map((group: Recommendation) => (
+                  {recommendedGroups.map((group) => (
                     <Card key={group.id} className="hover:shadow-lg transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-2">
@@ -438,14 +449,14 @@ export default function MyJourneyPage() {
             )}
 
             {/* Recommended Events */}
-            {recommendations.recommendations?.events?.length > 0 && (
+            {recommendedEvents.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-navy mb-4 flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
                   Upcoming Events for You
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendations.recommendations.events.map((event: Recommendation) => (
+                  {recommendedEvents.map((event) => (
                     <Card key={event.id} className="hover:shadow-lg transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-2">
@@ -473,14 +484,14 @@ export default function MyJourneyPage() {
             )}
 
             {/* Recommended Teachings */}
-            {recommendations.recommendations?.teachings?.length > 0 && (
+            {recommendedTeachings.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-navy mb-4 flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
                   Teachings for You
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendations.recommendations.teachings.map((teaching: Recommendation) => (
+                  {recommendedTeachings.map((teaching) => (
                     <Card key={teaching.id} className="hover:shadow-lg transition-shadow overflow-hidden">
                       {teaching.thumbnail_url && (
                         <div className="aspect-video bg-gray-100 relative">

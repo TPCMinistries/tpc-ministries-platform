@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,10 +35,8 @@ import {
   Search,
   Eye,
   EyeOff,
-  Users,
   Star,
   BarChart3,
-  Sparkles
 } from 'lucide-react'
 
 // Types
@@ -162,6 +160,7 @@ export default function DailyContentPage() {
 
   useEffect(() => {
     fetchAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth])
 
   const fetchAllData = async () => {
@@ -748,7 +747,7 @@ export default function DailyContentPage() {
                             </Button>
                           </div>
                         </div>
-                        <p className="text-gray-700 text-sm italic">"{scripture.scripture_text}"</p>
+                        <p className="text-gray-700 text-sm italic">&ldquo;{scripture.scripture_text}&rdquo;</p>
                       </div>
                     ))
                   )}

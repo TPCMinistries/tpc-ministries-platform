@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
@@ -24,7 +23,8 @@ import {
   Smartphone,
   Laptop,
   Monitor,
-  X
+  X,
+  type LucideIcon
 } from 'lucide-react'
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
@@ -72,6 +72,23 @@ interface NotificationPrefs {
   notify_messages: boolean
 }
 
+type NotificationPreferenceKey = Exclude<keyof NotificationPrefs, 'email_digest'>
+
+const preferenceOptions: Array<{
+  key: NotificationPreferenceKey
+  label: string
+  icon: LucideIcon
+}> = [
+  { key: 'notify_devotional_reminder', label: 'Devotional Reminders', icon: BookOpen },
+  { key: 'notify_prayer_answered', label: 'Prayer Answers', icon: Heart },
+  { key: 'notify_achievement_unlocked', label: 'Achievements', icon: Trophy },
+  { key: 'notify_group_activity', label: 'Group Activity', icon: Users },
+  { key: 'notify_streak_at_risk', label: 'Streak Warnings', icon: AlertCircle },
+  { key: 'notify_new_content', label: 'New Content', icon: Sparkles },
+  { key: 'notify_event_reminder', label: 'Events', icon: Calendar },
+  { key: 'notify_messages', label: 'Messages', icon: MessageCircle }
+]
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null)
@@ -84,20 +101,7 @@ export default function NotificationsPage() {
   const [pushSupported, setPushSupported] = useState(false)
   const [enablingPush, setEnablingPush] = useState(false)
 
-  useEffect(() => {
-    fetchMember()
-    checkPushSupport()
-  }, [])
-
-  useEffect(() => {
-    if (memberId) {
-      fetchNotifications()
-      fetchPreferences()
-      fetchPushDevices()
-    }
-  }, [memberId, filter])
-
-  const checkPushSupport = async () => {
+  const checkPushSupport = useCallback(async () => {
     if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
       setPushSupported(true)
 
@@ -110,7 +114,7 @@ export default function NotificationsPage() {
         console.error('Error checking push status:', error)
       }
     }
-  }
+  }, [])
 
   const fetchPushDevices = async () => {
     try {
@@ -206,7 +210,7 @@ export default function NotificationsPage() {
     return Monitor
   }
 
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -217,9 +221,9 @@ export default function NotificationsPage() {
         .single()
       if (member) setMemberId(member.id)
     }
-  }
+  }, [])
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!memberId) return
 
     const supabase = createClient()
@@ -239,9 +243,9 @@ export default function NotificationsPage() {
     const { data } = await query
     if (data) setNotifications(data)
     setLoading(false)
-  }
+  }, [filter, memberId])
 
-  const fetchPreferences = async () => {
+  const fetchPreferences = useCallback(async () => {
     if (!memberId) return
 
     const supabase = createClient()
@@ -272,9 +276,22 @@ export default function NotificationsPage() {
       }
 
       await supabase.from('notification_preferences').insert(defaultPrefs)
-      setPrefs(defaultPrefs as any)
+      setPrefs(defaultPrefs)
     }
-  }
+  }, [memberId])
+
+  useEffect(() => {
+    fetchMember()
+    checkPushSupport()
+  }, [checkPushSupport, fetchMember])
+
+  useEffect(() => {
+    if (memberId) {
+      fetchNotifications()
+      fetchPreferences()
+      fetchPushDevices()
+    }
+  }, [fetchNotifications, fetchPreferences, memberId])
 
   const markAsRead = async (id: string) => {
     const supabase = createClient()
@@ -318,7 +335,7 @@ export default function NotificationsPage() {
   }
 
   const getNotificationIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       devotional: BookOpen,
       prayer: Heart,
       achievement: Trophy,
@@ -486,23 +503,14 @@ export default function NotificationsPage() {
               <div className="space-y-2">
                 <h4 className="font-medium text-sm text-gray-500">Notify me about:</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'notify_devotional_reminder', label: 'Devotional Reminders', icon: BookOpen },
-                    { key: 'notify_prayer_answered', label: 'Prayer Answers', icon: Heart },
-                    { key: 'notify_achievement_unlocked', label: 'Achievements', icon: Trophy },
-                    { key: 'notify_group_activity', label: 'Group Activity', icon: Users },
-                    { key: 'notify_streak_at_risk', label: 'Streak Warnings', icon: AlertCircle },
-                    { key: 'notify_new_content', label: 'New Content', icon: Sparkles },
-                    { key: 'notify_event_reminder', label: 'Events', icon: Calendar },
-                    { key: 'notify_messages', label: 'Messages', icon: MessageCircle }
-                  ].map(({ key, label, icon: Icon }) => (
+                  {preferenceOptions.map(({ key, label, icon: Icon }) => (
                     <label
                       key={key}
                       className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
                     >
                       <input
                         type="checkbox"
-                        checked={(prefs as any)[key]}
+                        checked={prefs[key]}
                         onChange={(e) => updatePreference(key, e.target.checked)}
                         className="rounded"
                       />

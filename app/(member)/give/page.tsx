@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Heart,
   DollarSign,
@@ -19,9 +18,11 @@ import {
   Home as HomeIcon
 } from 'lucide-react'
 
+type GivingFund = 'general' | 'missions' | 'content' | 'building'
+
 export default function GivePage() {
   const [amount, setAmount] = useState('')
-  const [selectedFund, setSelectedFund] = useState<'general' | 'missions' | 'leadership'>('general')
+  const [selectedFund, setSelectedFund] = useState<GivingFund>('general')
   const [selectedFrequency, setSelectedFrequency] = useState<'once' | 'monthly' | 'yearly'>('once')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,9 +126,9 @@ export default function GivePage() {
       } else {
         throw new Error('No checkout URL received')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Donation error:', err)
-      setError(err.message || 'An error occurred. Please try again.')
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.')
       setLoading(false)
     }
   }
@@ -219,7 +220,7 @@ export default function GivePage() {
                   {funds.map((fund) => (
                     <div
                       key={fund.id}
-                      onClick={() => setSelectedFund(fund.id as 'general' | 'missions' | 'leadership')}
+                      onClick={() => setSelectedFund(fund.id as GivingFund)}
                       className={`flex items-start gap-3 p-4 border rounded-lg hover:border-navy cursor-pointer transition-colors ${selectedFund === fund.id ? 'border-navy bg-navy/5' : ''}`}
                     >
                       <fund.icon className={`h-5 w-5 ${fund.color} mt-0.5`} />

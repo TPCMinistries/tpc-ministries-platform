@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
@@ -24,7 +24,8 @@ import {
   Heart,
   BookOpen,
   MessageCircle,
-  Sparkles
+  Sparkles,
+  type LucideIcon
 } from 'lucide-react'
 
 interface Group {
@@ -47,6 +48,11 @@ interface Group {
   membership_status?: 'active' | 'pending' | null
 }
 
+interface GroupMembershipRow {
+  status: 'active' | 'pending'
+  group: Group | Group[] | null
+}
+
 const groupTypes = [
   { value: 'all', label: 'All Groups' },
   { value: 'small_group', label: 'Small Groups' },
@@ -65,18 +71,7 @@ export default function GroupsPage() {
   const [memberId, setMemberId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'discover' | 'my-groups'>('discover')
 
-  useEffect(() => {
-    fetchMember()
-  }, [])
-
-  useEffect(() => {
-    if (memberId) {
-      fetchGroups()
-      fetchMyGroups()
-    }
-  }, [memberId, selectedType])
-
-  const fetchMember = async () => {
+  const fetchMember = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -87,9 +82,11 @@ export default function GroupsPage() {
         .single()
       if (member) setMemberId(member.id)
     }
-  }
+  }, [])
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
+    if (!memberId) return
+
     const supabase = createClient()
     setLoading(true)
 
@@ -109,7 +106,7 @@ export default function GroupsPage() {
 
     const { data, error } = await query
 
-    if (!error && data && memberId) {
+    if (!error && data) {
       // Check membership status for each group
       const { data: memberships } = await supabase
         .from('group_members')
@@ -124,9 +121,9 @@ export default function GroupsPage() {
       })))
     }
     setLoading(false)
-  }
+  }, [memberId, selectedType])
 
-  const fetchMyGroups = async () => {
+  const fetchMyGroups = useCallback(async () => {
     if (!memberId) return
 
     const supabase = createClient()
@@ -144,9 +141,23 @@ export default function GroupsPage() {
       .eq('status', 'active')
 
     if (data) {
-      setMyGroups(data.map(d => ({ ...d.group as any, membership_status: d.status })))
+      setMyGroups((data as GroupMembershipRow[]).flatMap((d) => {
+        const group = Array.isArray(d.group) ? d.group[0] : d.group
+        return group ? [{ ...group, membership_status: d.status }] : []
+      }))
     }
-  }
+  }, [memberId])
+
+  useEffect(() => {
+    fetchMember()
+  }, [fetchMember])
+
+  useEffect(() => {
+    if (memberId) {
+      fetchGroups()
+      fetchMyGroups()
+    }
+  }, [fetchGroups, fetchMyGroups, memberId])
 
   const handleJoinGroup = async (groupId: string, requiresApproval: boolean) => {
     if (!memberId) return
@@ -185,7 +196,7 @@ export default function GroupsPage() {
   }
 
   const getTypeIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       small_group: Users,
       prayer_group: Heart,
       study_group: BookOpen,
@@ -389,7 +400,7 @@ export default function GroupsPage() {
               <Card className="text-center py-12">
                 <CardContent>
                   <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700">You haven't joined any groups yet</h3>
+                  <h3 className="text-lg font-semibold text-gray-700">You haven&apos;t joined any groups yet</h3>
                   <p className="text-gray-500 mt-1 mb-4">Discover groups to connect with your community</p>
                   <Button onClick={() => setActiveTab('discover')} className="bg-gold hover:bg-gold/90 text-navy">
                     <Globe className="h-4 w-4 mr-2" />
