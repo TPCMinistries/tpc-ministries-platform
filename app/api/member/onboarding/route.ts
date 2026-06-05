@@ -3,6 +3,23 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type SuggestedGroup = {
+  id: string
+  name: string
+  description?: string | null
+  image_url?: string | null
+  member_count?: number | null
+}
+
+type OnboardingUpdates = {
+  updated_at: string
+  notifications_configured?: boolean
+  profile_completed?: boolean
+  assessment_taken?: boolean
+  group_joined?: boolean
+  first_checkin_completed?: boolean
+}
+
 // GET - Get current user's onboarding progress
 export async function GET() {
   try {
@@ -56,7 +73,7 @@ export async function GET() {
     }
 
     // Get suggested groups based on assessment results
-    let suggestedGroups: any[] = []
+    let suggestedGroups: SuggestedGroup[] = []
     if (onboarding?.assessment_taken && !onboarding?.group_joined) {
       const { data: groups } = await supabase
         .from('community_groups')
@@ -117,7 +134,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { notifications_configured, skip_step } = body
 
-    const updates: any = { updated_at: new Date().toISOString() }
+    const updates: OnboardingUpdates = { updated_at: new Date().toISOString() }
 
     if (notifications_configured !== undefined) {
       updates.notifications_configured = notifications_configured

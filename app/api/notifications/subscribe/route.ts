@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert the subscription
-    const { data: subscription, error } = await supabase
+    const { error } = await supabase
       .from('push_subscriptions')
       .upsert({
         member_id: member.id,
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET - Get subscription status
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 

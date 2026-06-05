@@ -3,6 +3,32 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+type LibraryContent = {
+  id: string
+  title: string
+  description?: string | null
+  author?: string | null
+  type: string
+  source: string
+  thumbnail_url?: string | null
+  duration_minutes?: number | null
+  tier_required: string
+  has_access: boolean
+  progress_percent?: number
+  completed?: boolean
+  last_accessed?: string | null
+  download_count?: number
+  view_count?: number
+  is_featured?: boolean
+  tags?: string[]
+  series_name?: string | null
+  sermon_date?: string | null
+  video_url?: string | null
+  created_at: string
+  in_watchlist: boolean
+  href: string
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -96,7 +122,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Combine all content into unified format
-    const allContent: any[] = []
+    const allContent: LibraryContent[] = []
 
     // Add teachings
     for (const teaching of teachings || []) {
@@ -191,7 +217,7 @@ export async function GET(request: NextRequest) {
 
     // Continue Watching - in-progress content sorted by last accessed
     const continueWatching = allContent
-      .filter(c => c.progress_percent > 0 && c.progress_percent < 100 && !c.completed)
+      .filter(c => (c.progress_percent ?? 0) > 0 && (c.progress_percent ?? 0) < 100 && !c.completed)
       .sort((a, b) => {
         const dateA = a.last_accessed ? new Date(a.last_accessed).getTime() : 0
         const dateB = b.last_accessed ? new Date(b.last_accessed).getTime() : 0
@@ -213,7 +239,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 6)
 
     // Build Series/Collections from sermons and teachings with series_name
-    const seriesMap = new Map<string, any[]>()
+    const seriesMap = new Map<string, LibraryContent[]>()
     allContent.forEach(c => {
       if (c.series_name) {
         if (!seriesMap.has(c.series_name)) {
@@ -256,7 +282,7 @@ export async function GET(request: NextRequest) {
         break
       case 'progress':
         filteredContent = allContent.filter(c =>
-          c.progress_percent > 0 || c.completed || c.last_accessed
+          (c.progress_percent ?? 0) > 0 || c.completed || c.last_accessed
         )
         break
       case 'watchlist':
@@ -321,7 +347,7 @@ export async function GET(request: NextRequest) {
       videos: allContent.filter(c => c.type === 'video' || c.type === 'sermon').length,
       audio: allContent.filter(c => c.type === 'audio').length,
       ebooks: allContent.filter(c => c.type === 'ebook').length,
-      inProgress: allContent.filter(c => c.progress_percent > 0 && !c.completed).length,
+      inProgress: allContent.filter(c => (c.progress_percent ?? 0) > 0 && !c.completed).length,
       watchlist: allContent.filter(c => c.in_watchlist).length,
     }
 
