@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { formatDistanceToNow } from 'date-fns'
 import {
   UserPlus,
   UserMinus,
@@ -9,8 +8,7 @@ import {
   Award,
   Users,
   Lock,
-  Loader2,
-  X
+  Loader2
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

@@ -116,7 +116,7 @@ export default function DailyHub() {
         <div className="bg-white/5 rounded-lg p-4">
           <p className="text-white/60 text-xs uppercase tracking-wide mb-2">Daily Encouragement</p>
           <p className="text-white/90 font-serif italic">
-            "Draw near to God and He will draw near to you."
+            &quot;Draw near to God and He will draw near to you.&quot;
           </p>
           <p className="text-tpc-gold text-sm mt-1">— James 4:8</p>
         </div>

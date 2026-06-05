@@ -14,8 +14,7 @@ import {
   Clock,
   ArrowRight,
   BookOpen,
-  RefreshCw,
-  Loader2
+  RefreshCw
 } from 'lucide-react'
 
 interface Recommendation {
@@ -71,7 +70,7 @@ export default function RecommendationsWidget() {
       const watchedIds = new Set(watched?.map(w => w.content_id) || [])
 
       // Build personalized query
-      let query = supabase
+      const query = supabase
         .from('teachings')
         .select('id, title, description, video_url, audio_url, duration_minutes, thumbnail_url, category, tags')
         .eq('is_published', true)

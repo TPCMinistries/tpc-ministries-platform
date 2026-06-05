@@ -23,6 +23,7 @@ import {
   ChevronRight,
   RefreshCw
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -391,14 +392,14 @@ function NotificationList({
   markAsRead: (id: string) => void
   dismissNotification: (id: string) => void
   markingRead: string | null
-  getNotificationIcon: (type: string) => { icon: any; color: string; bg: string }
+  getNotificationIcon: (type: string) => { icon: LucideIcon; color: string; bg: string }
 }) {
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-500">
         <BellOff className="h-12 w-12 mb-3 opacity-50" />
         <p className="text-lg font-medium">No notifications</p>
-        <p className="text-sm">You're all caught up!</p>
+        <p className="text-sm">You&apos;re all caught up!</p>
       </div>
     )
   }
