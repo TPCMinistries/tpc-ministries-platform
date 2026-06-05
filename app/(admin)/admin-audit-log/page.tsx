@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,15 +23,11 @@ import {
 import {
   History,
   Search,
-  Filter,
   Download,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  User,
-  Calendar,
   FileText,
-  Settings,
   Trash2,
   Edit,
   Plus,
@@ -49,7 +45,7 @@ interface AuditLogEntry {
   entity_type: string
   entity_id: string | null
   entity_name: string | null
-  details: Record<string, any> | null
+  details: Record<string, unknown> | null
   ip_address: string | null
   user_agent: string | null
   created_at: string
@@ -95,11 +91,7 @@ export default function AuditLogPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const limit = 25
 
-  useEffect(() => {
-    fetchLogs()
-  }, [page, selectedAction, selectedEntityType])
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -120,7 +112,11 @@ export default function AuditLogPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, selectedAction, selectedEntityType])
+
+  useEffect(() => {
+    fetchLogs()
+  }, [fetchLogs])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

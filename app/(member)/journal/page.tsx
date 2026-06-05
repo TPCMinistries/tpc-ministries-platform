@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { createClient } from '@/lib/supabase/client'
 import {
   Mic,
-  MicOff,
   Pause,
   Play,
   Square,
@@ -33,9 +32,6 @@ import {
   X,
   Search,
   Quote,
-  Sunrise,
-  Leaf,
-  Star
 } from 'lucide-react'
 
 interface JournalEntry {
@@ -65,6 +61,10 @@ interface JournalStreak {
   longest_streak: number
   total_entries: number
   last_entry_date: string
+}
+
+type JournalAiInsights = NonNullable<JournalEntry['ai_insights']> & {
+  summary?: string
 }
 
 const MOODS = [
@@ -123,7 +123,7 @@ export default function JournalPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
 
   // AI features
-  const [aiInsights, setAiInsights] = useState<any>(null)
+  const [aiInsights, setAiInsights] = useState<JournalAiInsights | null>(null)
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false)
   const [aiPrayerSuggestion, setAiPrayerSuggestion] = useState('')
   const [isGeneratingPrayer, setIsGeneratingPrayer] = useState(false)
@@ -136,25 +136,7 @@ export default function JournalPage() {
   // Expanded entries
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    fetchMemberInfo()
-    fetchEntries()
-    fetchStreak()
-    // Set a random prompt
-    setCurrentPrompt(WRITING_PROMPTS[Math.floor(Math.random() * WRITING_PROMPTS.length)])
-  }, [])
-
-  useEffect(() => {
-    fetchEntries()
-  }, [activeTab])
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
-  const fetchMemberInfo = async () => {
+  const fetchMemberInfo = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -169,9 +151,9 @@ export default function JournalPage() {
     } catch (error) {
       console.error('Error fetching member:', error)
     }
-  }
+  }, [])
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     try {
       const type = activeTab !== 'all' ? activeTab : undefined
       const url = type ? `/api/journal?type=${type}` : '/api/journal'
@@ -183,9 +165,9 @@ export default function JournalPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab])
 
-  const fetchStreak = async () => {
+  const fetchStreak = useCallback(async () => {
     try {
       const res = await fetch('/api/journal/streak')
       if (res.ok) {
@@ -195,7 +177,23 @@ export default function JournalPage() {
     } catch (error) {
       console.error('Error fetching streak:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchMemberInfo()
+    fetchStreak()
+    setCurrentPrompt(WRITING_PROMPTS[Math.floor(Math.random() * WRITING_PROMPTS.length)])
+  }, [fetchMemberInfo, fetchStreak])
+
+  useEffect(() => {
+    fetchEntries()
+  }, [fetchEntries])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
 
   // Voice Recording Functions
   const startRecording = async () => {
@@ -273,7 +271,7 @@ export default function JournalPage() {
         setTranscription(data.transcription)
         setContent(data.transcription)
         if (data.summary) {
-          setAiInsights(data.summary)
+          setAiInsights(typeof data.summary === 'string' ? { summary: data.summary } : data.summary)
         }
       } else {
         throw new Error('Transcription failed')

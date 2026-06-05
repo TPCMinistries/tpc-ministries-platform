@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +29,6 @@ import {
   Zap,
   Plus,
   Play,
-  Pause,
   Settings,
   Trash2,
   Clock,
@@ -37,7 +36,6 @@ import {
   UserPlus,
   Heart,
   DollarSign,
-  MessageSquare,
   Bell,
   Mail,
   Smartphone,
@@ -53,12 +51,17 @@ interface AutomationTrigger {
   trigger_type: string
   trigger_event: string | null
   trigger_schedule: string | null
-  trigger_conditions: any
-  actions: any[]
+  trigger_conditions: Record<string, unknown> | null
+  actions: AutomationAction[]
   is_active: boolean
   execution_count: number
   last_executed_at: string | null
   created_at: string
+}
+
+interface AutomationAction {
+  type: string
+  config: Record<string, unknown>
 }
 
 const TRIGGER_EVENTS = [
@@ -86,7 +89,6 @@ export default function AutomationsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAutomation, setEditingAutomation] = useState<AutomationTrigger | null>(null)
   const { toast } = useToast()
-  const supabase = createClient()
 
   // Form state
   const [formData, setFormData] = useState({
@@ -95,16 +97,13 @@ export default function AutomationsPage() {
     trigger_type: 'event',
     trigger_event: '',
     trigger_schedule: '',
-    actions: [] as any[],
+    actions: [] as AutomationAction[],
   })
 
-  useEffect(() => {
-    fetchAutomations()
-  }, [])
-
-  const fetchAutomations = async () => {
+  const fetchAutomations = useCallback(async () => {
     try {
       setIsLoading(true)
+      const supabase = createClient()
       const { data, error } = await supabase
         .from('automation_triggers')
         .select('*')
@@ -122,7 +121,11 @@ export default function AutomationsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchAutomations()
+  }, [fetchAutomations])
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.trigger_event) {
@@ -135,6 +138,7 @@ export default function AutomationsPage() {
     }
 
     try {
+      const supabase = createClient()
       const payload = {
         name: formData.name,
         description: formData.description || null,
@@ -177,6 +181,7 @@ export default function AutomationsPage() {
 
   const toggleAutomation = async (id: string, isActive: boolean) => {
     try {
+      const supabase = createClient()
       const { error } = await supabase
         .from('automation_triggers')
         .update({ is_active: !isActive })
@@ -201,6 +206,7 @@ export default function AutomationsPage() {
     if (!confirm('Are you sure you want to delete this automation?')) return
 
     try {
+      const supabase = createClient()
       const { error } = await supabase
         .from('automation_triggers')
         .delete()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,14 +23,13 @@ import {
   Trash2,
   Play,
   Square,
-  Calendar,
   Users,
-  Eye,
   X,
   Video,
   Link as LinkIcon,
-  Clock
 } from 'lucide-react'
+
+type LiveStatus = LiveStream['status']
 
 interface LiveStream {
   id: string
@@ -72,7 +71,7 @@ export default function AdminLivePage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingStream, setEditingStream] = useState<LiveStream | null>(null)
-  const [filter, setFilter] = useState<'all' | 'scheduled' | 'live' | 'ended'>('all')
+  const [filter, setFilter] = useState<'all' | LiveStatus>('all')
 
   const [formData, setFormData] = useState({
     title: '',
@@ -89,11 +88,7 @@ export default function AdminLivePage() {
     recording_url: ''
   })
 
-  useEffect(() => {
-    fetchStreams()
-  }, [filter])
-
-  const fetchStreams = async () => {
+  const fetchStreams = useCallback(async () => {
     const supabase = createClient()
     setLoading(true)
 
@@ -112,7 +107,11 @@ export default function AdminLivePage() {
       setStreams(data)
     }
     setLoading(false)
-  }
+  }, [filter])
+
+  useEffect(() => {
+    fetchStreams()
+  }, [fetchStreams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -203,10 +202,10 @@ export default function AdminLivePage() {
     fetchStreams()
   }
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: LiveStatus) => {
     const supabase = createClient()
 
-    const updates: any = { status }
+    const updates: { status: LiveStatus; actual_start?: string; actual_end?: string } = { status }
 
     if (status === 'live') {
       updates.actual_start = new Date().toISOString()
@@ -312,12 +311,12 @@ export default function AdminLivePage() {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-4">
-        {['all', 'scheduled', 'live', 'ended'].map(f => (
+        {(['all', 'scheduled', 'live', 'ended'] as const).map(f => (
           <Button
             key={f}
             variant={filter === f ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setFilter(f as any)}
+            onClick={() => setFilter(f)}
             className={filter === f ? 'bg-navy' : ''}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}

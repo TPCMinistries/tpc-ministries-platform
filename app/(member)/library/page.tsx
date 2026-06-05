@@ -28,13 +28,11 @@ import {
   Play,
   Search,
   Check,
-  Download,
   Lock,
   Crown,
   Library,
   Loader2,
   Sparkles,
-  TrendingUp,
   Filter,
   ChevronRight,
   ChevronLeft,
@@ -46,9 +44,8 @@ import {
   Calendar,
   ListVideo,
   X,
-  ExternalLink,
-  Share2,
-  Info
+  Info,
+  type LucideIcon
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -139,26 +136,7 @@ export default function UnifiedLibraryPage() {
 
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    fetchLibrary()
-  }, [activeTab, selectedTag, selectedSeries, sortBy])
-
-  // Debounced search
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      fetchLibrary()
-    }, 300)
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-    }
-  }, [searchQuery])
-
-  const fetchLibrary = async () => {
+  const fetchLibrary = useCallback(async () => {
     try {
       const params = new URLSearchParams()
       params.set('tab', activeTab)
@@ -183,7 +161,26 @@ export default function UnifiedLibraryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab, searchQuery, selectedSeries, selectedTag, sortBy])
+
+  useEffect(() => {
+    fetchLibrary()
+  }, [fetchLibrary])
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchLibrary()
+    }, 300)
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [fetchLibrary, searchQuery])
 
   const toggleWatchlist = async (item: LibraryItem, e: React.MouseEvent) => {
     e.preventDefault()
@@ -403,7 +400,7 @@ export default function UnifiedLibraryPage() {
     size = 'normal'
   }: {
     title: string
-    icon: any
+    icon: LucideIcon
     items: LibraryItem[]
     showViewAll?: boolean
     viewAllHref?: string

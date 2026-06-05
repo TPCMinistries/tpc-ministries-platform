@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -29,7 +29,6 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Filter,
   RefreshCw,
   Loader2,
   Calendar,
@@ -95,12 +94,6 @@ const priorityColors: Record<string, string> = {
   urgent: 'bg-red-100 text-red-700',
 }
 
-const statusIcons: Record<string, React.ReactNode> = {
-  pending: <Clock className="h-4 w-4 text-gray-500" />,
-  in_progress: <AlertCircle className="h-4 w-4 text-blue-500" />,
-  completed: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-}
-
 export default function AdminTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [staff, setStaff] = useState<StaffMember[]>([])
@@ -121,11 +114,7 @@ export default function AdminTasksPage() {
     assigned_to: '',
   })
 
-  useEffect(() => {
-    fetchTasks()
-  }, [statusFilter, showMyTasks])
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -143,7 +132,11 @@ export default function AdminTasksPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showMyTasks, statusFilter])
+
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
 
   const handleSubmit = async () => {
     if (!formData.title.trim()) return
