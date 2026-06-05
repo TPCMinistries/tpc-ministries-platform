@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +14,6 @@ import {
   RefreshCw,
   Search,
   User,
-  Phone,
   Mail,
   Clock,
   TrendingUp,
@@ -49,11 +48,7 @@ export default function LeadScoringPage() {
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchLeads()
-  }, [])
-
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     try {
       setIsLoading(true)
       const res = await fetch('/api/admin/leads/score')
@@ -71,7 +66,11 @@ export default function LeadScoringPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchLeads()
+  }, [fetchLeads])
 
   const scoreAllLeads = async () => {
     try {
@@ -312,7 +311,7 @@ export default function LeadScoringPage() {
             <div className="text-center py-8 text-gray-400">
               <Brain className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No scored leads found</p>
-              <p className="text-sm mt-1">Click "Score All Leads" to analyze new leads</p>
+              <p className="text-sm mt-1">Click &ldquo;Score All Leads&rdquo; to analyze new leads</p>
             </div>
           ) : (
             <div className="space-y-3">

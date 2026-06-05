@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,12 +14,9 @@ import {
   Send,
   Heart,
   Calendar,
-  Clock,
   Radio,
   VideoIcon,
-  ChevronRight,
   Bell,
-  ExternalLink
 } from 'lucide-react'
 
 interface LiveStream {
@@ -65,15 +62,6 @@ export default function LiveStreamPage() {
     fetchMember()
     fetchStreams()
   }, [])
-
-  useEffect(() => {
-    if (currentStream?.id) {
-      fetchChat()
-      // Poll for new messages
-      const interval = setInterval(fetchChat, 5000)
-      return () => clearInterval(interval)
-    }
-  }, [currentStream?.id])
 
   useEffect(() => {
     // Auto-scroll chat
@@ -136,8 +124,8 @@ export default function LiveStreamPage() {
     setLoading(false)
   }
 
-  const fetchChat = async () => {
-    if (!currentStream) return
+  const fetchChat = useCallback(async () => {
+    if (!currentStream?.id) return
 
     const supabase = createClient()
     const { data } = await supabase
@@ -152,7 +140,16 @@ export default function LiveStreamPage() {
       .limit(100)
 
     if (data) setChatMessages(data)
-  }
+  }, [currentStream?.id])
+
+  useEffect(() => {
+    if (currentStream?.id) {
+      fetchChat()
+      // Poll for new messages
+      const interval = setInterval(fetchChat, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [currentStream?.id, fetchChat])
 
   const sendMessage = async () => {
     if (!memberId || !currentStream || !newMessage.trim()) return

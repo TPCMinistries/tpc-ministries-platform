@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { Upload, X, FileText, Loader2, AlertCircle, File } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -65,7 +65,6 @@ export default function FileUpload({
   const uploadToSupabase = async (file: File) => {
     const supabase = createClient()
 
-    const fileExt = file.name.split('.').pop()
     const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
     const fileName = `${folder}/${Date.now()}-${safeFileName}`
 
@@ -73,7 +72,7 @@ export default function FileUpload({
       await deleteOldFile(currentFileUrl)
     }
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('tpc-media')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -130,8 +129,8 @@ export default function FileUpload({
 
       setSelectedFile({ name: file.name, size: file.size, url: publicUrl })
       onUploadComplete(publicUrl, file.name)
-    } catch (err: any) {
-      const errorMsg = err.message || 'Failed to upload file'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to upload file'
       setError(errorMsg)
       onUploadError?.(errorMsg)
       setSelectedFile(null)
@@ -141,18 +140,15 @@ export default function FileUpload({
     }
   }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      setIsDragging(false)
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
 
-      const file = e.dataTransfer.files[0]
-      if (file) {
-        handleFileSelect(file)
-      }
-    },
-    []
-  )
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      handleFileSelect(file)
+    }
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -34,13 +34,11 @@ import {
   Star,
   StarOff,
   Calendar,
-  MapPin,
   Loader2,
   ChevronLeft,
   ChevronRight,
   Edit2,
   Trash2,
-  ExternalLink
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -77,7 +75,6 @@ const categoryLabels: Record<string, string> = {
 
 export default function AdminGalleryPage() {
   const [albums, setAlbums] = useState<Album[]>([])
-  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -102,11 +99,7 @@ export default function AdminGalleryPage() {
     is_featured: false
   })
 
-  useEffect(() => {
-    fetchAlbums()
-  }, [currentPage, searchQuery, selectedCategory])
-
-  const fetchAlbums = async () => {
+  const fetchAlbums = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -120,7 +113,6 @@ export default function AdminGalleryPage() {
       if (res.ok) {
         const data = await res.json()
         setAlbums(data.albums || [])
-        setCategories(data.categories || [])
         setTotalPages(data.pagination?.totalPages || 1)
       }
     } catch (error) {
@@ -133,7 +125,11 @@ export default function AdminGalleryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, searchQuery, selectedCategory, toast])
+
+  useEffect(() => {
+    fetchAlbums()
+  }, [fetchAlbums])
 
   const handleCreateAlbum = async () => {
     if (!newAlbum.title.trim()) {

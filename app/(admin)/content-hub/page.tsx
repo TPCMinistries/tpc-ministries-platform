@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,10 +18,11 @@ import {
   MoreVertical, Video, BookOpen, Sparkles, FileDown, Calendar,
   Eye, EyeOff, ChevronDown,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { CONTENT_TYPES } from '@/lib/content/content-types'
 import { useToast } from '@/hooks/use-toast'
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   Video, BookOpen, Sparkles, FileDown, Calendar,
 }
 
@@ -31,7 +32,7 @@ interface ContentItem {
   _title?: string
   created_at: string
   updated_at?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export default function ContentHubPage() {
@@ -44,11 +45,7 @@ export default function ContentHubPage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchContent()
-  }, [activeType, page])
-
-  const fetchContent = async () => {
+  const fetchContent = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -66,7 +63,11 @@ export default function ContentHubPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeType, page, search])
+
+  useEffect(() => {
+    fetchContent()
+  }, [fetchContent])
 
   const handleSearch = () => {
     setPage(1)
@@ -85,7 +86,7 @@ export default function ContentHubPage() {
         toast({ title: 'Deleted', description: `${config?.label || 'Content'} deleted` })
         fetchContent()
       }
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' })
     }
   }
@@ -93,7 +94,8 @@ export default function ContentHubPage() {
   const getTitle = (item: ContentItem) => {
     if (item._title) return item._title
     const config = CONTENT_TYPES.find(t => t.id === item._type)
-    return item[config?.titleField || 'title'] || 'Untitled'
+    const title = item[config?.titleField || 'title']
+    return typeof title === 'string' ? title : 'Untitled'
   }
 
   const getTypeConfig = (typeId: string) => CONTENT_TYPES.find(t => t.id === typeId)
@@ -108,7 +110,7 @@ export default function ContentHubPage() {
     if (!config?.statusField) return null
     const val = item[config.statusField]
     if (typeof val === 'boolean') return val ? 'Published' : 'Draft'
-    return val || null
+    return typeof val === 'string' && val ? val : null
   }
 
   return (

@@ -21,7 +21,7 @@ describe('GET /api/member/dashboard/stats', () => {
       },
     })
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const response = await GET()
     const body = await response.json()
@@ -39,7 +39,7 @@ describe('GET /api/member/dashboard/stats', () => {
     })
     mockClient.from = vi.fn(() => mockQueryBuilder)
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const response = await GET()
     const body = await response.json()
@@ -81,7 +81,7 @@ describe('GET /api/member/dashboard/stats', () => {
     })
     mockClient.from = vi.fn((table: string) => createTableAwareMock(table))
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const response = await GET()
     const body = await response.json()
@@ -135,7 +135,7 @@ describe('GET /api/member/dashboard/stats', () => {
     })
     mockClient.from = vi.fn((table: string) => createTableAwareMock(table))
 
-    vi.mocked(createClient).mockResolvedValue(mockClient as any)
+    vi.mocked(createClient).mockResolvedValue(mockClient as unknown as Awaited<ReturnType<typeof createClient>>)
 
     const response = await GET()
     const body = await response.json()

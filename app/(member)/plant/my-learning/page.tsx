@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -19,6 +19,7 @@ import {
   Leaf
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface CourseEnrollment {
   id: string
@@ -237,9 +238,11 @@ export default function MyLearningPage() {
                     <div className="flex">
                       <div className="w-1/3 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
                         {enrollment.course.thumbnail_url ? (
-                          <img
+                          <Image
                             src={enrollment.course.thumbnail_url}
                             alt={enrollment.course.name}
+                            width={320}
+                            height={180}
                             className="w-full h-full object-cover"
                           />
                         ) : (

@@ -31,6 +31,7 @@ import {
   Mail,
   Eye as EyeIcon,
 } from 'lucide-react'
+import NextImage from 'next/image'
 import type { Participant, Donation } from './types'
 
 interface FundraisingManagerProps {
@@ -46,7 +47,6 @@ interface FundraisingManagerProps {
 export function FundraisingManager({
   participant,
   donations,
-  onUpdate,
   onSubmitManualDonation,
   onSavePersonalization,
   onUploadPhoto,
@@ -390,12 +390,14 @@ export function FundraisingManager({
                 Profile Photo
               </h4>
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
                   {participant.fundraising_photo_url ? (
-                    <img
+                    <NextImage
                       src={participant.fundraising_photo_url}
                       alt="Profile"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="96px"
+                      className="object-cover"
                     />
                   ) : (
                     <ImageIcon className="h-8 w-8 text-gray-400" />
@@ -511,7 +513,7 @@ export function FundraisingManager({
                 rows={6}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Tell supporters why you're going, what you'll be doing, and how their gift will make a difference.
+                Tell supporters why you&apos;re going, what you&apos;ll be doing, and how their gift will make a difference.
               </p>
             </div>
 

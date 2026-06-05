@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
-import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Upload, X, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -124,7 +124,7 @@ export default function ImageUpload({
     }
 
     // Upload new image
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('tpc-media')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -189,8 +189,8 @@ export default function ImageUpload({
 
       // Callback with URL
       onUploadComplete(publicUrl)
-    } catch (err: any) {
-      const errorMsg = err.message || 'Failed to upload image'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to upload image'
       setError(errorMsg)
       onUploadError?.(errorMsg)
       setPreview(null)
@@ -200,18 +200,15 @@ export default function ImageUpload({
     }
   }
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      setIsDragging(false)
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
 
-      const file = e.dataTransfer.files[0]
-      if (file) {
-        handleFileSelect(file)
-      }
-    },
-    [handleFileSelect]
-  )
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      handleFileSelect(file)
+    }
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
