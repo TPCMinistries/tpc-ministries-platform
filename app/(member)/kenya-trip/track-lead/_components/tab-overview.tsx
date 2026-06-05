@@ -37,7 +37,6 @@ interface TabOverviewProps {
 }
 
 export function TabOverview({
-  trip,
   participant,
   trackParticipants,
   trackDetails,
@@ -50,8 +49,6 @@ export function TabOverview({
 
   // Calculate readiness stats
   const total = trackParticipants.length
-  const approved = trackParticipants.filter(p => p.application_status === 'approved').length
-
   const passportReady = trackParticipants.filter(p =>
     p.passport_status === 'valid' || p.passport_status === 'verified'
   ).length

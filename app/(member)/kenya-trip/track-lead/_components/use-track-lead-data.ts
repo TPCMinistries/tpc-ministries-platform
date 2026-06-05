@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type {
   Trip,
-  Participant,
   Announcement,
   ConferenceSession,
   LogisticsMatrix,
@@ -11,7 +10,6 @@ import type {
   TrackMaterial,
   TrackLeadNote,
   TrackPlan,
-  TrackLeadTabType,
 } from '../../_components/types'
 
 interface ActionItem {
