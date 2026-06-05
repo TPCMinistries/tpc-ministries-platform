@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,11 +61,7 @@ export default function SeasonDetailPage() {
     percentage: 0
   })
 
-  useEffect(() => {
-    fetchSeasonData()
-  }, [seasonId])
-
-  const fetchSeasonData = async () => {
+  const fetchSeasonData = useCallback(async () => {
     const supabase = createClient()
 
     try {
@@ -147,7 +144,11 @@ export default function SeasonDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, seasonId])
+
+  useEffect(() => {
+    fetchSeasonData()
+  }, [fetchSeasonData])
 
   const handleJoinSeason = async () => {
     const supabase = createClient()
@@ -314,9 +315,11 @@ export default function SeasonDetailPage() {
             <CardContent className="p-6">
               <div className="flex items-start gap-6">
                 {nextRecommended.thumbnail_url ? (
-                  <img
+                  <Image
                     src={nextRecommended.thumbnail_url}
                     alt={nextRecommended.title}
+                    width={192}
+                    height={128}
                     className="w-48 h-32 object-cover rounded-lg"
                   />
                 ) : (
@@ -381,9 +384,11 @@ export default function SeasonDetailPage() {
                 <CardHeader className="pb-3">
                   {teaching.thumbnail_url ? (
                     <div className="relative mb-3">
-                      <img
+                      <Image
                         src={teaching.thumbnail_url}
                         alt={teaching.title}
+                        width={640}
+                        height={360}
                         className="w-full h-40 object-cover rounded-lg"
                       />
                       {teaching.completed && (

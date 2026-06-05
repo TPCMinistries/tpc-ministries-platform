@@ -16,8 +16,8 @@ export interface PartnersTableProps {
   updateContactField: (id: string, field: string, value: string) => void
   addContact: (name: string, fields?: { email?: string; phone?: string; organization?: string; role?: string; city?: string }) => void
   deleteContact: (id: string) => void
-  sendPartnerInfoRequest: (contactId: string) => Promise<any>
-  sendPartnerAction: (contactId: string, action: string, payload?: { subject?: string; message?: string }) => Promise<any>
+  sendPartnerInfoRequest: (contactId: string) => Promise<{ success?: boolean }>
+  sendPartnerAction: (contactId: string, action: string, payload?: { subject?: string; message?: string }) => Promise<{ success?: boolean }>
 }
 
 export function PartnersTable({

@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
-  AlertTriangle, CheckCircle, XCircle, Receipt, Plus, Star, Pencil, Save
+  AlertTriangle, CheckCircle, XCircle, Receipt, Plus, Pencil, Save
 } from 'lucide-react'
 import type { Trip, Participant, Expense, Announcement, Stats } from './types'
 import { serviceTracks } from './constants'

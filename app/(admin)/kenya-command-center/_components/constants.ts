@@ -1,9 +1,10 @@
 import {
   Target, Users, Calendar, DollarSign, MessageSquare, Heart,
   Stethoscope, BookOpen, Building, Star, Briefcase,
-  Truck, Package, Camera, UserPlus, Plane,
+  Truck, Package, Camera, Plane,
   ClipboardList, Layers, StickyNote, Wallet
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { TabType } from './types'
 
 export const serviceTracks = [
@@ -15,7 +16,7 @@ export const serviceTracks = [
   { value: 'Flex', label: 'Flex', icon: Briefcase },
 ] as const
 
-export const tabs: { key: TabType; label: string; icon: any }[] = [
+export const tabs: { key: TabType; label: string; icon: LucideIcon }[] = [
   { key: 'overview', label: 'Overview', icon: Target },
   { key: 'people', label: 'People', icon: Users },
   { key: 'actions', label: 'Actions', icon: ClipboardList },

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -68,15 +68,7 @@ export default function TestimoniesPage() {
   const [filter, setFilter] = useState<string>('all')
   const [featuredIndex, setFeaturedIndex] = useState(0)
 
-  useEffect(() => {
-    fetchFeatured()
-  }, [])
-
-  useEffect(() => {
-    fetchTestimonies()
-  }, [page, filter])
-
-  const fetchFeatured = async () => {
+  const fetchFeatured = useCallback(async () => {
     try {
       const res = await fetch('/api/public/testimonies?featured=true&limit=5')
       const data = await res.json()
@@ -84,9 +76,9 @@ export default function TestimoniesPage() {
     } catch (error) {
       console.error('Error fetching featured:', error)
     }
-  }
+  }, [])
 
-  const fetchTestimonies = async () => {
+  const fetchTestimonies = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -106,7 +98,15 @@ export default function TestimoniesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter, page])
+
+  useEffect(() => {
+    fetchFeatured()
+  }, [fetchFeatured])
+
+  useEffect(() => {
+    fetchTestimonies()
+  }, [fetchTestimonies])
 
   const nextFeatured = () => {
     setFeaturedIndex((prev) => (prev + 1) % featuredTestimonies.length)
@@ -193,9 +193,11 @@ export default function TestimoniesPage() {
                     <div className="flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                         {featuredTestimonies[featuredIndex]?.member?.avatar_url ? (
-                          <img
+                          <Image
                             src={featuredTestimonies[featuredIndex].member?.avatar_url}
                             alt=""
+                            width={48}
+                            height={48}
                             className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
@@ -390,9 +392,11 @@ export default function TestimoniesPage() {
                   <Card key={testimony.id} className="rounded-2xl border-border transition-all hover:border-gold/30 hover:shadow-lg">
                     {testimony.image_url && (
                       <div className="relative aspect-video overflow-hidden bg-muted">
-                        <img
+                        <Image
                           src={testimony.image_url}
                           alt=""
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="h-full w-full object-cover"
                         />
                         {testimony.video_url && (

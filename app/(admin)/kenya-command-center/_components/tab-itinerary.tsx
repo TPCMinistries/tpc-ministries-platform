@@ -55,27 +55,10 @@ function generateDateOptions(startDate: string, endDate: string): { value: strin
   return dates
 }
 
-function formatTime12(time24: string): string {
-  if (!time24) return ''
-  const [h, m] = time24.split(':').map(Number)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h
-  return `${hour12}:${String(m).padStart(2, '0')} ${ampm}`
-}
-
 function extractCity(items: ItineraryItem[]): string {
   // Try location field first, then title
   for (const item of items) {
     if (item.location) return item.location.toUpperCase()
-  }
-  return ''
-}
-
-function getDayTitle(items: ItineraryItem[]): string {
-  // Use the first item's title if it's a "day-level" title, otherwise combine
-  if (items.length > 0) {
-    const first = items[0]
-    if (first.title) return first.title
   }
   return ''
 }

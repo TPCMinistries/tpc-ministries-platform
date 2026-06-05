@@ -67,7 +67,7 @@ const sessionTypeBadge = (type: string) => {
 export function TabLogistics({
   trip, itinerary, conferenceSessions, logisticsMatrix, flights, lodging, contacts,
   upsertLogisticsCell, addConferenceSession, deleteConferenceSession, copyFromItinerary,
-  updateLodgingField, saveStatus,
+  saveStatus,
 }: TabLogisticsProps) {
   // Generate all trip days
   const tripDays = useMemo(() => {
@@ -186,9 +186,6 @@ export function TabLogistics({
     })
     setShowSessionForm(false)
   }
-
-  // Meal tracks for structured editing
-  const mealRows = ['Breakfast', 'Lunch', 'Dinner']
 
   // Notes tracks (combined)
   const notesTracks = ['comms', 'medical', 'security', 'finance', 'admin']
