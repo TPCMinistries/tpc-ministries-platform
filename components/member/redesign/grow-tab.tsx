@@ -2,12 +2,13 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, useReducedMotion } from "framer-motion"
 import { 
   BookOpen, Play, Sparkles, ClipboardList, 
-  ChevronRight, Clock, CheckCircle, Award
+  ChevronRight, Clock, CheckCircle
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -109,10 +110,13 @@ export function GrowTab({
               <div className="flex">
                 <div className="relative w-40 h-24 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                   {continueWatching.thumbnail ? (
-                    <img 
+                    <Image
                       src={continueWatching.thumbnail} 
                       alt={continueWatching.title}
-                      className="object-cover w-full h-full"
+                      fill
+                      unoptimized
+                      sizes="160px"
+                      className="object-cover"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
@@ -183,9 +187,16 @@ export function GrowTab({
                 <Link key={teaching.id} href={"/library/" + teaching.id}>
                   <Card className="hover:shadow-md transition-shadow cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="relative w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {teaching.thumbnail ? (
-                          <img src={teaching.thumbnail} alt="" className="w-full h-full object-cover rounded-lg" />
+                          <Image
+                            src={teaching.thumbnail}
+                            alt=""
+                            fill
+                            unoptimized
+                            sizes="64px"
+                            className="object-cover rounded-lg"
+                          />
                         ) : (
                           <Play className="h-6 w-6 text-muted-foreground" />
                         )}

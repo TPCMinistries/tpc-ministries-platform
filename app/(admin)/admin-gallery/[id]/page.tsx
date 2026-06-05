@@ -26,9 +26,7 @@ import {
   Trash2,
   Star,
   Loader2,
-  GripVertical,
   Check,
-  X,
   ExternalLink
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -104,11 +102,7 @@ export default function AlbumManagePage({ params }: { params: Promise<{ id: stri
     is_featured: false
   })
 
-  useEffect(() => {
-    fetchAlbum()
-  }, [id])
-
-  const fetchAlbum = async () => {
+  const fetchAlbum = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/gallery/${id}`)
@@ -144,7 +138,11 @@ export default function AlbumManagePage({ params }: { params: Promise<{ id: stri
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, router, toast])
+
+  useEffect(() => {
+    fetchAlbum()
+  }, [fetchAlbum])
 
   const handleSave = async () => {
     if (!formData.title.trim()) {
@@ -218,7 +216,7 @@ export default function AlbumManagePage({ params }: { params: Promise<{ id: stri
         const filePath = `gallery/${album?.slug || id}/${fileName}`
 
         // Upload to storage
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from('tpc-media')
           .upload(filePath, file, {
             cacheControl: '3600',

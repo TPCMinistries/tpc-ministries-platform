@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,6 @@ import {
   Loader2,
   BarChart3,
   PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
   Minus
 } from 'lucide-react'
 
@@ -81,11 +79,7 @@ export default function AdminGivingForecastPage() {
   const [loading, setLoading] = useState(true)
   const [months, setMonths] = useState(6)
 
-  useEffect(() => {
-    fetchForecast()
-  }, [months])
-
-  const fetchForecast = async () => {
+  const fetchForecast = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/giving-forecast?months=${months}`)
@@ -97,7 +91,11 @@ export default function AdminGivingForecastPage() {
       console.error('Error fetching forecast:', error)
     }
     setLoading(false)
-  }
+  }, [months])
+
+  useEffect(() => {
+    fetchForecast()
+  }, [fetchForecast])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -241,7 +239,7 @@ export default function AdminGivingForecastPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {data.forecasts.map((forecast, i) => (
+                    {data.forecasts.map((forecast) => (
                       <div key={forecast.month} className="flex items-center gap-4">
                         <div className="w-20 text-sm text-gray-500">
                           {new Date(forecast.month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
@@ -408,7 +406,7 @@ export default function AdminGivingForecastPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end gap-2 h-48">
-                    {data.historical.map((month, i) => {
+                    {data.historical.map((month) => {
                       const maxTotal = Math.max(...data.historical.map(m => m.total))
                       const height = (month.total / maxTotal) * 100
 

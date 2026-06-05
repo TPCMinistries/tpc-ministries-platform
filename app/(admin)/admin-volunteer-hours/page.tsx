@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -36,14 +36,10 @@ import {
   Plus,
   CheckCircle2,
   XCircle,
-  Filter,
   RefreshCw,
   Loader2,
-  Calendar,
-  User,
   Award,
   TrendingUp,
-  Download,
   Search,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -120,12 +116,7 @@ export default function VolunteerHoursPage() {
     auto_approve: false,
   })
 
-  useEffect(() => {
-    fetchHours()
-    fetchMembers()
-  }, [statusFilter])
-
-  const fetchHours = async () => {
+  const fetchHours = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -142,9 +133,9 @@ export default function VolunteerHoursPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('members')
@@ -152,7 +143,12 @@ export default function VolunteerHoursPage() {
       .order('first_name')
 
     setMembers(data || [])
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchHours()
+    fetchMembers()
+  }, [fetchHours, fetchMembers])
 
   const handleSubmit = async () => {
     if (!formData.member_id || !formData.hours_worked) return

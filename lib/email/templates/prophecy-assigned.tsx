@@ -43,7 +43,7 @@ export default function ProphecyAssigned({
             <Text style={greeting}>Dear {memberName},</Text>
 
             <Text style={text}>
-              The Lord has spoken a personal word over your life! We're excited to share
+              The Lord has spoken a personal word over your life! We&apos;re excited to share
               a new prophetic message that has been prepared specifically for you.
             </Text>
 
@@ -83,14 +83,14 @@ export default function ProphecyAssigned({
 
             <Section style={verseBox}>
               <Text style={verseText}>
-                "Pursue love, and earnestly desire the spiritual gifts, especially that you may prophesy."
+                &ldquo;Pursue love, and earnestly desire the spiritual gifts, especially that you may prophesy.&rdquo;
               </Text>
               <Text style={verseRef}>— 1 Corinthians 14:1</Text>
             </Section>
 
             <Text style={text}>
-              If you have questions about your prophecy or would like prayer, please don't hesitate
-              to reach out to us. We're here to support you on your spiritual journey.
+              If you have questions about your prophecy or would like prayer, please don&apos;t hesitate
+              to reach out to us. We&apos;re here to support you on your spiritual journey.
             </Text>
 
             <Text style={signature}>

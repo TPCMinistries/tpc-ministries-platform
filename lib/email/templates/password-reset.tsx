@@ -58,7 +58,7 @@ export default function PasswordReset({
             </Section>
 
             <Text style={text}>
-              If the button above doesn't work, copy and paste this URL into your browser:
+              If the button above doesn&apos;t work, copy and paste this URL into your browser:
             </Text>
 
             <Text style={urlText}>{resetUrl}</Text>
@@ -70,7 +70,7 @@ export default function PasswordReset({
                 <br />
                 • Use a mix of letters, numbers, and symbols
                 <br />
-                • Don't reuse passwords from other accounts
+                • Don&apos;t reuse passwords from other accounts
                 <br />
                 • Consider using a password manager
               </Text>
@@ -78,10 +78,10 @@ export default function PasswordReset({
 
             <Section style={alertBox}>
               <Text style={alertText}>
-                <strong>Didn't request this?</strong>
+                <strong>Didn&apos;t request this?</strong>
                 <br />
-                If you didn't request a password reset, you can safely ignore this email.
-                Your password will remain unchanged. If you're concerned about your account
+                If you didn&apos;t request a password reset, you can safely ignore this email.
+                Your password will remain unchanged. If you&apos;re concerned about your account
                 security, please contact us immediately.
               </Text>
             </Section>
