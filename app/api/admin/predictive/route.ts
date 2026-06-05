@@ -11,9 +11,68 @@ function getOpenAI() { return new OpenAI({
   apiKey: process.env.OPENAI_API_KEY }); }
 
 interface MemberActivity {
-  member_id: any
-  activity_type: any
-  created_at: any
+  member_id: string
+  activity_type: string
+  created_at: string
+}
+
+interface ChurnPrediction {
+  memberId: string
+  memberName: string
+  email: string | null
+  tier: string
+  churnProbability: number
+  riskLevel: 'high' | 'medium' | 'low'
+  riskFactors: string[]
+  daysInactive: number
+  engagementScore: number
+  optimalContactTime: { dayOfWeek: string; timeOfDay: string }
+}
+
+interface EngagementForecast {
+  memberId: string
+  currentScore: number
+  trend: 'declining' | 'stable' | 'increasing'
+  recentActivityCount: number
+  projected30Day: number
+  confidence: number
+}
+
+interface PredictiveResponse {
+  churn?: {
+    atRiskCount: number
+    highRisk: number
+    mediumRisk: number
+    lowRisk: number
+    members: ChurnPrediction[]
+  }
+  engagement?: {
+    overview: {
+      totalTracked: number
+      increasingEngagement: number
+      decliningEngagement: number
+      stableEngagement: number
+      avgCurrentScore: number
+      avgProjectedScore: number
+      projectedTrend: 'up' | 'down' | 'stable'
+    }
+    topGrowing: EngagementForecast[]
+    needingAttention: EngagementForecast[]
+  }
+  content?: {
+    gaps: Array<{ topic: string; searchCount: number; avgResults: number }>
+    recommendations: Array<{ topic: string; reason: string; suggestedType: string }>
+    topPerforming: unknown[]
+  }
+  revenue?: {
+    currentMRR: number
+    lastMonthTotal: number
+    projectedNextMonth: number
+    trend: 'increasing' | 'decreasing' | 'stable'
+    changePercentage: number
+    monthlyHistory: Array<{ month: string; total: number }>
+  }
+  recommendations?: Array<{ title: string; description: string }>
 }
 
 interface ChurnRiskFactors {
@@ -101,6 +160,7 @@ Suggest a specific, personalized way to reach out and reconnect with this member
 
     return response.choices[0]?.message?.content || 'Consider a personal phone call or email to check in.'
   } catch (error) {
+    console.error('Error generating retention recommendation:', error)
     return 'Consider a personal phone call or email to check in on their spiritual journey.'
   }
 }
@@ -180,7 +240,7 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
 
-    const predictions: any = {}
+    const predictions: PredictiveResponse = {}
 
     // =====================================
     // CHURN PREDICTIONS
@@ -190,7 +250,7 @@ export async function GET(request: NextRequest) {
         .from('members')
         .select('id, first_name, last_name, email, tier, created_at')
 
-      const churnRisks: any[] = []
+      const churnRisks: ChurnPrediction[] = []
 
       for (const member of members || []) {
         // Get member activity
@@ -296,7 +356,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Calculate forecasts
-      const forecasts: any[] = []
+      const forecasts: EngagementForecast[] = []
 
       for (const [memberId, activities] of Object.entries(memberActivities)) {
         const trend = analyzeActivityTrend(activities)
@@ -494,6 +554,7 @@ Generate strategic recommendations for the next 30 days.`
         const jsonMatch = content.match(/\[[\s\S]*\]/)
         predictions.recommendations = jsonMatch ? JSON.parse(jsonMatch[0]) : []
       } catch (error) {
+        console.error('Error generating strategic recommendations:', error)
         predictions.recommendations = [
           {
             title: 'Focus on At-Risk Members',

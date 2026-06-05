@@ -13,13 +13,6 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Shield,
@@ -36,7 +29,6 @@ import {
   ChevronDown,
   ChevronRight,
   Lock,
-  Save,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -99,7 +91,6 @@ export default function PermissionsPage() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(CATEGORY_ORDER))
-  const [pendingChanges, setPendingChanges] = useState<Map<string, boolean>>(new Map())
 
   useEffect(() => {
     fetchData()

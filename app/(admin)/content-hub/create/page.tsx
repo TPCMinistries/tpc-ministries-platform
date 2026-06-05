@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -14,17 +12,27 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Loader2, ArrowLeft, Save, Eye } from 'lucide-react'
-import { CONTENT_TYPES, getContentType, generateSlug, type ContentTypeConfig } from '@/lib/content/content-types'
+import { CONTENT_TYPES, getContentType, generateSlug } from '@/lib/content/content-types'
 import DynamicField from '@/components/content-hub/dynamic-field'
 import ContentPreview from '@/components/content-hub/content-preview'
 import { useToast } from '@/hooks/use-toast'
+
+type ContentFormData = Record<string, unknown>
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Failed to save'
+}
+
+function asString(value: unknown) {
+  return typeof value === 'string' ? value : ''
+}
 
 export default function CreateContentPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialType = searchParams.get('type') || CONTENT_TYPES[0].id
   const [contentType, setContentType] = useState(initialType)
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<ContentFormData>({})
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const { toast } = useToast()
@@ -36,7 +44,7 @@ export default function CreateContentPage() {
     const newConfig = getContentType(contentType)
     if (!newConfig) return
 
-    const defaults: Record<string, any> = {}
+    const defaults: ContentFormData = {}
     for (const field of newConfig.fields) {
       if (field.defaultValue !== undefined) {
         defaults[field.name] = field.defaultValue
@@ -70,13 +78,13 @@ export default function CreateContentPage() {
     } catch {}
   }, [contentType])
 
-  const updateField = (name: string, value: any) => {
+  const updateField = (name: string, value: unknown) => {
     setFormData(prev => {
       const updated = { ...prev, [name]: value }
       // Auto-generate slug from title
       if (name === config?.titleField && config?.slugField) {
         if (!prev[config.slugField] || prev._autoSlug) {
-          updated[config.slugField] = generateSlug(value)
+          updated[config.slugField] = generateSlug(asString(value))
           updated._autoSlug = true
         }
       }
@@ -108,15 +116,13 @@ export default function CreateContentPage() {
         throw new Error(err.details || err.error)
       }
 
-      const json = await res.json()
-
       // Clear localStorage draft
       try { localStorage.removeItem(`content-hub-draft-${contentType}`) } catch {}
 
       toast({ title: 'Created', description: `${config.label} created successfully` })
       router.push('/content-hub')
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to save', variant: 'destructive' })
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' })
     } finally {
       setSaving(false)
     }
@@ -202,8 +208,8 @@ export default function CreateContentPage() {
       <ContentPreview
         open={showPreview}
         onClose={() => setShowPreview(false)}
-        title={formData[config.titleField] || 'Untitled'}
-        html={formData[config.bodyField] || ''}
+        title={asString(formData[config.titleField]) || 'Untitled'}
+        html={asString(formData[config.bodyField])}
       />
     </div>
   )
