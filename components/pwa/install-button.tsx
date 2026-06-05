@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, Share, Smartphone, Monitor, X } from 'lucide-react'
+import { Download, Share, Smartphone, Monitor } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,9 @@ export default function InstallButton({ variant = 'default', className }: Instal
     }
 
     // Check if iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    const isIOSDevice =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !('MSStream' in window)
     setIsIOS(isIOSDevice)
 
     // Listen for install prompt (Android/Desktop)
@@ -192,7 +194,7 @@ function IOSInstallModal({ open, onClose }: { open: boolean; onClose: () => void
               2
             </div>
             <div>
-              <p className="font-medium">Scroll and tap "Add to Home Screen"</p>
+              <p className="font-medium">Scroll and tap &quot;Add to Home Screen&quot;</p>
               <p className="text-sm text-gray-500">
                 It has a + icon next to it
               </p>
@@ -203,7 +205,7 @@ function IOSInstallModal({ open, onClose }: { open: boolean; onClose: () => void
               3
             </div>
             <div>
-              <p className="font-medium">Tap "Add" in the top right</p>
+              <p className="font-medium">Tap &quot;Add&quot; in the top right</p>
               <p className="text-sm text-gray-500">
                 The app will appear on your home screen
               </p>
@@ -212,7 +214,7 @@ function IOSInstallModal({ open, onClose }: { open: boolean; onClose: () => void
         </div>
         <div className="bg-gold/10 border border-gold/20 rounded-lg p-3">
           <p className="text-sm text-navy">
-            <strong>Tip:</strong> Make sure you're using Safari. This won't work in Chrome or other browsers on iOS.
+            <strong>Tip:</strong> Make sure you&apos;re using Safari. This won&apos;t work in Chrome or other browsers on iOS.
           </p>
         </div>
         <Button onClick={onClose} className="w-full bg-navy hover:bg-navy/90">

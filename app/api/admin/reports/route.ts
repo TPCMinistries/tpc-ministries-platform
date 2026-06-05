@@ -6,6 +6,34 @@ export const dynamic = 'force-dynamic'
 
 function getSupabase() { return createAdminClient() }
 
+interface MinistryReport {
+  generatedAt: string
+  reportType: string
+  dateRange: {
+    startDate: string
+    endDate: string
+  }
+  data?: unknown
+}
+
+interface RelatedMember {
+  first_name?: string | null
+  last_name?: string | null
+  email?: string | null
+}
+
+function relatedMember(value: RelatedMember | RelatedMember[] | null | undefined): RelatedMember | null {
+  if (Array.isArray(value)) {
+    return value[0] ?? null
+  }
+
+  return value ?? null
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 // Exportable Ministry Reports API
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +50,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate') || new Date().toISOString()
     const format = searchParams.get('format') || 'json' // json, csv
 
-    const report: any = {
+    const report: MinistryReport = {
       generatedAt: new Date().toISOString(),
       reportType,
       dateRange: { startDate, endDate }
@@ -184,14 +212,18 @@ export async function GET(request: NextRequest) {
         report.data = {
           totalAmount: total,
           count: donations?.length || 0,
-          donations: donations?.map(d => ({
-            amount: d.amount,
-            type: d.donation_type,
-            fund: d.designation || 'General',
-            recurring: d.is_recurring,
-            donor: (d.members as any)?.first_name ? `${(d.members as any).first_name} ${(d.members as any).last_name}` : 'Anonymous',
-            date: d.created_at
-          })) || []
+          donations: donations?.map(d => {
+            const donor = relatedMember(d.members as RelatedMember | RelatedMember[] | null)
+
+            return {
+              amount: d.amount,
+              type: d.donation_type,
+              fund: d.designation || 'General',
+              recurring: d.is_recurring,
+              donor: donor?.first_name ? `${donor.first_name} ${donor.last_name ?? ''}`.trim() : 'Anonymous',
+              date: d.created_at
+            }
+          }) || []
         }
         break
       }
@@ -255,13 +287,17 @@ export async function GET(request: NextRequest) {
           byCategory: Object.entries(byCategory)
             .map(([category, count]) => ({ category, count }))
             .sort((a, b) => b.count - a.count),
-          prayers: prayers?.filter(p => !p.is_private).map(p => ({
-            title: p.title,
-            category: p.category,
-            answered: p.is_answered,
-            submittedBy: (p.members as any)?.first_name || 'Anonymous',
-            date: p.created_at
-          })) || []
+          prayers: prayers?.filter(p => !p.is_private).map(p => {
+            const submittedBy = relatedMember(p.members as RelatedMember | RelatedMember[] | null)
+
+            return {
+              title: p.title,
+              category: p.category,
+              answered: p.is_answered,
+              submittedBy: submittedBy?.first_name || 'Anonymous',
+              date: p.created_at
+            }
+          }) || []
         }
         break
       }
@@ -290,16 +326,24 @@ export async function GET(request: NextRequest) {
 }
 
 // Convert report data to CSV format
-function convertToCSV(data: any): string {
+function convertToCSV(data: unknown): string {
   if (!data) return ''
 
   // Handle different data structures
   if (Array.isArray(data)) {
     if (data.length === 0) return ''
-    const headers = Object.keys(data[0])
-    const rows = data.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(','))
+    const firstRow = data.find(isRecord)
+    if (!firstRow) return data.map(value => JSON.stringify(value ?? '')).join('\n')
+
+    const headers = Object.keys(firstRow)
+    const rows = data.map(row => {
+      if (!isRecord(row)) return JSON.stringify(row ?? '')
+      return headers.map(h => JSON.stringify(row[h] ?? '')).join(',')
+    })
     return [headers.join(','), ...rows].join('\n')
   }
+
+  if (!isRecord(data)) return JSON.stringify(data)
 
   // For nested objects, flatten first level
   const lines: string[] = []
@@ -310,24 +354,41 @@ function convertToCSV(data: any): string {
 
     if (Array.isArray(sectionData)) {
       if (sectionData.length > 0) {
-        const headers = Object.keys(sectionData[0])
+        const firstRow = sectionData.find(isRecord)
+        if (!firstRow) {
+          lines.push(sectionData.map(value => JSON.stringify(value ?? '')).join(','))
+          continue
+        }
+
+        const headers = Object.keys(firstRow)
         lines.push(headers.join(','))
         for (const row of sectionData) {
-          lines.push(headers.map(h => JSON.stringify((row as any)[h] ?? '')).join(','))
+          if (!isRecord(row)) {
+            lines.push(JSON.stringify(row ?? ''))
+            continue
+          }
+
+          lines.push(headers.map(h => JSON.stringify(row[h] ?? '')).join(','))
         }
       }
-    } else if (typeof sectionData === 'object' && sectionData !== null) {
+    } else if (isRecord(sectionData)) {
       for (const [key, value] of Object.entries(sectionData)) {
         if (Array.isArray(value)) {
           lines.push(`${key}:`)
-          if (value.length > 0 && typeof value[0] === 'object') {
-            const headers = Object.keys(value[0])
+          const firstRow = value.find(isRecord)
+          if (firstRow) {
+            const headers = Object.keys(firstRow)
             lines.push(headers.join(','))
             for (const row of value) {
-              lines.push(headers.map(h => JSON.stringify((row as any)[h] ?? '')).join(','))
+              if (!isRecord(row)) {
+                lines.push(JSON.stringify(row ?? ''))
+                continue
+              }
+
+              lines.push(headers.map(h => JSON.stringify(row[h] ?? '')).join(','))
             }
           } else {
-            lines.push(value.join(','))
+            lines.push(value.map(item => JSON.stringify(item ?? '')).join(','))
           }
         } else {
           lines.push(`${key},${JSON.stringify(value)}`)

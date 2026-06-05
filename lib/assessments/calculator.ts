@@ -23,6 +23,21 @@ export interface AssessmentResult {
   next_steps: string[]
 }
 
+interface AssessmentResultInfo {
+  title: string
+  description: string
+  strengths: string[]
+  growth_areas: string[]
+  ministries: string[]
+  scriptures: string[]
+  next_steps: string[]
+}
+
+interface AssessmentAreaInfo {
+  title: string
+  description: string
+}
+
 /**
  * Calculate Spiritual Gifts Assessment Results
  */
@@ -60,7 +75,7 @@ export function calculateSpiritualGifts(responses: AssessmentResponse): Assessme
   const [primary, secondary, tertiary] = sortedGifts
 
   // Gift descriptions
-  const giftDescriptions: { [key: string]: any } = {
+  const giftDescriptions: { [key: string]: AssessmentResultInfo } = {
     administration: {
       title: 'Administration',
       description: 'You excel at organizing people, tasks, and resources to accomplish Kingdom goals efficiently.',
@@ -360,7 +375,7 @@ export function calculateSeasonal(responses: AssessmentResponse): AssessmentResu
 
   const [primary, secondary, tertiary] = sortedSeasons
 
-  const seasonInfo: any = {
+  const seasonInfo: { [key: string]: AssessmentResultInfo } = {
     spring: {
       title: 'Spring - Season of New Beginnings',
       description: 'You are in a season of fresh growth, new opportunities, and spiritual awakening. God is planting new seeds in your life.',
@@ -492,7 +507,7 @@ export function calculatePropheticExpression(responses: AssessmentResponse): Ass
 
   const [primary, secondary, tertiary] = sortedExpressions
 
-  const expressionInfo: { [key: string]: any } = {
+  const expressionInfo: { [key: string]: AssessmentResultInfo } = {
     seer: {
       title: 'Seer',
       description: 'You receive revelation primarily through visions, dreams, and visual imagery. You "see" what God is showing you in the spirit realm.',
@@ -648,7 +663,7 @@ export function calculateMinistryCalling(responses: AssessmentResponse): Assessm
 
   const [primary, secondary, tertiary] = sortedCallings
 
-  const callingInfo: { [key: string]: any } = {
+  const callingInfo: { [key: string]: AssessmentResultInfo } = {
     teaching: {
       title: 'Teaching Ministry',
       description: 'You are called to study, understand, and communicate God\'s Word to help others grow in knowledge and application of Scripture.',
@@ -848,7 +863,7 @@ export function calculateRedemptiveGifts(responses: AssessmentResponse): Assessm
 
   const [primary, secondary, tertiary] = sortedGifts
 
-  const giftInfo: { [key: string]: any } = {
+  const giftInfo: { [key: string]: AssessmentResultInfo } = {
     prophet: {
       title: 'Prophet (Perceiver)',
       description: 'You see the world in black and white, right and wrong. You have a passion for truth and easily identify what\'s out of alignment.',
@@ -1043,24 +1058,19 @@ export function calculateSpiritualMaturity(responses: AssessmentResponse): Asses
   // Calculate overall maturity level
   const overallScore = Math.round(Object.values(scores).reduce((a, b) => a + b, 0) / 5)
 
-  let maturityLevel: string
   let maturityTitle: string
   let maturityDescription: string
 
   if (overallScore >= 80) {
-    maturityLevel = 'mature'
     maturityTitle = 'Mature'
     maturityDescription = 'You demonstrate deep spiritual maturity across multiple areas. You\'re ready to lead, mentor, and multiply.'
   } else if (overallScore >= 60) {
-    maturityLevel = 'growing'
     maturityTitle = 'Growing'
     maturityDescription = 'You\'re actively developing in your faith and showing growth in key areas. Keep pressing forward!'
   } else if (overallScore >= 40) {
-    maturityLevel = 'developing'
     maturityTitle = 'Developing'
     maturityDescription = 'You\'ve established foundations and are developing in your faith. Focus on consistent growth habits.'
   } else {
-    maturityLevel = 'beginning'
     maturityTitle = 'Beginning'
     maturityDescription = 'You\'re at the beginning of an exciting journey! Focus on foundational disciplines and finding community.'
   }
@@ -1071,7 +1081,7 @@ export function calculateSpiritualMaturity(responses: AssessmentResponse): Asses
 
   const [strongest, secondStrong, weakest] = [sortedAreas[0], sortedAreas[1], sortedAreas[sortedAreas.length - 1]]
 
-  const areaInfo: { [key: string]: any } = {
+  const areaInfo: { [key: string]: AssessmentAreaInfo } = {
     knowledge: {
       title: 'Biblical Knowledge',
       description: 'Understanding of Scripture and ability to apply it',
@@ -1094,7 +1104,6 @@ export function calculateSpiritualMaturity(responses: AssessmentResponse): Asses
     },
   }
 
-  const strengthAreas = [strongest, secondStrong].map(a => areaInfo[a]?.title || a)
   const growthAreas = sortedAreas.slice(-2).map(a => areaInfo[a]?.title || a)
 
   return {

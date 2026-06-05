@@ -25,18 +25,14 @@ import {
   Calendar,
   Gift,
   Mail,
-  Phone,
   Edit2,
   Trash2,
   Crown,
   Baby,
   User,
   Send,
-  CheckCircle2,
   Clock,
   Cake,
-  Star,
-  BookOpen,
   Sparkles
 } from 'lucide-react'
 
@@ -140,7 +136,7 @@ export default function FamilyPage() {
       .single()
 
     if (familyMembership && familyMembership.family) {
-      setFamily(familyMembership.family as any)
+      setFamily(familyMembership.family as Family)
       setIsHead(familyMembership.is_primary)
 
       // Fetch all family members
@@ -154,7 +150,7 @@ export default function FamilyPage() {
         .order('is_primary', { ascending: false })
 
       if (familyMembers) {
-        setMembers(familyMembers as any)
+        setMembers(familyMembers as unknown as FamilyMember[])
       }
 
       // Fetch pending invites
@@ -332,7 +328,6 @@ export default function FamilyPage() {
 
   const getUpcomingBirthdays = () => {
     const today = new Date()
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
 
     return members
       .filter(m => m.member.birth_date)
@@ -861,7 +856,7 @@ export default function FamilyPage() {
                         <div key={m.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                           <div className="flex items-center gap-2">
                             <Cake className="h-4 w-4 text-pink-500" />
-                            <span className="text-sm">{m.member.first_name}'s Birthday</span>
+                            <span className="text-sm">{m.member.first_name}&apos;s Birthday</span>
                           </div>
                           <span className="text-sm text-gray-500">
                             {birthDate.toLocaleDateString('en-US', {
