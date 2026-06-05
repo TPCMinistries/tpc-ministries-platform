@@ -11,14 +11,14 @@ export default function OfflinePage() {
           <div className="w-24 h-24 mx-auto bg-white/10 rounded-full flex items-center justify-center mb-6">
             <WifiOff className="h-12 w-12 text-gold" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">You're Offline</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">You&rsquo;re Offline</h1>
           <p className="text-white/70">
-            It looks like you've lost your internet connection. Don't worry, your spiritual journey continues!
+            It looks like you&rsquo;ve lost your internet connection. Don&rsquo;t worry, your spiritual journey continues!
           </p>
         </div>
 
         <div className="bg-white/10 backdrop-blur rounded-2xl p-6 mb-8">
-          <h2 className="text-lg font-semibold text-white mb-4">While you're offline, you can:</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">While you&rsquo;re offline, you can:</h2>
           <ul className="text-left text-white/80 space-y-3">
             <li className="flex items-start gap-3">
               <span className="text-gold">•</span>
@@ -30,7 +30,7 @@ export default function OfflinePage() {
             </li>
             <li className="flex items-start gap-3">
               <span className="text-gold">•</span>
-              <span>Journal your thoughts (they'll sync when you're back online)</span>
+              <span>Journal your thoughts (they&rsquo;ll sync when you&rsquo;re back online)</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-gold">•</span>

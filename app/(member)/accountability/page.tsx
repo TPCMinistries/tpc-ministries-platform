@@ -15,9 +15,9 @@ import {
   MessageCircle,
   UserPlus,
   CheckCircle2,
-  Send,
   Calendar,
-  Sparkles
+  Sparkles,
+  type LucideIcon
 } from 'lucide-react'
 
 interface Partner {
@@ -39,6 +39,17 @@ interface PartnerPreference {
   bio: string
 }
 
+interface PartnershipRow {
+  id: string
+  partnership_type: string
+  status: string
+  started_at: string
+  meeting_frequency: string
+  member1_id: string
+  partner1: Partner['partner']
+  partner2: Partner['partner']
+}
+
 interface PotentialMatch {
   id: string
   first_name: string
@@ -47,6 +58,21 @@ interface PotentialMatch {
     preferred_types: string[]
     bio: string
   }
+}
+
+interface PotentialMatchRow {
+  member_id: string
+  preferred_types: string[]
+  bio: string
+  member: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+  } | {
+    id: string
+    first_name: string | null
+    last_name: string | null
+  }[] | null
 }
 
 export default function AccountabilityPage() {
@@ -92,7 +118,7 @@ export default function AccountabilityPage() {
         .eq('status', 'active')
 
       if (partnerships) {
-        const formattedPartners = partnerships.map((p: any) => ({
+        const formattedPartners = (partnerships as PartnershipRow[]).map((p) => ({
           id: p.id,
           partnership_type: p.partnership_type,
           status: p.status,
@@ -132,15 +158,20 @@ export default function AccountabilityPage() {
         .limit(10)
 
       if (matches) {
-        const formattedMatches = matches.map((m: any) => ({
-          id: m.member_id,
-          first_name: m.member?.first_name,
-          last_name: m.member?.last_name,
-          preferences: {
-            preferred_types: m.preferred_types,
-            bio: m.bio
-          }
-        })).filter((m: PotentialMatch) => m.first_name)
+        const formattedMatches = (matches as PotentialMatchRow[]).flatMap((m) => {
+          const matchedMember = Array.isArray(m.member) ? m.member[0] : m.member
+          if (!matchedMember?.first_name) return []
+
+          return [{
+            id: m.member_id,
+            first_name: matchedMember.first_name,
+            last_name: matchedMember.last_name || '',
+            preferences: {
+              preferred_types: m.preferred_types,
+              bio: m.bio
+            }
+          }]
+        })
         setPotentialMatches(formattedMatches)
       }
     }
@@ -185,7 +216,7 @@ export default function AccountabilityPage() {
   }
 
   const getTypeIcon = (type: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       prayer: Heart,
       reading: BookOpen,
       fasting: Utensils,
@@ -354,7 +385,7 @@ export default function AccountabilityPage() {
 
                       {match.preferences.bio && (
                         <p className="text-sm text-gray-600 mb-4 italic">
-                          "{match.preferences.bio}"
+                          &ldquo;{match.preferences.bio}&rdquo;
                         </p>
                       )}
 

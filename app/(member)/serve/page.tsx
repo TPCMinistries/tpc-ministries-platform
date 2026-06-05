@@ -19,9 +19,9 @@ import {
   Clock,
   MapPin,
   CheckCircle2,
-  ChevronRight,
   Trophy,
-  Star
+  Star,
+  type LucideIcon
 } from 'lucide-react'
 
 interface Team {
@@ -46,6 +46,14 @@ interface MyTeam {
   status: string
   joined_at: string
   team: Team
+}
+
+interface TeamMembershipRow extends Omit<MyTeam, 'team'> {
+  team: Team
+}
+
+interface ServiceOpportunityRow extends Omit<Opportunity, 'team'> {
+  team: Opportunity['team']
 }
 
 interface Opportunity {
@@ -109,7 +117,7 @@ export default function ServePage() {
         .eq('status', 'active')
 
       if (teamMemberships) {
-        setMyTeams(teamMemberships as any)
+        setMyTeams(teamMemberships as TeamMembershipRow[])
       }
 
       // Fetch volunteer hours
@@ -143,7 +151,7 @@ export default function ServePage() {
       .order('name')
 
     if (teamsData) {
-      setTeams(teamsData as any)
+      setTeams(teamsData as Team[])
     }
 
     // Fetch upcoming opportunities
@@ -158,7 +166,7 @@ export default function ServePage() {
       .limit(10)
 
     if (opps) {
-      setOpportunities(opps as any)
+      setOpportunities(opps as ServiceOpportunityRow[])
     }
 
     setLoading(false)
@@ -194,7 +202,7 @@ export default function ServePage() {
   }
 
   const getCategoryIcon = (category: string) => {
-    const icons: Record<string, any> = {
+    const icons: Record<string, LucideIcon> = {
       worship: Music,
       children: Baby,
       youth: Users,
@@ -424,7 +432,7 @@ export default function ServePage() {
                 <CardContent>
                   {myTeams.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">
-                      You haven't joined any teams yet
+                      You haven&apos;t joined any teams yet
                     </p>
                   ) : (
                     <div className="space-y-3">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { formatDistanceToNow, format } from 'date-fns'
+import { format } from 'date-fns'
 import {
   Target,
   TrendingUp,
@@ -76,9 +76,26 @@ interface PledgeTrackerProps {
     total_pledged_monthly: number
     average_progress: number
   }
-  onCreatePledge: (pledge: any) => Promise<void>
-  onUpdatePledge: (pledge: any) => Promise<void>
+  onCreatePledge: (pledge: PledgeCreateInput) => Promise<void>
+  onUpdatePledge: (pledge: PledgeUpdateInput) => Promise<void>
   onDeletePledge: (id: string) => Promise<void>
+}
+
+interface PledgeCreateInput {
+  fund_id: string | null
+  amount: number
+  frequency: string
+  end_date: string | null
+  notes: string | null
+}
+
+interface PledgeUpdateInput {
+  id: string
+  amount?: number
+  frequency?: string
+  end_date?: string | null
+  notes?: string | null
+  is_active?: boolean
 }
 
 export default function PledgeTracker({
@@ -192,13 +209,6 @@ export default function PledgeTracker({
       'one-time': 'One-time'
     }
     return labels[freq] || freq
-  }
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return 'bg-green-500'
-    if (progress >= 75) return 'bg-blue-500'
-    if (progress >= 50) return 'bg-yellow-500'
-    return 'bg-red-500'
   }
 
   return (
@@ -378,7 +388,7 @@ export default function PledgeTracker({
 
                   {pledge.notes && (
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">
-                      "{pledge.notes}"
+                      &ldquo;{pledge.notes}&rdquo;
                     </p>
                   )}
                 </div>

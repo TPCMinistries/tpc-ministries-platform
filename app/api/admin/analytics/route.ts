@@ -6,6 +6,50 @@ export const dynamic = 'force-dynamic'
 
 const supabase = createAdminClient()
 
+type AnalyticsPayload = {
+  dateRange: {
+    startDate: string
+    endDate: string
+    comparisonStartDate: string
+    comparisonEndDate: string
+  }
+  members?: {
+    total: number
+    byTier: Record<string, number>
+    [key: string]: unknown
+  }
+  content?: Record<string, unknown>
+  revenue?: Record<string, unknown>
+  engagement?: Record<string, unknown>
+  growth?: Record<string, unknown>
+  plant?: Record<string, unknown>
+  gamification?: Record<string, unknown>
+}
+
+interface MemberActivitySummary {
+  id: string
+  name: string
+  actions: number
+  score: number
+}
+
+interface AtRiskMemberSummary {
+  id: string
+  name: string
+  daysInactive: number
+  lastAction: string
+}
+
+type CourseRelation = { title?: string } | { title?: string }[] | null
+
+const getCourseTitle = (courses: CourseRelation) => {
+  if (Array.isArray(courses)) {
+    return courses[0]?.title || 'Unknown'
+  }
+
+  return courses?.title || 'Unknown'
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireStaff()
@@ -15,7 +59,6 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const section = searchParams.get('section') || 'all'
-    const view = searchParams.get('view') || 'default' // board, pastoral, ministry
 
     // Date range support
     const now = new Date()
@@ -38,7 +81,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    const analytics: any = {
+    const analytics: AnalyticsPayload = {
       dateRange: {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -151,7 +194,7 @@ export async function GET(request: NextRequest) {
         .slice(0, 5)
         .map(([id]) => id)
 
-      let mostActiveMembers: any[] = []
+      let mostActiveMembers: MemberActivitySummary[] = []
       if (topMemberIds.length > 0) {
         const { data: topMembers } = await supabase
           .from('members')
@@ -167,13 +210,12 @@ export async function GET(request: NextRequest) {
       }
 
       // At-risk members (inactive 30+ days)
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
       const { data: allMembers } = await supabase
         .from('members')
         .select('id, first_name, last_name')
         .limit(50)
 
-      const atRiskMembers: any[] = []
+      const atRiskMembers: AtRiskMemberSummary[] = []
       for (const member of allMembers || []) {
         const { data: lastActivity } = await supabase
           .from('member_activity')
@@ -415,8 +457,8 @@ export async function GET(request: NextRequest) {
           date,
           amount
         })).sort((a, b) => a.date.localeCompare(b.date)),
-        avgLifetimeValue: analytics.members?.total > 0
-          ? Math.round((thisMonthTotal * 12) / analytics.members.total)
+        avgLifetimeValue: (analytics.members?.total || 0) > 0
+          ? Math.round((thisMonthTotal * 12) / (analytics.members?.total || 1))
           : 0
       }
     }
@@ -592,7 +634,7 @@ export async function GET(request: NextRequest) {
       for (const e of topCourses || []) {
         const id = e.course_id
         if (!courseCounts[id]) {
-          courseCounts[id] = { count: 0, title: (e.courses as any)?.title || 'Unknown' }
+          courseCounts[id] = { count: 0, title: getCourseTitle(e.courses as CourseRelation) }
         }
         courseCounts[id].count++
       }
