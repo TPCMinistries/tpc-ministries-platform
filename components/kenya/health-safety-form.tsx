@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   CheckCircle, Loader2, AlertCircle, Heart,
-  Shield, Users, Shirt, Globe, Stethoscope,
+  Shield, Users, Stethoscope,
 } from 'lucide-react'
 
 interface HealthSafetyFormData {

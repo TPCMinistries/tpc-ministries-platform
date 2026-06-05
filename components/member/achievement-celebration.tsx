@@ -21,7 +21,7 @@ interface Achievement {
   achievement_type: string
   title: string
   description?: string
-  achievement_data?: any
+  achievement_data?: unknown
   celebrated: boolean
 }
 
@@ -125,7 +125,7 @@ export default function AchievementCelebration({ className }: AchievementCelebra
           text: `I just earned "${achievement.title}" on TPC Ministries!`,
           url: window.location.origin
         })
-      } catch (error) {
+      } catch {
         // User cancelled or error
       }
     }

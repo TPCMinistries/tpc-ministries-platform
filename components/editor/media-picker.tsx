@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Tabs,
   TabsContent,
@@ -18,7 +17,7 @@ import {
 } from '@/components/ui/tabs'
 import {
   Search, Upload, Loader2, Check, ImageIcon,
-  Music, Video, FileText, X,
+  Music, Video, FileText,
 } from 'lucide-react'
 import Image from 'next/image'
 
