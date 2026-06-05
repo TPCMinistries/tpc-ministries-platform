@@ -53,13 +53,13 @@ export function KenyaWhatsNext() {
       <div className="relative">
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-gold">
-            What's next
+            What&apos;s next
           </div>
           <h2 className="mx-auto mt-5 max-w-3xl font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
-            The story doesn't end here.
+            The story doesn&apos;t end here.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-white/70">
-            Kenya was a chapter. We're already writing the next one. Walk it with us.
+            Kenya was a chapter. We&apos;re already writing the next one. Walk it with us.
           </p>
         </div>
 
@@ -107,7 +107,7 @@ export function KenyaWhatsNext() {
           className="mt-20 text-center"
         >
           <p className="font-serif text-2xl italic text-white/60 sm:text-3xl">
-            "Go therefore and make disciples of all nations."
+            &ldquo;Go therefore and make disciples of all nations.&rdquo;
           </p>
           <p className="mt-2 text-xs uppercase tracking-[0.2em] text-gold/70">
             Matthew 28:19

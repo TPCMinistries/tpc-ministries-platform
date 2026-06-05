@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import WeeklyNewsletterFull from '@/lib/email/templates/weekly-newsletter-full'
 import { render } from '@react-email/render'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createAdminClient()
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY)
@@ -19,6 +16,23 @@ interface WeeklyStats {
   prayersAnswered: number
   newMembers: number
   teachingsWatched: number
+}
+
+interface SubscriptionMember {
+  id: string
+  email: string | null
+  first_name: string | null
+  last_name?: string | null
+  tier: string | null
+}
+
+interface EmailSubscriptionRow {
+  member_id: string
+  members: SubscriptionMember | SubscriptionMember[] | null
+}
+
+function getSubscriptionMember(row: EmailSubscriptionRow): SubscriptionMember | null {
+  return Array.isArray(row.members) ? row.members[0] ?? null : row.members
 }
 
 export async function GET(request: NextRequest) {
@@ -92,13 +106,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch subscriptions' }, { status: 500 })
     }
 
-    const recipients = (subscriptions || [])
-      .filter(s => (s.members as any)?.email)
-      .map(s => ({
-        email: (s.members as any).email,
-        firstName: (s.members as any).first_name || 'Friend',
-        tier: (s.members as any).tier || 'free',
-        memberId: (s.members as any).id
+    const recipients = ((subscriptions || []) as EmailSubscriptionRow[])
+      .map(getSubscriptionMember)
+      .filter((member): member is SubscriptionMember => Boolean(member?.email))
+      .map(member => ({
+        email: member.email as string,
+        firstName: member.first_name || 'Friend',
+        tier: member.tier || 'free',
+        memberId: member.id,
       }))
 
     if (recipients.length === 0) {

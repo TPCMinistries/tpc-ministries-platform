@@ -19,23 +19,41 @@ interface ModalInviteDelegateProps {
   show: boolean
   onClose: () => void
   kenyaInvites: KenyaInvite[]
-  sendKenyaInvite: (invite: {
+  sendKenyaInvite: (invite: KenyaInviteRequest) => Promise<KenyaInviteResponse>
+  sendBulkKenyaInvites: (invites: KenyaBulkInviteRequest[]) => Promise<KenyaBulkInviteResponse>
+  resendKenyaInvite: (inviteId: string) => Promise<unknown>
+  deactivateKenyaInvite: (inviteId: string) => Promise<unknown>
+}
+
+interface KenyaInviteRequest {
+  firstName: string
+  lastName: string
+  email: string
+  track: string
+  role: string
+  sendEmail: boolean
+}
+
+interface KenyaBulkInviteRequest {
     firstName: string
     lastName: string
     email: string
     track: string
     role: string
-    sendEmail: boolean
-  }) => Promise<any>
-  sendBulkKenyaInvites: (invites: {
-    firstName: string
-    lastName: string
-    email: string
-    track: string
-    role: string
-  }[]) => Promise<any>
-  resendKenyaInvite: (inviteId: string) => Promise<any>
-  deactivateKenyaInvite: (inviteId: string) => Promise<any>
+}
+
+interface KenyaInviteResponse {
+  success?: boolean
+  emailSent?: boolean
+  emailError?: string
+  error?: string
+  inviteUrl?: string
+}
+
+interface KenyaBulkInviteResponse {
+  success?: boolean
+  created?: number
+  failed?: number
 }
 
 type TabView = 'single' | 'bulk' | 'history'
@@ -106,8 +124,9 @@ export function ModalInviteDelegate({
       } else {
         setResult({ success: false, message: data.error || 'Failed to create invite' })
       }
-    } catch (err: any) {
-      setResult({ success: false, message: err.message || 'Failed to send invite' })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to send invite'
+      setResult({ success: false, message })
     } finally {
       setSending(false)
     }

@@ -5,6 +5,23 @@ import { sendEmail } from '@/lib/email/resend'
 
 export const dynamic = 'force-dynamic'
 
+interface InviteActionBody {
+  action?: string
+  email?: string
+  name?: string
+  role?: string
+  expiresInDays?: number
+  notes?: string
+  sendEmail?: boolean
+  sendEmails?: boolean
+  inviteId?: string
+  invites?: Array<{
+    email?: string
+    name?: string
+    role?: string
+  }>
+}
+
 // Generate random invite code
 function generateInviteCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -49,9 +66,10 @@ export async function GET(request: NextRequest) {
     if (error) throw error
 
     return NextResponse.json(invites || [])
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Invites API error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to fetch invites'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -66,7 +84,7 @@ export async function POST(request: NextRequest) {
   const adminMember = authResult.member
 
   try {
-    const body = await request.json()
+    const body = (await request.json()) as InviteActionBody
     const { action } = body
 
     if (action === 'create') {
@@ -171,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'bulk_create') {
-      const { invites: inviteList, expiresInDays, sendEmails } = body
+      const { invites: inviteList = [], expiresInDays, sendEmails } = body
 
       const results = []
       const expiresAt = expiresInDays
@@ -179,9 +197,9 @@ export async function POST(request: NextRequest) {
         : null
 
       for (const inv of inviteList) {
-        let code = generateInviteCode()
+        const code = generateInviteCode()
 
-        const { data: invite, error } = await supabase
+        const { error } = await supabase
           .from('invite_codes')
           .insert({
             code,
@@ -222,7 +240,7 @@ export async function POST(request: NextRequest) {
               `,
             })
             results.push({ ...inv, success: true, code, inviteUrl, emailSent: true })
-          } catch (emailError) {
+          } catch {
             results.push({ ...inv, success: true, code, inviteUrl, emailSent: false })
           }
         } else {
@@ -301,8 +319,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Invites API error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to process invite action'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

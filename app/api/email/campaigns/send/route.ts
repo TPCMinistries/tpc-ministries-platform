@@ -1,16 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY)
 }
 
-const adminSupabase = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const adminSupabase = createAdminClient()
+
+interface CampaignTargetAudience {
+  all?: boolean
+  tier?: string[]
+  subscription_type?: string
+  memberIds?: string[]
+}
+
+interface CampaignContent {
+  body?: string
+  message?: string
+  ctaText?: string
+  ctaUrl?: string
+}
+
+interface EmailCampaign {
+  id: string
+  subject: string
+  status: string
+  html_preview?: string | null
+  content?: CampaignContent | null
+  target_audience?: CampaignTargetAudience | null
+}
+
+interface SubscriptionMember {
+  id: string
+  email: string | null
+  first_name: string | null
+}
+
+interface EmailSubscriptionRow {
+  members: SubscriptionMember | SubscriptionMember[] | null
+}
+
+function getSubscriptionMember(row: EmailSubscriptionRow): SubscriptionMember | null {
+  return Array.isArray(row.members) ? row.members[0] ?? null : row.members
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +111,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get recipients based on target audience
-    const targetAudience = campaign.target_audience || { all: true }
+    const typedCampaign = campaign as EmailCampaign
+    const targetAudience = typedCampaign.target_audience || { all: true }
     let recipients: Array<{ email: string; firstName: string; memberId: string }> = []
 
     if (targetAudience.all) {
@@ -112,11 +147,12 @@ export async function POST(request: NextRequest) {
         .eq('is_subscribed', true)
 
       recipients = (subscriptions || [])
-        .filter(s => (s.members as any)?.email)
-        .map(s => ({
-          email: (s.members as any).email,
-          firstName: (s.members as any).first_name || 'Friend',
-          memberId: (s.members as any).id
+        .map((subscription) => getSubscriptionMember(subscription as EmailSubscriptionRow))
+        .filter((member): member is SubscriptionMember => Boolean(member?.email))
+        .map(member => ({
+          email: member.email as string,
+          firstName: member.first_name || 'Friend',
+          memberId: member.id,
         }))
     } else if (targetAudience.memberIds && targetAudience.memberIds.length > 0) {
       // Specific members
@@ -147,7 +183,7 @@ export async function POST(request: NextRequest) {
     let sentCount = 0
     let failedCount = 0
 
-    const baseHtml = campaign.html_preview || generateDefaultHtml(campaign)
+    const baseHtml = typedCampaign.html_preview || generateDefaultHtml(typedCampaign)
 
     for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
       const batch = recipients.slice(i, i + BATCH_SIZE)
@@ -229,7 +265,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateDefaultHtml(campaign: any): string {
+function generateDefaultHtml(campaign: EmailCampaign): string {
   const content = campaign.content || {}
 
   return `
