@@ -36,7 +36,7 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
         'Get personalized ministry recommendations',
         'Discover practical ways to use your gifts today',
       ],
-      questionCount: 20,
+      questionCount: 22,
       estimatedTime: '15 minutes',
       learnings: [
         'Your top spiritual gifts ranked by strength',

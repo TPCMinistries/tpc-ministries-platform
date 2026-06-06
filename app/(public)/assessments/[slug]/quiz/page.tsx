@@ -76,7 +76,7 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
   const assessmentQuestions: AssessmentQuestions = {
     'spiritual-gifts': {
       title: 'Spiritual Gifts Assessment',
-      totalQuestions: 20,
+      totalQuestions: 22,
       questions: [
         { id: '1', text: 'I enjoy organizing people, tasks, and events to accomplish a goal.', type: 'likert', relatedGift: 'administration' },
         { id: '2', text: 'I feel deeply moved when I see people in physical or emotional need.', type: 'likert', relatedGift: 'mercy' },
@@ -98,6 +98,8 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
         { id: '18', text: 'I can identify spiritual deception or unhealthy influences.', type: 'likert', relatedGift: 'discernment' },
         { id: '19', text: 'I am confident taking responsibility for the spiritual direction of a group.', type: 'likert', relatedGift: 'leadership' },
         { id: '20', text: 'I believe God speaks through me to bring correction or encouragement.', type: 'likert', relatedGift: 'prophecy' },
+        { id: '21', text: 'When facing an impossible situation, I respond with confident trust that God will provide a way.', type: 'likert', relatedGift: 'faith' },
+        { id: '22', text: 'I naturally take responsibility for the ongoing spiritual care and growth of specific people.', type: 'likert', relatedGift: 'shepherding' },
       ],
     },
     'seasonal': {
@@ -447,11 +449,11 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
                           {value}
                         </div>
                         <span className="text-xs text-gray-600 text-center">
-                          {value === 1 && 'Never'}
-                          {value === 2 && 'Rarely'}
-                          {value === 3 && 'Sometimes'}
-                          {value === 4 && 'Often'}
-                          {value === 5 && 'Always'}
+                          {value === 1 && 'Strongly Disagree'}
+                          {value === 2 && 'Disagree'}
+                          {value === 3 && 'Neutral'}
+                          {value === 4 && 'Agree'}
+                          {value === 5 && 'Strongly Agree'}
                         </span>
                       </button>
                     ))}

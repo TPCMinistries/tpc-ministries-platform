@@ -52,9 +52,9 @@ export function calculateSpiritualGifts(responses: AssessmentResponse): Assessme
     giving: ['6', '17'],
     discernment: ['7', '18'],
     leadership: ['8', '19'],
-    faith: ['9'],
+    faith: ['9', '21'],
     prophecy: ['10', '20'],
-    shepherding: ['11'],
+    shepherding: ['11', '22'],
   }
 
   // Calculate scores for each gift

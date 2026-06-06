@@ -98,6 +98,34 @@ export async function POST(request: NextRequest) {
 
     if (resultError) throw resultError
 
+    // 4. Sync the member's spiritual profile so the AI (Prophet Lorenzo) and
+    //    personalization features actually know the result. Logged-in only;
+    //    never let a profile failure break the submission.
+    if (memberId) {
+      try {
+        const profile: Record<string, unknown> = {
+          member_id: memberId,
+          strengths: result.strengths,
+          growth_areas: result.growth_areas,
+          updated_at: now,
+        }
+        if (assessmentType === 'spiritual-gifts') {
+          profile.primary_gift = result.primary_result
+          profile.secondary_gifts = [result.secondary_result, result.tertiary_result].filter(Boolean)
+          profile.gift_scores = result.scores
+        }
+        if (assessmentType === 'seasonal') {
+          profile.current_season = result.primary_result
+          profile.season_started_at = now
+        }
+        await admin
+          .from('member_spiritual_profiles')
+          .upsert(profile, { onConflict: 'member_id' })
+      } catch (profileError) {
+        console.error('Spiritual profile sync failed (non-fatal):', profileError)
+      }
+    }
+
     return NextResponse.json({ resultId: resultData.id, responseId: finalResponseId })
   } catch (error) {
     console.error('Assessment submit error:', error)
