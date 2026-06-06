@@ -126,7 +126,7 @@ export async function GET() {
     const [membersResult, donationsResult, subscriptionsResult] = await Promise.all([
       supabase
         .from('members')
-        .select('id, first_name, last_name, email, phone, tier, role, created_at, joined_at, last_active_at')
+        .select('id, first_name, last_name, email, phone:phone_number, tier, role, created_at, joined_at:join_date')
         .in('tier', ['partner', 'covenant'])
         .order('created_at', { ascending: false }),
       supabase
@@ -314,7 +314,7 @@ export async function GET() {
           recurring: giving?.recurring || !!subscription,
           subscriptionStatus: subscription?.status || null,
           joinedAt: member.joined_at || member.created_at,
-          lastActiveAt: member.last_active_at,
+          lastActiveAt: null,
         }
       })
       .sort((a, b) => {

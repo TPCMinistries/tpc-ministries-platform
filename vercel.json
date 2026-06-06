@@ -27,6 +27,10 @@
     {
       "path": "/api/admin/workflows/run",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/kenya-debrief-reminders",
+      "schedule": "0 13 * * *"
     }
   ]
 }

@@ -19,7 +19,7 @@ export async function GET() {
     // Get member record
     const { data: member } = await admin
       .from('members')
-      .select('id, user_id, first_name, last_name, email, phone, tier, role')
+      .select('id, user_id, first_name, last_name, email, phone:phone_number, tier, role')
       .eq('user_id', user.id)
       .single()
 

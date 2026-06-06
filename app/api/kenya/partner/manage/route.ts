@@ -43,7 +43,7 @@ export async function GET() {
 
     const { data: partners } = await admin
       .from('kenya_trip_partners')
-      .select('*, members(first_name, last_name, email, phone)')
+      .select('*, members(first_name, last_name, email, phone:phone_number)')
       .eq('trip_id', trip.id)
       .order('created_at', { ascending: false })
 
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         is_active: true,
         invited_by_member_id: callerMember.id,
       })
-      .select('*, members(first_name, last_name, email, phone)')
+      .select('*, members(first_name, last_name, email, phone:phone_number)')
       .single()
 
     if (insertError) {

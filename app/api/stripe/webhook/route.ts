@@ -60,12 +60,14 @@ export async function POST(request: NextRequest) {
   try {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
+    // Never accept unsigned events — without verification anyone could POST a
+    // forged "payment succeeded" event to grant tiers or write donations.
     if (!webhookSecret) {
-      console.warn('STRIPE_WEBHOOK_SECRET not set - skipping signature verification')
-      event = JSON.parse(body)
-    } else {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+      console.error('STRIPE_WEBHOOK_SECRET not set - rejecting webhook')
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
     }
+
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err: unknown) {
     console.error('Webhook signature verification failed:', errorMessage(err))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
