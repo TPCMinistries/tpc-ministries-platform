@@ -13,8 +13,10 @@ export const KENYA_DEBRIEF = {
   meetingId: '864 1407 6794',
   passcode: '', // embedded in the link; shown if provided
   registerUrl: 'https://tpcmin.org/kenya-debrief',
-  icsUrl: 'https://tpcmin.org/api/kenya/debrief.ics',
+  icsUrl: 'https://tpcmin.org/api/kenya/debrief-calendar',
   contactEmail: 'info@tpcmin.org',
+  // Verified tpcmin.org sending domain (same domain as the newsletter sender).
+  fromEmail: 'TPC Ministries <events@tpcmin.org>',
 } as const
 
 /** Build a Google Calendar "add event" link. */

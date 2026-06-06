@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       const firstName = (r.full_name || '').split(' ')[0]
       const { subject, html } = buildDebriefEmail(stage, firstName)
       try {
-        const result = await sendEmail({ to: r.email, subject, html })
+        const result = await sendEmail({ to: r.email, subject, html, from: KENYA_DEBRIEF.fromEmail })
         if (result.success) {
           await supabase
             .from('kenya_debrief_registrations')

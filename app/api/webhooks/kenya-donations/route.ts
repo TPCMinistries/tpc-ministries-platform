@@ -67,29 +67,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Handle the event
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session
+  // Handle the event. If a DB write fails, return 500 so Stripe retries rather
+  // than silently dropping a real (already-charged) payment.
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session
 
-    // Route based on metadata type
-    const metadataType = session.metadata?.type
+      // Route based on metadata type
+      const metadataType = session.metadata?.type
 
-    if (metadataType === 'kenya_trip_payment') {
-      // ========== TRIP PAYMENT (full, deposit, custom) ==========
-      await handleTripPayment(session)
-    } else if (session.metadata?.donation_type === 'kenya_trip') {
-      // ========== FUNDRAISING DONATION ==========
-      await handleDonation(session)
+      if (metadataType === 'kenya_trip_payment') {
+        // ========== TRIP PAYMENT (full, deposit, custom) ==========
+        await handleTripPayment(session)
+      } else if (session.metadata?.donation_type === 'kenya_trip') {
+        // ========== FUNDRAISING DONATION ==========
+        await handleDonation(session)
+      }
     }
-  }
 
-  if (event.type === 'invoice.paid') {
-    const invoice = event.data.object as Stripe.Invoice
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object as Stripe.Invoice
 
-    // Handle installment plan payments
-    if (getInvoiceSubscriptionDetails(invoice)?.metadata?.type === 'kenya_trip_installment') {
-      await handleInstallmentPayment(invoice)
+      // Handle installment plan payments
+      if (getInvoiceSubscriptionDetails(invoice)?.metadata?.type === 'kenya_trip_installment') {
+        await handleInstallmentPayment(invoice)
+      }
     }
+  } catch (err: unknown) {
+    console.error('Kenya webhook handler failed, asking Stripe to retry:', getErrorMessage(err))
+    return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
   }
 
   return NextResponse.json({ received: true })
@@ -99,51 +105,48 @@ async function handleTripPayment(session: Stripe.Checkout.Session) {
   const { participant_id, trip_id, payment_type } = session.metadata || {}
   const amount = (session.amount_total || 0) / 100
 
-  try {
-    // Record payment
-    if (participant_id) {
-      await supabase.from('kenya_trip_payments').insert({
-        participant_id,
-        trip_id: trip_id || null,
-        amount,
-        payment_number: 1,
-        total_payments: payment_type === 'full' ? 1 : payment_type === 'deposit' ? 1 : null,
-        description: payment_type === 'deposit' ? 'Deposit' : payment_type === 'full' ? 'Full payment' : 'Payment',
-        status: 'paid',
-        stripe_payment_intent_id: session.payment_intent as string,
-        stripe_checkout_session_id: session.id,
-        paid_at: new Date().toISOString(),
-      })
+  // Record payment
+  if (participant_id) {
+    const { error: payError } = await supabase.from('kenya_trip_payments').insert({
+      participant_id,
+      trip_id: trip_id || null,
+      amount,
+      payment_number: 1,
+      total_payments: payment_type === 'full' ? 1 : payment_type === 'deposit' ? 1 : null,
+      description: payment_type === 'deposit' ? 'Deposit' : payment_type === 'full' ? 'Full payment' : 'Payment',
+      status: 'paid',
+      stripe_payment_intent_id: session.payment_intent as string,
+      stripe_checkout_session_id: session.id,
+      paid_at: new Date().toISOString(),
+    })
+    if (payError) throw payError
 
-      // Update participant payment status
-      const { data: participant } = await supabase
+    // Update participant payment status
+    const { data: participant } = await supabase
+      .from('kenya_trip_participants')
+      .select('trip_cost, amount_paid, scholarship_amount, amount_raised, admin_credits_total')
+      .eq('id', participant_id)
+      .single()
+
+    if (participant) {
+      const tripCost = Number(participant.trip_cost) || 3500
+      const scholarship = Number(participant.scholarship_amount) || 0
+      const newPaid = (Number(participant.amount_paid) || 0) + amount
+      const amountRaised = Number(participant.amount_raised) || 0
+      const adminCredits = Number(participant.admin_credits_total) || 0
+      const remaining = tripCost - scholarship - newPaid - amountRaised - adminCredits
+
+      await supabase
         .from('kenya_trip_participants')
-        .select('trip_cost, amount_paid, scholarship_amount, amount_raised, admin_credits_total')
+        .update({
+          amount_paid: newPaid,
+          payment_status: remaining <= 0 ? 'paid' : 'partial',
+        })
         .eq('id', participant_id)
-        .single()
-
-      if (participant) {
-        const tripCost = Number(participant.trip_cost) || 3500
-        const scholarship = Number(participant.scholarship_amount) || 0
-        const newPaid = (Number(participant.amount_paid) || 0) + amount
-        const amountRaised = Number(participant.amount_raised) || 0
-        const adminCredits = Number(participant.admin_credits_total) || 0
-        const remaining = tripCost - scholarship - newPaid - amountRaised - adminCredits
-
-        await supabase
-          .from('kenya_trip_participants')
-          .update({
-            amount_paid: newPaid,
-            payment_status: remaining <= 0 ? 'paid' : 'partial',
-          })
-          .eq('id', participant_id)
-      }
     }
-
-    console.log(`Kenya trip payment completed: $${amount} (${payment_type}) for participant ${participant_id}`)
-  } catch (error) {
-    console.error('Error processing trip payment:', error)
   }
+
+  console.log(`Kenya trip payment completed: $${amount} (${payment_type}) for participant ${participant_id}`)
 }
 
 async function handleDonation(session: Stripe.Checkout.Session) {
@@ -170,9 +173,9 @@ async function handleDonation(session: Stripe.Checkout.Session) {
       .eq('stripe_checkout_session_id', session.id)
 
     if (updateError) {
-      console.error('Failed to update donation:', updateError)
+      console.error('Failed to update donation, inserting instead:', updateError)
 
-      await supabase.from('kenya_trip_donations').insert({
+      const { error: insertError } = await supabase.from('kenya_trip_donations').insert({
         participant_id,
         trip_id,
         donor_name,
@@ -189,11 +192,14 @@ async function handleDonation(session: Stripe.Checkout.Session) {
         message: message || null,
         is_manual_entry: false,
       })
+      // Neither update nor insert recorded the paid donation — let Stripe retry.
+      if (insertError) throw insertError
     }
 
     console.log(`Kenya donation completed: $${net_amount} for participant ${participant_id}`)
   } catch (error) {
     console.error('Error processing donation webhook:', error)
+    throw error
   }
 }
 

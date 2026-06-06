@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/resend'
 import { buildDebriefEmail } from '@/lib/email/kenya-debrief-emails'
+import { KENYA_DEBRIEF } from '@/lib/kenya-debrief'
 
 const TIME_LABELS: Record<string, string> = {
   '9am_pt': '9:00 AM Pacific',
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     const firstName = fullName.split(' ')[0]
     const { subject, html } = buildDebriefEmail('confirmation', firstName)
     try {
-      const result = await sendEmail({ to: email, subject, html })
+      const result = await sendEmail({ to: email, subject, html, from: KENYA_DEBRIEF.fromEmail })
       if (result.success) {
         await supabase
           .from('kenya_debrief_registrations')
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
     try {
       await sendEmail({
         to: 'info@tpcmin.org',
+        from: KENYA_DEBRIEF.fromEmail,
         subject: `Kenya Debrief registration: ${fullName}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
