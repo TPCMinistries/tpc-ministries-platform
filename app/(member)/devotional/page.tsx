@@ -101,7 +101,7 @@ export default function DevotionalPage() {
     if (!ref || !text) return
 
     const { error } = await supabase
-      .from('scripture_interactions')
+      .from('verse_interactions')
       .insert({
         member_id: member.id,
         verse_reference: ref,
@@ -136,7 +136,7 @@ export default function DevotionalPage() {
 
       // Save reflection as a scripture interaction
       await supabase
-        .from('scripture_interactions')
+        .from('verse_interactions')
         .insert({
           member_id: member.id,
           verse_reference: ref || 'Daily Devotional',

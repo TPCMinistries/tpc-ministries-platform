@@ -72,16 +72,28 @@ export default function MemberMessagesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      setUserId(user.id)
+      // messages.sender_id / recipient_id reference members.id (NOT auth uid),
+      // so resolve the member row and use its id as our identity throughout.
+      const { data: member } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      if (!member) {
+        setLoading(false)
+        return
+      }
+      const mid = member.id
+      setUserId(mid)
 
-      // Fetch all messages for this user
+      // Fetch all messages for this member
       const { data: messagesData, error } = await supabase
         .from('messages')
         .select(`
           *,
           sender:members!messages_sender_id_fkey(first_name, last_name, email)
         `)
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .or(`sender_id.eq.${mid},recipient_id.eq.${mid}`)
         .order('created_at', { ascending: true })
 
       if (error) {
@@ -110,7 +122,7 @@ export default function MemberMessagesPage() {
         const firstMessage = messages[0]
         const lastMessage = messages[messages.length - 1]
         const unreadCount = messages.filter(
-          (m) => m.recipient_id === user.id && !m.is_read
+          (m) => m.recipient_id === mid && !m.is_read
         ).length
 
         conversationList.push({

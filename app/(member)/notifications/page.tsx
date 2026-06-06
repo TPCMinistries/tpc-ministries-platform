@@ -57,36 +57,28 @@ interface Notification {
   created_at: string
 }
 
+// Columns that actually exist on notification_preferences and are honored by the
+// server-side dispatch (cron/streak-warnings, daily-hub, email/subscriptions).
 interface NotificationPrefs {
-  push_enabled: boolean
-  email_enabled: boolean
-  email_digest: string
-  notify_devotional_reminder: boolean
-  notify_prayer_answered: boolean
-  notify_new_content: boolean
-  notify_group_activity: boolean
-  notify_achievement_unlocked: boolean
-  notify_streak_at_risk: boolean
-  notify_prophecy_received: boolean
-  notify_event_reminder: boolean
-  notify_messages: boolean
+  daily_devotional: boolean
+  new_content: boolean
+  prayer_updates: boolean
+  event_reminders: boolean
+  admin_messages: boolean
 }
 
-type NotificationPreferenceKey = Exclude<keyof NotificationPrefs, 'email_digest'>
+type NotificationPreferenceKey = keyof NotificationPrefs
 
 const preferenceOptions: Array<{
   key: NotificationPreferenceKey
   label: string
   icon: LucideIcon
 }> = [
-  { key: 'notify_devotional_reminder', label: 'Devotional Reminders', icon: BookOpen },
-  { key: 'notify_prayer_answered', label: 'Prayer Answers', icon: Heart },
-  { key: 'notify_achievement_unlocked', label: 'Achievements', icon: Trophy },
-  { key: 'notify_group_activity', label: 'Group Activity', icon: Users },
-  { key: 'notify_streak_at_risk', label: 'Streak Warnings', icon: AlertCircle },
-  { key: 'notify_new_content', label: 'New Content', icon: Sparkles },
-  { key: 'notify_event_reminder', label: 'Events', icon: Calendar },
-  { key: 'notify_messages', label: 'Messages', icon: MessageCircle }
+  { key: 'daily_devotional', label: 'Devotional Reminders', icon: BookOpen },
+  { key: 'prayer_updates', label: 'Prayer Updates', icon: Heart },
+  { key: 'new_content', label: 'New Content', icon: Sparkles },
+  { key: 'event_reminders', label: 'Events', icon: Calendar },
+  { key: 'admin_messages', label: 'Messages from TPC', icon: MessageCircle },
 ]
 
 export default function NotificationsPage() {
@@ -261,18 +253,11 @@ export default function NotificationsPage() {
       // Create default preferences
       const defaultPrefs = {
         member_id: memberId,
-        push_enabled: true,
-        email_enabled: true,
-        email_digest: 'daily',
-        notify_devotional_reminder: true,
-        notify_prayer_answered: true,
-        notify_new_content: true,
-        notify_group_activity: true,
-        notify_achievement_unlocked: true,
-        notify_streak_at_risk: true,
-        notify_prophecy_received: true,
-        notify_event_reminder: true,
-        notify_messages: true
+        daily_devotional: true,
+        new_content: true,
+        prayer_updates: true,
+        event_reminders: true,
+        admin_messages: true,
       }
 
       await supabase.from('notification_preferences').insert(defaultPrefs)
@@ -476,28 +461,6 @@ export default function NotificationsPage() {
                   )}
                 </div>
               )}
-
-              {/* Global Settings */}
-              <div className="grid grid-cols-2 gap-4 pb-4 border-b">
-                <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="font-medium">Push Notifications</span>
-                  <input
-                    type="checkbox"
-                    checked={prefs.push_enabled}
-                    onChange={(e) => updatePreference('push_enabled', e.target.checked)}
-                    className="rounded"
-                  />
-                </label>
-                <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="font-medium">Email Notifications</span>
-                  <input
-                    type="checkbox"
-                    checked={prefs.email_enabled}
-                    onChange={(e) => updatePreference('email_enabled', e.target.checked)}
-                    className="rounded"
-                  />
-                </label>
-              </div>
 
               {/* Notification Types */}
               <div className="space-y-2">

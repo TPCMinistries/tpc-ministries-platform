@@ -47,9 +47,9 @@ export default function VerseOfTheDayWidget({ className = '' }: VerseOfTheDayPro
 
     if (!member) return
 
-    // Save to scripture_interactions table
+    // Save to verse_interactions table
     const { error } = await supabase
-      .from('scripture_interactions')
+      .from('verse_interactions')
       .insert({
         member_id: member.id,
         verse_reference: verse.reference,
@@ -81,7 +81,7 @@ export default function VerseOfTheDayWidget({ className = '' }: VerseOfTheDayPro
 
     // Log share interaction
     await supabase
-      .from('scripture_interactions')
+      .from('verse_interactions')
       .insert({
         member_id: member.id,
         verse_reference: verse.reference,

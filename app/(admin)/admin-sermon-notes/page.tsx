@@ -86,7 +86,8 @@ export default function AdminSermonNotesPage() {
 
       if (res.ok) {
         const data = await res.json()
-        setGeneratedNotes(data.notes)
+        // The route returns the parsed structured fields under `sections`.
+        setGeneratedNotes(data.sections)
         fetchSavedNotes()
       } else {
         alert('Failed to generate notes')

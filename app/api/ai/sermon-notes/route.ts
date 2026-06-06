@@ -111,7 +111,17 @@ ${sermonTranscript.substring(0, 15000)}` // Limit transcript length
 
 // Parse the AI-generated notes into structured sections
 function parseSermonNotes(content: string) {
-  const sections: Record<string, string | string[]> = {}
+  // Initialize every field so the UI can safely .map()/.join() without guards.
+  const sections: Record<string, string | string[]> = {
+    mainScripture: '',
+    theme: '',
+    keyPoints: [],
+    quotes: [],
+    applicationQuestions: [],
+    actionSteps: [],
+    prayerFocus: '',
+    relatedScriptures: [],
+  }
 
   // Extract main scripture
   const scriptureMatch = content.match(/\*\*Main Scripture\*\*:?\s*([^\n]+)/i)
@@ -175,8 +185,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const sermonId = searchParams.get('sermonId')
 
+    // No sermonId → return the list of saved notes for the admin "Saved" tab.
     if (!sermonId) {
-      return NextResponse.json({ error: 'sermonId required' }, { status: 400 })
+      const { data } = await supabase
+        .from('sermon_notes')
+        .select('id, sermon_id, notes_json, generated_at, sermon:sermons(title)')
+        .order('generated_at', { ascending: false })
+
+      const notes = (data || []).map((n: Record<string, unknown>) => ({
+        id: n.id,
+        sermonId: n.sermon_id,
+        sermonTitle: (n.sermon as { title?: string } | null)?.title ?? 'Untitled Sermon',
+        notes_json: n.notes_json,
+        generated_at: n.generated_at,
+      }))
+
+      return NextResponse.json({ notes })
     }
 
     const { data: notes } = await supabase
