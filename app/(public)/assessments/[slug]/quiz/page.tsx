@@ -12,7 +12,7 @@ import { ArrowLeft, ArrowRight, Save, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { calculateAssessmentResult, type AssessmentResponse } from '@/lib/assessments/calculator'
+import { type AssessmentResponse } from '@/lib/assessments/calculator'
 
 interface Question {
   id: string
@@ -308,19 +308,15 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
           status: 'new',
         })
 
-      // Create initial response record
-      const { data, error } = await supabase
+      // Capture the email/progress (fire-and-forget). The completed response
+      // and result are persisted server-side on final submit.
+      await supabase
         .from('assessment_responses')
         .insert({
           assessment_type: params.slug,
           email: email,
           responses: responses,
         })
-        .select()
-        .single()
-
-      if (error && !error.message?.includes('duplicate')) throw error
-      if (data) setResponseId(data.id)
 
       toast({
         title: 'Email Saved',
@@ -337,96 +333,33 @@ export default function AssessmentQuizPage({ params }: { params: { slug: string 
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    const supabase = createClient()
 
     try {
-      // 1. Save/update assessment response
-      let finalResponseId = responseId
+      // Submit server-side: the result is computed and persisted with the
+      // service role, so the public tables don't need anon write/read access.
+      const res = await fetch('/api/assessments/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessment_type: params.slug,
+          responses,
+          email: email || null,
+          responseId,
+        }),
+      })
 
-      if (responseId) {
-        // Update existing response with completed_at
-        await supabase
-          .from('assessment_responses')
-          .update({
-            responses: responses,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', responseId)
-      } else {
-        // Create new response
-        const { data, error } = await supabase
-          .from('assessment_responses')
-          .insert({
-            member_id: memberId,
-            assessment_type: params.slug,
-            email: email || null,
-            responses: responses,
-            completed_at: new Date().toISOString(),
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-        finalResponseId = data.id
+      if (!res.ok) {
+        throw new Error('Failed to submit assessment. Please try again.')
       }
 
-      // 2. Calculate results using our calculator
-      const calculatedResult = calculateAssessmentResult(params.slug, responses)
+      const { resultId } = await res.json()
 
-      // 3. Save results to database
-      const resultInsertData: {
-        response_id: string | null
-        assessment_type: string
-        primary_result: string
-        secondary_result: string
-        tertiary_result: string
-        scores: Record<string, number>
-        title: string
-        description: string
-        strengths: string[]
-        growth_areas: string[]
-        ministry_recommendations: string[]
-        scripture_references: string[]
-        next_steps: string[]
-        member_id?: string
-      } = {
-        response_id: finalResponseId,
-        assessment_type: params.slug,
-        primary_result: calculatedResult.primary_result,
-        secondary_result: calculatedResult.secondary_result,
-        tertiary_result: calculatedResult.tertiary_result,
-        scores: calculatedResult.scores,
-        title: calculatedResult.title,
-        description: calculatedResult.description,
-        strengths: calculatedResult.strengths,
-        growth_areas: calculatedResult.growth_areas,
-        ministry_recommendations: calculatedResult.ministry_recommendations,
-        scripture_references: calculatedResult.scripture_references,
-        next_steps: calculatedResult.next_steps,
-      }
-
-      // Only include member_id if user is logged in
-      if (memberId) {
-        resultInsertData.member_id = memberId
-      }
-
-      const { data: resultData, error: resultError } = await supabase
-        .from('member_assessment_results')
-        .insert(resultInsertData)
-        .select()
-        .single()
-
-      if (resultError) {
-        console.error('Error saving results:', resultError)
-        throw new Error(`Failed to save results: ${resultError.message}`)
-      }
-
-      if (!resultData || !resultData.id) {
+      if (!resultId) {
         throw new Error('Results were saved but no ID was returned')
       }
 
-      // 4. Redirect to results page with result ID
-      router.push(`/assessments/${params.slug}/results?id=${resultData.id}`)
+      // Redirect to results page with result ID
+      router.push(`/assessments/${params.slug}/results?id=${resultId}`)
     } catch (error: unknown) {
       console.error('Error submitting assessment:', error)
       const errorMessage =

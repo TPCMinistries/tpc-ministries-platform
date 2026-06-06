@@ -351,11 +351,11 @@ export function calculateSeasonal(responses: AssessmentResponse): AssessmentResu
     winter: 0, // Rest, waiting, testing
   }
 
-  // Spring indicators: Questions 3, 4, 11 (growth, preparation, hunger)
-  seasonScores.spring += Number(responses['3'] || 0) + Number(responses['4'] || 0) + Number(responses['11'] || 0)
+  // Spring indicators: Questions 3, 4, 11, 13 (growth, preparation, hunger, visible growth)
+  seasonScores.spring += Number(responses['3'] || 0) + Number(responses['4'] || 0) + Number(responses['11'] || 0) + Number(responses['13'] || 0)
 
-  // Summer indicators: Questions 1, 6, 10 (energy, fruit, breakthrough)
-  seasonScores.summer += Number(responses['1'] || 0) + Number(responses['6'] || 0) + Number(responses['10'] || 0)
+  // Summer indicators: Questions 1, 6, 10, 8, 15 (energy, fruit, breakthrough, closeness to God, alignment)
+  seasonScores.summer += Number(responses['1'] || 0) + Number(responses['6'] || 0) + Number(responses['10'] || 0) + Number(responses['8'] || 0) + Number(responses['15'] || 0)
 
   // Fall indicators: Questions 2, 14 (transitions, rest call)
   seasonScores.fall += Number(responses['2'] || 0) + Number(responses['14'] || 0)
@@ -363,9 +363,9 @@ export function calculateSeasonal(responses: AssessmentResponse): AssessmentResu
   // Winter indicators: Questions 5, 7, 9, 12 (dryness, waiting, warfare, testing)
   seasonScores.winter += Number(responses['5'] || 0) + Number(responses['7'] || 0) + Number(responses['9'] || 0) + Number(responses['12'] || 0)
 
-  // Normalize scores
-  seasonScores.spring = Math.round((seasonScores.spring / 15) * 100)
-  seasonScores.summer = Math.round((seasonScores.summer / 15) * 100)
+  // Normalize each season to 0-100 by its own max (question count x 5) so all 15 answers count
+  seasonScores.spring = Math.round((seasonScores.spring / 20) * 100)
+  seasonScores.summer = Math.round((seasonScores.summer / 25) * 100)
   seasonScores.fall = Math.round((seasonScores.fall / 10) * 100)
   seasonScores.winter = Math.round((seasonScores.winter / 20) * 100)
 

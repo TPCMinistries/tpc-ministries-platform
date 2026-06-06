@@ -31,7 +31,7 @@ export default function AssessmentLandingPage({ params }: { params: { slug: stri
       title: 'Spiritual Gifts Assessment',
       subtitle: 'Discover the unique abilities God has given you to serve His kingdom',
       benefits: [
-        'Identify your top 3 spiritual gifts from 12 biblical categories',
+        'Identify your top 3 spiritual gifts from 11 biblical categories',
         'Understand how each gift operates in your life',
         'Get personalized ministry recommendations',
         'Discover practical ways to use your gifts today',

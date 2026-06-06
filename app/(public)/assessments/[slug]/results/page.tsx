@@ -65,15 +65,12 @@ export default function AssessmentResultsPage() {
             .single()
         }
 
-        // Fetch assessment results
+        // Fetch assessment results via service-role API (share-by-id) so the
+        // results table doesn't need a blanket anon SELECT policy.
         if (resultId) {
-          const { data: resultData, error } = await supabase
-            .from('member_assessment_results')
-            .select('*')
-            .eq('id', resultId)
-            .single()
-
-          if (error) throw error
+          const res = await fetch(`/api/assessments/result/${resultId}`)
+          if (!res.ok) throw new Error('Result not found')
+          const { result: resultData } = await res.json()
           setResult(resultData)
         } else {
           toast({
