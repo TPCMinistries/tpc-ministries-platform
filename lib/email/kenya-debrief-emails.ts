@@ -57,7 +57,7 @@ export function buildDebriefEmail(stage: Stage, firstName: string): { subject: s
   switch (stage) {
     case 'confirmation':
       return {
-        subject: "You're registered — Kenya Report & Debrief (Sat, June 13)",
+        subject: "You're registered — Kenya Report & Debrief (Sat, June 27)",
         html: shell({
           preheader: 'Your spot is reserved. Here is your Zoom link and the date.',
           heading: `You're in, ${name}.`,
@@ -97,7 +97,7 @@ export function buildDebriefEmail(stage: Stage, firstName: string): { subject: s
         html: shell({
           preheader: 'The Kenya Report & Debrief is tomorrow. Here is your link.',
           heading: `It's tomorrow, ${name}.`,
-          showCountdownNote: 'The live debrief is tomorrow, Saturday, June 13.',
+          showCountdownNote: 'The live debrief is tomorrow, Saturday, June 27.',
           bodyHtml: `
             <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#e7ecf5;">
               Tomorrow the delegation tells the whole story &mdash; live. Here's everything

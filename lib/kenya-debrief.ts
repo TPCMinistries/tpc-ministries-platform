@@ -4,9 +4,9 @@
 export const KENYA_DEBRIEF = {
   title: 'Kenya Report & Debrief',
   // 9:00 AM Pacific = 12:00 PM Eastern = 7:00 PM East Africa = 16:00 UTC.
-  startUTC: '2026-06-13T16:00:00Z',
-  endUTC: '2026-06-13T17:30:00Z',
-  dateLabel: 'Saturday, June 13',
+  startUTC: '2026-06-27T16:00:00Z',
+  endUTC: '2026-06-27T17:30:00Z',
+  dateLabel: 'Saturday, June 27',
   timesLabel: '9:00 AM Pacific · 12:00 PM Eastern · 7:00 PM East Africa Time',
   zoomUrl:
     'https://us06web.zoom.us/j/86414076794?pwd=omvz9J3xCSa3eGxC5zVGQaCZSuNdAu.1',
@@ -43,7 +43,7 @@ export function buildIcs(): string {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    'UID:kenya-report-debrief-2026-06-13@tpcmin.org',
+    'UID:kenya-report-debrief-2026-06-27@tpcmin.org',
     `DTSTAMP:${stamp}`,
     `DTSTART:${fmt(KENYA_DEBRIEF.startUTC)}`,
     `DTEND:${fmt(KENYA_DEBRIEF.endUTC)}`,

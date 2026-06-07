@@ -5,11 +5,11 @@ import { DebriefRegisterForm } from './_components/register-form'
 export const metadata: Metadata = {
   title: 'Kenya Report & Debrief — Live Virtual Event | TPC Ministries',
   description:
-    'The delegation is home. Hear what we did, what God did, and what comes next. A live virtual debrief of the Kenya Global Impact Delegation — Saturday, June 13. Register free.',
+    'The delegation is home. Hear what we did, what God did, and what comes next. A live virtual debrief of the Kenya Global Impact Delegation — Saturday, June 27. Register free.',
   openGraph: {
     title: 'Kenya Report & Debrief — Live Virtual Event',
     description:
-      'The delegation is home. Hear what we did, what God did, and what comes next. Saturday, June 13 — live on Zoom. Register free.',
+      'The delegation is home. Hear what we did, what God did, and what comes next. Saturday, June 27 — live on Zoom. Register free.',
     images: ['/videos/kenya/posters/highlight-video.jpg'],
   },
 }
@@ -94,7 +94,7 @@ export default function KenyaDebriefPage() {
 
             {/* Date + times */}
             <div className="mt-8 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 backdrop-blur-sm">
-              <p className="font-serif text-2xl font-bold text-gold">Saturday · June 13</p>
+              <p className="font-serif text-2xl font-bold text-gold">Saturday · June 27</p>
               <div className="mt-4 grid grid-cols-3 gap-4">
                 {TIMES.map((t) => (
                   <div key={t.zone} className="text-center">
