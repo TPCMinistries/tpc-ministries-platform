@@ -1,125 +1,55 @@
-# Requirements: TPC Ministries Platform
+# Requirements — Milestone v2.0 "TPC Alive"
 
-**Defined:** 2026-05-18
-**Milestone:** v1.0 — Kenya 2026 Recap + Gen-Z Engagement Push
-**Core Value:** A Gen-Z visitor should land on tpcmin.org, engage with the prophet's voice (via story or AI), and convert — while member data stays HIGH-sensitivity protected.
+> Defined: 2026-06-10. Research: skipped — the 2026-06-09 full-platform audit (code + live DB + design walkthrough) is the research base; see STATE.md "Platform Reality Baseline". v1.0 requirements archived at `archive-v1.0-REQUIREMENTS.md`.
 
-## v1.0 Requirements
+## v2.0 Requirements
 
-Requirements for this milestone. Each maps to one roadmap phase.
+### OPS — Weekly AI Ops Loop
 
-### COHERE — Audit-driven coherence fixes
+- [ ] **OPS-01**: Lorenzo receives a drafted weekly devotional, generated from his actual teaching/sermon corpus (not generic AI copy), queued for approval before any send
+- [ ] **OPS-02**: Lorenzo receives a drafted weekly newsletter assembled from the week's real platform content (teachings, prophecies, events, Kenya updates), queued for approval
+- [ ] **OPS-03**: Lorenzo can approve or reject a queued draft in one tap from his phone (Telegram button or magic link) without logging into admin
+- [ ] **OPS-04**: Approved content sends via the existing Resend pipeline to the unified subscriber list; nothing ever auto-sends unapproved
+- [ ] **OPS-05**: Lorenzo receives a Monday morning ops digest (new subscribers, prayer requests, giving, debrief registrations, AI conversations, signups) on Telegram
+- [ ] **OPS-06**: The two subscriber stores are reconciled — public captures (email_subscribers) and member preferences (email_subscriptions) feed one deduplicated send list with unsubscribe honored
 
-- [x] **COHERE-01**: `/kenya` application form is disabled post-trip with "trip closed — view the recap" messaging
-- [x] **COHERE-02**: Hardcoded "April 23 – May 6" dates in `/kenya/pack-the-mission`, `/kenya/give`, `/kenya/support/[slug]` reframed as past-tense or contextualized as the closed trip
-- [x] **COHERE-03**: Active countdown timer on homepage `kenya-section` removed or reframed ("Trip completed")
-- [x] **COHERE-04**: Homepage `/live` and `/prayer` CTAs route to existing public alternatives (`/kenya/live`) or signup flow (no public→member 404s)
-- [x] **COHERE-05**: Footer + navigation rationalized — single canonical "Kenya 2026" entry, no duplicate/conflicting paths
-- [x] **COHERE-06**: `/kenya` page stats ("20+ Delegates", "What to Expect") reframed as past-tense achievement or removed
+### SURF — Shrink the Member Surface
 
-### KENYA — Recap content & polish
+- [ ] **SURF-01**: Member navigation exposes exactly five rooms — Watch, Assess, Pray, Give, Kenya — plus account settings
+- [ ] **SURF-02**: All other member routes are hidden behind a feature flag and redirect to the dashboard (no 404s, no dead links); code preserved, not deleted
+- [ ] **SURF-03**: Every surface that remains visible is verified working end-to-end against the live schema (a member can complete each room's core action without silent failure)
+- [ ] **SURF-04**: Admin nav and dashboard contain no links to hidden member routes
 
-- [x] **KENYA-01**: ARW → web JPG conversion pipeline (script) — curate top 3-5 photos per day across Days 1-14
-- [x] **KENYA-02**: Day-by-day journey on `/kenya-2026` extended from 4 days (11-14) to all 14 days (1-14)
-- [x] **KENYA-03**: Each day card includes inline photo gallery (3-5 photos) alongside the existing video
-- [x] **KENYA-04**: Designer-written visual captions per day (location + 1-sentence framing) — no fabricated narrative, anchored to what's visible in the footage
-- [x] **KENYA-05**: Standalone `/kenya-2026/gallery` page — masonry layout, day-filterable, 30-60 curated photos with lightbox
+### DOOR — AI Front Door
 
-### DESIGN — Public-page visual + tonal sweep
+- [ ] **DOOR-01**: A public visitor who finishes the Ask Prophet Lorenzo preview is offered email capture (not account creation) to continue the conversation
+- [ ] **DOOR-02**: A public visitor who completes an assessment provides an email to receive full results, landing in the subscriber list with the assessment saved
+- [ ] **DOOR-03**: Every public email capture (AI widget, assessment, footer, debrief, giving) lands in one list with source attribution
+- [ ] **DOOR-04**: The notification-permission prompt no longer fires on first landing — it appears only after meaningful engagement (second visit or completed action)
 
-- [x] **DESIGN-01**: `/about`, `/beliefs`, `/missions` aligned to new design system (prophet voice, motion variants, navy/gold palette)
-- [x] **DESIGN-02**: `/teachings`, `/ebooks`, `/podcast`, `/prophecy` aligned to new design system
-- [x] **DESIGN-03**: `/assessments`, `/stories`, `/contact`, `/connect`, `/faq` polished to coherent style (lighter rebuild — typography, color, motion only)
-- [x] **DESIGN-04**: Shared design tokens documented in code (`components/ui/`) — typography scale, motion presets, color usage — so future pages stay aligned
+### KENYA — June 27 Debrief Activation (hard date)
 
-### AI — Prophet Lorenzo engagement refinement
+- [ ] **KENYA-01**: Each of the 27 delegates receives a personal invite email linking to their delegate portal, with trip media access gated behind login
+- [ ] **KENYA-02**: A visitor can register for the June 27 debrief on tpcmin.org and receives a confirmation email with calendar invite (.ics)
+- [ ] **KENYA-03**: Registered attendees receive automated reminders at T-7, T-1, and day-of (verify the existing cron against real registrations)
+- [ ] **KENYA-04**: The debrief ends with an on-screen CTA into the assessment/email-capture funnel, and conversions are measurable in the DB
+- [ ] **KENYA-05**: Admin sees an activation scoreboard in the Kenya Command Center — invites sent, portal logins, debrief registrations, post-event captures
 
-- [x] **AI-01**: Post-signup AI handoff — public chat conversation persists into member chat after signup (user signs up mid-conversation, lands in member chat with prior turns)
-- [x] **AI-02**: Ask-Prophet widget persistent across all public pages (not just homepage), conversation continuity via session storage
-- [x] **AI-03**: Member AI verified as the destination after handoff (smoke test full flow: public chat → signup → member chat)
+## Future Requirements (deferred)
 
-### CONVERT — Conversion path
-
-- [x] **CONVERT-01**: Streams of Grace daily devotional surfaced as primary devotional CTA (link/embed from `streamsofgrace.app`, do not rebuild)
-- [x] **CONVERT-02**: Conversion analytics — events for `page_view`, `ai_chat_start`, `ai_chat_message`, `signup`, `give_click`, `apply_click` wired into existing analytics (or PostHog if absent), so the funnel is observable
-- [x] **CONVERT-03**: One unmistakable primary CTA per public section — no choice paralysis (verified by walking each page top-to-bottom)
-
-### LAUNCH — Pre-deploy gates
-
-- [~] **LAUNCH-01**: Lighthouse mobile on `/` — Accessibility 96 ✓, Best Practices 100 ✓, SEO 100 ✓; Performance 75 (target 85) — flagged for follow-up (image optimization, video compression)
-- [x] **LAUNCH-02**: Every link in nav + footer returns 200 (no 404s) — 24/24 routes verified live
-- [x] **LAUNCH-03**: Vercel preview deploy passes smoke test, then promoted to production on tpcmin.org (multiple production deploys this session, all live)
-- [x] **LAUNCH-04**: Service Worker verified in production build (registers cleanly via NODE_ENV guard, dev-mode auto-unregister works)
-
-## v1.1 Requirements (Deferred)
-
-### PODCAST — Day 10 Eps 1 & 2
-
-- **PODCAST-01**: Encode raw camera MP4s to web format
-- **PODCAST-02**: Multi-mic audio mix synced to video
-- **PODCAST-03**: `/podcast` surface with show notes, episode index
-- **PODCAST-04**: Audio-only player option
-
-### AI — Deeper capabilities
-
-- **AI-04**: AI-powered personalized daily devotional (member-side)
-- **AI-05**: Prophet-voice fine-tuning on full prophecy + teachings corpus
-
-### KENYA — Beyond v1.0
-
-- **KENYA-06**: Insta360 360° panoramic player (169 GB of footage available)
-- **KENYA-07**: Bulk ARW conversion of all ~2,800 photos with searchable archive
+- Payments decision + end-to-end Stripe verification on /giving (platform processes vs. logbook)
+- Post-June-27 security hardening pass (assessment UPDATE policy, bucket listing, check_email_exists, leaked-password protection, USING(true) cleanup)
+- LAUNCH-01 mobile perf completion (hero AVIF/WebM, defer AI widget mount)
+- Podcast Eps 1 & 2 publication
+- Transparent TPC logo asset (fixes nav white-box, mission section, social cards)
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| New tables / schema changes | Existing schema sufficient; DB is shared (Streams of Grace + Boardroom) — schema risk too high for this milestone |
-| Insta360 360° player | 169 GB, needs custom player, separate effort |
-| Bulk ARW conversion (all 2,800 photos) | Curated 30-60 is enough for v1.0 storytelling |
-| Mobile native app | Web-first; reach via PWA is sufficient |
-| Tier upgrade flows for member checkout | Not requested for this milestone |
-| AI-generated day-by-day narrative for Kenya | Designer (Claude) writes minimal visual captions; full narrative is Lorenzo's voice — deferred until he wants to dictate |
-| Rebuilding Streams of Grace devotional inside TPC | SoG already lives at `streamsofgrace.app` with full PWA — link/embed, do not duplicate |
-| Lorenzo personally writing daily devotional copy | Use Streams of Grace as-is |
+- Any new member-facing feature — 60 routes exist for 1 member; v2.0 operates what exists
+- n8n/Zapier glue — direct integrations only (ecosystem rule)
+- Re-design work — v1.0 design system stands; only the fixes above
+- Member-data schema changes beyond what OPS/KENYA strictly require — shared DB risk
 
 ## Traceability
 
-Populated by roadmap creation — 2026-05-18.
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| COHERE-01 | Phase 1 | Complete ✓ |
-| COHERE-02 | Phase 1 | Complete ✓ |
-| COHERE-03 | Phase 1 | Complete ✓ |
-| COHERE-04 | Phase 1 | Complete ✓ |
-| COHERE-05 | Phase 1 | Complete ✓ |
-| COHERE-06 | Phase 1 | Complete ✓ |
-| KENYA-01 | Phase 2 | Complete ✓ |
-| KENYA-02 | Phase 3 | Complete ✓ |
-| KENYA-03 | Phase 3 | Complete ✓ |
-| KENYA-04 | Phase 3 | Complete ✓ |
-| KENYA-05 | Phase 4 | Complete ✓ |
-| DESIGN-01 | Phase 5 | Complete ✓ |
-| DESIGN-02 | Phase 6 | Complete ✓ |
-| DESIGN-03 | Phase 6 | Complete ✓ |
-| DESIGN-04 | Phase 6 | Complete ✓ |
-| AI-01 | Phase 7 | Complete ✓ |
-| AI-02 | Phase 7 | Complete ✓ |
-| AI-03 | Phase 7 | Complete ✓ |
-| CONVERT-01 | Phase 8 | Complete ✓ |
-| CONVERT-02 | Phase 8 | Complete ✓ |
-| CONVERT-03 | Phase 8 | Complete ✓ |
-| LAUNCH-01 | Phase 9 | Partial (perf 75/85, others ✓) |
-| LAUNCH-02 | Phase 9 | Complete ✓ |
-| LAUNCH-03 | Phase 9 | Complete ✓ |
-| LAUNCH-04 | Phase 9 | Complete ✓ |
-
-**Coverage:**
-- v1.0 requirements: 25 total
-- Mapped to phases: 25
-- Unmapped: 0 ✓
-
----
-*Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 — Traceability populated after roadmap creation*
+(filled by roadmap)
