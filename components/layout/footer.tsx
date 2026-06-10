@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,15 +26,28 @@ const socialLinks = [
 export function Footer() {
   const currentYear = new Date().getFullYear()
   const [email, setEmail] = useState('')
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Newsletter submission logic would go here
-    setEmail('')
+    if (newsletterStatus === 'submitting') return
+    setNewsletterStatus('submitting')
+    try {
+      const res = await fetch('/api/public/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'footer' }),
+      })
+      if (!res.ok) throw new Error('subscribe failed')
+      setNewsletterStatus('success')
+      setEmail('')
+    } catch {
+      setNewsletterStatus('error')
+    }
   }
 
   return (
@@ -52,23 +64,35 @@ export function Footer() {
                 Get weekly devotionals, ministry updates, and event announcements.
               </p>
             </div>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className="flex w-full max-w-md gap-3"
-            >
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                aria-label="Email address for newsletter"
-                className="border-navy-600 bg-navy-800 text-white placeholder:text-navy-400 focus-visible:border-gold-400"
-              />
-              <Button type="submit" variant="gold" className="flex-shrink-0">
-                Subscribe
-              </Button>
-            </form>
+            <div className="w-full max-w-md">
+              <form
+                onSubmit={handleNewsletterSubmit}
+                className="flex gap-3"
+              >
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  aria-label="Email address for newsletter"
+                  className="border-navy-600 bg-navy-800 text-white placeholder:text-navy-400 focus-visible:border-gold-400"
+                />
+                <Button type="submit" variant="gold" className="flex-shrink-0" disabled={newsletterStatus === 'submitting'}>
+                  {newsletterStatus === 'submitting' ? 'Subscribing…' : 'Subscribe'}
+                </Button>
+              </form>
+              {newsletterStatus === 'success' && (
+                <p className="mt-2 text-body-sm text-gold-300" role="status">
+                  You&apos;re in! Watch your inbox for the next update.
+                </p>
+              )}
+              {newsletterStatus === 'error' && (
+                <p className="mt-2 text-body-sm text-red-300" role="status">
+                  Something went wrong — please try again.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -82,13 +106,19 @@ export function Footer() {
           {/* About Section */}
           <div>
             <div className="mb-4 flex items-center space-x-3">
-              <Image
-                src="/images/logos/tpc-logo.png"
-                alt="TPC Ministries"
-                width={120}
-                height={36}
-                className="h-10 w-auto brightness-0 invert"
-              />
+              {/* Inline mark — the PNG logo has an opaque white background, so it can't sit on navy */}
+              <svg
+                viewBox="0 0 100 100"
+                aria-hidden="true"
+                className="h-10 w-10 flex-shrink-0 text-white"
+              >
+                <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
+                <rect x="46" y="14" width="8" height="64" fill="currentColor" />
+                <rect x="22" y="32" width="56" height="8" fill="currentColor" />
+              </svg>
+              <span className="font-display text-body-lg font-semibold tracking-wide text-white">
+                TPC Ministries
+              </span>
             </div>
             <p className="text-body-sm text-navy-200">
               A prophetic ministry for the digital age — based in the US, with active mission work in Kenya, South Africa, Grenada, and a growing global online community. Awakening purpose. Igniting vision.
