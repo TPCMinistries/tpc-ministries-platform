@@ -52,4 +52,24 @@
 
 ## Traceability
 
-(filled by roadmap)
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| OPS-01 | Phase 13 | Pending |
+| OPS-02 | Phase 13 | Pending |
+| OPS-03 | Phase 13 | Pending |
+| OPS-04 | Phase 13 | Pending |
+| OPS-05 | Phase 12 | Pending |
+| OPS-06 | Phase 12 | Pending |
+| SURF-01 | Phase 10 | Pending |
+| SURF-02 | Phase 10 | Pending |
+| SURF-03 | Phase 10 | Pending |
+| SURF-04 | Phase 10 | Pending |
+| DOOR-01 | Phase 12 | Pending |
+| DOOR-02 | Phase 12 | Pending |
+| DOOR-03 | Phase 10 | Pending |
+| DOOR-04 | Phase 10 | Pending |
+| KENYA-01 | Phase 11 | Pending |
+| KENYA-02 | Phase 11 | Pending |
+| KENYA-03 | Phase 11 | Pending |
+| KENYA-04 | Phase 11 | Pending |
+| KENYA-05 | Phase 11 | Pending |
