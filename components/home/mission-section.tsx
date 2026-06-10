@@ -43,9 +43,7 @@ export function MissionSection() {
               </div>
               {/* Floating badge */}
               <div className="absolute -bottom-4 -right-4 rounded-2xl border border-gold/20 bg-card px-5 py-3 shadow-xl md:-bottom-6 md:-right-8">
-                <p className="font-display text-display-xs text-gold-600">
-                  <NumberCounter value={2016} duration={1.5} />
-                </p>
+                <p className="font-display text-display-xs text-gold-600">2016</p>
                 <p className="text-body-xs text-muted-foreground">Founded</p>
               </div>
             </div>

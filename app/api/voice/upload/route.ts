@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
 // Initialize Supabase admin client for storage operations
 const getSupabaseAdmin = () => {
@@ -15,10 +16,28 @@ const getSupabaseAdmin = () => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Require an authenticated member; never trust a client-supplied member id
+    const authClient = await createServerClient()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: member } = await authClient
+      .from('members')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!member) {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+    }
+
     const formData = await request.formData()
     const audioFile = formData.get('audio') as File
-    const context = formData.get('context') as string || 'general'
-    const memberId = formData.get('memberId') as string
+    const rawContext = (formData.get('context') as string) || 'general'
+    const context = /^[a-z0-9_-]{1,40}$/i.test(rawContext) ? rawContext : 'general'
+    const memberId = member.id
 
     if (!audioFile) {
       return NextResponse.json(

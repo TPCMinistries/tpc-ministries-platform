@@ -94,7 +94,7 @@ export function KenyaSection() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white/30 text-white hover:bg-white/10 sm:w-auto"
+                    className="w-full border-2 border-white/30 bg-transparent text-white hover:bg-white/10 sm:w-auto"
                   >
                     <Heart className="mr-2 h-5 w-5" />
                     Support the Mission

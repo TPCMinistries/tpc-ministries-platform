@@ -651,7 +651,7 @@ export default function KenyaTripPage() {
 
           <div className="mt-12 text-center">
             <p className="text-body-sm text-white/30">
-              Prefer to give by check? Mail to: TPC Ministries, [Address] &bull; Memo: Kenya Mission 2026
+              Prefer to give by check? Email info@tpcmin.org for mailing details &bull; Memo: Kenya Mission 2026
             </p>
           </div>
         </div>
