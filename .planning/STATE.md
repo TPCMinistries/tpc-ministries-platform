@@ -67,6 +67,6 @@ See PROJECT.md Key Decisions. Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-06-10
-Stopped at: Roadmap defined for v2.0; next step is `/gsd:plan-phase 10`
-Resume file: None
+Last session: 2026-06-11
+Stopped at: v2.0 fully defined; execution handed off to Codex/ChatGPT
+Resume file: .planning/HANDOFF-2026-06-11.md (active execution plan) + AGENTS.md (agent ground rules)
