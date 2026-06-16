@@ -57,6 +57,7 @@ const DELEGATION: { name: string; role?: string; photo?: string }[] = [
   { name: 'Shalay Lindsey' },
   { name: 'Prophet Joshua Johnson', photo: '/images/kenya/delegation/joshua.jpg' },
   { name: 'Prophetess Suzette Patterson', photo: '/images/kenya/delegation/suzette.jpg' },
+  { name: 'Chyann Starks', photo: '/images/kenya/delegation/chyann.jpg' },
 ]
 
 // Initials for the monogram fallback, ignoring honorifics and suffixes.
