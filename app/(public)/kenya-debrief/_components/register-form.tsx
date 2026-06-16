@@ -16,12 +16,20 @@ const TIME_ZONES = [
   'Other / outside the US',
 ]
 
+const AFFILIATIONS = [
+  { value: 'TPC Ministries', label: 'TPC Ministries' },
+  { value: 'IHA', label: 'IHA (non-profit)' },
+  { value: 'Uplift Communities', label: 'Uplift Communities (business)' },
+  { value: 'Just exploring', label: 'Just exploring' },
+]
+
 export function DebriefRegisterForm() {
   const [step, setStep] = useState<'register' | 'details' | 'done'>('register')
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [message, setMessage] = useState('')
   const [email, setEmail] = useState('')
   const [timeZone, setTimeZone] = useState('')
+  const [affiliation, setAffiliation] = useState('')
 
   // Step 1 — name + email. Creates the registration and sends the confirmation.
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
@@ -75,6 +83,7 @@ export function DebriefRegisterForm() {
           phone: data.get('phone'),
           howHeard: data.get('howHeard'),
           timeZone,
+          affiliation,
         }),
       })
     } catch {
@@ -152,6 +161,31 @@ export function DebriefRegisterForm() {
         </p>
 
         <div className="mt-5 space-y-4">
+          <div>
+            <span className="mb-1.5 block text-sm font-medium text-white/80">
+              How are you connecting with us? <span className="text-white/40">(optional)</span>
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {AFFILIATIONS.map((opt) => {
+                const active = affiliation === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setAffiliation(active ? '' : opt.value)}
+                    className={`rounded-lg border px-3 py-2.5 text-center text-xs font-medium transition-all ${
+                      active
+                        ? 'border-gold bg-gold/20 text-gold'
+                        : 'border-white/15 bg-white/5 text-white/70 hover:border-gold/40 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div>
             <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-white/80">
               Phone <span className="text-white/40">(for a text reminder)</span>

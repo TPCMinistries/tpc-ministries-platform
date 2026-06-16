@@ -12,6 +12,7 @@ interface Registration {
   phone: string | null
   preferred_time: string | null
   how_heard: string | null
+  affiliation: string | null
   created_at: string
   confirmation_sent_at: string | null
   reminder_t7_sent_at: string | null
@@ -99,13 +100,14 @@ export default async function AdminKenyaDebriefPage() {
               <th className="px-4 py-3 text-center font-semibold">T-7</th>
               <th className="px-4 py-3 text-center font-semibold">T-1</th>
               <th className="px-4 py-3 text-center font-semibold">Day-of</th>
+              <th className="px-4 py-3 font-semibold">Connecting via</th>
               <th className="px-4 py-3 font-semibold">How heard</th>
             </tr>
           </thead>
           <tbody>
             {regs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">
                   No registrations yet.
                 </td>
               </tr>
@@ -126,6 +128,7 @@ export default async function AdminKenyaDebriefPage() {
                   <td className="px-4 py-3"><div className="flex justify-center"><Dot on={!!r.reminder_t7_sent_at} /></div></td>
                   <td className="px-4 py-3"><div className="flex justify-center"><Dot on={!!r.reminder_t1_sent_at} /></div></td>
                   <td className="px-4 py-3"><div className="flex justify-center"><Dot on={!!r.reminder_day_of_sent_at} /></div></td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.affiliation || '—'}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.how_heard || '—'}</td>
                 </tr>
               ))

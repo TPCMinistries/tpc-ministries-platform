@@ -120,6 +120,7 @@ export async function PATCH(request: NextRequest) {
     const phone: string | null = body.phone?.trim() || null
     const howHeard: string | null = body.howHeard?.trim() || null
     const timeZone: string | null = body.timeZone?.trim() || null
+    const affiliation: string | null = body.affiliation?.trim() || null
 
     if (!email) {
       return NextResponse.json({ error: 'Missing registration.' }, { status: 400 })
@@ -129,19 +130,48 @@ export async function PATCH(request: NextRequest) {
     if (phone) updates.phone = phone
     if (howHeard) updates.how_heard = howHeard
     if (timeZone) updates.preferred_time = timeZone
+    if (affiliation) updates.affiliation = affiliation
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ success: true }, { status: 200 })
     }
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('kenya_debrief_registrations')
       .update(updates)
       .eq('email', email)
+      .select('full_name')
+      .maybeSingle()
 
     if (error) {
       console.error('Error updating Kenya debrief registration details:', error)
       return NextResponse.json({ error: 'Could not save your details.' }, { status: 500 })
+    }
+
+    // Let the team know which lane this registrant came through, for follow-up.
+    if (affiliation) {
+      try {
+        await sendEmail({
+          to: 'info@tpcmin.org',
+          from: KENYA_DEBRIEF.fromEmail,
+          subject: `Kenya Debrief follow-up lane: ${updated?.full_name || email} — ${affiliation}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color:#1e3a61;">Registration details added</h2>
+              <table style="width:100%; border-collapse:collapse;">
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">Name</td><td style="padding:8px; border:1px solid #e5e7eb;">${updated?.full_name || '—'}</td></tr>
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">Email</td><td style="padding:8px; border:1px solid #e5e7eb;"><a href="mailto:${email}">${email}</a></td></tr>
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">Connecting via</td><td style="padding:8px; border:1px solid #e5e7eb;"><strong>${affiliation}</strong></td></tr>
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">Phone</td><td style="padding:8px; border:1px solid #e5e7eb;">${phone || 'N/A'}</td></tr>
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">Time zone</td><td style="padding:8px; border:1px solid #e5e7eb;">${timeZone || 'N/A'}</td></tr>
+                <tr><td style="padding:8px; border:1px solid #e5e7eb; background:#f9fafb; font-weight:bold;">How heard</td><td style="padding:8px; border:1px solid #e5e7eb;">${howHeard || 'N/A'}</td></tr>
+              </table>
+            </div>
+          `,
+        })
+      } catch (emailError) {
+        console.error('Failed to send debrief follow-up lane notification:', emailError)
+      }
     }
 
     return NextResponse.json({ success: true }, { status: 200 })
