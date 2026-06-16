@@ -24,7 +24,7 @@ const TIMES = [
 const DELEGATION: { name: string; role?: string; photo?: string }[] = [
   {
     name: 'Lorenzo Daughtry-Chambers',
-    role: 'Founder & CEO, IHA',
+    role: 'Co-Founder, TPC Ministries & IHA',
     photo: '/images/kenya/delegation/lorenzo.jpg',
   },
   {
@@ -34,12 +34,12 @@ const DELEGATION: { name: string; role?: string; photo?: string }[] = [
   },
   {
     name: 'Dr. Michele Y. Griffith',
-    role: 'Chief Medical Officer',
+    role: 'Chief Medical Officer, IHA',
     photo: '/images/kenya/delegation/griffith.jpg',
   },
   {
     name: 'Achumboro Ataande, Esq.',
-    role: 'Attorney & CXO',
+    role: 'CEO, Uplift Communities & Trip Co-Architect',
     photo: '/images/kenya/delegation/achumboro.jpg',
   },
   {
@@ -52,12 +52,16 @@ const DELEGATION: { name: string; role?: string; photo?: string }[] = [
     role: 'Exec. Director & Activist',
     photo: '/images/kenya/delegation/sharon.jpg',
   },
-  { name: 'Minister Curlean Chaney', photo: '/images/kenya/delegation/chaney.jpg' },
-  { name: 'Iris Wells', photo: '/images/kenya/delegation/iris.jpg' },
-  { name: 'Shalay Lindsey' },
-  { name: 'Prophet Joshua Johnson', photo: '/images/kenya/delegation/joshua.jpg' },
-  { name: 'Prophetess Suzette Patterson', photo: '/images/kenya/delegation/suzette.jpg' },
-  { name: 'Chyann Starks', photo: '/images/kenya/delegation/chyann.jpg' },
+  { name: 'Minister Curlean Chaney', role: 'Delegate', photo: '/images/kenya/delegation/chaney.jpg' },
+  { name: 'Iris Wells', role: 'Delegate', photo: '/images/kenya/delegation/iris.jpg' },
+  { name: 'Shalay Lindsey', role: 'Delegate' },
+  { name: 'Prophet Joshua Johnson', role: 'Delegate', photo: '/images/kenya/delegation/joshua.jpg' },
+  {
+    name: 'Prophetess Suzette Patterson',
+    role: 'Delegate',
+    photo: '/images/kenya/delegation/suzette.jpg',
+  },
+  { name: 'Chyann Starks', role: 'Delegate', photo: '/images/kenya/delegation/chyann.jpg' },
 ]
 
 // Initials for the monogram fallback, ignoring honorifics and suffixes.
@@ -238,7 +242,7 @@ export default function KenyaDebriefPage() {
                 <div className="min-w-0">
                   <p className="truncate font-serif text-lg font-bold text-white">{person.name}</p>
                   {person.role && (
-                    <p className="truncate text-xs uppercase tracking-[0.12em] text-gold/80">
+                    <p className="text-xs uppercase leading-snug tracking-[0.12em] text-gold/80">
                       {person.role}
                     </p>
                   )}
