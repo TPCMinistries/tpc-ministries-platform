@@ -52,11 +52,11 @@ const DELEGATION: { name: string; role?: string; photo?: string }[] = [
     role: 'Exec. Director & Activist',
     photo: '/images/kenya/delegation/sharon.jpg',
   },
-  { name: 'Minister Curlean Chaney' },
-  { name: 'Iris Wells' },
+  { name: 'Minister Curlean Chaney', photo: '/images/kenya/delegation/chaney.jpg' },
+  { name: 'Iris Wells', photo: '/images/kenya/delegation/iris.jpg' },
   { name: 'Shalay Lindsey' },
   { name: 'Prophet Joshua Johnson' },
-  { name: 'Prophetess Suzette Patterson' },
+  { name: 'Prophetess Suzette Patterson', photo: '/images/kenya/delegation/suzette.jpg' },
 ]
 
 // Initials for the monogram fallback, ignoring honorifics and suffixes.
