@@ -25,13 +25,33 @@ const DELEGATION: { name: string; role?: string; photo?: string }[] = [
   {
     name: 'Lorenzo Daughtry-Chambers',
     role: 'Founder & CEO, IHA',
-    photo: '/images/team/lorenzo-about.png',
+    photo: '/images/kenya/delegation/lorenzo.jpg',
   },
-  { name: 'Prophetess Sarah Daughtry-Chambers', role: 'Co-Founder, TPC Ministries' },
-  { name: 'Dr. Michele Y. Griffith', role: 'Chief Medical Officer' },
-  { name: 'Achumboro Ataande, Esq.', role: 'Attorney & CXO' },
-  { name: 'Evangelist Eileen Jesse', role: 'Evangelist & Social Work' },
-  { name: 'Sharon Daughtry', role: 'Exec. Director & Activist' },
+  {
+    name: 'Prophetess Sarah Daughtry-Chambers',
+    role: 'Co-Founder, TPC Ministries',
+    photo: '/images/kenya/delegation/sarah.jpg',
+  },
+  {
+    name: 'Dr. Michele Y. Griffith',
+    role: 'Chief Medical Officer',
+    photo: '/images/kenya/delegation/griffith.jpg',
+  },
+  {
+    name: 'Achumboro Ataande, Esq.',
+    role: 'Attorney & CXO',
+    photo: '/images/kenya/delegation/achumboro.jpg',
+  },
+  {
+    name: 'Evangelist Eileen Jesse',
+    role: 'Evangelist & Social Work',
+    photo: '/images/kenya/delegation/eileen.jpg',
+  },
+  {
+    name: 'Sharon Daughtry',
+    role: 'Exec. Director & Activist',
+    photo: '/images/kenya/delegation/sharon.jpg',
+  },
   { name: 'Minister Curlean Chaney' },
   { name: 'Iris Wells' },
   { name: 'Shalay Lindsey' },
@@ -207,7 +227,7 @@ export default function KenyaDebriefPage() {
                     alt={person.name}
                     width={96}
                     height={96}
-                    className="h-12 w-12 shrink-0 rounded-full object-cover object-top ring-1 ring-gold/40"
+                    className="h-12 w-12 shrink-0 rounded-full object-cover object-center ring-1 ring-gold/40"
                   />
                 ) : (
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/15 text-sm font-bold tracking-wide text-gold ring-1 ring-gold/30">
