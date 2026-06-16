@@ -107,3 +107,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+// Step 2: append optional details (phone, how heard, time zone) to an existing
+// registration. Keyed on the email captured in step 1. Does NOT resend the
+// confirmation email — the registrant is already in and confirmed.
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = createAdminClient()
+    const body = await request.json()
+
+    const email: string = (body.email || '').trim().toLowerCase()
+    const phone: string | null = body.phone?.trim() || null
+    const howHeard: string | null = body.howHeard?.trim() || null
+    const timeZone: string | null = body.timeZone?.trim() || null
+
+    if (!email) {
+      return NextResponse.json({ error: 'Missing registration.' }, { status: 400 })
+    }
+
+    const updates: Record<string, string> = {}
+    if (phone) updates.phone = phone
+    if (howHeard) updates.how_heard = howHeard
+    if (timeZone) updates.preferred_time = timeZone
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ success: true }, { status: 200 })
+    }
+
+    const { error } = await supabase
+      .from('kenya_debrief_registrations')
+      .update(updates)
+      .eq('email', email)
+
+    if (error) {
+      console.error('Error updating Kenya debrief registration details:', error)
+      return NextResponse.json({ error: 'Could not save your details.' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 })
+  } catch (error) {
+    console.error('Kenya debrief details error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

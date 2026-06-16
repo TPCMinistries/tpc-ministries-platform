@@ -21,8 +21,12 @@ const TIMES = [
   { zone: 'East Africa Time', time: '7:00 PM' },
 ]
 
-const DELEGATION: { name: string; role?: string }[] = [
-  { name: 'Lorenzo Daughtry-Chambers', role: 'Founder & CEO, IHA' },
+const DELEGATION: { name: string; role?: string; photo?: string }[] = [
+  {
+    name: 'Lorenzo Daughtry-Chambers',
+    role: 'Founder & CEO, IHA',
+    photo: '/images/team/lorenzo-about.png',
+  },
   { name: 'Prophetess Sarah Daughtry-Chambers', role: 'Co-Founder, TPC Ministries' },
   { name: 'Dr. Michele Y. Griffith', role: 'Chief Medical Officer' },
   { name: 'Achumboro Ataande, Esq.', role: 'Attorney & CXO' },
@@ -34,6 +38,21 @@ const DELEGATION: { name: string; role?: string }[] = [
   { name: 'Prophet Joshua Johnson' },
   { name: 'Prophetess Suzette Patterson' },
 ]
+
+// Initials for the monogram fallback, ignoring honorifics and suffixes.
+const HONORIFICS = new Set([
+  'dr.', 'dr', 'prophet', 'prophetess', 'minister', 'evangelist', 'rev.', 'rev',
+  'pastor', 'apostle', 'bishop', 'mr.', 'mrs.', 'ms.',
+])
+function initials(name: string): string {
+  const parts = name
+    .replace(/,.*$/, '')
+    .split(/\s+/)
+    .filter((w) => w && !HONORIFICS.has(w.toLowerCase()))
+  const first = parts[0]?.[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+  return (first + last).toUpperCase()
+}
 
 const FACTS = [
   { icon: Calendar, label: '14 Days' },
@@ -180,14 +199,29 @@ export default function KenyaDebriefPage() {
             {DELEGATION.map((person) => (
               <div
                 key={person.name}
-                className="flex items-baseline justify-between gap-4 bg-navy-950 px-6 py-5 transition-colors hover:bg-white/[0.04]"
+                className="flex items-center gap-4 bg-navy-950 px-5 py-4 transition-colors hover:bg-white/[0.04]"
               >
-                <p className="font-serif text-lg font-bold text-white">{person.name}</p>
-                {person.role && (
-                  <p className="shrink-0 text-right text-xs uppercase tracking-[0.12em] text-gold/80">
-                    {person.role}
-                  </p>
+                {person.photo ? (
+                  <Image
+                    src={person.photo}
+                    alt={person.name}
+                    width={96}
+                    height={96}
+                    className="h-12 w-12 shrink-0 rounded-full object-cover object-top ring-1 ring-gold/40"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/15 text-sm font-bold tracking-wide text-gold ring-1 ring-gold/30">
+                    {initials(person.name)}
+                  </div>
                 )}
+                <div className="min-w-0">
+                  <p className="truncate font-serif text-lg font-bold text-white">{person.name}</p>
+                  {person.role && (
+                    <p className="truncate text-xs uppercase tracking-[0.12em] text-gold/80">
+                      {person.role}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

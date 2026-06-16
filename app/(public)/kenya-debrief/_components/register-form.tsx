@@ -7,24 +7,30 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { KENYA_DEBRIEF, googleCalendarUrl } from '@/lib/kenya-debrief'
 
-const TIME_OPTIONS = [
-  { value: '9am_pt', label: '9:00 AM Pacific' },
-  { value: '12pm_et', label: '12:00 PM Eastern' },
-  { value: '7pm_eat', label: '7:00 PM East Africa' },
+const TIME_ZONES = [
+  'Pacific Time',
+  'Mountain Time',
+  'Central Time',
+  'Eastern Time',
+  'East Africa Time',
+  'Other / outside the US',
 ]
 
 export function DebriefRegisterForm() {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [step, setStep] = useState<'register' | 'details' | 'done'>('register')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [message, setMessage] = useState('')
-  const [preferredTime, setPreferredTime] = useState('')
+  const [email, setEmail] = useState('')
+  const [timeZone, setTimeZone] = useState('')
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  // Step 1 — name + email. Creates the registration and sends the confirmation.
+  async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setStatus('loading')
     setMessage('')
 
-    const form = e.currentTarget
-    const data = new FormData(form)
+    const data = new FormData(e.currentTarget)
+    const enteredEmail = String(data.get('email') || '')
 
     try {
       const res = await fetch('/api/kenya/debrief-register', {
@@ -32,13 +38,9 @@ export function DebriefRegisterForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: data.get('fullName'),
-          email: data.get('email'),
-          phone: data.get('phone'),
-          preferredTime,
-          howHeard: data.get('howHeard'),
+          email: enteredEmail,
         }),
       })
-
       const json = await res.json()
 
       if (!res.ok) {
@@ -47,17 +49,43 @@ export function DebriefRegisterForm() {
         return
       }
 
-      setStatus('success')
-      setMessage(json.message || "You're registered.")
-      form.reset()
-      setPreferredTime('')
+      setEmail(enteredEmail.trim().toLowerCase())
+      setStatus('idle')
+      setStep('details')
     } catch {
       setStatus('error')
       setMessage('Network error. Please try again.')
     }
   }
 
-  if (status === 'success') {
+  // Step 2 — optional phone / how-heard / time zone. Appends to the record.
+  async function handleDetails(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setStatus('loading')
+    setMessage('')
+
+    const data = new FormData(e.currentTarget)
+
+    try {
+      await fetch('/api/kenya/debrief-register', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          phone: data.get('phone'),
+          howHeard: data.get('howHeard'),
+          timeZone,
+        }),
+      })
+    } catch {
+      // Non-blocking — they're already registered; details are a bonus.
+    }
+    setStatus('idle')
+    setStep('done')
+  }
+
+  // ---- Done: confirmation + Zoom + calendar ----
+  if (step === 'done') {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
@@ -67,10 +95,12 @@ export function DebriefRegisterForm() {
       >
         <CheckCircle2 className="mx-auto h-12 w-12 text-gold" />
         <h3 className="mt-4 font-serif text-2xl font-bold text-white">You&apos;re in.</h3>
-        <p className="mt-2 text-white/80">{message}</p>
+        <p className="mt-2 text-white/80">
+          We just emailed your confirmation and Zoom link.
+        </p>
         <p className="mt-3 text-sm text-white/60">
-          We just emailed your confirmation and Zoom link. Save the date below &mdash; can&apos;t
-          make it live? Stay registered and we&apos;ll send the recording.
+          Save the date below &mdash; can&apos;t make it live? Stay registered and we&apos;ll send
+          the recording.
         </p>
 
         <a href={KENYA_DEBRIEF.zoomUrl} target="_blank" rel="noopener noreferrer">
@@ -105,11 +135,107 @@ export function DebriefRegisterForm() {
     )
   }
 
+  // ---- Step 2: optional details ----
+  if (step === 'details') {
+    return (
+      <motion.form
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        onSubmit={handleDetails}
+        className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm sm:p-8"
+      >
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Step 2 of 2</p>
+        <h3 className="mt-2 font-serif text-xl font-bold text-white">You&apos;re registered.</h3>
+        <p className="mt-1 text-sm text-white/60">
+          A couple of optional details so we can serve you better. Check your inbox for the Zoom link.
+        </p>
+
+        <div className="mt-5 space-y-4">
+          <div>
+            <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-white/80">
+              Phone <span className="text-white/40">(for a text reminder)</span>
+            </label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="(555) 555-5555"
+              className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-gold"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="timeZone" className="mb-1.5 block text-sm font-medium text-white/80">
+              Your time zone <span className="text-white/40">(optional)</span>
+            </label>
+            <select
+              id="timeZone"
+              value={timeZone}
+              onChange={(e) => setTimeZone(e.target.value)}
+              className="h-10 w-full rounded-md border border-white/20 bg-white/5 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              <option value="" className="bg-navy-950">
+                Select your time zone…
+              </option>
+              {TIME_ZONES.map((tz) => (
+                <option key={tz} value={tz} className="bg-navy-950">
+                  {tz}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="howHeard" className="mb-1.5 block text-sm font-medium text-white/80">
+              How did you hear about this? <span className="text-white/40">(optional)</span>
+            </label>
+            <Input
+              id="howHeard"
+              name="howHeard"
+              placeholder="A friend, social media, our newsletter…"
+              className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-gold"
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          size="lg"
+          disabled={status === 'loading'}
+          className="mt-6 h-12 w-full bg-gold font-bold text-navy-950 hover:bg-gold-300 disabled:opacity-70"
+        >
+          {status === 'loading' ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving…
+            </>
+          ) : (
+            <>
+              Finish
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </>
+          )}
+        </Button>
+
+        <button
+          type="button"
+          onClick={() => setStep('done')}
+          className="mt-3 w-full text-center text-xs text-white/50 underline-offset-4 transition hover:text-white/80 hover:underline"
+        >
+          Skip — I&apos;m all set
+        </button>
+      </motion.form>
+    )
+  }
+
+  // ---- Step 1: name + email ----
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleRegister}
       className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm sm:p-8"
     >
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-gold">Step 1 of 2</p>
       <div className="space-y-4">
         <div>
           <label htmlFor="fullName" className="mb-1.5 block text-sm font-medium text-white/80">
@@ -137,61 +263,9 @@ export function DebriefRegisterForm() {
             className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-gold"
           />
         </div>
-
-        <div>
-          <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-white/80">
-            Phone <span className="text-white/40">(optional)</span>
-          </label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="For a text reminder"
-            className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-gold"
-          />
-        </div>
-
-        <div>
-          <span className="mb-1.5 block text-sm font-medium text-white/80">
-            Which time works best? <span className="text-white/40">(optional)</span>
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            {TIME_OPTIONS.map((opt) => {
-              const active = preferredTime === opt.value
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setPreferredTime(active ? '' : opt.value)}
-                  className={`rounded-lg border px-2 py-2.5 text-center text-xs font-medium transition-all ${
-                    active
-                      ? 'border-gold bg-gold/20 text-gold'
-                      : 'border-white/15 bg-white/5 text-white/70 hover:border-gold/40 hover:text-white'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="howHeard" className="mb-1.5 block text-sm font-medium text-white/80">
-            How did you hear about this? <span className="text-white/40">(optional)</span>
-          </label>
-          <Input
-            id="howHeard"
-            name="howHeard"
-            placeholder="A friend, social media, our newsletter…"
-            className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-gold"
-          />
-        </div>
       </div>
 
-      {status === 'error' && (
-        <p className="mt-4 text-sm text-red-300">{message}</p>
-      )}
+      {status === 'error' && <p className="mt-4 text-sm text-red-300">{message}</p>}
 
       <Button
         type="submit"
@@ -213,7 +287,7 @@ export function DebriefRegisterForm() {
       </Button>
 
       <p className="mt-3 text-center text-xs text-white/50">
-        Free to attend. Register and we&apos;ll send the recording.
+        Free to attend. We&apos;ll email your Zoom link right away.
       </p>
     </form>
   )
