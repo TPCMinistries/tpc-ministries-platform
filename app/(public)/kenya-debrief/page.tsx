@@ -21,13 +21,18 @@ const TIMES = [
   { zone: 'East Africa Time', time: '7:00 PM' },
 ]
 
-const DELEGATION = [
+const DELEGATION: { name: string; role?: string }[] = [
   { name: 'Dr. Michele Y. Griffith', role: 'Chief Medical Officer' },
   { name: 'Achumboro Ataande, Esq.', role: 'Attorney & CXO' },
   { name: 'Lorenzo Daughtry-Chambers', role: 'Founder & CEO, IHA' },
   { name: 'Prophetess Sarah Daughtry-Chambers', role: 'Co-Founder, TPC Ministries' },
   { name: 'Evangelist Eileen Jesse', role: 'Evangelist & Social Work' },
   { name: 'Sharon Daughtry', role: 'Exec. Director & Activist' },
+  { name: 'Minister Curlean Chaney' },
+  { name: 'Iris Wells' },
+  { name: 'Shalay Lindsey' },
+  { name: 'Prophet Joshua Johnson' },
+  { name: 'Prophetess Suzette Patterson' },
 ]
 
 const FACTS = [
@@ -161,9 +166,11 @@ export default function KenyaDebriefPage() {
                 className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-gold/40 hover:bg-white/[0.07]"
               >
                 <p className="font-serif text-xl font-bold text-white">{person.name}</p>
-                <p className="mt-1 text-sm uppercase tracking-[0.12em] text-gold/80">
-                  {person.role}
-                </p>
+                {person.role && (
+                  <p className="mt-1 text-sm uppercase tracking-[0.12em] text-gold/80">
+                    {person.role}
+                  </p>
+                )}
               </div>
             ))}
           </div>
