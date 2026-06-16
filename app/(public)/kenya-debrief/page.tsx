@@ -22,10 +22,10 @@ const TIMES = [
 ]
 
 const DELEGATION: { name: string; role?: string }[] = [
-  { name: 'Dr. Michele Y. Griffith', role: 'Chief Medical Officer' },
-  { name: 'Achumboro Ataande, Esq.', role: 'Attorney & CXO' },
   { name: 'Lorenzo Daughtry-Chambers', role: 'Founder & CEO, IHA' },
   { name: 'Prophetess Sarah Daughtry-Chambers', role: 'Co-Founder, TPC Ministries' },
+  { name: 'Dr. Michele Y. Griffith', role: 'Chief Medical Officer' },
+  { name: 'Achumboro Ataande, Esq.', role: 'Attorney & CXO' },
   { name: 'Evangelist Eileen Jesse', role: 'Evangelist & Social Work' },
   { name: 'Sharon Daughtry', role: 'Exec. Director & Activist' },
   { name: 'Minister Curlean Chaney' },
@@ -128,20 +128,37 @@ export default function KenyaDebriefPage() {
         </div>
       </section>
 
-      {/* Field photo */}
+      {/* From the field: video + photo */}
       <section className="relative border-t border-white/10 bg-navy-950 py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
-            <Image
-              src="/images/kenya/debrief-delegation.jpg"
-              alt="The Kenya Global Impact Delegation gathered with the local congregation in Kenya"
-              width={2400}
-              height={1600}
-              sizes="(max-width: 1152px) 100vw, 1152px"
-              className="h-auto w-full"
-            />
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-gold">
+              From the field
+            </div>
           </div>
-          <p className="mt-4 text-center text-sm uppercase tracking-[0.2em] text-white/50">
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+              <video
+                controls
+                preload="none"
+                poster="/videos/kenya/posters/highlight-video.jpg"
+                className="aspect-video h-full w-full bg-black object-cover"
+              >
+                <source src="/videos/kenya/highlight-video.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+              <Image
+                src="/videos/kenya/posters/ministry-moments.jpg"
+                alt="Members of the delegation praying with the local community in Kenya"
+                width={1280}
+                height={720}
+                sizes="(max-width: 1024px) 100vw, 576px"
+                className="aspect-video h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <p className="mt-5 text-center text-sm uppercase tracking-[0.2em] text-white/50">
             On the ground · Nairobi · Kakamega · Mombasa
           </p>
         </div>
@@ -159,15 +176,15 @@ export default function KenyaDebriefPage() {
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto mt-12 grid max-w-4xl gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2">
             {DELEGATION.map((person) => (
               <div
                 key={person.name}
-                className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-gold/40 hover:bg-white/[0.07]"
+                className="flex items-baseline justify-between gap-4 bg-navy-950 px-6 py-5 transition-colors hover:bg-white/[0.04]"
               >
-                <p className="font-serif text-xl font-bold text-white">{person.name}</p>
+                <p className="font-serif text-lg font-bold text-white">{person.name}</p>
                 {person.role && (
-                  <p className="mt-1 text-sm uppercase tracking-[0.12em] text-gold/80">
+                  <p className="shrink-0 text-right text-xs uppercase tracking-[0.12em] text-gold/80">
                     {person.role}
                   </p>
                 )}
