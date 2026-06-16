@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { Calendar, Globe, MapPin, Video } from 'lucide-react'
 import { DebriefRegisterForm } from './_components/register-form'
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     title: 'Kenya Report & Debrief — Live Virtual Event',
     description:
       'The delegation is home. Hear what we did, what God did, and what comes next. Saturday, June 27 — live on Zoom. Register free.',
-    images: ['/videos/kenya/posters/highlight-video.jpg'],
+    images: ['/images/kenya/debrief-delegation-og.jpg'],
   },
 }
 
@@ -119,6 +120,25 @@ export default function KenyaDebriefPage() {
               <DebriefRegisterForm />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Field photo */}
+      <section className="relative border-t border-white/10 bg-navy-950 py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+            <Image
+              src="/images/kenya/debrief-delegation.jpg"
+              alt="The Kenya Global Impact Delegation gathered with the local congregation in Kenya"
+              width={2400}
+              height={1600}
+              sizes="(max-width: 1152px) 100vw, 1152px"
+              className="h-auto w-full"
+            />
+          </div>
+          <p className="mt-4 text-center text-sm uppercase tracking-[0.2em] text-white/50">
+            On the ground · Nairobi · Kakamega · Mombasa
+          </p>
         </div>
       </section>
 
