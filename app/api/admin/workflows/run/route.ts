@@ -19,6 +19,7 @@ interface WorkflowConfig {
     days_before?: number
     days_after?: number
     days_inactive?: number
+    interest_tag?: string
     partner_email_kind?: 'welcome' | 'monthly-update' | 'gathering' | 'resource' | 'training' | 'missions'
   }
   action_config: {
@@ -63,6 +64,26 @@ function endOfDay(date: Date) {
   const clone = new Date(date)
   clone.setHours(23, 59, 59, 999)
   return clone
+}
+
+// Lead-based nurture workflows operate on the `leads` table, not `members`,
+// so executions can't be tied to a member_id (FK -> members).
+function isLeadWorkflow(triggerType: string) {
+  return triggerType === 'lead_nurture'
+}
+
+// Move a lead into the "nurturing" stage the first time it's emailed, so the
+// admin Communications view reflects that the drip has started.
+async function markLeadNurturing(leadId: string) {
+  try {
+    await getSupabase()
+      .from('leads')
+      .update({ status: 'nurturing' })
+      .eq('id', leadId)
+      .eq('status', 'new')
+  } catch (error) {
+    console.warn('Could not mark lead nurturing:', error)
+  }
 }
 
 async function hasRecentExecution(workflowId: string, memberId: string, days = 30) {
@@ -284,6 +305,41 @@ async function getMembersForWorkflow(workflow: WorkflowConfig) {
       }
       break
     }
+
+    case 'lead_nurture': {
+      // Fires once per lead, on the exact day N after they signed up (same
+      // day-window approach as `new_member`, so no per-lead dedup is needed).
+      const daysAfter = workflow.trigger_config.days_after || 0
+      const interestTag = workflow.trigger_config.interest_tag
+      const targetDate = new Date(now.getTime() - daysAfter * 24 * 60 * 60 * 1000)
+
+      let query = supabase
+        .from('leads')
+        .select('id, name, email, interests, status, created_at')
+        .in('status', ['new', 'nurturing'])
+        .gte('created_at', startOfDay(targetDate).toISOString())
+        .lte('created_at', endOfDay(targetDate).toISOString())
+
+      // Scope to a specific interest (serve / missions / october-gathering).
+      // Omit the tag for a general track that reaches every newcomer.
+      if (interestTag) {
+        query = query.contains('interests', [interestTag])
+      }
+
+      const { data } = await query
+
+      for (const lead of data || []) {
+        if (!lead.email) continue
+        const [firstName, ...rest] = (lead.name || '').trim().split(' ')
+        members.push({
+          id: lead.id,
+          first_name: firstName || 'Friend',
+          last_name: rest.join(' '),
+          email: lead.email,
+        })
+      }
+      break
+    }
   }
 
   return members
@@ -424,11 +480,13 @@ export async function POST(request: NextRequest) {
         errorMessage = (error as Error).message
       }
 
-      // Log execution
+      const leadWorkflow = isLeadWorkflow(workflow.trigger_type)
+
+      // Log execution (member_id must be null for leads — it FKs to members)
       await supabase.from('workflow_executions').insert({
         workflow_id: workflowId,
         workflow_name: workflow.name,
-        member_id: member.id,
+        member_id: leadWorkflow ? null : member.id,
         member_name: `${member.first_name} ${member.last_name}`,
         action_type: workflow.action_type,
         status: success ? 'sent' : 'failed',
@@ -436,8 +494,10 @@ export async function POST(request: NextRequest) {
         executed_at: new Date().toISOString()
       })
 
-      if (success) sent++
-      else failed++
+      if (success) {
+        sent++
+        if (leadWorkflow) await markLeadNurturing(member.id)
+      } else failed++
     }
 
     // Update workflow stats
@@ -520,15 +580,17 @@ export async function GET(request: NextRequest) {
 
           if (success) {
             sent++
+            const leadWorkflow = isLeadWorkflow(workflow.trigger_type)
             await supabase.from('workflow_executions').insert({
               workflow_id: workflow.id,
               workflow_name: workflow.name,
-              member_id: member.id,
+              member_id: leadWorkflow ? null : member.id,
               member_name: `${member.first_name} ${member.last_name}`,
               action_type: workflow.action_type,
               status: 'sent',
               executed_at: new Date().toISOString()
             })
+            if (leadWorkflow) await markLeadNurturing(member.id)
           }
         }
 
