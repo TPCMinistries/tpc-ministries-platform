@@ -18,7 +18,6 @@ const navLinks = [
   { href: '/partners', label: 'Partners' },
   { href: '/giving', label: 'Give' },
   { href: '/blog', label: 'Blog' },
-  { href: '/connect', label: 'Connect' },
 ]
 
 const contentResources = [

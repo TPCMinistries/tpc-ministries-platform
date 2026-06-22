@@ -83,24 +83,20 @@ export async function POST(request: NextRequest) {
       console.warn('Failed to send lead confirmation email:', emailError)
     }
 
-    // Notify admin (best-effort)
+    // Notify admin (best-effort) — send directly via Resend, like the
+    // confirmation above, so it doesn't depend on a self-fetch / SITE_URL.
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
-      await fetch(`${baseUrl}/api/email/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: process.env.ADMIN_EMAIL || 'info@tpcmin.org',
-          subject: `New Get Involved signup: ${name}`,
-          html: `
-            <h2>New "Get Involved" submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-            <p><strong>Interested in:</strong> ${labels.join(', ') || 'General'}</p>
-            <p><strong>Lead level:</strong> ${isHot ? 'HOT' : 'Warm'}</p>
-          `,
-        }),
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL || 'info@tpcmin.org',
+        subject: `New Get Involved signup: ${name}`,
+        html: `
+          <h2>New "Get Involved" submission</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+          <p><strong>Interested in:</strong> ${labels.join(', ') || 'General'}</p>
+          <p><strong>Lead level:</strong> ${isHot ? 'HOT' : 'Warm'}</p>
+        `,
       })
     } catch (emailError) {
       console.warn('Failed to send admin notification:', emailError)

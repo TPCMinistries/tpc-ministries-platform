@@ -14,6 +14,7 @@ const quickLinks = [
   { href: '/giving', label: 'Give' },
   { href: '/assessments', label: 'Assessments' },
   { href: '/blog', label: 'Blog' },
+  { href: '/connect', label: 'Connect' },
 ]
 
 const socialLinks = [
