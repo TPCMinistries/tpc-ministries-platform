@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
+import { requireAuth } from '@/lib/auth-server'
 
 function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,12 +15,11 @@ export const dynamic = 'force-dynamic'
 // Personalized AI Dashboard for Members
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = request.nextUrl
-    const memberId = searchParams.get('memberId')
-
-    if (!memberId) {
-      return NextResponse.json({ error: 'memberId required' }, { status: 400 })
-    }
+    // Scope to the authenticated member — never trust a client-supplied
+    // memberId against the RLS-bypassing service-role client.
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const memberId = auth.member.id
 
     const supabase = getSupabase()
     const now = new Date()

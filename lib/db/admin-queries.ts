@@ -35,10 +35,17 @@ export async function getAdminDashboardStats() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const { count: activeMembers } = await supabase
-    .from('members')
-    .select('*', { count: 'exact', head: true })
-    .gte('last_active_at', thirtyDaysAgo.toISOString())
+  // Active members = distinct members with activity in the last 30 days.
+  // (The members table has no last_active_at column — filtering on it errored
+  // and made this stat always 0.)
+  const { data: activeActivityRows } = await supabase
+    .from('member_activity')
+    .select('member_id')
+    .gte('created_at', thirtyDaysAgo.toISOString())
+
+  const activeMembers = new Set(
+    (activeActivityRows || []).map((r) => r.member_id)
+  ).size
 
   // Get this month's donations
   const firstDayOfMonth = new Date()

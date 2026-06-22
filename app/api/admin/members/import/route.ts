@@ -8,9 +8,9 @@ type MemberImportData = {
   first_name: string
   last_name: string
   email: string
-  joined_at: string
+  join_date: string
   created_at: string
-  phone?: string | null
+  phone_number?: string | null
   tier?: string
   is_admin?: boolean
   notes?: string | null
@@ -175,12 +175,12 @@ export async function POST(request: NextRequest) {
           first_name: firstName,
           last_name: lastName,
           email: email,
-          joined_at: new Date().toISOString(),
+          join_date: new Date().toISOString(),
           created_at: new Date().toISOString()
         }
 
         if (headerMapping['phone'] !== undefined) {
-          memberData.phone = row[headerMapping['phone']]?.trim() || null
+          memberData.phone_number = row[headerMapping['phone']]?.trim() || null
         }
         if (headerMapping['tier'] !== undefined) {
           memberData.tier = normalizeTier(row[headerMapping['tier']] || '')

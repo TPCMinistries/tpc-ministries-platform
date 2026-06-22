@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 // Use service role for webhook (no user auth)
 const supabase = createClient(
@@ -7,9 +8,47 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Verify the Svix signature Resend sends. Returns false only when a secret is
+// configured and the signature is missing/invalid. When RESEND_WEBHOOK_SECRET
+// is unset we skip (and warn) so this can be rolled out without breaking inbound.
+function verifyResendSignature(payload: string, headers: Headers): boolean {
+  const secret = process.env.RESEND_WEBHOOK_SECRET
+  if (!secret) {
+    console.warn('RESEND_WEBHOOK_SECRET not set — webhook signature NOT verified')
+    return true
+  }
+  const id = headers.get('svix-id')
+  const timestamp = headers.get('svix-timestamp')
+  const signature = headers.get('svix-signature')
+  if (!id || !timestamp || !signature) return false
+
+  const secretBytes = Buffer.from(secret.replace(/^whsec_/, ''), 'base64')
+  const expected = crypto
+    .createHmac('sha256', secretBytes)
+    .update(`${id}.${timestamp}.${payload}`)
+    .digest('base64')
+
+  // Header is a space-separated list of "v1,<base64sig>"
+  return signature.split(' ').some((part) => {
+    const sig = part.split(',')[1]
+    if (!sig) return false
+    try {
+      return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+    } catch {
+      return false
+    }
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const payload = await request.text()
+
+    if (!verifyResendSignature(payload, request.headers)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+
+    const body = JSON.parse(payload)
 
     // Resend sends different event types
     const eventType = body.type

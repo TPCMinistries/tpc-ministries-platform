@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 // Use service role for webhook (no user auth)
 const supabase = createClient(
@@ -7,10 +8,47 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Validate Twilio's X-Twilio-Signature. Correct validation needs the exact
+// public URL Twilio called, so we enforce only when TWILIO_WEBHOOK_URL (and the
+// auth token) are configured; otherwise we skip (and warn) to avoid breaking
+// inbound SMS during rollout.
+function verifyTwilioSignature(request: NextRequest, params: Record<string, string>): boolean {
+  const token = process.env.TWILIO_AUTH_TOKEN
+  const webhookUrl = process.env.TWILIO_WEBHOOK_URL
+  if (!token || !webhookUrl) {
+    console.warn('TWILIO_AUTH_TOKEN/TWILIO_WEBHOOK_URL not set — Twilio signature NOT verified')
+    return true
+  }
+  const signature = request.headers.get('x-twilio-signature')
+  if (!signature) return false
+
+  let data = webhookUrl
+  for (const key of Object.keys(params).sort()) data += key + params[key]
+  const expected = crypto
+    .createHmac('sha1', token)
+    .update(Buffer.from(data, 'utf-8'))
+    .digest('base64')
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  } catch {
+    return false
+  }
+}
+
 // Twilio sends webhooks as form data
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
+
+    const params: Record<string, string> = {}
+    formData.forEach((value, key) => {
+      params[key] = typeof value === 'string' ? value : ''
+    })
+
+    if (!verifyTwilioSignature(request, params)) {
+      return new NextResponse('Invalid signature', { status: 403 })
+    }
 
     // Extract Twilio webhook data
     const messageSid = formData.get('MessageSid') as string
@@ -43,7 +81,7 @@ export async function POST(request: NextRequest) {
     const { data: member } = await supabase
       .from('members')
       .select('id, first_name, last_name')
-      .or(phoneVariants.map(p => `phone.eq.${p}`).join(','))
+      .or(phoneVariants.map(p => `phone_number.eq.${p}`).join(','))
       .limit(1)
       .single()
 

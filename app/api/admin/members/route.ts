@@ -157,12 +157,12 @@ export async function POST(request: NextRequest) {
         first_name,
         last_name,
         email,
-        phone,
+        phone_number: phone,
         role,
         tier,
         is_admin,
         notes,
-        joined_at: new Date().toISOString(),
+        join_date: new Date().toISOString(),
         created_at: new Date().toISOString()
       })
       .select()

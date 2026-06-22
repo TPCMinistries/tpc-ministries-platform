@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-server'
 
 function getSupabase() { return createAdminClient() }
 
@@ -74,13 +75,13 @@ function getLevel(points: number) {
 // GET - Get member's gamification data
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabase()
-    const { searchParams } = new URL(request.url)
-    const memberId = searchParams.get('memberId')
+    // Derive the member from the authenticated session — never trust a
+    // client-supplied memberId against the RLS-bypassing admin client.
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const memberId = auth.member.id
 
-    if (!memberId) {
-      return NextResponse.json({ error: 'memberId required' }, { status: 400 })
-    }
+    const supabase = getSupabase()
 
     // Get streak data
     const { data: streakData } = await supabase
@@ -176,11 +177,15 @@ export async function GET(request: NextRequest) {
 // POST - Award points or check for new badges
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase()
-    const { memberId, action, points: customPoints } = await request.json()
+    const auth = await requireAuth()
+    if (auth instanceof NextResponse) return auth
+    const memberId = auth.member.id
 
-    if (!memberId || !action) {
-      return NextResponse.json({ error: 'memberId and action required' }, { status: 400 })
+    const supabase = getSupabase()
+    const { action } = await request.json()
+
+    if (!action) {
+      return NextResponse.json({ error: 'action required' }, { status: 400 })
     }
 
     // Define point values for actions
@@ -197,7 +202,8 @@ export async function POST(request: NextRequest) {
       prophecy_viewed: 10,
     }
 
-    const pointsToAdd = customPoints || actionPoints[action] || 5
+    // Points are server-defined per action — clients can't set arbitrary values.
+    const pointsToAdd = actionPoints[action] || 5
 
     // Get or create streak record
     let { data: streakData } = await supabase
