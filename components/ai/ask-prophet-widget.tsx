@@ -145,7 +145,6 @@ export function AskProphetWidget() {
               setOpen(true)
               track('ai_chat_open')
             }}
-            aria-label="Open Ask Prophet Lorenzo chat"
             className="group fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full border border-gold/40 bg-navy-950 px-4 py-3 text-white shadow-2xl shadow-navy-950/40 transition-all hover:border-gold hover:bg-navy-900 sm:bottom-6 sm:right-6 sm:px-5 sm:py-3.5"
           >
             <span
