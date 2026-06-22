@@ -230,7 +230,7 @@ async function getMembersForWorkflow(workflow: WorkflowConfig) {
       const targetDate = new Date(now.getTime() - daysAfter * 24 * 60 * 60 * 1000)
       const { data } = await supabase
         .from('members')
-        .select('id, first_name, last_name, email, tier, joined_at, created_at')
+        .select('id, first_name, last_name, email, tier, joined_at:join_date, created_at')
         .in('tier', ['partner', 'covenant'])
 
       for (const member of data || []) {
