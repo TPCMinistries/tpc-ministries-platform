@@ -29,6 +29,10 @@ export function AskProphetWidget() {
   const [remaining, setRemaining] = useState<number | null>(null)
   const [limitReached, setLimitReached] = useState(false)
   const [pulse, setPulse] = useState(true)
+  const [leadEmail, setLeadEmail] = useState('')
+  const [leadSubmitting, setLeadSubmitting] = useState(false)
+  const [leadCaptured, setLeadCaptured] = useState(false)
+  const [leadError, setLeadError] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -123,10 +127,39 @@ export function AskProphetWidget() {
     setMessages([])
     setRemaining(null)
     setLimitReached(false)
+    setLeadCaptured(false)
+    setLeadEmail('')
+    setLeadError(null)
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {
       // ignore
+    }
+  }
+
+  async function captureLead(e: React.FormEvent) {
+    e.preventDefault()
+    const email = leadEmail.trim()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setLeadError('Please enter a valid email.')
+      return
+    }
+    setLeadSubmitting(true)
+    setLeadError(null)
+    try {
+      const res = await fetch('/api/ai/capture-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) throw new Error('failed')
+      setLeadCaptured(true)
+      track('ai_chat_lead_captured')
+    } catch {
+      setLeadError('Something went wrong — try again in a moment.')
+    } finally {
+      setLeadSubmitting(false)
     }
   }
 
@@ -295,6 +328,38 @@ export function AskProphetWidget() {
                       Restart
                     </button>
                   </div>
+
+                  {leadCaptured ? (
+                    <p className="border-t border-gold/20 pt-3 text-body-sm text-gold-300">
+                      🙏 Your word is on its way. Watch your inbox — and welcome to the family.
+                    </p>
+                  ) : (
+                    <div className="border-t border-gold/20 pt-3">
+                      <p className="mb-2 text-[12px] text-white/70">
+                        Not ready for an account? Leave your email and Prophet Lorenzo&apos;s team
+                        will follow up with a personal word — plus the daily devotional.
+                      </p>
+                      <form onSubmit={captureLead} className="flex gap-2">
+                        <input
+                          type="email"
+                          required
+                          value={leadEmail}
+                          onChange={(e) => setLeadEmail(e.target.value)}
+                          placeholder="you@email.com"
+                          aria-label="Your email"
+                          className="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-body-sm text-white placeholder:text-white/30 focus:border-gold/50 focus:outline-none focus:ring-2 focus:ring-gold/20"
+                        />
+                        <button
+                          type="submit"
+                          disabled={leadSubmitting}
+                          className="flex-shrink-0 rounded-lg border border-gold/40 bg-gold/15 px-3 py-2 text-body-sm font-bold text-gold-300 transition-colors hover:bg-gold/25 disabled:opacity-50"
+                        >
+                          {leadSubmitting ? '…' : 'Send it'}
+                        </button>
+                      </form>
+                      {leadError && <p className="mt-1.5 text-[11px] text-red-300">{leadError}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
