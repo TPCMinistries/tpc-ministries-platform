@@ -1,4 +1,4 @@
-import { getRecentTeachings, getPublicEbooks } from '@/lib/db/queries'
+import { getPublicEbooksCached } from '@/lib/db/queries'
 import { ProphetHeroSection } from '@/components/home/prophet-hero-section'
 import { ReelsSection } from '@/components/home/reels-section'
 import { KenyaCinemaSection } from '@/components/home/kenya-cinema-section'
@@ -13,12 +13,12 @@ import { GivingCtaSection } from '@/components/home/giving-cta-section'
 import { AssessmentsSection } from '@/components/home/assessments-section'
 import { ConnectSection } from '@/components/home/connect-section'
 
-export default async function HomePage() {
-  const teachings = await getRecentTeachings(4).catch(() => [])
-  const ebooks = await getPublicEbooks(4).catch(() => [])
+// Public marketing homepage — ISR. Content is low-churn; regenerate every 5 min
+// instead of rendering dynamically per request (cuts the ~900ms TTFB).
+export const revalidate = 300
 
-  // touch teachings so the unused import warning doesn't fire while we surface them in a future section
-  void teachings
+export default async function HomePage() {
+  const ebooks = await getPublicEbooksCached(4).catch(() => [])
 
   return (
     <div className="flex min-h-screen flex-col">

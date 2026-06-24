@@ -1,5 +1,7 @@
 // Database query functions for TPC Ministries Platform
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type {
   Teaching,
   Event,
@@ -379,3 +381,28 @@ export async function getPublicEbooks(limit: number = 4) {
   if (error) throw error
   return data as Resource[]
 }
+
+/**
+ * Cached, cookieless variant for public marketing pages (e.g. the homepage).
+ * Uses the admin client (no cookies) so the calling route is not forced into
+ * dynamic rendering, and wraps the query in unstable_cache so the DB is hit at
+ * most once per `revalidate` window instead of on every request — cutting TTFB.
+ * Ebooks are public, low-churn data, so a 5-minute cache is safe.
+ */
+export const getPublicEbooksCached = unstable_cache(
+  async (limit: number = 4) => {
+    const supabase = createAdminClient()
+    const { data, error } = await supabase
+      .from('resources')
+      .select('id, title, thumbnail_url, author')
+      .eq('published', true)
+      .eq('type', 'ebook')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) throw error
+    return data ?? []
+  },
+  ['public-ebooks'],
+  { revalidate: 300, tags: ['ebooks'] },
+)
