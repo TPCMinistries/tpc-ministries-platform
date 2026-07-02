@@ -15,8 +15,9 @@ export const KENYA_DEBRIEF = {
   registerUrl: 'https://tpcmin.org/kenya-debrief',
   icsUrl: 'https://tpcmin.org/api/kenya/debrief-calendar',
   contactEmail: 'info@tpcmin.org',
-  // Verified tpcmin.org sending domain (same domain as the newsletter sender).
-  fromEmail: 'TPC Ministries <events@tpcmin.org>',
+  // tpcmin.com is the Resend-verified sending domain; tpcmin.org is NOT verified
+  // and 403-fails on send (matches info@tpcmin.com used by the other email routes).
+  fromEmail: 'TPC Ministries <events@tpcmin.com>',
 } as const
 
 /** Build a Google Calendar "add event" link. */
