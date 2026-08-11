@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient as createAuthClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 
 function getOpenAI() { return new OpenAI({
@@ -8,6 +9,22 @@ function getOpenAI() { return new OpenAI({
 function getSupabase() { return createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!); }
+
+// Resolve the caller's member id from their auth session — never trust a
+// client-supplied memberId on this route (service-role client bypasses RLS).
+async function getAuthedMemberId(): Promise<string | null> {
+  const supabase = await createAuthClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) return null
+
+  const { data: member } = await supabase
+    .from('members')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  return member?.id ?? null
+}
 
 // Build dynamic system prompt from database config
 async function buildSystemPrompt(supabase: SupabaseClient): Promise<string> {
@@ -76,16 +93,43 @@ Remember: You represent ${config.ai_name || 'Prophet Lorenzo'}'s heart for peopl
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationId, memberId } = await request.json()
+    const { message, conversationId } = await request.json()
 
-    if (!message || !memberId) {
+    if (!message) {
       return NextResponse.json(
-        { error: 'Message and memberId are required' },
+        { error: 'Message is required' },
         { status: 400 }
       )
     }
 
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('Prophet Lorenzo AI error: OPENAI_API_KEY is not set')
+      return NextResponse.json(
+        { error: 'Failed to get response from Prophet Lorenzo' },
+        { status: 500 }
+      )
+    }
+
+    const memberId = await getAuthedMemberId()
+    if (!memberId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const supabase = getSupabase()
+
+    // If continuing a conversation, verify it belongs to this member before
+    // reading or appending to it.
+    if (conversationId) {
+      const { data: conversation } = await supabase
+        .from('ai_conversations')
+        .select('member_id')
+        .eq('id', conversationId)
+        .single()
+
+      if (!conversation || conversation.member_id !== memberId) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+    }
 
     // Get member info and spiritual profile
     const [memberResult, profileResult, recentActivityResult] = await Promise.all([
@@ -241,17 +285,27 @@ ${recentActivity.length > 0
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const memberId = searchParams.get('memberId')
     const conversationId = searchParams.get('conversationId')
 
+    const memberId = await getAuthedMemberId()
     if (!memberId) {
-      return NextResponse.json({ error: 'memberId required' }, { status: 400 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supabase = getSupabase()
 
     if (conversationId) {
-      // Get specific conversation with messages
+      // Get specific conversation with messages — only if it belongs to this member
+      const { data: conversation } = await supabase
+        .from('ai_conversations')
+        .select('member_id')
+        .eq('id', conversationId)
+        .single()
+
+      if (!conversation || conversation.member_id !== memberId) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+
       const { data: messages, error } = await supabase
         .from('ai_messages')
         .select('*')

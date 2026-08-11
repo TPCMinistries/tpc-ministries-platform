@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { createHash } from 'crypto'
 
 const MAX_MESSAGES_PER_SESSION = 5
 const MAX_BODY_LENGTH = 1500
+// Server-side backstop: the session cap above is enforced against
+// client-supplied history, so a direct caller can reset it every request.
+const MAX_REQUESTS_PER_IP_PER_HOUR = 15
 
 function getAnthropic() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -85,6 +89,35 @@ export async function POST(request: NextRequest) {
           signupHref: '/auth/signup',
         },
         { status: 200 }
+      )
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('Public Ask Prophet error: ANTHROPIC_API_KEY is not set')
+      throw new Error('ANTHROPIC_API_KEY missing')
+    }
+
+    // Per-IP hourly cap enforced in Postgres — the only check a direct
+    // caller can't reset by sending an empty history.
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const ipKey = `ask-prophet:${createHash('sha256').update(ip).digest('hex')}`
+    const { data: allowed, error: rateError } = await getSupabase().rpc(
+      'bump_public_ai_rate',
+      { p_key: ipKey, p_window_seconds: 3600, p_max: MAX_REQUESTS_PER_IP_PER_HOUR }
+    )
+
+    if (rateError) {
+      console.error('Public Ask Prophet rate-limit check failed:', rateError)
+    } else if (!allowed) {
+      return NextResponse.json(
+        {
+          limitReached: true,
+          response:
+            "Beloved, the Spirit has more to say — but the public conversation has its limits. Create a free account to continue with personalized prophetic guidance, daily devotionals, prayer support, and a record of every word the Lord speaks over you. I'll be waiting on the other side.",
+          signupHref: '/auth/signup',
+        },
+        { status: 429 }
       )
     }
 

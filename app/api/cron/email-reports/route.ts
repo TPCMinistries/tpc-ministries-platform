@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     for (const recipient of recipients) {
       try {
         await getResend().emails.send({
-          from: 'TPC Ministries <reports@tpcministries.org>',
+          from: 'TPC Ministries <reports@tpcmin.com>',
           to: recipient.email,
           subject,
           html: emailHtml.replace('{{firstName}}', recipient.firstName)
