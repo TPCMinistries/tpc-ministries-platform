@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 const MAX_MESSAGES_PER_SESSION = 5
 const MAX_BODY_LENGTH = 1500
 
-function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 }
 
 function getSupabase() {
@@ -90,24 +90,48 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = await buildPublicSystemPrompt()
 
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
-      ...history.slice(-10).map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
-      { role: 'user', content: message },
+    // Anthropic requires the first message to be a user turn — drop any leading
+    // assistant entries (e.g. a stored error apology) before building the array.
+    const recentHistory = history.slice(-10)
+    while (recentHistory.length > 0 && recentHistory[0].role !== 'user') {
+      recentHistory.shift()
+    }
+
+    const messages: Anthropic.Beta.BetaMessageParam[] = [
+      ...recentHistory.map((m) => ({ role: m.role, content: m.content })),
+      { role: 'user' as const, content: message },
     ]
 
-    const completion = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
+    const completion = await getAnthropic().beta.messages.create({
+      model: 'claude-opus-5',
+      max_tokens: 512,
+      output_config: { effort: 'low' },
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      system: [
+        {
+          type: 'text',
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages,
-      temperature: 0.8,
-      max_tokens: 400,
     })
 
+    if (completion.stop_reason === 'refusal') {
+      return NextResponse.json({
+        response:
+          "Beloved, that's not a road I can walk down with you here — but my heart is open for whatever else is weighing on yours. What's really going on today?",
+        remaining: Math.max(0, MAX_MESSAGES_PER_SESSION - (userTurns + 1)),
+      })
+    }
+
     const response =
-      completion.choices[0]?.message?.content?.trim() ||
+      completion.content
+        .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('')
+        .trim() ||
       "Beloved, I sense the Lord wants to simply remind you today: He sees you, He knows your name, and His plans for you are good (Jeremiah 29:11). What's on your heart?"
 
     const remaining = Math.max(0, MAX_MESSAGES_PER_SESSION - (userTurns + 1))
